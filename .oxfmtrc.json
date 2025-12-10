@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "arrowParens": "avoid",
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "printWidth": 120,
+  "objectWrap": "preserve",
+  "ignorePatterns": ["apps/web/src/routeTree.gen.ts"]
+}
