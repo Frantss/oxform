@@ -1,13 +1,30 @@
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { SchemaLike } from '#/core/types';
 import { get } from '#/utils/get';
+import { validate } from '#/utils/validate';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { batch, Store } from '@tanstack/store';
 import { isDeepEqual, mergeDeep, setPath, stringToPath } from 'remeda';
 
-// type FormStatusStore = {
-//   submitted: boolean;
-// }
+export type FormStatus = {
+  submitted: boolean;
+  submits: number;
+  submitting: boolean;
+  valid: boolean;
+  validating: boolean;
+  dirty: boolean;
+  successful: boolean;
+};
+
+const defaultStatus = {
+  submitted: false,
+  submits: 0,
+  submitting: false,
+  valid: true,
+  validating: false,
+  dirty: false,
+  successful: false,
+} satisfies FormStatus;
 
 export type FieldMeta = {
   blurred: boolean;
@@ -31,6 +48,7 @@ type FormStore<Schema extends SchemaLike> = {
   values: StandardSchemaV1.InferInput<Schema>;
   fields: Record<string, FieldMeta>;
   refs: Record<string, HTMLElement | null>;
+  status: FormStatus;
 };
 
 export type FieldControl<Value> = {
@@ -61,6 +79,7 @@ export class FormApi<
       values: mergeDeep(options.defaultValues as never, options.values ?? {}),
       fields: {},
       refs: {},
+      status: defaultStatus,
     });
   }
 
@@ -87,6 +106,10 @@ export class FormApi<
     this.store.setState(current => {
       return {
         ...current,
+        status: {
+          ...current.status,
+          dirty: base.dirty,
+        },
         fields: {
           ...current.fields,
           [name]: {
@@ -158,4 +181,57 @@ export class FormApi<
       });
     };
   };
+
+  public submit =
+    (
+      onSuccess: (data: StandardSchemaV1.InferOutput<Schema>, form: typeof this) => void | Promise<void>,
+      onError?: (issues: StandardSchemaV1.Issue[], form: typeof this) => void | Promise<void>,
+    ) =>
+    async () => {
+      this.store.setState(current => {
+        return {
+          ...current,
+          status: {
+            ...current.status,
+            submitting: true,
+            validating: true,
+            dirty: true,
+            submitted: true,
+            submits: current.status.submits + 1,
+          },
+        };
+      });
+
+      const result = await validate(this.options.schema, this.store.state.values);
+      const valid = !result.issues;
+
+      this.store.setState(current => {
+        return {
+          ...current,
+          status: {
+            ...current.status,
+            validating: false,
+            successful: valid,
+            valid,
+          },
+        };
+      });
+
+      if (result.issues) {
+        await onError?.([...result.issues], this);
+      } else {
+        await onSuccess(result.value, this);
+      }
+
+      this.store.setState(current => {
+        return {
+          ...current,
+          status: {
+            ...current.status,
+            submitting: false,
+            successful: valid,
+          },
+        };
+      });
+    };
 }

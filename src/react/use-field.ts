@@ -54,7 +54,7 @@ export const useField = <Schema extends SchemaLike, Name extends DeepKeys<Standa
       props: {
         value,
         defaultValue,
-        ref: api.register,
+        ref: api.register(),
         onBlur: api.blur,
         onFocus: api.focus,
         onChange,
