@@ -18,6 +18,7 @@ export type FieldStore<Value> = {
   value: Value;
   defaultValue: Value;
   meta: FieldMeta;
+  errors: StandardSchemaV1.Issue[];
 };
 
 export type FieldProps<Value> = {
@@ -48,11 +49,13 @@ export class FieldApi<
         const value = this.form.get(this.options.name as never) as Value;
         const defaultValue = get(this.form.options.defaultValues as never, stringToPath(this.options.name)) as Value;
         const meta = this.form.meta(this.options.name as never);
+        const errors = this.form.errors(this.options.name as never);
 
         return {
           value,
           defaultValue,
           meta,
+          errors,
         };
       },
     });
@@ -79,6 +82,10 @@ export class FieldApi<
 
   public get meta() {
     return this.store.state.meta;
+  }
+
+  public get errors() {
+    return this.store.state.errors;
   }
 
   public focus = () => this.form.focus(this.options.name);

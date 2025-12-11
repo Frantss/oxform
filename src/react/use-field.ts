@@ -16,6 +16,7 @@ export type UseFieldReturn<Value> = {
   register: () => void;
   props: FieldProps<Value>;
   meta: FieldMeta;
+  errors: StandardSchemaV1.Issue[];
 };
 
 export const useField = <Schema extends SchemaLike, Name extends DeepKeys<StandardSchemaV1.InferInput<Schema>>>(
@@ -40,6 +41,7 @@ export const useField = <Schema extends SchemaLike, Name extends DeepKeys<Standa
   const pristine = useStore(api.store, state => state.meta.pristine);
   const valid = useStore(api.store, state => state.meta.valid);
   const isDefault = useStore(api.store, state => state.meta.default);
+  const errors = useStore(api.store, state => state.errors);
 
   const onChange = useCallback((event: EventLike) => api.change(event.target?.value), [api]);
 
@@ -51,6 +53,7 @@ export const useField = <Schema extends SchemaLike, Name extends DeepKeys<Standa
       focus: api.focus,
       change: api.change,
       register: api.register,
+      errors,
       props: {
         value,
         defaultValue,
@@ -68,5 +71,5 @@ export const useField = <Schema extends SchemaLike, Name extends DeepKeys<Standa
         default: isDefault,
       },
     } satisfies UseFieldReturn<Value> as UseFieldReturn<Value>;
-  }, [api, value, defaultValue, onChange, dirty, touched, blurred, pristine, valid, isDefault]);
+  }, [api, errors, value, defaultValue, onChange, dirty, touched, blurred, pristine, valid, isDefault]);
 };

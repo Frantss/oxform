@@ -43,6 +43,7 @@ const setup = async ({ values }: { values: z.infer<typeof schema> }) => {
     defaultValues: values,
   });
 
+
   return { form };
 };
 
@@ -111,6 +112,18 @@ describe('on error', async () => {
       ],
       form,
     );
+  });
+
+  it('should set the corresponding field errors', () => {
+    expect(form.errors('nested')).toStrictEqual([]);
+    expect(form.errors('name')).toEqual([
+      {
+        code: 'invalid_type',
+        expected: 'string',
+        message: 'Invalid input: expected string, received number',
+        path: ['name'],
+      },
+    ]);
   });
 
   it('mark form as successful false', () => {

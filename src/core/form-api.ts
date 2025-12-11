@@ -6,6 +6,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { batch, Store } from '@tanstack/store';
 import { isDeepEqual, mergeDeep, setPath, stringToPath } from 'remeda';
 
+
 export type FormStatus = {
   submitted: boolean;
   submits: number;
@@ -49,6 +50,7 @@ type FormStore<Schema extends SchemaLike> = {
   fields: Record<string, FieldMeta>;
   refs: Record<string, HTMLElement | null>;
   status: FormStatus;
+  errors: Record<string, StandardSchemaV1.Issue[]>;
 };
 
 export type FieldControl<Value> = {
@@ -80,6 +82,7 @@ export class FormApi<
       fields: {},
       refs: {},
       status: defaultStatus,
+      errors: {},
     });
   }
 
@@ -92,6 +95,14 @@ export class FormApi<
   public '~update' = (options: FormOptions<Schema>) => {
     this.options = options;
   };
+
+  public get status() {
+    return this.store.state.status;
+  }
+
+  public get values() {
+    return this.store.state.values;
+  }
 
   private updateMeta = (name: string, meta: Partial<Pick<FieldMeta, 'dirty' | 'blurred' | 'touched'>>) => {
     const defaultValue = get(this.options.defaultValues as never, stringToPath(name));
@@ -182,6 +193,10 @@ export class FormApi<
     };
   };
 
+  public errors = <Name extends Field>(name: Name) => {
+    return this.store.state.errors[name as never] ?? [];
+  };
+
   public submit =
     (
       onSuccess: (data: StandardSchemaV1.InferOutput<Schema>, form: typeof this) => void | Promise<void>,
@@ -223,9 +238,18 @@ export class FormApi<
         await onSuccess(result.value, this);
       }
 
+      const errors = result.issues?.reduce((acc, issue) => {
+        const path = issue.path?.join('.') ?? 'root';
+        return {
+          ...acc,
+          [path]: [...(acc[path] ?? []), issue],
+        }
+      }, {} as any);
+
       this.store.setState(current => {
         return {
           ...current,
+          errors,
           status: {
             ...current.status,
             submitting: false,
