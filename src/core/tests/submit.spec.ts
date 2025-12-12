@@ -1,23 +1,7 @@
 import { FormApi } from '#/core/form-api';
+import { viPromise } from '#/utils/tests';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import z from 'zod';
-
-function viPromise<T = void>() {
-  let resolvePromise: (value: T) => void;
-
-  const promise = new Promise<T>(resolve => {
-    resolvePromise = resolve;
-  });
-
-  const fn = vi.fn(() => promise);
-
-  const release = async (value: T) => {
-    resolvePromise(value);
-    await promise;
-  };
-
-  return { fn, release };
-}
 
 const schema = z.object({
   name: z.string(),
@@ -42,7 +26,6 @@ const setup = async ({ values }: { values: z.infer<typeof schema> }) => {
     schema,
     defaultValues: values,
   });
-
 
   return { form };
 };
@@ -165,8 +148,8 @@ describe('while submitting', async () => {
     expect(form.store.state.status.submitting).toBe(true);
   });
 
-  it('should have already increase the submits count', () => {
-    expect(form.store.state.status.submits).toBe(1);
+  it('should have not yet increased the submits count', () => {
+    expect(form.store.state.status.submits).toBe(0);
   });
 
   afterAll(async () => {

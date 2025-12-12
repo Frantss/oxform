@@ -4,8 +4,8 @@ import { get } from '#/utils/get';
 import { validate } from '#/utils/validate';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { batch, Store } from '@tanstack/store';
-import { isDeepEqual, mergeDeep, setPath, stringToPath } from 'remeda';
-
+import { isDeepEqual, isFunction, mergeDeep, setPath, stringToPath } from 'remeda';
+import type { PartialDeep } from 'type-fest';
 
 export type FormStatus = {
   submitted: boolean;
@@ -60,10 +60,22 @@ export type FieldControl<Value> = {
   register: (element: HTMLElement | null) => void;
 };
 
+type FormValidatorSchema<Schema extends SchemaLike> = NoInfer<
+  StandardSchemaV1<PartialDeep<StandardSchemaV1.InferInput<Schema>>>
+>;
+type FormValidatorFunction<Schema extends SchemaLike> = (store: FormStore<Schema>) => FormValidatorSchema<Schema>;
+type FormValidator<Schema extends SchemaLike> = FormValidatorSchema<Schema> | FormValidatorFunction<Schema>;
+
 export type FormOptions<Schema extends SchemaLike> = {
   schema: Schema;
   values?: StandardSchemaV1.InferInput<Schema>;
   defaultValues: StandardSchemaV1.InferInput<Schema>;
+  validate?: {
+    change?: FormValidator<Schema>;
+    submit?: FormValidator<Schema>;
+    blur?: FormValidator<Schema>;
+    focus?: FormValidator<Schema>;
+  };
 };
 
 export class FormApi<
@@ -104,7 +116,61 @@ export class FormApi<
     return this.store.state.values;
   }
 
-  private updateMeta = (name: string, meta: Partial<Pick<FieldMeta, 'dirty' | 'blurred' | 'touched'>>) => {
+  private get validator() {
+    const store = this.store.state;
+    const validate = this.options.validate;
+
+    return {
+      change: isFunction(validate?.change) ? validate.change(store) : validate?.change,
+      submit: isFunction(validate?.submit) ? validate.submit(store) : (validate?.submit ?? this.options.schema),
+      blur: isFunction(validate?.blur) ? validate.blur(store) : validate?.blur,
+      focus: isFunction(validate?.focus) ? validate.focus(store) : validate?.focus,
+    };
+  }
+
+  public validate = async (field?: Field | Field[], options?: { type: 'change' | 'submit' | 'blur' | 'focus' }) => {
+    const validator = options?.type ? this.validator[options.type] : this.options.schema;
+
+    if (!validator) return [];
+
+    const { issues: allIssues } = await validate(validator, this.store.state.values);
+    const fields = field ? (Array.isArray(field) ? field : [field]) : undefined;
+
+    const issues = (allIssues ?? []).filter(issue => {
+      const path = issue.path?.join('.') ?? 'root';
+      return !fields || fields.includes(path as never);
+    });
+
+    const errors = issues.reduce((acc, issue) => {
+      const path = issue.path?.join('.') ?? 'root';
+      return {
+        ...acc,
+        [path]: [...(acc[path] ?? []), issue],
+      };
+    }, {} as any);
+
+    this.store.setState(current => {
+      // existing errors from non validated fields
+      const existing = Object.fromEntries(
+        Object.entries(current.errors ?? {}).filter(([key]) => !fields?.includes(key as never)),
+      );
+
+      return {
+        ...current,
+        errors: {
+          ...(fields ? existing : {}), // when validating a specific set of fields, keep the existing errors
+          ...errors,
+        },
+      };
+    });
+
+    return issues;
+  };
+
+  private updateFieldMeta = (
+    name: string,
+    meta: Partial<Pick<FieldMeta, 'dirty' | 'blurred' | 'touched' | 'valid'>>,
+  ) => {
     const defaultValue = get(this.options.defaultValues as never, stringToPath(name));
     const value = this.get(name as never);
 
@@ -134,10 +200,22 @@ export class FormApi<
     });
   };
 
+  // private updateStatus = (status: Partial<FormStatus>) => {
+  //   this.store.setState(current => {
+  //     return {
+  //       ...current,
+  //       status: {
+  //         ...current.status,
+  //         ...status,
+  //       },
+  //     };
+  //   });
+  // };
+
   public set = <Name extends Field>(name: Name, value: DeepValue<Values, Name>) => {
     const values = setPath(this.store.state.values as never, stringToPath(name as never) as any, value as never);
 
-    batch(() => {
+    batch(async () => {
       this.store.setState(current => {
         return {
           ...current,
@@ -145,28 +223,31 @@ export class FormApi<
         };
       });
 
-      this.updateMeta(name as never, { dirty: true });
+      await this.validate(name as never, { type: 'change' });
+      this.updateFieldMeta(name as never, { dirty: true });
     });
   };
 
   public focus = <Name extends Field>(name: Name) => {
     const ref = this.store.state.refs[name as never];
 
-    if (!ref) return; // todo: add way of reporting missing refs
+    if (ref) ref.focus();
 
-    ref.focus();
-
-    this.updateMeta(name as never, { touched: true });
+    batch(async () => {
+      await this.validate(name as never, { type: 'focus' });
+      this.updateFieldMeta(name as never, { touched: true });
+    });
   };
 
   public blur = <Name extends Field>(name: Name) => {
     const ref = this.store.state.refs[name as never];
 
-    if (!ref) return; // todo: add way of reporting missing refs
+    if (ref) ref.blur();
 
-    ref.blur();
-
-    this.updateMeta(name as never, { blurred: true });
+    batch(async () => {
+      await this.validate(name as never, { type: 'blur' });
+      this.updateFieldMeta(name as never, { blurred: true });
+    });
   };
 
   public get = <Name extends Field>(name: Name) => {
@@ -211,14 +292,12 @@ export class FormApi<
             submitting: true,
             validating: true,
             dirty: true,
-            submitted: true,
-            submits: current.status.submits + 1,
           },
         };
       });
 
-      const result = await validate(this.options.schema, this.store.state.values);
-      const valid = !result.issues;
+      const issues = await this.validate(undefined, { type: 'submit' });
+      const valid = issues.length === 0;
 
       this.store.setState(current => {
         return {
@@ -232,28 +311,21 @@ export class FormApi<
         };
       });
 
-      if (result.issues) {
-        await onError?.([...result.issues], this);
+      if (valid) {
+        await onSuccess(this.store.state.values as never, this);
       } else {
-        await onSuccess(result.value, this);
+        await onError?.(issues, this);
       }
-
-      const errors = result.issues?.reduce((acc, issue) => {
-        const path = issue.path?.join('.') ?? 'root';
-        return {
-          ...acc,
-          [path]: [...(acc[path] ?? []), issue],
-        }
-      }, {} as any);
 
       this.store.setState(current => {
         return {
           ...current,
-          errors,
           status: {
             ...current.status,
             submitting: false,
             successful: valid,
+            submitted: true,
+            submits: current.status.submits + 1,
           },
         };
       });
