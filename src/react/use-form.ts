@@ -1,4 +1,5 @@
-import { FormApi, type FormOptions } from '#/core/form-api';
+import { FormApi } from '#/core/form-api';
+import type { FormOptions } from '#/core/form-api.types';
 import type { SchemaLike } from '#/core/types';
 import { useIsomorphicLayoutEffect } from '#/react/use-isomorphic-layout-effect';
 import { useState } from 'react';

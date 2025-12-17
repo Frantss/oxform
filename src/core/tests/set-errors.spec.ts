@@ -64,7 +64,7 @@ describe('replace mode (default)', () => {
     const { form } = setup();
 
     form.setErrors('name', [mockError]);
-    form.setErrors('name', [mockError2], 'replace');
+    form.setErrors('name', [mockError2], { mode: 'replace' });
 
     expect(form.errors('name')).toEqual([mockError2]);
   });
@@ -85,7 +85,7 @@ describe('append mode', () => {
     const { form } = setup();
 
     form.setErrors('name', [mockError]);
-    form.setErrors('name', [mockError2], 'append');
+    form.setErrors('name', [mockError2], { mode: 'append' });
 
     expect(form.errors('name')).toEqual([mockError, mockError2]);
   });
@@ -93,7 +93,7 @@ describe('append mode', () => {
   it('should append to empty error list', () => {
     const { form } = setup();
 
-    form.setErrors('name', [mockError], 'append');
+    form.setErrors('name', [mockError], { mode: 'append' });
 
     expect(form.errors('name')).toEqual([mockError]);
   });
@@ -108,7 +108,7 @@ describe('append mode', () => {
     } as any;
 
     form.setErrors('name', [mockError]);
-    form.setErrors('name', [mockError2, additionalError], 'append');
+    form.setErrors('name', [mockError2, additionalError], { mode: 'append' });
 
     expect(form.errors('name')).toEqual([mockError, mockError2, additionalError]);
   });
@@ -119,7 +119,7 @@ describe('keep mode', () => {
     const { form } = setup();
 
     form.setErrors('name', [mockError]);
-    form.setErrors('name', [mockError2], 'keep');
+    form.setErrors('name', [mockError2], { mode: 'keep' });
 
     expect(form.errors('name')).toEqual([mockError]);
   });
@@ -127,7 +127,7 @@ describe('keep mode', () => {
   it('should set new errors when no existing errors', () => {
     const { form } = setup();
 
-    form.setErrors('name', [mockError], 'keep');
+    form.setErrors('name', [mockError], { mode: 'keep' });
 
     expect(form.errors('name')).toEqual([mockError]);
   });
@@ -136,7 +136,7 @@ describe('keep mode', () => {
     const { form } = setup();
 
     form.setErrors('name', [mockError]);
-    form.setErrors('name', [], 'keep');
+    form.setErrors('name', [], { mode: 'keep' });
 
     expect(form.errors('name')).toEqual([mockError]);
   });
@@ -173,13 +173,13 @@ describe('nested fields', () => {
     } as any;
 
     form.setErrors('nested.value', [nestedError1]);
-    form.setErrors('nested.value', [nestedError2], 'append');
+    form.setErrors('nested.value', [nestedError2], { mode: 'append' });
     expect(form.errors('nested.value')).toEqual([nestedError1, nestedError2]);
 
-    form.setErrors('nested.value', [{ ...nestedError1, code: 'should_not_appear' } as any], 'keep');
+    form.setErrors('nested.value', [{ ...nestedError1, code: 'should_not_appear' } as any], { mode: 'keep' });
     expect(form.errors('nested.value')).toEqual([nestedError1, nestedError2]);
 
-    form.setErrors('nested.value', [nestedError1], 'replace');
+    form.setErrors('nested.value', [nestedError1], { mode: 'replace' });
     expect(form.errors('nested.value')).toEqual([nestedError1]);
   });
 });

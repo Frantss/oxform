@@ -2,9 +2,9 @@ import type { FormApi } from '#/core/form-api';
 import type {
   FieldChangeOptions,
   FieldMeta,
-  FieldResetOptions,
-  FieldSetErrorsMode,
   FormIssue,
+  FormResetFieldOptions,
+  FormSetErrorsOptions,
   ValidateOptions,
 } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
@@ -107,7 +107,7 @@ export class FieldApi<
    */
   public change = (value: Value, options?: FieldChangeOptions) => {
     return this.form.change(this.options.name, value, options);
-  }
+  };
 
   public register = () => this.form.register(this.options.name);
 
@@ -124,7 +124,7 @@ export class FieldApi<
    * Resets this field to its default value and optionally resets metadata and errors.
    * @param options - Reset options for controlling what gets reset and what gets kept
    */
-  public reset = (options?: FieldResetOptions<Value>) => {
+  public reset = (options?: FormResetFieldOptions<Value>) => {
     return this.form.resetField(this.options.name, options);
   };
 
@@ -133,7 +133,7 @@ export class FieldApi<
    * @param errors - Array of validation errors to set
    * @param mode - How to handle existing errors: 'replace' (default), 'append', or 'keep'
    */
-  public setErrors = (errors: FormIssue[], mode?: FieldSetErrorsMode) => {
-    return this.form.setErrors(this.options.name, errors, mode);
+  public setErrors = (errors: FormIssue[], options?: FormSetErrorsOptions) => {
+    return this.form.setErrors(this.options.name, errors, options);
   };
 }

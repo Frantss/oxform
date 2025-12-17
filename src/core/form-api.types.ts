@@ -1,3 +1,4 @@
+import type { FormApi } from '#/core/form-api';
 import type { PartialDeep, SchemaLike, Simplify, StandardSchema } from '#/core/types';
 
 export type PersistedFormStatus = {
@@ -90,14 +91,56 @@ export type FieldChangeOptions = {
   };
 };
 
-export type FieldResetOptions<Value> = {
+export type FieldResetMeta = {
+  blurred?: boolean;
+  touched?: boolean;
+  dirty?: boolean;
+};
+
+export type FieldResetKeepOptions = {
+  errors?: boolean;
+  refs?: boolean;
+  meta?: boolean;
+};
+
+export type FormResetFieldOptions<Value> = {
   value?: Value;
-  meta?: Partial<PersistedFieldMeta>;
-  keep?: {
-    errors?: boolean;
-    refs?: boolean;
-    meta?: boolean;
-  };
+  meta?: FieldResetMeta;
+  keep?: FieldResetKeepOptions;
+};
+
+export type FormResetKeepOptions = {
+  /** Keep current field errors */
+  errors?: boolean;
+  /** Keep current references to html input elements */
+  refs?: boolean;
+  /** Keep current field metadata */
+  fields?: boolean;
+};
+
+export type FormResetOptions<Values> = {
+  values?: Values;
+  status?: Partial<PersistedFormStatus>;
+  keep?: FormResetKeepOptions;
 };
 
 export type FieldSetErrorsMode = 'replace' | 'append' | 'keep';
+
+export type FormSetErrorsOptions = {
+  mode?: FieldSetErrorsMode;
+};
+
+export type FormSubmitSuccessHandler<Schema extends SchemaLike> = (
+  data: StandardSchema.InferOutput<Schema>,
+  form: FormApi<Schema>,
+) => void | Promise<void>;
+
+export type FormSubmitErrorHandler<Schema extends SchemaLike> = (
+  issues: FormIssue[],
+  form: FormApi<Schema>,
+) => void | Promise<void>;
+
+export type FormSubmitHandlers<Schema extends SchemaLike> = {
+  onSuccess: FormSubmitSuccessHandler<Schema>;
+  onError?: FormSubmitErrorHandler<Schema>;
+};

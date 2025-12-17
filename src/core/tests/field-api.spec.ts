@@ -108,7 +108,7 @@ describe('FieldApi methods', () => {
       const { nameField } = setup();
 
       nameField.setErrors([mockError]);
-      nameField.setErrors([mockError2], 'append');
+      nameField.setErrors([mockError2], { mode: 'append' });
 
       expect(nameField.errors).toEqual([mockError, mockError2]);
     });
@@ -120,14 +120,14 @@ describe('FieldApi methods', () => {
       nameField.setErrors([mockError]);
 
       // Try to set new error with keep mode - should keep existing
-      nameField.setErrors([mockError2], 'keep');
+      nameField.setErrors([mockError2], { mode: 'keep' });
       expect(nameField.errors).toEqual([mockError]);
     });
 
     it('should set errors in keep mode when no existing errors', () => {
       const { nameField } = setup();
 
-      nameField.setErrors([mockError], 'keep');
+      nameField.setErrors([mockError], { mode: 'keep' });
       expect(nameField.errors).toEqual([mockError]);
     });
 

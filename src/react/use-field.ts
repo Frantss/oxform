@@ -1,9 +1,9 @@
 import { FieldApi, type FieldOptions, type FieldProps } from '#/core/field-api';
 import type {
   FieldMeta,
-  FieldResetOptions,
-  FieldSetErrorOptions,
   FormIssue,
+  FormResetFieldOptions,
+  FormSetErrorsOptions,
   ValidateOptions,
 } from '#/core/form-api.types';
 
@@ -21,8 +21,8 @@ export type UseFieldReturn<Value> = {
   focus: () => void;
   register: () => void;
   validate: (options?: ValidateOptions) => Promise<FormIssue[]>;
-  reset: (options?: FieldResetOptions<Value>) => void;
-  setErrors: (errors: FormIssue[], options?: FieldSetErrorOptions) => void;
+  reset: (options?: FormResetFieldOptions<Value>) => void;
+  setErrors: (errors: FormIssue[], options?: FormSetErrorsOptions) => void;
   props: FieldProps<Value>;
   meta: FieldMeta;
   errors: FormIssue[];

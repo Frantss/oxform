@@ -1,4 +1,5 @@
-import type { FormApi, FormStatus } from '#/core/form-api';
+import type { FormApi } from '#/core/form-api';
+import type { FormStatus } from '#/core/form-api.types';
 import type { SchemaLike } from '#/core/types';
 import { useStore } from '@tanstack/react-store';
 import { useMemo } from 'react';

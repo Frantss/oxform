@@ -2,17 +2,21 @@ import { defaultMeta, defaultStatus } from '#/core/field-api.constants';
 import type {
   FieldChangeOptions,
   FieldMeta,
-  FieldSetErrorsMode,
   FormBaseStore,
   FormIssue,
   FormOptions,
+  FormResetFieldOptions,
+  FormResetOptions,
+  FormSetErrorsOptions,
   FormStore,
+  FormSubmitErrorHandler,
+  FormSubmitSuccessHandler,
   PersistedFieldMeta,
   PersistedFormStatus,
   ValidateOptions,
 } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
-import type { SchemaLike, StandardSchema } from '#/core/types';
+import type { SchemaLike } from '#/core/types';
 import { get } from '#/utils/get';
 import { validate } from '#/utils/validate';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
@@ -98,49 +102,6 @@ export class FormApi<
     };
   }
 
-  public validate = async (field?: Field | Field[], options?: ValidateOptions) => {
-    const validator = options?.type ? this.validator[options.type] : this.options.schema;
-
-    if (!validator) return [];
-
-    this.setStatus({ validating: true });
-
-    const { issues: allIssues } = await validate(validator, this.store.state.values);
-    const fields = field ? (Array.isArray(field) ? field : [field]) : undefined;
-
-    const issues = (allIssues ?? []).filter(issue => {
-      const path = issue.path?.join('.') ?? 'root';
-      return !fields || fields.includes(path as never);
-    });
-
-    const errors = issues.reduce((acc, issue) => {
-      const path = issue.path?.join('.') ?? 'root';
-      return {
-        ...acc,
-        [path]: [...(acc[path] ?? []), issue],
-      };
-    }, {} as any);
-
-    this.persisted.setState(current => {
-      // existing errors from non validated fields
-      const existing = Object.fromEntries(
-        Object.entries(current.errors).filter(([key]) => !fields?.includes(key as never)),
-      );
-
-      return {
-        ...current,
-        errors: {
-          ...(fields ? existing : {}), // when validating a specific set of fields, keep the existing errors
-          ...errors,
-        },
-      };
-    });
-
-    this.setStatus({ validating: false });
-
-    return issues;
-  };
-
   private computeFieldMeta = (
     fieldName: string,
     persistedMeta: PersistedFieldMeta | undefined,
@@ -189,6 +150,50 @@ export class FormApi<
     });
   };
 
+  public validate = async (field?: Field | Field[], options?: ValidateOptions) => {
+    const validator = options?.type ? this.validator[options.type] : this.options.schema;
+
+    if (!validator) return [];
+
+    this.setStatus({ validating: true });
+
+    const { issues: allIssues } = await validate(validator, this.store.state.values);
+    const fields = field ? (Array.isArray(field) ? field : [field]) : undefined;
+
+    const issues = (allIssues ?? []).filter(issue => {
+      const path = issue.path?.join('.') ?? 'root';
+      return !fields || fields.includes(path as never);
+    });
+
+    const errors = issues.reduce((acc, issue) => {
+      const path = issue.path?.join('.') ?? 'root';
+      return {
+        ...acc,
+        [path]: [...(acc[path] ?? []), issue],
+      };
+    }, {} as any);
+
+    this.persisted.setState(current => {
+      const existing = { ...current.errors };
+
+      for (const key of fields ?? []) {
+        delete existing[key];
+      }
+
+      return {
+        ...current,
+        errors: {
+          ...(fields ? existing : {}), // when validating a specific set of fields, keep the existing errors
+          ...errors,
+        },
+      };
+    });
+
+    this.setStatus({ validating: false });
+
+    return issues;
+  };
+
   /**
    * Changes the value of a specific field with optional control over side effects.
    * @param name - The name of the field to change
@@ -196,7 +201,12 @@ export class FormApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public change = <Name extends Field>(name: Name, value: DeepValue<Values, Name>, options?: FieldChangeOptions) => {
-    const values = setPath(this.store.state.values as never, stringToPath(name) as never, value as never);
+    const values = setPath(this.store.state.values as never, stringToPath(name) as never, value as never) as Values;
+
+    const shouldDirty = options?.should?.dirty !== false;
+    const shouldTouch = options?.should?.touch !== false;
+    const shouldValidate = options?.should?.validate !== false;
+
     this.persisted.setState(current => {
       return {
         ...current,
@@ -204,11 +214,8 @@ export class FormApi<
       };
     });
 
-    const shouldDirty = options?.should?.dirty !== false;
-    const shouldTouch = options?.should?.touch !== false;
-    const shouldValidate = options?.should?.validate !== false;
-
     if (shouldValidate) void this.validate(name, { type: 'change' });
+
     batch(() => {
       if (shouldDirty) this.setFieldMeta(name, { dirty: true });
       if (shouldTouch) this.setFieldMeta(name, { touched: true });
@@ -262,15 +269,15 @@ export class FormApi<
   };
 
   public errors = <Name extends Field>(name: Name) => {
-    return this.store.state.errors[name as never] ?? [];
+    return this.store.state.errors[name] ?? [];
   };
 
-  public setErrors = <Name extends Field>(name: Name, errors: FormIssue[], mode: FieldSetErrorsMode = 'replace') => {
+  public setErrors = <Name extends Field>(name: Name, errors: FormIssue[], options?: FormSetErrorsOptions) => {
     this.persisted.setState(current => {
       const existing = current.errors[name] ?? [];
       let updated: FormIssue[];
 
-      switch (mode) {
+      switch (options?.mode) {
         case 'append':
           updated = [...existing, ...errors];
           break;
@@ -294,20 +301,16 @@ export class FormApi<
   };
 
   public submit =
-    (
-      onSuccess: (data: StandardSchema.InferOutput<Schema>, form: typeof this) => void | Promise<void>,
-      onError?: (issues: FormIssue[], form: typeof this) => void | Promise<void>,
-    ) =>
-    async () => {
+    (onSuccess: FormSubmitSuccessHandler<Schema>, onError?: FormSubmitErrorHandler<Schema>) => async () => {
       this.setStatus({ submitting: true, dirty: true });
 
       const issues = await this.validate(undefined, { type: 'submit' });
       const valid = issues.length === 0;
 
       if (valid) {
-        await onSuccess(this.store.state.values as never, this);
+        await onSuccess(this.store.state.values as never, this as never);
       } else {
-        await onError?.(issues, this);
+        await onError?.(issues, this as never);
       }
 
       this.setStatus({
@@ -317,18 +320,7 @@ export class FormApi<
       });
     };
 
-  public reset = (options?: {
-    values?: Values;
-    status?: Partial<PersistedFormStatus>;
-    keep?: {
-      /** Keep current field errors */
-      errors?: boolean;
-      /** Keep current references to html input elements */
-      refs?: boolean;
-      /** Keep current field metadata */
-      fields?: boolean;
-    };
-  }) => {
+  public reset = (options?: FormResetOptions<Values>) => {
     this.persisted.setState(current => {
       return {
         values: options?.values ?? this.options.defaultValues,
@@ -343,18 +335,7 @@ export class FormApi<
     });
   };
 
-  public resetField = <Name extends Field>(
-    name: Name,
-    options?: {
-      value?: DeepValue<Values, Name>;
-      meta?: Partial<PersistedFieldMeta>;
-      keep?: {
-        errors?: boolean;
-        refs?: boolean;
-        meta?: boolean;
-      };
-    },
-  ) => {
+  public resetField = <Name extends Field>(name: Name, options?: FormResetFieldOptions<DeepValue<Values, Name>>) => {
     const path = stringToPath(name as never);
     const defaultValue = get(this.options.defaultValues, path) as DeepValue<Values, Name>;
     const value = options?.value ?? defaultValue;
