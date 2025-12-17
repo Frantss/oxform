@@ -298,4 +298,47 @@ export class FormApi<
       };
     });
   };
+
+  public resetField = <Name extends Field>(
+    name: Name,
+    options?: {
+      value?: DeepValue<Values, Name>;
+      meta?: Partial<PersistedFieldMeta>;
+      keep?: {
+        errors?: boolean;
+        refs?: boolean;
+        meta?: boolean;
+      };
+    },
+  ) => {
+    const path = stringToPath(name as never);
+    const defaultValue = get(this.options.defaultValues, path) as DeepValue<Values, Name>;
+    const value = options?.value ?? defaultValue;
+    
+    this.persisted.setState(current => {
+      const values = setPath(current.values as never, path as any, value as never);
+      const fields = { ...current.fields };
+      const refs = { ...current.refs };
+      const errors = { ...current.errors };
+
+      if (options?.meta) {
+        const currentMeta = options?.keep?.meta ? (fields[name as string] ?? defaultMeta) : defaultMeta;
+        fields[name as string] = {
+          ...currentMeta,
+          ...options.meta,
+        };
+      } else if (!options?.keep?.meta) delete fields[name as string];
+
+      if (!options?.keep?.refs) delete refs[name as string];
+      if (!options?.keep?.errors) delete errors[name as string];
+
+      return {
+        ...current,
+        values,
+        fields,
+        refs,
+        errors,
+      };
+    });
+  };
 }
