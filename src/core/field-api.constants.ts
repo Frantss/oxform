@@ -1,4 +1,4 @@
-import type { PersistedFieldMeta, PersistedFormStatus } from '#/core/field-api.types';
+import type { PersistedFieldMeta, PersistedFormStatus } from '#/core/form-api.types';
 
 export const defaultMeta = {
   blurred: false,

@@ -1,5 +1,5 @@
-import type { FieldMeta, FormIssue } from '#/core/field-api.types';
 import type { FormApi } from '#/core/form-api';
+import type { FieldMeta, FormIssue } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { EventLike, SchemaLike, StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';

@@ -1,5 +1,5 @@
 import { FieldApi, type FieldOptions, type FieldProps } from '#/core/field-api';
-import type { FieldMeta, FormIssue } from '#/core/field-api.types';
+import type { FieldMeta, FormIssue } from '#/core/form-api.types';
 
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { EventLike, SchemaLike, StandardSchema } from '#/core/types';

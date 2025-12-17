@@ -7,7 +7,7 @@ import type {
   FormStore,
   PersistedFieldMeta,
   PersistedFormStatus,
-} from '#/core/field-api.types';
+} from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { SchemaLike, StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
@@ -24,12 +24,14 @@ export class FormApi<
   public options!: FormOptions<Schema>;
   private persisted: Store<FormBaseStore<Schema>>;
   public store!: Derived<FormStore<Schema>>;
+  private initialValues: Values;
 
   constructor(options: FormOptions<Schema>) {
     this.options = options;
+    this.initialValues = mergeDeep(options.defaultValues as never, options.values ?? {}) as Values;
 
     this.persisted = new Store<FormBaseStore<Schema>>({
-      values: mergeDeep(options.defaultValues as never, options.values ?? {}),
+      values: this.initialValues,
       fields: {},
       refs: {},
       status: defaultStatus,
@@ -45,20 +47,7 @@ export class FormApi<
         const dirty = Object.values(persisted.fields).some(meta => meta.dirty);
         const fields = Object.fromEntries(
           Object.entries(persisted.fields).map(([key, meta]) => {
-            const path = stringToPath(key);
-            const value = get(persisted.values, path);
-            const defaultValue = get(this.options.defaultValues, path);
-            const invalid = persisted.errors[key]?.length > 0;
-
-            return [
-              key,
-              {
-                ...meta,
-                default: isDeepEqual(value, defaultValue),
-                pristine: !meta.dirty,
-                valid: !invalid,
-              } satisfies FieldMeta,
-            ];
+            return [key, this.computeFieldMeta(key, meta, persisted.values as Values, persisted.errors)];
           }),
         );
 
@@ -149,6 +138,26 @@ export class FormApi<
     return issues;
   };
 
+  private computeFieldMeta = (
+    fieldName: string,
+    persistedMeta: PersistedFieldMeta | undefined,
+    values: Values,
+    errors: Record<string, FormIssue[]>,
+  ): FieldMeta => {
+    const path = stringToPath(fieldName);
+    const value = get(values as never, path);
+    const defaultValue = get(this.options.defaultValues, path);
+    const invalid = errors[fieldName]?.length > 0;
+    const baseMeta = persistedMeta ?? defaultMeta;
+
+    return {
+      ...baseMeta,
+      default: isDeepEqual(value, defaultValue),
+      pristine: !baseMeta.dirty,
+      valid: !invalid,
+    } satisfies FieldMeta;
+  };
+
   private setFieldMeta = (name: string, meta: Partial<PersistedFieldMeta>) => {
     this.persisted.setState(current => {
       return {
@@ -178,7 +187,7 @@ export class FormApi<
   };
 
   public change = <Name extends Field>(name: Name, value: DeepValue<Values, Name>) => {
-    const values = setPath(this.store.state.values as never, stringToPath(name as never) as any, value as never);
+    const values = setPath(this.store.state.values as never, stringToPath(name) as never, value as never);
     this.persisted.setState(current => {
       return {
         ...current,
@@ -209,11 +218,15 @@ export class FormApi<
   };
 
   public get = <Name extends Field>(name: Name) => {
-    return get(this.store.state.values as never, stringToPath(name as never)) as DeepValue<Values, Name>;
+    return get(this.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
   public meta = <Name extends Field>(name: Name) => {
-    return this.store.state.fields[name as never] ?? defaultMeta;
+    const fieldMeta = this.store.state.fields[name];
+
+    if (fieldMeta) return fieldMeta;
+
+    return this.computeFieldMeta(name, undefined, this.store.state.values as Values, this.store.state.errors);
   };
 
   public register = <Name extends Field>(name: Name) => {
@@ -259,4 +272,30 @@ export class FormApi<
         successful: valid,
       });
     };
+
+  public reset = (options?: {
+    values?: Values;
+    status?: Partial<PersistedFormStatus>;
+    keep?: {
+      /** Keep current field errors */
+      errors?: boolean;
+      /** Keep current references to html input elements */
+      refs?: boolean;
+      /** Keep current field metadata */
+      fields?: boolean;
+    };
+  }) => {
+    this.persisted.setState(current => {
+      return {
+        values: options?.values ?? this.options.defaultValues,
+        fields: options?.keep?.fields ? current.fields : {},
+        refs: options?.keep?.refs ? current.refs : {},
+        errors: options?.keep?.errors ? current.errors : {},
+        status: {
+          ...defaultStatus,
+          ...options?.status,
+        },
+      };
+    });
+  };
 }
