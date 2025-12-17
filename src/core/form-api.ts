@@ -7,6 +7,7 @@ import type {
   FormStore,
   PersistedFieldMeta,
   PersistedFormStatus,
+  ValidateOptions
 } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { SchemaLike, StandardSchema } from '#/core/types';
@@ -95,7 +96,7 @@ export class FormApi<
     };
   }
 
-  public validate = async (field?: Field | Field[], options?: { type: 'change' | 'submit' | 'blur' | 'focus' }) => {
+  public validate = async (field?: Field | Field[], options?: ValidateOptions) => {
     const validator = options?.type ? this.validator[options.type] : this.options.schema;
 
     if (!validator) return [];

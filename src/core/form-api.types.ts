@@ -72,3 +72,21 @@ export type FormOptions<Schema extends SchemaLike> = {
 };
 
 export type FormIssue = StandardSchema.Issue;
+
+export type ValidationType = 'change' | 'submit' | 'blur' | 'focus';
+
+export type ValidateOptions = {
+  type: ValidationType;
+};
+
+export type FieldResetOptions<Value> = {
+  value?: Value;
+  meta?: Partial<PersistedFieldMeta>;
+  keep?: {
+    errors?: boolean;
+    refs?: boolean;
+    meta?: boolean;
+  };
+};
+
+export type FieldSetErrorsMode = 'replace' | 'append' | 'keep';

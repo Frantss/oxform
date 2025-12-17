@@ -1,5 +1,11 @@
 import type { FormApi } from '#/core/form-api';
-import type { FieldMeta, FormIssue } from '#/core/form-api.types';
+import type {
+  FieldMeta,
+  FieldResetOptions,
+  FieldSetErrorsMode,
+  FormIssue,
+  ValidateOptions
+} from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { EventLike, SchemaLike, StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
@@ -96,4 +102,30 @@ export class FieldApi<
   public change = (value: Value) => this.form.change(this.options.name, value);
 
   public register = () => this.form.register(this.options.name);
+
+  /**
+   * Validates this specific field using the specified validation type.
+   * @param options - Optional validation options specifying the validation type ('change' | 'submit' | 'blur' | 'focus')
+   * @returns Promise resolving to an array of validation issues for this field
+   */
+  public validate = (options?: ValidateOptions) => {
+    return this.form.validate(this.options.name, options);
+  }
+
+  /**
+   * Resets this field to its default value and optionally resets metadata and errors.
+   * @param options - Reset options for controlling what gets reset and what gets kept
+   */
+  public reset = (options?: FieldResetOptions<Value>) => {
+    return this.form.resetField(this.options.name, options);
+  }
+
+  /**
+   * Sets validation errors for this specific field.
+   * @param errors - Array of validation errors to set
+   * @param mode - How to handle existing errors: 'replace' (default), 'append', or 'keep'
+   */
+  public setErrors = (errors: FormIssue[], mode?: FieldSetErrorsMode) => {
+    return this.form.setErrors(this.options.name, errors, mode);
+  }
 }
