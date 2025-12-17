@@ -76,7 +76,18 @@ export type FormIssue = StandardSchema.Issue;
 export type ValidationType = 'change' | 'submit' | 'blur' | 'focus';
 
 export type ValidateOptions = {
-  type: ValidationType;
+  type?: ValidationType;
+};
+
+export type FieldChangeOptions = {
+  should?: {
+    /** Whether to validate the field after changing its value. Defaults to true. */
+    validate?: boolean;
+    /** Whether to mark the field as dirty after changing its value. Defaults to true. */
+    dirty?: boolean;
+    /** Whether to mark the field as touched after changing its value. Defaults to true. */
+    touch?: boolean;
+  };
 };
 
 export type FieldResetOptions<Value> = {
@@ -90,7 +101,3 @@ export type FieldResetOptions<Value> = {
 };
 
 export type FieldSetErrorsMode = 'replace' | 'append' | 'keep';
-
-export type FieldSetErrorOptions = {
-  mode?: FieldSetErrorsMode;
-}

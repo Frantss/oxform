@@ -1,21 +1,22 @@
 import { defaultMeta, defaultStatus } from '#/core/field-api.constants';
 import type {
+  FieldChangeOptions,
   FieldMeta,
-  FieldSetErrorOptions,
+  FieldSetErrorsMode,
   FormBaseStore,
   FormIssue,
   FormOptions,
   FormStore,
   PersistedFieldMeta,
   PersistedFormStatus,
-  ValidateOptions
+  ValidateOptions,
 } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
 import type { SchemaLike, StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
 import { validate } from '#/utils/validate';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { Derived, Store } from '@tanstack/store';
+import { batch, Derived, Store } from '@tanstack/store';
 import { isDeepEqual, isFunction, mergeDeep, setPath, stringToPath } from 'remeda';
 
 export class FormApi<
@@ -188,7 +189,13 @@ export class FormApi<
     });
   };
 
-  public change = <Name extends Field>(name: Name, value: DeepValue<Values, Name>) => {
+  /**
+   * Changes the value of a specific field with optional control over side effects.
+   * @param name - The name of the field to change
+   * @param value - The new value to set for the field
+   * @param options - Optional configuration for controlling validation, dirty state, and touched state
+   */
+  public change = <Name extends Field>(name: Name, value: DeepValue<Values, Name>, options?: FieldChangeOptions) => {
     const values = setPath(this.store.state.values as never, stringToPath(name) as never, value as never);
     this.persisted.setState(current => {
       return {
@@ -197,8 +204,15 @@ export class FormApi<
       };
     });
 
-    this.setFieldMeta(name as never, { dirty: true, touched: true });
-    void this.validate(name as never, { type: 'change' });
+    const shouldDirty = options?.should?.dirty !== false;
+    const shouldTouch = options?.should?.touch !== false;
+    const shouldValidate = options?.should?.validate !== false;
+
+    if (shouldValidate) void this.validate(name, { type: 'change' });
+    batch(() => {
+      if (shouldDirty) this.setFieldMeta(name, { dirty: true });
+      if (shouldTouch) this.setFieldMeta(name, { touched: true });
+    });
   };
 
   public focus = <Name extends Field>(name: Name) => {
@@ -251,16 +265,12 @@ export class FormApi<
     return this.store.state.errors[name as never] ?? [];
   };
 
-  public setErrors = <Name extends Field>(
-    name: Name,
-    errors: FormIssue[],
-    options?: FieldSetErrorOptions,
-  ) => {
+  public setErrors = <Name extends Field>(name: Name, errors: FormIssue[], mode: FieldSetErrorsMode = 'replace') => {
     this.persisted.setState(current => {
       const existing = current.errors[name] ?? [];
       let updated: FormIssue[];
 
-      switch (options?.mode) {
+      switch (mode) {
         case 'append':
           updated = [...existing, ...errors];
           break;
