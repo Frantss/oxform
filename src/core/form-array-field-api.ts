@@ -25,4 +25,13 @@ export class FormArrayFieldApi<
     const current = this.field.get(name) as any[];
     return this.field.change(name, [...(current ?? []), value] as never, options);
   };
+
+  public prepend = <Name extends ArrayField>(
+    name: Name,
+    value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
+    options?: FieldChangeOptions,
+  ) => {
+    const current = this.field.get(name) as any[];
+    return this.field.change(name, [value, ...(current ?? [])] as never, options);
+  };
 }
