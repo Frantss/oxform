@@ -23,7 +23,9 @@ export class FormArrayFieldApi<
     options?: FieldChangeOptions,
   ) => {
     const current = this.field.get(name) as any[];
-    return this.field.change(name, [...(current ?? []), value] as never, options);
+    const array = current ?? [];
+
+    return this.field.change(name, [...array, value] as never, options);
   };
 
   public prepend = <Name extends ArrayField>(
@@ -32,6 +34,25 @@ export class FormArrayFieldApi<
     options?: FieldChangeOptions,
   ) => {
     const current = this.field.get(name) as any[];
-    return this.field.change(name, [value, ...(current ?? [])] as never, options);
+    const array = current ?? [];
+
+    return this.field.change(name, [value, ...array] as never, options);
+  };
+
+  public insert = <Name extends ArrayField>(
+    name: Name,
+    index: number,
+    value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
+    options?: FieldChangeOptions,
+  ) => {
+    const current = this.field.get(name) as any[];
+    const array = current ?? [];
+
+    if (index < 0) return this.prepend(name, value, options);
+    if (index >= array.length) return this.append(name, value, options);
+
+    const updated = [...array.slice(0, index), value, ...array.slice(index)];
+
+    return this.field.change(name, updated as never, options);
   };
 }
