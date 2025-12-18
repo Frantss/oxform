@@ -1,5 +1,5 @@
 import type { FormApi } from '#/core/form-api';
-import type { PartialDeep, SchemaLike, Simplify, StandardSchema } from '#/core/types';
+import type { PartialDeep, Simplify, StandardSchema } from '#/core/types';
 
 export type PersistedFormStatus = {
   submits: number;
@@ -31,7 +31,7 @@ export type FieldMeta = Simplify<
   }
 >;
 
-export type FormBaseStore<Schema extends SchemaLike> = {
+export type FormBaseStore<Schema extends StandardSchema> = {
   values: StandardSchema.InferInput<Schema>;
   fields: Record<string, PersistedFieldMeta>;
   refs: Record<string, HTMLElement | null>;
@@ -39,7 +39,7 @@ export type FormBaseStore<Schema extends SchemaLike> = {
   errors: Record<string, FormIssue[]>;
 };
 
-export type FormStore<Schema extends SchemaLike> = {
+export type FormStore<Schema extends StandardSchema> = {
   values: StandardSchema.InferInput<Schema>;
   fields: Record<string, FieldMeta>;
   refs: Record<string, HTMLElement | null>;
@@ -54,13 +54,13 @@ export type FieldControl<Value> = {
   register: (element: HTMLElement | null) => void;
 };
 
-type FormValidatorSchema<Schema extends SchemaLike> = NoInfer<
+type FormValidatorSchema<Schema extends StandardSchema> = NoInfer<
   StandardSchema<PartialDeep<StandardSchema.InferInput<Schema>>>
 >;
-type FormValidatorFunction<Schema extends SchemaLike> = (store: FormStore<Schema>) => FormValidatorSchema<Schema>;
-type FormValidator<Schema extends SchemaLike> = FormValidatorSchema<Schema> | FormValidatorFunction<Schema>;
+type FormValidatorFunction<Schema extends StandardSchema> = (store: FormStore<Schema>) => FormValidatorSchema<Schema>;
+type FormValidator<Schema extends StandardSchema> = FormValidatorSchema<Schema> | FormValidatorFunction<Schema>;
 
-export type FormOptions<Schema extends SchemaLike> = {
+export type FormOptions<Schema extends StandardSchema> = {
   schema: Schema;
   values?: StandardSchema.InferInput<Schema>;
   defaultValues: StandardSchema.InferInput<Schema>;
@@ -130,17 +130,17 @@ export type FormSetErrorsOptions = {
   mode?: FieldSetErrorsMode;
 };
 
-export type FormSubmitSuccessHandler<Schema extends SchemaLike> = (
+export type FormSubmitSuccessHandler<Schema extends StandardSchema> = (
   data: StandardSchema.InferOutput<Schema>,
   form: FormApi<Schema>,
 ) => void | Promise<void>;
 
-export type FormSubmitErrorHandler<Schema extends SchemaLike> = (
+export type FormSubmitErrorHandler<Schema extends StandardSchema> = (
   issues: FormIssue[],
   form: FormApi<Schema>,
 ) => void | Promise<void>;
 
-export type FormSubmitHandlers<Schema extends SchemaLike> = {
+export type FormSubmitHandlers<Schema extends StandardSchema> = {
   onSuccess: FormSubmitSuccessHandler<Schema>;
   onError?: FormSubmitErrorHandler<Schema>;
 };

@@ -2,13 +2,13 @@ import { defaultMeta } from '#/core/field-api.constants';
 import type { FieldChangeOptions, FormIssue, FormResetFieldOptions, FormSetErrorsOptions } from '#/core/form-api.types';
 import type { FormContextApi } from '#/core/form-context-api';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
-import type { SchemaLike, StandardSchema } from '#/core/types';
+import type { StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
 import { batch } from '@tanstack/store';
 import { setPath, stringToPath } from 'remeda';
 
 export class FormFieldApi<
-  Schema extends SchemaLike,
+  Schema extends StandardSchema,
   Values extends StandardSchema.InferInput<Schema> = StandardSchema.InferInput<Schema>,
   Field extends DeepKeys<Values> = DeepKeys<Values>,
 > {

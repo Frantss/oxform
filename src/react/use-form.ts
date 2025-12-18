@@ -1,12 +1,12 @@
 import { FormApi } from '#/core/form-api';
 import type { FormOptions } from '#/core/form-api.types';
-import type { SchemaLike } from '#/core/types';
+import type { StandardSchema } from '#/core/types';
 import { useIsomorphicLayoutEffect } from '#/react/use-isomorphic-layout-effect';
 import { useState } from 'react';
 
-export type UseFormReturn<Schema extends SchemaLike> = FormApi<Schema>;
+export type UseFormReturn<Schema extends StandardSchema> = FormApi<Schema>;
 
-export const useForm = <Schema extends SchemaLike>(options: FormOptions<Schema>) => {
+export const useForm = <Schema extends StandardSchema>(options: FormOptions<Schema>) => {
   const [api] = useState(() => {
     return new FormApi({ ...options });
   });

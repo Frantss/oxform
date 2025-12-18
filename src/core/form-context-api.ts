@@ -10,16 +10,15 @@ import type {
   ValidateOptions,
 } from '#/core/form-api.types';
 import type { DeepKeys } from '#/core/more-types';
-import type { SchemaLike } from '#/core/types';
+import type { StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
 import { validate } from '#/utils/validate';
-import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { Derived, Store } from '@tanstack/store';
 import { isDeepEqual, isFunction, mergeDeep, stringToPath } from 'remeda';
 
 export class FormContextApi<
-  Schema extends SchemaLike,
-  Values extends StandardSchemaV1.InferInput<Schema> = StandardSchemaV1.InferInput<Schema>,
+  Schema extends StandardSchema,
+  Values extends StandardSchema.InferInput<Schema> = StandardSchema.InferInput<Schema>,
   Field extends DeepKeys<Values> = DeepKeys<Values>,
 > {
   public options!: FormOptions<Schema>;

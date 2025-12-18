@@ -1,12 +1,12 @@
 import type { FormApi } from '#/core/form-api';
 import type { FormStatus } from '#/core/form-api.types';
-import type { SchemaLike } from '#/core/types';
+import type { StandardSchema } from '#/core/types';
 import { useStore } from '@tanstack/react-store';
 import { useMemo } from 'react';
 
 export type UseFormStatusReturn = FormStatus;
 
-export const useFormStatus = <Schema extends SchemaLike>({ form }: { form: FormApi<Schema> }) => {
+export const useFormStatus = <Schema extends StandardSchema>({ form }: { form: FormApi<Schema> }) => {
   const dirty = useStore(form.store, state => state.status.dirty);
   const valid = useStore(form.store, state => state.status.valid);
   const submitting = useStore(form.store, state => state.status.submitting);

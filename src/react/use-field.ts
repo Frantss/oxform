@@ -8,7 +8,7 @@ import type {
 } from '#/core/form-api.types';
 
 import type { DeepKeys, DeepValue } from '#/core/more-types';
-import type { EventLike, SchemaLike, StandardSchema } from '#/core/types';
+import type { EventLike, StandardSchema } from '#/core/types';
 import { useIsomorphicLayoutEffect } from '#/react/use-isomorphic-layout-effect';
 import { useStore } from '@tanstack/react-store';
 import { useCallback, useMemo, useState } from 'react';
@@ -28,7 +28,7 @@ export type UseFieldReturn<Value> = {
   errors: FormIssue[];
 };
 
-export const useField = <Schema extends SchemaLike, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>(
+export const useField = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>(
   options: FieldOptions<Schema, Name>,
 ) => {
   type Value = DeepValue<StandardSchema.InferInput<Schema>, Name>;

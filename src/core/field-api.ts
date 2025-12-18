@@ -8,14 +8,13 @@ import type {
   ValidateOptions,
 } from '#/core/form-api.types';
 import type { DeepKeys, DeepValue } from '#/core/more-types';
-import type { EventLike, SchemaLike, StandardSchema } from '#/core/types';
+import type { EventLike, StandardSchema } from '#/core/types';
 import { get } from '#/utils/get';
-import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { Derived } from '@tanstack/store';
 import { stringToPath } from 'remeda';
 
 export type FieldOptions<
-  Schema extends SchemaLike,
+  Schema extends StandardSchema,
   Name extends DeepKeys<StandardSchema.InferInput<Schema>> = DeepKeys<StandardSchema.InferInput<Schema>>,
 > = {
   form: FormApi<Schema>;
@@ -39,9 +38,9 @@ export type FieldProps<Value> = {
 };
 
 export class FieldApi<
-  Schema extends SchemaLike,
-  Name extends DeepKeys<StandardSchemaV1.InferInput<Schema>>,
-  in out Value extends DeepValue<StandardSchemaV1.InferInput<Schema>, Name>,
+  Schema extends StandardSchema,
+  Name extends DeepKeys<StandardSchema.InferInput<Schema>>,
+  in out Value extends DeepValue<StandardSchema.InferInput<Schema>, Name>,
 > {
   public options: FieldOptions<Schema, Name>;
   public form: FormApi<Schema>;

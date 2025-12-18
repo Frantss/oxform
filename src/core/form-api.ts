@@ -5,23 +5,20 @@ import type {
   FormSubmitErrorHandler,
   FormSubmitSuccessHandler,
 } from '#/core/form-api.types';
+import { FormArrayFieldApi } from '#/core/form-array-field-api';
 import { FormContextApi } from '#/core/form-context-api';
 import { FormFieldApi } from '#/core/form-field-api';
-import type { DeepKeys } from '#/core/more-types';
-import type { SchemaLike } from '#/core/types';
-import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardSchema } from '#/core/types';
 
-export class FormApi<
-  Schema extends SchemaLike,
-  Values extends StandardSchemaV1.InferInput<Schema> = StandardSchemaV1.InferInput<Schema>,
-  Field extends DeepKeys<Values> = DeepKeys<Values>,
-> {
-  private context: FormContextApi<Schema, Values, Field>;
-  public field: FormFieldApi<Schema, Values, Field>;
+export class FormApi<Schema extends StandardSchema> {
+  private context: FormContextApi<Schema>;
+  public field: FormFieldApi<Schema>;
+  public array: FormArrayFieldApi<Schema>;
 
   constructor(options: FormOptions<Schema>) {
     this.context = new FormContextApi(options);
-    this.field = new FormFieldApi<Schema, Values, Field>(this.context as never);
+    this.field = new FormFieldApi(this.context);
+    this.array = new FormArrayFieldApi(this.field);
   }
 
   public '~mount' = () => {
@@ -30,7 +27,7 @@ export class FormApi<
     return unsubscribe;
   };
 
-  public '~update' = (options: FormOptions<Schema>) => {
+  public '~update' = (options: FormOptions<NoInfer<Schema>>) => {
     this.context.options = options;
   };
 
@@ -55,7 +52,8 @@ export class FormApi<
   }
 
   public submit =
-    (onSuccess: FormSubmitSuccessHandler<Schema>, onError?: FormSubmitErrorHandler<Schema>) => async () => {
+    (onSuccess: FormSubmitSuccessHandler<NoInfer<Schema>>, onError?: FormSubmitErrorHandler<NoInfer<Schema>>) =>
+    async () => {
       this.context.setStatus({ submitting: true, dirty: true });
 
       const issues = await this.context.validate(undefined, { type: 'submit' });
@@ -74,7 +72,7 @@ export class FormApi<
       });
     };
 
-  public reset = (options?: FormResetOptions<Values>) => {
+  public reset = (options?: FormResetOptions<StandardSchema.InferInput<NoInfer<Schema>>>) => {
     this.context.persisted.setState(current => {
       return {
         values: options?.values ?? this.context.options.defaultValues,
