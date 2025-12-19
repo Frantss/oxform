@@ -27,9 +27,9 @@ export class FormContextApi<
 
   constructor(options: FormOptions<Schema>) {
     const values = mergeDeep(options.defaultValues as never, options.values ?? {}) as Values;
-    
+
     this.options = options;
-    
+
     this.persisted = new Store<FormBaseStore<Schema>>({
       values,
       fields: {},
@@ -121,9 +121,26 @@ export class FormContextApi<
     });
   };
 
+  public resetFieldMeta = (name: string) => {
+    this.persisted.setState(current => {
+      const fields = { ...current.fields };
+      const all = Object.keys(current.fields);
+      const affected = all.filter(key => key.startsWith(name));
+
+      for (const key of affected) {
+        delete fields[key];
+      }
+
+      return {
+        ...current,
+        fields,
+      };
+    });
+  };
+
   public recomputeFieldMeta = (name: string) => {
     this.persisted.setState(current => {
-      const related: string[] = (this.options.related?.[name as never]) ?? [];
+      const related: string[] = this.options.related?.[name as never] ?? [];
       const all = Object.keys(current.fields);
       const affected = all.filter(key => key.startsWith(name) || related.includes(key));
       const updated = affected.reduce(

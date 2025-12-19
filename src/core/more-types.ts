@@ -27,7 +27,7 @@ export interface AnyDeepKeyAndValue<K extends string = string, V extends any = a
 }
 
 export type ArrayAccessor<TParent extends AnyDeepKeyAndValue> =
-  `${TParent['key'] extends never ? '' : TParent['key']}[${number}]`;
+  `${TParent['key'] extends never ? '' : TParent['key']}.${number}`;
 
 export interface ArrayDeepKeyAndValue<
   in out TParent extends AnyDeepKeyAndValue,
