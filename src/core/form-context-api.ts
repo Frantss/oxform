@@ -184,15 +184,22 @@ export class FormContextApi<
 
     const { issues: allIssues } = await validate(validator, this.store.state.values);
 
+    if (!allIssues) {
+      this.persisted.setState(current => {
+        return { ...current, errors: {}, status: { ...current.status, validating: false } };
+      });
+      
+      return [];
+    }
+
     const fields = field ? (Array.isArray(field) ? field : [field]) : undefined;
     const related: string[] = fields?.flatMap(field => this.options.related?.[field as never] ?? []) ?? [];
-    const affected = [...fields ?? [], ...related];
+    const affected = [...(fields ?? []), ...related];
 
-    const issues = (allIssues ?? []).filter(issue => {
+    const issues = allIssues.filter(issue => {
       const path = issue.path?.join('.') ?? 'root';
       return !fields || affected.some(key => path.startsWith(key));
     });
-
 
     const errors = issues.reduce((acc, issue) => {
       const path = issue.path?.join('.') ?? 'root';
@@ -201,7 +208,6 @@ export class FormContextApi<
         [path]: [...(acc[path] ?? []), issue],
       };
     }, {} as any);
-
 
     this.persisted.setState(current => {
       const existing = { ...current.errors };

@@ -53,7 +53,7 @@ it("should update the form's values on change", async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'Jane');
 
-  await expect.poll(() => form.store.state.values.name).toBe('Jane');
+  expect(form.store.state.values.name).toBe('Jane');
 });
 
 it('should mark the field as touched on focus', async () => {

@@ -66,7 +66,6 @@ export class FormArrayFieldApi<
         fields,
       };
     });
-
   };
 
   public append = <Name extends ArrayField>(
@@ -169,22 +168,59 @@ export class FormArrayFieldApi<
     value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
     options?: FieldChangeOptions,
   ) => {
-    this.field.change(name, current => {
-      const array = (current as any[]) ?? [];
-      const position = Math.max(Math.min(index, array.length - 1), 0);
+    this.field.change(
+      name,
+      current => {
+        const array = (current as any[]) ?? [];
+        const position = Math.max(Math.min(index, array.length - 1), 0);
 
-      return [
-        ...array.slice(0, position),
-        update(value, current as never),
-        ...array.slice(position + 1),
-      ] as never;
-    }, options);
+        return [...array.slice(0, position), update(value, current as never), ...array.slice(position + 1)] as never;
+      },
+      options,
+    );
 
     this.context.resetFieldMeta(`${name}.${index}`);
-    this.context.setFieldMeta(`${name}.${index}`, { dirty: options?.should?.dirty !== false, 
-      touched: options?.should?.touch !== false
-      });
+    this.context.setFieldMeta(`${name}.${index}`, {
+      dirty: options?.should?.dirty !== false,
+      touched: options?.should?.touch !== false,
+    });
   };
+
+  public remove<Name extends ArrayField>(name: Name, index: number, options?: FieldChangeOptions) {
+    let position = index;
+
+    this.field.change(
+      name,
+      current => {
+        const array = (current as any[]) ?? [];
+        position = Math.max(Math.min(index, array.length - 1), 0);
+
+        return [...array.slice(0, position), ...array.slice(position + 1)] as never;
+      },
+      { ...options, should: { ...options?.should, validate: false } },
+    );
+
+    this.context.persisted.setState(current => {
+      const fields = { ...current.fields };
+      const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
+      const length = value?.length ?? 0;
+
+      for (let i = position; i < length; i++) {
+        const moving = current.fields[`${name}.${i + 1}`];
+        fields[`${name}.${i}`] = moving ?? defaultMeta;
+      }
+
+      delete fields[`${name}.${length}`];
+
+      return {
+        ...current,
+        fields,
+      };
+    });
+
+    const shouldValidate = options?.should?.validate !== false;
+    if (shouldValidate) void this.context.validate(name, { type: 'change' });
+  }
 
   public replace<Name extends ArrayField>(
     name: Name,

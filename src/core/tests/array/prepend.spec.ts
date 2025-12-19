@@ -1,5 +1,6 @@
 import { FormApi } from '#/core/form-api';
 import type { FormOptions } from '#/core/form-api.types';
+import { sleep } from '#/utils/testing/sleep';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
@@ -116,11 +117,13 @@ describe('meta handling', () => {
 
 describe('validation', () => {
   it('should validate a field', async () => {
-    const { form } = setup({validate: { change: schema }});
+    const { form } = setup({ validate: { change: schema } });
 
     form.array.prepend('array', 0 as any);
 
-    await expect.poll(() => form.field.meta('array.0').valid).toBe(false);
+    await sleep(0);
+
+    expect(form.field.meta('array.0').valid).toBe(false);
     expect(form.field.errors('array.0')).toHaveLength(1);
   });
 

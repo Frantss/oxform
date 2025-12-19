@@ -182,7 +182,7 @@ it('marks the form as validating when submit is called and schema is async', asy
 
   const submit = form.submit(submitting.fn)();
 
-  await expect.poll(() => form.store.state.status.validating).toBe(true);
+  expect(form.store.state.status.validating).toBe(true);
 
   await validating.release();
   await submitting.release();

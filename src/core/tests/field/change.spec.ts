@@ -1,5 +1,6 @@
 import { FormApi } from '#/core/form-api';
 import type { FormOptions } from '#/core/form-api.types';
+import { sleep } from '#/utils/testing/sleep';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
@@ -193,8 +194,10 @@ describe('if form.options.validate.change is provided ', () => {
 
     form.field.change('string', 2 as any);
 
+    await sleep(0);
+
     expect(form.field.get('string')).toBe(2);
-    await expect.poll(() => form.field.meta('string').valid).toBe(false);
+    expect(form.field.meta('string').valid).toBe(false);
     expect(form.field.errors('string')).toHaveLength(1);
   });
 
@@ -214,9 +217,10 @@ describe('if form.options.validate.change is not provided ', () => {
     const { form } = setup();
 
     form.field.change('string', 2 as any);
+    await sleep(0);
 
     expect(form.field.get('string')).toBe(2);
-    await expect.poll(() => form.field.meta('string').valid).toBe(true);
+    expect(form.field.meta('string').valid).toBe(true);
     expect(form.field.errors('string')).toHaveLength(0);
   });
 });
