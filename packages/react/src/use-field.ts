@@ -5,12 +5,15 @@ import { useFieldApi } from '#use-field-api';
 import { useStore } from '@tanstack/react-store';
 import type { DeepKeys, DeepValue } from 'oxform-core';
 import type { StandardSchema } from 'oxform-core/schema';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
-export type UseFieldReturn<Value> = Omit<FieldApi<any, any, Value>, '~mount' | '~update' | 'state'> & {
+export type UseFieldReturn<
+  Schema extends StandardSchema,
+  Name extends DeepKeys<StandardSchema.InferInput<Schema>> = DeepKeys<StandardSchema.InferInput<Schema>>,
+  Value extends DeepValue<StandardSchema.InferInput<Schema>, Name> = DeepValue<StandardSchema.InferInput<Schema>, Name>,
+> = Omit<FieldApi<Schema, Name, Value>, '~mount' | '~update' | 'state'> & {
   state: FieldStore<Value>;
   props: {
-    defaultValue: Value;
     value: Value;
     ref: (element: HTMLElement | null) => void;
     onChange: (event: EventLike) => void;
@@ -56,12 +59,11 @@ export const useField = <Schema extends StandardSchema, Name extends DeepKeys<St
 
       props: {
         value,
-        defaultValue,
         onBlur: api.blur,
         onFocus: api.focus,
-        onChange: useCallback((event: EventLike) => api.change(event.target?.value), []),
+        onChange: (event: EventLike) => api.change(event.target?.value),
         ref: api.register,
       },
-    } satisfies UseFieldReturn<Value> as UseFieldReturn<Value>;
+    } satisfies UseFieldReturn<Schema, Name, Value> as UseFieldReturn<Schema, Name, Value>;
   }, [api, errors, value, defaultValue, dirty, touched, blurred, pristine, valid, isDefault]);
 };

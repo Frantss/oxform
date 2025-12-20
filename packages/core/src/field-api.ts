@@ -12,7 +12,7 @@ import type { StandardSchema } from '#types';
 import { get } from '#utils/get';
 import type { Updater } from '#utils/update';
 import { Derived } from '@tanstack/store';
-import { stringToPath } from 'remeda';
+import { isDeepEqual, stringToPath } from 'remeda';
 
 export type FieldOptions<
   Schema extends StandardSchema,
@@ -44,18 +44,24 @@ export class FieldApi<
 
     this._store = new Derived<FieldStore<Value>>({
       deps: [this.form.store()],
-      fn: () => {
+      fn: ({ prevVal }) => {
+        const previous = prevVal as FieldStore<Value> | undefined;
+
         const value = this.form.field.get(this._options.name as never) as Value;
         const defaultValue = get(this.form.options().defaultValues as never, stringToPath(this._options.name)) as Value;
         const meta = this.form.field.meta(this._options.name as never);
         const errors = this.form.field.errors(this._options.name as never);
 
-        return {
+        const updated = {
           value,
           defaultValue,
           meta,
           errors,
         };
+
+        if (previous && isDeepEqual(previous, updated)) return previous;
+
+        return updated;
       },
     });
   }

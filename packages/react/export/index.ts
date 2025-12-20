@@ -1,9 +1,9 @@
-export { ArrayField, type ArrayFieldProps } from '#array-field';
-export { Field, type FieldProps } from '#field';
-export { Subscribe, type SubscribeProps } from '#subscribe';
 export { useArrayField, type UseArrayFieldReturn } from '#use-array-field';
 export { useField, type UseFieldReturn } from '#use-field';
 export { useFieldApi, type UseFieldApiReturn } from '#use-field-api';
 export { useForm, type UseFormReturn } from '#use-form';
 export { useFormStatus, type UseFormStatusProps, type UseFormStatusReturn } from '#use-form-status';
 export { useSubscribe } from '#use-subscribe';
+export { ArrayField, type ArrayFieldProps } from '../src/array-field';
+export { Field, type FieldProps } from '../src/field';
+export { Subscribe, type SubscribeProps } from '../src/subscribe';

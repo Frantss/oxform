@@ -9,7 +9,7 @@ export type FieldProps<
 > = FieldOptions<Schema, Name> & {
   children:
     | React.ReactNode
-    | ((field: UseFieldReturn<DeepValue<StandardSchema.InferInput<Schema>, Name>>) => React.ReactNode);
+    | ((field: UseFieldReturn<Schema, Name, DeepValue<StandardSchema.InferInput<Schema>, Name>>) => React.ReactNode);
 };
 
 export const Field = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>({

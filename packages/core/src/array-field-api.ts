@@ -1,5 +1,4 @@
 import { FieldApi, type FieldOptions } from '#field-api';
-import { FormApi } from '#form-api';
 import type {
   FieldChangeOptions,
   FormIssue,
@@ -16,12 +15,14 @@ export class ArrayFieldApi<
   Name extends DeepKeysOfType<StandardSchema.InferInput<Schema>, any[] | null | undefined>,
   in out Value extends DeepValue<StandardSchema.InferInput<Schema>, Name>,
 > {
-  private form: FormApi<Schema>;
   private field: FieldApi<Schema, Name, Value>;
 
   constructor(options: FieldOptions<Schema, Name>) {
-    this.form = options.form;
     this.field = new FieldApi<Schema, Name, Value>(options);
+  }
+
+  private get _options() {
+    return this.field.options();
   }
 
   public '~mount' = () => {
@@ -48,7 +49,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public append = (value: UnwrapOneLevelOfArray<Value>, options?: FieldChangeOptions) => {
-    return this.form.array.append(this.field.options.name as never, value as never, options);
+    return this._options.form.array.append(this._options.name as never, value as never, options);
   };
 
   /**
@@ -57,7 +58,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public prepend = (value: UnwrapOneLevelOfArray<Value>, options?: FieldChangeOptions) => {
-    return this.form.array.prepend(this.field.options.name as never, value as never, options);
+    return this._options.form.array.prepend(this._options.name as never, value as never, options);
   };
 
   /**
@@ -67,7 +68,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public insert = (index: number, value: Updater<UnwrapOneLevelOfArray<Value>>, options?: FieldChangeOptions) => {
-    return this.form.array.insert(this.field.options.name as never, index, value as never, options);
+    return this._options.form.array.insert(this._options.name as never, index, value as never, options);
   };
 
   /**
@@ -77,7 +78,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public update = (index: number, value: Updater<UnwrapOneLevelOfArray<Value>>, options?: FieldChangeOptions) => {
-    return this.form.array.update(this.field.options.name as never, index, value as never, options);
+    return this._options.form.array.update(this._options.name as never, index, value as never, options);
   };
 
   /**
@@ -86,7 +87,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public remove = (index: number, options?: FieldChangeOptions) => {
-    return this.form.array.remove(this.field.options.name as never, index, options);
+    return this._options.form.array.remove(this._options.name as never, index, options);
   };
 
   /**
@@ -96,7 +97,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public swap = (from: number, to: number, options?: FieldChangeOptions) => {
-    return this.form.array.swap(this.field.options.name as never, from, to, options);
+    return this._options.form.array.swap(this._options.name as never, from, to, options);
   };
 
   /**
@@ -106,7 +107,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public move = (from: number, to: number, options?: FieldChangeOptions) => {
-    return this.form.array.move(this.field.options.name as never, from, to, options);
+    return this._options.form.array.move(this._options.name as never, from, to, options);
   };
 
   /**
@@ -115,7 +116,7 @@ export class ArrayFieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public replace = (value: Updater<Value>, options?: FieldChangeOptions) => {
-    return this.form.array.replace(this.field.options.name as never, value as never, options);
+    return this._options.form.array.replace(this._options.name as never, value as never, options);
   };
 
   /**
@@ -124,7 +125,7 @@ export class ArrayFieldApi<
    * @returns Promise resolving to an array of validation issues for this field
    */
   public validate = (options?: ValidateOptions) => {
-    return this.form.validate(this.field.options.name, options);
+    return this._options.form.validate(this._options.name, options);
   };
 
   /**
@@ -132,7 +133,7 @@ export class ArrayFieldApi<
    * @param options - Reset options for controlling what gets reset and what gets kept
    */
   public reset = (options?: FormResetFieldOptions<Value>) => {
-    return this.form.field.reset(this.field.options.name, options);
+    return this._options.form.field.reset(this._options.name, options);
   };
 
   /**
@@ -141,6 +142,6 @@ export class ArrayFieldApi<
    * @param mode - How to handle existing errors: 'replace' (default), 'append', or 'keep'
    */
   public setErrors = (errors: FormIssue[], options?: FormSetErrorsOptions) => {
-    return this.form.field.setErrors(this.field.options.name, errors, options);
+    return this._options.form.field.setErrors(this._options.name, errors, options);
   };
 }

@@ -1,5 +1,8 @@
-export const get = <Data>(data: Data, path: (string | number)[]) => {
+export const get = (data: unknown, path: (string | number)[]) => {
   return path.reduce((acc, key) => {
-    return (acc as any)[key] as any;
+    if (acc === undefined) return undefined;
+    if (acc === null) return null;
+
+    return (acc as any)[key];
   }, data);
 };

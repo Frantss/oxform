@@ -8,7 +8,8 @@
   "type": "module",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "examples/*"
     ],
     "catalogs": {
       "oxform": {
@@ -23,7 +24,8 @@
     }
   },
   "scripts": {
-    "build": "bun --filter '*' build",
+    "build": "bun --filter 'oxform-*' build",
+    "build:dev": "bun --filter 'oxform-*' build --watch",
     "postbuild": "bun run fix:format",
     "test": "bun --filter '*' test",
     "check:package": "bun --filter '*' check:package",
@@ -33,6 +35,9 @@
     "fix:rules": "oxlint --type-aware --fix --fix-suggestions",
     "fix:format": "oxfmt",
     "fix:all": "bun run fix:rules && bun run fix:format"
+  },
+  "dependencies": {
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:oxform",

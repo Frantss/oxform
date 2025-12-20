@@ -11,9 +11,15 @@
     "#*": "./src/*.ts"
   },
   "exports": {
-    ".": "./export/index.ts",
-    "./package.json": "./package.json",
-    "./schema": "./export/schema.ts"
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "require": "./dist/schema.cjs",
+      "import": "./dist/schema.js"
+    },
+    "./package.json": "./package.json"
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.cts",
