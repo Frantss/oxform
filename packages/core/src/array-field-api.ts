@@ -25,34 +25,22 @@ export class ArrayFieldApi<
   }
 
   public '~mount' = () => {
-    const unsubscribe = this.field.store.mount();
+    const unsubscribe = this.field.store().mount();
 
     return unsubscribe;
   };
 
   public '~update' = (options: FieldOptions<Schema, Name>) => {
-    this.field.options = options;
+    this.field['~update'](options);
   };
 
-  public get value() {
-    return this.field.store.state.value;
-  }
+  public store = () => {
+    return this.field.store();
+  };
 
-  public get defaultValue() {
-    return this.field.store.state.defaultValue;
-  }
-
-  public get meta() {
-    return this.field.store.state.meta;
-  }
-
-  public get errors() {
-    return this.field.store.state.errors;
-  }
-
-  public get length() {
-    return ((this.field.store.state.value as any[]) ?? []).length;
-  }
+  public state = () => {
+    return this.field.store().state;
+  };
 
   /**
    * Appends a new item to the end of the array.

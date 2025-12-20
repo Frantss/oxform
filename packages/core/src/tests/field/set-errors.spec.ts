@@ -216,21 +216,21 @@ describe('form status updates', () => {
   it('should update form validity when errors are set', () => {
     const { form } = setup();
 
-    expect(form.store.state.status.valid).toBe(true);
+    expect(form.store().state.status.valid).toBe(true);
 
     form.field.setErrors('name', [mockError]);
 
-    expect(form.store.state.status.valid).toBe(false);
+    expect(form.store().state.status.valid).toBe(false);
   });
 
   it('should update form validity when errors are cleared', () => {
     const { form } = setup();
 
     form.field.setErrors('name', [mockError]);
-    expect(form.store.state.status.valid).toBe(false);
+    expect(form.store().state.status.valid).toBe(false);
 
     form.field.setErrors('name', []);
-    expect(form.store.state.status.valid).toBe(true);
+    expect(form.store().state.status.valid).toBe(true);
   });
 
   it('should maintain field meta state when setting errors manually', () => {

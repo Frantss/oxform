@@ -11,6 +11,8 @@ export class FormApi<Schema extends StandardSchema> {
   public array: FormArrayFieldApi<Schema>;
 
   constructor(options: FormOptions<Schema>) {
+    // todo: add form id to options
+
     this.context = new FormContextApi(options);
     this.field = new FormFieldApi(this.context);
     this.array = new FormArrayFieldApi({ field: this.field, context: this.context });
@@ -26,21 +28,21 @@ export class FormApi<Schema extends StandardSchema> {
     this.context.options = options;
   };
 
-  public get store() {
+  public store = () => {
     return this.context.store;
-  }
+  };
 
-  public get status() {
+  public status = () => {
     return this.context.store.state.status;
-  }
+  };
 
-  public get values() {
+  public values = () => {
     return this.context.store.state.values;
-  }
+  };
 
-  public get options() {
+  public options = () => {
     return this.context.options;
-  }
+  };
 
   public get validate() {
     return this.context.validate;

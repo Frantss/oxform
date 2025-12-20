@@ -178,13 +178,13 @@ describe('field refs reset', () => {
     form.field.register('name')(nameElement);
     form.field.register('email')(emailElement);
 
-    expect(form.store.state.refs.name).toBe(nameElement);
-    expect(form.store.state.refs.email).toBe(emailElement);
+    expect(form.store().state.refs.name).toBe(nameElement);
+    expect(form.store().state.refs.email).toBe(emailElement);
 
     form.field.reset('name');
 
-    expect(form.store.state.refs.name).toBeUndefined();
-    expect(form.store.state.refs.email).toBe(emailElement);
+    expect(form.store().state.refs.name).toBeUndefined();
+    expect(form.store().state.refs.email).toBe(emailElement);
   });
 });
 
@@ -266,7 +266,7 @@ describe('reset with options', () => {
       form.field.reset('name', { keep: { refs: true } });
 
       expect(form.field.get('name')).toBe('Default Name');
-      expect(form.store.state.refs.name).toBe(nameElement);
+      expect(form.store().state.refs.name).toBe(nameElement);
     });
 
     it('should keep multiple things when multiple keep options are true', async () => {
@@ -285,7 +285,7 @@ describe('reset with options', () => {
       expect(form.field.meta('name').dirty).toBe(true);
       expect(form.field.meta('name').touched).toBe(true);
       expect(form.field.errors('name')).toEqual(mockErrors);
-      expect(form.store.state.refs.name).toBe(nameElement);
+      expect(form.store().state.refs.name).toBe(nameElement);
 
       form.field.reset('name', {
         keep: {
@@ -299,7 +299,7 @@ describe('reset with options', () => {
       expect(form.field.meta('name').dirty).toBe(true);
       expect(form.field.meta('name').touched).toBe(true);
       expect(form.field.errors('name')).toEqual(mockErrors);
-      expect(form.store.state.refs.name).toBe(nameElement);
+      expect(form.store().state.refs.name).toBe(nameElement);
     });
   });
 
@@ -509,7 +509,7 @@ describe('reset with options', () => {
       expect(form.field.meta('name').touched).toBe(true);
       expect(form.field.meta('name').blurred).toBe(false);
       expect(form.field.errors('name')).toEqual(mockErrors);
-      expect(form.store.state.refs.name).toBe(nameElement);
+      expect(form.store().state.refs.name).toBe(nameElement);
     });
   });
 });
@@ -558,14 +558,14 @@ describe('edge cases', () => {
     const onSuccess = () => {};
     await form.submit(onSuccess)();
 
-    expect(form.status.submits).toBe(1);
-    expect(form.status.submitted).toBe(true);
+    expect(form.status().submits).toBe(1);
+    expect(form.status().submitted).toBe(true);
 
     form.field.change('name', 'Changed Name');
     form.field.reset('name');
 
-    expect(form.status.submits).toBe(1);
-    expect(form.status.submitted).toBe(true);
+    expect(form.status().submits).toBe(1);
+    expect(form.status().submitted).toBe(true);
   });
 });
 
@@ -577,13 +577,13 @@ describe('integration with other form methods', () => {
     await form.validate();
 
     expect(form.field.errors('email')).not.toHaveLength(0);
-    expect(form.status.valid).toBe(false);
+    expect(form.status().valid).toBe(false);
 
     form.field.reset('email');
 
     expect(form.field.errors('email')).toHaveLength(0);
     await form.validate();
-    expect(form.status.valid).toBe(true);
+    expect(form.status().valid).toBe(true);
   });
 
   it('should work correctly after field interactions', async () => {
@@ -600,7 +600,7 @@ describe('integration with other form methods', () => {
     expect(form.field.meta('name').dirty).toBe(true);
     expect(form.field.meta('name').touched).toBe(true);
     expect(form.field.meta('name').blurred).toBe(true);
-    expect(form.store.state.refs.name).toBe(nameElement);
+    expect(form.store().state.refs.name).toBe(nameElement);
 
     form.field.reset('name');
 
@@ -608,7 +608,7 @@ describe('integration with other form methods', () => {
     expect(form.field.meta('name').dirty).toBe(false);
     expect(form.field.meta('name').touched).toBe(false);
     expect(form.field.meta('name').blurred).toBe(false);
-    expect(form.store.state.refs.name).toBeUndefined();
+    expect(form.store().state.refs.name).toBeUndefined();
 
     form.field.change('name', 'New Value After Reset');
     expect(form.field.get('name')).toBe('New Value After Reset');

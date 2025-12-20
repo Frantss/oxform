@@ -8,7 +8,7 @@ import type {
   ValidateOptions,
 } from '#form-api.types';
 import type { DeepKeys, DeepValue } from '#more-types';
-import type { EventLike, StandardSchema } from '#types';
+import type { StandardSchema } from '#types';
 import { get } from '#utils/get';
 import type { Updater } from '#utils/update';
 import { Derived } from '@tanstack/store';
@@ -29,35 +29,26 @@ export type FieldStore<Value> = {
   errors: FormIssue[];
 };
 
-export type FieldProps<Value> = {
-  defaultValue: Value;
-  value: Value;
-  ref: (element: HTMLElement | null) => void;
-  onChange: (event: EventLike) => void;
-  onBlur: (event: EventLike) => void;
-  onFocus: (event: EventLike) => void;
-};
-
 export class FieldApi<
   Schema extends StandardSchema,
   Name extends DeepKeys<StandardSchema.InferInput<Schema>>,
   in out Value extends DeepValue<StandardSchema.InferInput<Schema>, Name>,
 > {
-  public options: FieldOptions<Schema, Name>;
+  private _options: FieldOptions<Schema, Name>;
   private form: FormApi<Schema>;
-  public store: Derived<FieldStore<Value>>;
+  private _store: Derived<FieldStore<Value>>;
 
   constructor(options: FieldOptions<Schema, Name>) {
-    this.options = options;
+    this._options = options;
     this.form = options.form;
 
-    this.store = new Derived<FieldStore<Value>>({
-      deps: [this.form.store],
+    this._store = new Derived<FieldStore<Value>>({
+      deps: [this.form.store()],
       fn: () => {
-        const value = this.form.field.get(this.options.name as never) as Value;
-        const defaultValue = get(this.form.options.defaultValues as never, stringToPath(this.options.name)) as Value;
-        const meta = this.form.field.meta(this.options.name as never);
-        const errors = this.form.field.errors(this.options.name as never);
+        const value = this.form.field.get(this._options.name as never) as Value;
+        const defaultValue = get(this.form.options().defaultValues as never, stringToPath(this._options.name)) as Value;
+        const meta = this.form.field.meta(this._options.name as never);
+        const errors = this.form.field.errors(this._options.name as never);
 
         return {
           value,
@@ -70,35 +61,35 @@ export class FieldApi<
   }
 
   public '~mount' = () => {
-    const unsubscribe = this.store.mount();
+    const unsubscribe = this._store.mount();
 
     return unsubscribe;
   };
 
   public '~update' = (options: FieldOptions<Schema, Name>) => {
     // ref: https://github.com/TanStack/form/blob/main/packages/form-core/src/FieldApi.ts#L1300
-    this.options = options;
+    this._options = options;
   };
 
-  public get value() {
-    return this.store.state.value;
-  }
+  public options = () => {
+    return this._options;
+  };
 
-  public get defaultValue() {
-    return this.store.state.defaultValue;
-  }
+  public store = () => {
+    return this._store;
+  };
 
-  public get meta() {
-    return this.store.state.meta;
-  }
+  public state = () => {
+    return this._store.state;
+  };
 
-  public get errors() {
-    return this.store.state.errors;
-  }
+  public focus = () => {
+    return this.form.field.focus(this._options.name);
+  };
 
-  public focus = () => this.form.field.focus(this.options.name);
-
-  public blur = () => this.form.field.blur(this.options.name);
+  public blur = () => {
+    return this.form.field.blur(this._options.name);
+  };
 
   /**
    * Changes the value of this field with optional control over side effects.
@@ -106,10 +97,10 @@ export class FieldApi<
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
   public change = (value: Updater<Value>, options?: FieldChangeOptions) => {
-    return this.form.field.change(this.options.name, value as never, options);
+    return this.form.field.change(this._options.name, value as never, options);
   };
 
-  public register = () => this.form.field.register(this.options.name);
+  public register = () => this.form.field.register(this._options.name);
 
   /**
    * Validates this specific field using the specified validation type.
@@ -117,7 +108,7 @@ export class FieldApi<
    * @returns Promise resolving to an array of validation issues for this field
    */
   public validate = (options?: ValidateOptions) => {
-    return this.form.validate(this.options.name, options);
+    return this.form.validate(this._options.name, options);
   };
 
   /**
@@ -125,7 +116,7 @@ export class FieldApi<
    * @param options - Reset options for controlling what gets reset and what gets kept
    */
   public reset = (options?: FormResetFieldOptions<Value>) => {
-    return this.form.field.reset(this.options.name, options);
+    return this.form.field.reset(this._options.name, options);
   };
 
   /**
@@ -134,6 +125,6 @@ export class FieldApi<
    * @param mode - How to handle existing errors: 'replace' (default), 'append', or 'keep'
    */
   public setErrors = (errors: FormIssue[], options?: FormSetErrorsOptions) => {
-    return this.form.field.setErrors(this.options.name, errors, options);
+    return this.form.field.setErrors(this._options.name, errors, options);
   };
 }

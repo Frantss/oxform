@@ -16,5 +16,7 @@ export const useForm = <Schema extends StandardSchema>(options: FormOptions<Sche
     api['~update'](options);
   });
 
+  // todo: re-create api if id changes
+
   return api satisfies UseFormReturn<Schema> as UseFormReturn<Schema>;
 };

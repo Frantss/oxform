@@ -51,11 +51,11 @@ describe('resets form values', () => {
   it('should reset all values to defaultValues', async () => {
     const { form } = await setup({ values: changedValues });
 
-    expect(form.values).toEqual(changedValues);
+    expect(form.values()).toEqual(changedValues);
 
     form.reset();
 
-    expect(form.values).toEqual(defaultValues);
+    expect(form.values()).toEqual(defaultValues);
   });
 
   it('should reset nested values to defaults', async () => {
@@ -92,13 +92,13 @@ describe('resets form values', () => {
 
     form['~mount']();
 
-    expect(form.values).toEqual(partialValues);
+    expect(form.values()).toEqual(partialValues);
 
     form.field.change('email', 'modified@example.com');
 
     form.reset();
 
-    expect(form.values).toEqual(defaultValues);
+    expect(form.values()).toEqual(defaultValues);
   });
 });
 
@@ -145,20 +145,20 @@ describe('resets form status', () => {
     const onSuccess = () => {};
     await form.submit(onSuccess)();
 
-    expect(form.status.submits).toBe(1);
-    expect(form.status.submitted).toBe(true);
-    expect(form.status.successful).toBe(true);
-    expect(form.status.dirty).toBe(true);
+    expect(form.status().submits).toBe(1);
+    expect(form.status().submitted).toBe(true);
+    expect(form.status().successful).toBe(true);
+    expect(form.status().dirty).toBe(true);
 
     form.reset();
 
-    expect(form.status.submits).toBe(0);
-    expect(form.status.submitted).toBe(false);
-    expect(form.status.successful).toBe(false);
-    expect(form.status.dirty).toBe(false);
-    expect(form.status.submitting).toBe(false);
-    expect(form.status.validating).toBe(false);
-    expect(form.status.valid).toBe(true);
+    expect(form.status().submits).toBe(0);
+    expect(form.status().submitted).toBe(false);
+    expect(form.status().successful).toBe(false);
+    expect(form.status().dirty).toBe(false);
+    expect(form.status().submitting).toBe(false);
+    expect(form.status().validating).toBe(false);
+    expect(form.status().valid).toBe(true);
   });
 });
 
@@ -189,7 +189,7 @@ describe('clears errors', () => {
     form.reset();
 
     expect(form.field.errors('email')).toHaveLength(0);
-    expect(form.status.valid).toBe(true);
+    expect(form.status().valid).toBe(true);
   });
 });
 
@@ -203,14 +203,14 @@ describe('clears refs', () => {
     form.field.register('name')(nameElement);
     form.field.register('email')(emailElement);
 
-    expect(form.store.state.refs.name).toBe(nameElement);
-    expect(form.store.state.refs.email).toBe(emailElement);
+    expect(form.store().state.refs.name).toBe(nameElement);
+    expect(form.store().state.refs.email).toBe(emailElement);
 
     form.reset();
 
-    expect(form.store.state.refs.name).toBeUndefined();
-    expect(form.store.state.refs.email).toBeUndefined();
-    expect(Object.keys(form.store.state.refs)).toHaveLength(0);
+    expect(form.store().state.refs.name).toBeUndefined();
+    expect(form.store().state.refs.email).toBeUndefined();
+    expect(Object.keys(form.store().state.refs)).toHaveLength(0);
   });
 });
 
@@ -231,27 +231,27 @@ describe('integration scenarios', () => {
     const onError = () => {};
     await form.submit(onSuccess, onError)();
 
-    expect(form.values.name).toBe('Modified Name');
-    expect(form.values.email).toBe('invalid-email');
+    expect(form.values().name).toBe('Modified Name');
+    expect(form.values().email).toBe('invalid-email');
     expect(form.field.meta('name').dirty).toBe(true);
     expect(form.field.meta('nested.deep.value').blurred).toBe(true);
     expect(form.field.errors('email')).not.toHaveLength(0);
-    expect(form.status.submitted).toBe(true);
-    expect(form.status.valid).toBe(false);
-    expect(form.store.state.refs.name).toBe(element);
+    expect(form.status().submitted).toBe(true);
+    expect(form.status().valid).toBe(false);
+    expect(form.store().state.refs.name).toBe(element);
 
     form.reset();
 
-    expect(form.values).toEqual(defaultValues);
+    expect(form.values()).toEqual(defaultValues);
     expect(form.field.meta('name').dirty).toBe(false);
     expect(form.field.meta('name').touched).toBe(false);
     expect(form.field.meta('nested.deep.value').blurred).toBe(false);
     expect(form.field.errors('email')).toHaveLength(0);
-    expect(form.status.submits).toBe(0);
-    expect(form.status.submitted).toBe(false);
-    expect(form.status.dirty).toBe(false);
-    expect(form.status.valid).toBe(true);
-    expect(Object.keys(form.store.state.refs)).toHaveLength(0);
+    expect(form.status().submits).toBe(0);
+    expect(form.status().submitted).toBe(false);
+    expect(form.status().dirty).toBe(false);
+    expect(form.status().valid).toBe(true);
+    expect(Object.keys(form.store().state.refs)).toHaveLength(0);
   });
 
   it('should allow normal form operations after reset', async () => {
@@ -261,12 +261,12 @@ describe('integration scenarios', () => {
     form.reset();
 
     form.field.change('name', 'New Name');
-    expect(form.values.name).toBe('New Name');
+    expect(form.values().name).toBe('New Name');
     expect(form.field.meta('name').dirty).toBe(true);
 
     const onSuccess = () => {};
     await form.submit(onSuccess)();
-    expect(form.status.successful).toBe(true);
+    expect(form.status().successful).toBe(true);
   });
 });
 
@@ -291,7 +291,7 @@ describe('reset with arguments', () => {
 
       form.reset({ values: customValues });
 
-      expect(form.values).toEqual(customValues);
+      expect(form.values()).toEqual(customValues);
     });
 
     it('should reset to custom values that replace defaultValues entirely', async () => {
@@ -312,10 +312,10 @@ describe('reset with arguments', () => {
 
       form.reset({ values: customValues });
 
-      expect(form.values.name).toBe('Custom Name');
-      expect(form.values.email).toBe('custom@example.com');
-      expect(form.values.nested.deep.value).toBe('custom nested value');
-      expect(form.values.nested.deep.array).toEqual(['custom1']);
+      expect(form.values().name).toBe('Custom Name');
+      expect(form.values().email).toBe('custom@example.com');
+      expect(form.values().nested.deep.value).toBe('custom nested value');
+      expect(form.values().nested.deep.array).toEqual(['custom1']);
     });
   });
 
@@ -334,11 +334,11 @@ describe('reset with arguments', () => {
         },
       });
 
-      expect(form.status.submits).toBe(5);
-      expect(form.status.dirty).toBe(true);
-      expect(form.status.successful).toBe(true);
-      expect(form.status.submitting).toBe(false);
-      expect(form.status.validating).toBe(false);
+      expect(form.status().submits).toBe(5);
+      expect(form.status().dirty).toBe(true);
+      expect(form.status().successful).toBe(true);
+      expect(form.status().submitting).toBe(false);
+      expect(form.status().validating).toBe(false);
     });
 
     it('should merge custom status with defaults', async () => {
@@ -350,11 +350,11 @@ describe('reset with arguments', () => {
         },
       });
 
-      expect(form.status.submits).toBe(3);
-      expect(form.status.dirty).toBe(false);
-      expect(form.status.submitting).toBe(false);
-      expect(form.status.validating).toBe(false);
-      expect(form.status.successful).toBe(false);
+      expect(form.status().submits).toBe(3);
+      expect(form.status().dirty).toBe(false);
+      expect(form.status().submitting).toBe(false);
+      expect(form.status().validating).toBe(false);
+      expect(form.status().successful).toBe(false);
     });
   });
 
@@ -370,7 +370,7 @@ describe('reset with arguments', () => {
       form.reset({ keep: { errors: true } });
 
       expect(form.field.errors('email')).not.toHaveLength(0);
-      expect(form.values).toEqual(defaultValues);
+      expect(form.values()).toEqual(defaultValues);
     });
 
     it('should keep refs when keep.refs is true', async () => {
@@ -385,9 +385,9 @@ describe('reset with arguments', () => {
 
       form.reset({ keep: { refs: true } });
 
-      expect(form.store.state.refs.name).toBe(nameElement);
-      expect(form.store.state.refs.email).toBe(emailElement);
-      expect(form.values.name).toBe('Default Name');
+      expect(form.store().state.refs.name).toBe(nameElement);
+      expect(form.store().state.refs.email).toBe(emailElement);
+      expect(form.values().name).toBe('Default Name');
     });
 
     it('should keep fields when keep.fields is true', async () => {
@@ -408,7 +408,7 @@ describe('reset with arguments', () => {
       expect(form.field.meta('name').touched).toBe(true);
       expect(form.field.meta('email').touched).toBe(true);
       expect(form.field.meta('email').blurred).toBe(true);
-      expect(form.values.name).toBe('Default Name');
+      expect(form.values().name).toBe('Default Name');
     });
 
     it('should keep multiple things when multiple keep options are true', async () => {
@@ -429,8 +429,8 @@ describe('reset with arguments', () => {
       });
 
       expect(form.field.errors('email')).not.toHaveLength(0);
-      expect(form.store.state.refs.name).toBe(nameElement);
-      expect(form.values.name).toBe('Default Name');
+      expect(form.store().state.refs.name).toBe(nameElement);
+      expect(form.values().name).toBe('Default Name');
       expect(form.field.meta('name').dirty).toBe(false);
     });
   });
@@ -466,10 +466,10 @@ describe('reset with arguments', () => {
         keep: { refs: true },
       });
 
-      expect(form.values).toEqual(customValues);
-      expect(form.status.submits).toBe(10);
-      expect(form.status.dirty).toBe(false);
-      expect(form.store.state.refs.name).toBe(element);
+      expect(form.values()).toEqual(customValues);
+      expect(form.status().submits).toBe(10);
+      expect(form.status().dirty).toBe(false);
+      expect(form.store().state.refs.name).toBe(element);
       expect(form.field.errors('email')).toHaveLength(0);
       expect(form.field.meta('name').dirty).toBe(false);
     });
@@ -485,10 +485,10 @@ describe('reset with arguments', () => {
 
       form.reset();
 
-      expect(form.values).toEqual(defaultValues);
-      expect(form.status.submits).toBe(0);
-      expect(form.status.dirty).toBe(false);
-      expect(Object.keys(form.store.state.refs)).toHaveLength(0);
+      expect(form.values()).toEqual(defaultValues);
+      expect(form.status().submits).toBe(0);
+      expect(form.status().dirty).toBe(false);
+      expect(Object.keys(form.store().state.refs)).toHaveLength(0);
       expect(form.field.meta('name').dirty).toBe(false);
     });
   });
@@ -499,7 +499,7 @@ describe('reset with arguments', () => {
 
       form.reset({ values: undefined });
 
-      expect(form.values).toEqual(defaultValues);
+      expect(form.values()).toEqual(defaultValues);
     });
 
     it('should handle empty keep object', async () => {
@@ -509,7 +509,7 @@ describe('reset with arguments', () => {
 
       form.reset({ keep: {} });
 
-      expect(form.values.name).toBe('Default Name');
+      expect(form.values().name).toBe('Default Name');
       expect(form.field.meta('name').dirty).toBe(false);
     });
 
@@ -528,7 +528,7 @@ describe('reset with arguments', () => {
       });
 
       expect(form.field.errors('email')).toHaveLength(0);
-      expect(form.values).toEqual(defaultValues);
+      expect(form.values()).toEqual(defaultValues);
       expect(form.field.meta('email').dirty).toBe(false);
     });
   });

@@ -47,31 +47,31 @@ describe('on success', async () => {
   });
 
   it('mark form as successful', () => {
-    expect(form.store.state.status.successful).toBe(true);
+    expect(form.store().state.status.successful).toBe(true);
   });
 
   it('should reset the submitting status', () => {
-    expect(form.store.state.status.submitting).toBe(false);
+    expect(form.store().state.status.submitting).toBe(false);
   });
 
   it('should reset the validating status', () => {
-    expect(form.store.state.status.validating).toBe(false);
+    expect(form.store().state.status.validating).toBe(false);
   });
 
   it('should increase the submits count', () => {
-    expect(form.store.state.status.submits).toBe(1);
+    expect(form.store().state.status.submits).toBe(1);
   });
 
   it('should mark the form as valid', () => {
-    expect(form.store.state.status.valid).toBe(true);
+    expect(form.store().state.status.valid).toBe(true);
   });
 
   it('should mark the form as dirty', () => {
-    expect(form.store.state.status.dirty).toBe(true);
+    expect(form.store().state.status.dirty).toBe(true);
   });
 
   it('should mark the form as submitted', () => {
-    expect(form.store.state.status.submitted).toBe(true);
+    expect(form.store().state.status.submitted).toBe(true);
   });
 });
 
@@ -112,31 +112,31 @@ describe('on error', async () => {
   });
 
   it('mark form as successful false', () => {
-    expect(form.store.state.status.successful).toBe(false);
+    expect(form.store().state.status.successful).toBe(false);
   });
 
   it('should reset the submitting status', () => {
-    expect(form.store.state.status.submitting).toBe(false);
+    expect(form.store().state.status.submitting).toBe(false);
   });
 
   it('should reset the validating status', () => {
-    expect(form.store.state.status.validating).toBe(false);
+    expect(form.store().state.status.validating).toBe(false);
   });
 
   it('should increase the submits count', () => {
-    expect(form.store.state.status.submits).toBe(1);
+    expect(form.store().state.status.submits).toBe(1);
   });
 
   it('should mark the form as invalid', () => {
-    expect(form.store.state.status.valid).toBe(false);
+    expect(form.store().state.status.valid).toBe(false);
   });
 
   it('should mark the form as dirty', () => {
-    expect(form.store.state.status.dirty).toBe(true);
+    expect(form.store().state.status.dirty).toBe(true);
   });
 
   it('should mark the form as submitted', () => {
-    expect(form.store.state.status.submitted).toBe(true);
+    expect(form.store().state.status.submitted).toBe(true);
   });
 });
 
@@ -147,11 +147,11 @@ describe('while submitting', async () => {
   const submit = form.submit(submitting.fn)();
 
   it('should mark the form as submitting', () => {
-    expect(form.store.state.status.submitting).toBe(true);
+    expect(form.store().state.status.submitting).toBe(true);
   });
 
   it('should have not yet increased the submits count', () => {
-    expect(form.store.state.status.submits).toBe(0);
+    expect(form.store().state.status.submits).toBe(0);
   });
 
   afterAll(async () => {
@@ -182,13 +182,13 @@ it('marks the form as validating when submit is called and schema is async', asy
 
   const submit = form.submit(submitting.fn)();
 
-  expect(form.store.state.status.validating).toBe(true);
+  expect(form.store().state.status.validating).toBe(true);
 
   await validating.release();
   await submitting.release();
   await submit;
 
-  expect(form.store.state.status.validating).toBe(false);
+  expect(form.store().state.status.validating).toBe(false);
 });
 
 describe('submit without onError callback', async () => {
@@ -197,8 +197,8 @@ describe('submit without onError callback', async () => {
   await form.submit(() => {})();
 
   it('should not throw when onError is not provided', () => {
-    expect(form.store.state.status.successful).toBe(false);
-    expect(form.store.state.status.submitting).toBe(false);
+    expect(form.store().state.status.successful).toBe(false);
+    expect(form.store().state.status.submitting).toBe(false);
   });
 
   it('should still set field errors', () => {
@@ -221,14 +221,14 @@ describe('submit with async onSuccess callback', async () => {
   const submit = form.submit(onSuccess)();
 
   it('should handle async success callbacks', async () => {
-    expect(form.store.state.status.submitting).toBe(true);
+    expect(form.store().state.status.submitting).toBe(true);
 
     await asyncSuccess.release();
     await submit;
 
     expect(onSuccess).toHaveBeenCalledOnce();
-    expect(form.store.state.status.submitting).toBe(false);
-    expect(form.store.state.status.successful).toBe(true);
+    expect(form.store().state.status.submitting).toBe(false);
+    expect(form.store().state.status.successful).toBe(true);
   });
 });
 
@@ -240,14 +240,14 @@ describe('submit with async onError callback', async () => {
   const submit = form.submit(() => {}, onError)();
 
   it('should handle async error callbacks', async () => {
-    expect(form.store.state.status.submitting).toBe(true);
+    expect(form.store().state.status.submitting).toBe(true);
 
     await asyncError.release();
     await submit;
 
     expect(onError).toHaveBeenCalledOnce();
-    expect(form.store.state.status.submitting).toBe(false);
-    expect(form.store.state.status.successful).toBe(false);
+    expect(form.store().state.status.submitting).toBe(false);
+    expect(form.store().state.status.successful).toBe(false);
   });
 });
 
@@ -259,11 +259,11 @@ describe('multiple submit calls', async () => {
   await form.submit(() => {})();
 
   it('should increment submits count correctly', () => {
-    expect(form.store.state.status.submits).toBe(3);
+    expect(form.store().state.status.submits).toBe(3);
   });
 
   it('should maintain successful status after multiple successful submits', () => {
-    expect(form.store.state.status.successful).toBe(true);
+    expect(form.store().state.status.successful).toBe(true);
   });
 });
 
@@ -372,8 +372,8 @@ describe('submit sequence - success then error', async () => {
   await form.submit(() => {}, onError)();
 
   it('should handle success followed by error correctly', () => {
-    expect(form.store.state.status.submits).toBe(2);
-    expect(form.store.state.status.successful).toBe(false);
+    expect(form.store().state.status.submits).toBe(2);
+    expect(form.store().state.status.successful).toBe(false);
     expect(onError).toHaveBeenCalledOnce();
   });
 });
@@ -388,8 +388,8 @@ describe('submit sequence - error then success', async () => {
   await form.submit(onSuccess)();
 
   it('should handle error followed by success correctly', () => {
-    expect(form.store.state.status.submits).toBe(2);
-    expect(form.store.state.status.successful).toBe(true);
+    expect(form.store().state.status.submits).toBe(2);
+    expect(form.store().state.status.successful).toBe(true);
     expect(onSuccess).toHaveBeenCalledOnce();
   });
 
@@ -401,9 +401,9 @@ describe('submit sequence - error then success', async () => {
 it('should set dirty status to true when submit is called', async () => {
   const { form } = await setup({ values: validValues });
 
-  expect(form.store.state.status.dirty).toBe(false);
+  expect(form.store().state.status.dirty).toBe(false);
 
   await form.submit(() => {})();
 
-  expect(form.store.state.status.dirty).toBe(true);
+  expect(form.store().state.status.dirty).toBe(true);
 });

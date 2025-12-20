@@ -1,25 +1,24 @@
-import type { FieldMeta, FormIssue, FormResetFieldOptions, FormSetErrorsOptions, ValidateOptions } from 'oxform-core';
-import { FieldApi, type FieldOptions, type FieldProps } from 'oxform-core';
+import type { EventLike, FieldStore } from 'oxform-core';
+import { FieldApi, type FieldOptions } from 'oxform-core';
 
-import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
+import { useFieldApi } from '#use-field-api';
 import { useStore } from '@tanstack/react-store';
-import type { DeepKeys, DeepValue, EventLike } from 'oxform-core';
+import type { DeepKeys, DeepValue } from 'oxform-core';
 import type { StandardSchema } from 'oxform-core/schema';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
-export type UseFieldReturn<Value> = {
-  api: FieldApi<any, any, Value>;
+export type FieldProps<Value> = {
+  defaultValue: Value;
   value: Value;
-  change: (value: Value) => void;
-  blur: () => void;
-  focus: () => void;
-  register: () => void;
-  validate: (options?: ValidateOptions) => Promise<FormIssue[]>;
-  reset: (options?: FormResetFieldOptions<Value>) => void;
-  setErrors: (errors: FormIssue[], options?: FormSetErrorsOptions) => void;
+  ref: (element: HTMLElement | null) => void;
+  onChange: (event: EventLike) => void;
+  onBlur: (event: EventLike) => void;
+  onFocus: (event: EventLike) => void;
+};
+
+export type UseFieldReturn<Value> = Omit<FieldApi<any, any, Value>, '~mount' | '~update' | 'state'> & {
+  state: FieldStore<Value>;
   props: FieldProps<Value>;
-  meta: FieldMeta;
-  errors: FormIssue[];
 };
 
 export const useField = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>(
@@ -27,55 +26,44 @@ export const useField = <Schema extends StandardSchema, Name extends DeepKeys<St
 ) => {
   type Value = DeepValue<StandardSchema.InferInput<Schema>, Name>;
 
-  const [api] = useState(() => {
-    return new FieldApi({ ...options });
-  });
+  const api = useFieldApi(options);
 
-  useIsomorphicLayoutEffect(api['~mount'], [api]);
-  useIsomorphicLayoutEffect(() => {
-    api['~update'](options);
-  });
-
-  const value = useStore(api.store, state => state.value);
-  const defaultValue = useStore(api.store, state => state.defaultValue);
-  const dirty = useStore(api.store, state => state.meta.dirty);
-  const touched = useStore(api.store, state => state.meta.touched);
-  const blurred = useStore(api.store, state => state.meta.blurred);
-  const pristine = useStore(api.store, state => state.meta.pristine);
-  const valid = useStore(api.store, state => state.meta.valid);
-  const isDefault = useStore(api.store, state => state.meta.default);
-  const errors = useStore(api.store, state => state.errors);
-
-  const onChange = useCallback((event: EventLike) => api.change(event.target?.value), [api]);
+  const value = useStore(api.store(), state => state.value);
+  const defaultValue = useStore(api.store(), state => state.defaultValue);
+  const dirty = useStore(api.store(), state => state.meta.dirty);
+  const touched = useStore(api.store(), state => state.meta.touched);
+  const blurred = useStore(api.store(), state => state.meta.blurred);
+  const pristine = useStore(api.store(), state => state.meta.pristine);
+  const valid = useStore(api.store(), state => state.meta.valid);
+  const isDefault = useStore(api.store(), state => state.meta.default);
+  const errors = useStore(api.store(), state => state.errors);
 
   return useMemo(() => {
     return {
-      api,
-      value,
-      blur: api.blur,
-      focus: api.focus,
-      change: api.change,
-      register: api.register,
-      validate: api.validate,
-      reset: api.reset,
-      setErrors: api.setErrors,
-      errors,
+      ...api,
+
+      state: {
+        value,
+        defaultValue,
+        errors,
+        meta: {
+          blurred,
+          default: isDefault,
+          dirty,
+          pristine,
+          touched,
+          valid,
+        },
+      },
+
       props: {
         value,
         defaultValue,
-        ref: api.register(),
         onBlur: api.blur,
         onFocus: api.focus,
-        onChange,
-      },
-      meta: {
-        dirty,
-        touched,
-        blurred,
-        pristine,
-        valid,
-        default: isDefault,
-      },
+        onChange: useCallback((event: EventLike) => api.change(event.target?.value), []),
+        ref: api.register,
+      }
     } satisfies UseFieldReturn<Value> as UseFieldReturn<Value>;
-  }, [api, errors, value, defaultValue, onChange, dirty, touched, blurred, pristine, valid, isDefault]);
+  }, [api, errors, value, defaultValue, dirty, touched, blurred, pristine, valid, isDefault]);
 };
