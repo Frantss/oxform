@@ -1,6 +1,6 @@
 {
   "name": "oxform-root",
-  "version": "0.0.0",
+  "version": "0.1.0-wip",
   "private": true,
   "description": "Oxform is a lean and flexible framework-agnostic form library.",
   "author": "Frantss <frantss.bongiovanni@gmail.com>",
