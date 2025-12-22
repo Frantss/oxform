@@ -12,8 +12,8 @@
   },
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -26,7 +26,9 @@
     "build": "tsdown --config-loader unrun",
     "test": "vitest",
     "check:types": "tsc --noEmit",
-    "check:package": "publint --strict"
+    "check:package": "publint --strict",
+    "publish": "bun publish --access public",
+    "prepublish": "bun run build"
   },
   "dependencies": {
     "@standard-schema/spec": "catalog:oxform",
@@ -49,14 +51,5 @@
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
-  },
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "require": "./dist/index.cjs",
-        "import": "./dist/index.js"
-      },
-      "./package.json": "./package.json"
-    }
   }
 }

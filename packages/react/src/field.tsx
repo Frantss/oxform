@@ -1,21 +1,15 @@
 import { useField, type UseFieldReturn } from '#use-field';
-import type { DeepKeys, DeepValue, FieldOptions } from 'oxform-core';
-import type { StandardSchema } from 'oxform-core/schema';
+import type { AnyFormApi, FieldOptions, FormFields, FormFieldValue } from 'oxform-core';
 import { useMemo } from 'react';
 
-export type FieldProps<
-  Schema extends StandardSchema,
-  Name extends DeepKeys<StandardSchema.InferInput<Schema>>,
-> = FieldOptions<Schema, Name> & {
-  children:
-    | React.ReactNode
-    | ((field: UseFieldReturn<Schema, Name, DeepValue<StandardSchema.InferInput<Schema>, Name>>) => React.ReactNode);
+export type FieldProps<Form extends AnyFormApi, Name extends FormFields<Form>> = FieldOptions<Form, Name> & {
+  children: React.ReactNode | ((field: UseFieldReturn<FormFieldValue<Form, Name>>) => React.ReactNode);
 };
 
-export const Field = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>({
+export const Field = <Form extends AnyFormApi, const Name extends FormFields<Form>>({
   children,
   ...options
-}: FieldProps<Schema, Name>) => {
+}: FieldProps<Form, Name>) => {
   const field = useField(options);
 
   return useMemo(() => {

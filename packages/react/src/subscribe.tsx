@@ -1,14 +1,19 @@
-import { useSubscribe, type AnyApi } from '#use-subscribe';
+import { useSubscribe } from '#use-subscribe';
+import type { AnyFormLikeApi, ApiSelector } from 'oxform-core';
 import { useMemo } from 'react';
 
-export type SubscribeProps<Api extends AnyApi, Selected> = {
+export type SubscribeProps<Api extends AnyFormLikeApi, Selected> = {
   api: Api;
-  selector: (state: ReturnType<Api['store']>['state']) => Selected;
+  selector: ApiSelector<Api, Selected>;
 } & {
-  children: React.ReactNode | ((field: NoInfer<Selected>) => React.ReactNode);
+  children: React.ReactNode | ((field: Selected) => React.ReactNode);
 };
 
-export const Subscribe = <Api extends AnyApi, Selected>({ api, selector, children }: SubscribeProps<Api, Selected>) => {
+export const Subscribe = <Api extends AnyFormLikeApi, Selected>({
+  api,
+  selector,
+  children,
+}: SubscribeProps<Api, Selected>) => {
   const selected = useSubscribe(api, selector);
 
   return useMemo(() => {

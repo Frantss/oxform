@@ -1,17 +1,16 @@
-import { FieldApi, type FieldOptions } from 'oxform-core';
+import { createFieldApi, FieldApi, type FieldOptions } from 'oxform-core';
 
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
-import type { DeepKeys } from 'oxform-core';
-import type { StandardSchema } from 'oxform-core/schema';
+import type { AnyFormApi, FormFields, FormFieldValue } from 'oxform-core';
 import { useState } from 'react';
 
-export type UseFieldApiReturn<Value> = FieldApi<any, any, Value>;
+export type UseFieldApiReturn<Value> = FieldApi<Value>;
 
-export const useFieldApi = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>(
-  options: FieldOptions<Schema, Name>,
-) => {
+export const useFieldApi = <Form extends AnyFormApi, const Name extends FormFields<Form>>(
+  options: FieldOptions<Form, Name>,
+): UseFieldApiReturn<FormFieldValue<Form, Name>> => {
   const [api] = useState(() => {
-    return new FieldApi({ ...options });
+    return createFieldApi(options);
   });
 
   // todo: re-create api if form or name changes

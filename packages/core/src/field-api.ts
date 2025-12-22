@@ -1,4 +1,4 @@
-import type { FormApi } from '#form-api';
+import { type AnyFormApi, type FormFields, type FormFieldValue } from '#form-api';
 import type {
   FieldChangeOptions,
   FieldMeta,
@@ -7,45 +7,38 @@ import type {
   FormSetErrorsOptions,
   ValidateOptions,
 } from '#form-api.types';
-import type { DeepKeys, DeepValue } from '#more-types';
-import type { StandardSchema } from '#types';
 import { get } from '#utils/get';
 import type { Updater } from '#utils/update';
 import { Derived } from '@tanstack/store';
 import { isDeepEqual, stringToPath } from 'remeda';
 
-export type FieldOptions<
-  Schema extends StandardSchema,
-  Name extends DeepKeys<StandardSchema.InferInput<Schema>> = DeepKeys<StandardSchema.InferInput<Schema>>,
-> = {
-  form: FormApi<Schema>;
+export type FieldOptions<Form extends AnyFormApi, Name extends FormFields<Form>> = {
+  form: Form;
   name: Name;
 };
 
-export type FieldStore<Value> = {
+export type FieldState<Value> = {
   value: Value;
   defaultValue: Value;
   meta: FieldMeta;
   errors: FormIssue[];
 };
 
-export class FieldApi<
-  Schema extends StandardSchema,
-  Name extends DeepKeys<StandardSchema.InferInput<Schema>>,
-  in out Value extends DeepValue<StandardSchema.InferInput<Schema>, Name>,
-> {
-  private _options: FieldOptions<Schema, Name>;
-  private form: FormApi<Schema>;
-  private _store: Derived<FieldStore<Value>>;
+export type AnyFieldApi = FieldApi<any>;
 
-  constructor(options: FieldOptions<Schema, Name>) {
+export class FieldApi<Value> {
+  private _options: FieldOptions<AnyFormApi, string>;
+  private form: AnyFormApi;
+  private _store: Derived<FieldState<Value>>;
+
+  constructor(options: FieldOptions<AnyFormApi, string>) {
     this._options = options;
     this.form = options.form;
 
-    this._store = new Derived<FieldStore<Value>>({
+    this._store = new Derived<FieldState<Value>>({
       deps: [this.form.store()],
       fn: ({ prevVal }) => {
-        const previous = prevVal as FieldStore<Value> | undefined;
+        const previous = prevVal as FieldState<Value> | undefined;
 
         const value = this.form.field.get(this._options.name as never) as Value;
         const defaultValue = get(this.form.options().defaultValues as never, stringToPath(this._options.name)) as Value;
@@ -72,7 +65,7 @@ export class FieldApi<
     return unsubscribe;
   };
 
-  public '~update' = (options: FieldOptions<Schema, Name>) => {
+  public '~update' = (options: FieldOptions<AnyFormApi, string>) => {
     // ref: https://github.com/TanStack/form/blob/main/packages/form-core/src/FieldApi.ts#L1300
     this._options = options;
   };
@@ -134,3 +127,15 @@ export class FieldApi<
     return this.form.field.setErrors(this._options.name, errors, options);
   };
 }
+
+export const createFieldApi = <Form extends AnyFormApi, const Name extends FormFields<Form>>(
+  options: FieldOptions<Form, Name>,
+) => {
+  type Value = FormFieldValue<Form, Name>;
+
+  return new FieldApi(options) as FieldApi<Value>;
+};
+
+// const schema = z.object({ name: z.string(), nested: z.object({ deep: z.object({ deeper: z.string().array() }) }) });
+// const form = new FormApi({ schema });
+// const field = createFieldApi({ form, name: 'name' });

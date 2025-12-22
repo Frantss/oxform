@@ -1,9 +1,9 @@
 import { defineConfig } from 'tsdown';
 
+const ci = process.env.CI === 'true';
+
 export default defineConfig({
-  exports: {
-    enabled: true,
-  },
+  exports: !ci,
   format: ['esm', 'cjs'],
   platform: 'browser',
   dts: true,

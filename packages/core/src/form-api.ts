@@ -3,14 +3,22 @@ import type { FormOptions, FormResetOptions, FormSubmitErrorHandler, FormSubmitS
 import { FormArrayFieldApi } from '#form-array-field-api';
 import { FormContextApi } from '#form-context-api';
 import { FormFieldApi } from '#form-field-api';
-import type { StandardSchema } from '#types';
+import type { DeepKeys, DeepKeysOfType, DeepValue } from '#more-types';
+import type { ArrayLike, StandardSchema } from '#types';
 
-export class FormApi<Schema extends StandardSchema> {
-  private context: FormContextApi<Schema>;
-  public field: FormFieldApi<Schema>;
-  public array: FormArrayFieldApi<Schema>;
+export type AnyFormApi = FormApi<any>;
 
-  constructor(options: FormOptions<Schema>) {
+export type FormValues<Form extends AnyFormApi> = Form extends FormApi<infer Values> ? Values : never;
+export type FormFields<Form extends AnyFormApi> = DeepKeys<FormValues<Form>>;
+export type FormArrayFields<Form extends AnyFormApi> = DeepKeysOfType<FormValues<Form>, ArrayLike>;
+export type FormFieldValue<Form extends AnyFormApi, Name extends FormFields<Form>> = DeepValue<FormValues<Form>, Name>;
+
+export class FormApi<Values> {
+  private context: FormContextApi<Values>;
+  public field: FormFieldApi<Values>;
+  public array: FormArrayFieldApi<Values>;
+
+  constructor(options: FormOptions<Values>) {
     // todo: add form id to options
 
     this.context = new FormContextApi(options);
@@ -24,7 +32,7 @@ export class FormApi<Schema extends StandardSchema> {
     return unsubscribe;
   };
 
-  public '~update' = (options: FormOptions<NoInfer<Schema>>) => {
+  public '~update' = (options: FormOptions<Values>) => {
     this.context.options = options;
   };
 
@@ -49,7 +57,10 @@ export class FormApi<Schema extends StandardSchema> {
   }
 
   public submit =
-    (onSuccess: FormSubmitSuccessHandler<NoInfer<Schema>>, onError?: FormSubmitErrorHandler<NoInfer<Schema>>) =>
+    (
+      onSuccess: FormSubmitSuccessHandler<StandardSchema<Values>>,
+      onError?: FormSubmitErrorHandler<StandardSchema<Values>>,
+    ) =>
     async () => {
       this.context.setStatus({ submitting: true, dirty: true });
 
@@ -69,7 +80,7 @@ export class FormApi<Schema extends StandardSchema> {
       });
     };
 
-  public reset = (options?: FormResetOptions<StandardSchema.InferInput<NoInfer<Schema>>>) => {
+  public reset = (options?: FormResetOptions<Values>) => {
     this.context.persisted.setState(current => {
       return {
         values: options?.values ?? this.context.options.defaultValues,

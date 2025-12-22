@@ -1,19 +1,7 @@
 import { useStore } from '@tanstack/react-store';
-import { ArrayFieldApi, FieldApi, FormApi } from 'oxform-core';
+import { type AnyFormLikeApi, type ApiSelector } from 'oxform-core';
 
-export type AnyApi =
-  | FormApi<any>
-  | FieldApi<any, any, any>
-  | ArrayFieldApi<
-      any,
-      // @ts-expect-error todo: fix this
-      any,
-      any
-    >;
-
-export type AnyApiSelector<Api extends AnyApi, Selected> = (state: ReturnType<Api['store']>['state']) => Selected;
-
-export const useSubscribe = <Api extends AnyApi, Selected>(api: Api, selector: AnyApiSelector<Api, Selected>) => {
+export const useSubscribe = <Api extends AnyFormLikeApi, Selected>(api: Api, selector: ApiSelector<Api, Selected>) => {
   return useStore(api.store() as never, selector as never) as Selected;
 };
 

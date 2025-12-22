@@ -12,12 +12,8 @@
   },
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
-    },
-    "./schema": {
-      "require": "./dist/schema.cjs",
-      "import": "./dist/schema.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -30,7 +26,9 @@
     "build": "tsdown --config-loader unrun",
     "test": "vitest",
     "check:types": "tsc --noEmit",
-    "check:package": "publint --strict"
+    "check:package": "publint --strict",
+    "publish": "bun publish --access public",
+    "prepublish": "bun run build"
   },
   "dependencies": {
     "@standard-schema/spec": "catalog:oxform",
@@ -44,18 +42,5 @@
     "typescript": "catalog:oxform",
     "vitest": "catalog:oxform",
     "zod": "^4.2.1"
-  },
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "require": "./dist/index.cjs",
-        "import": "./dist/index.js"
-      },
-      "./schema": {
-        "require": "./dist/schema.cjs",
-        "import": "./dist/schema.js"
-      },
-      "./package.json": "./package.json"
-    }
   }
 }

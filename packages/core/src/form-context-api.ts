@@ -1,4 +1,5 @@
 import { defaultMeta, defaultStatus } from '#field-api.constants';
+import type { FormApi, FormFields } from '#form-api';
 import type {
   FieldMeta,
   FormBaseStore,
@@ -9,28 +10,22 @@ import type {
   PersistedFormStatus,
   ValidateOptions,
 } from '#form-api.types';
-import type { DeepKeys } from '#more-types';
-import type { StandardSchema } from '#types';
 import { get } from '#utils/get';
 import { validate } from '#utils/validate';
 import { Derived, Store } from '@tanstack/store';
 import { isDeepEqual, isFunction, mergeDeep, stringToPath } from 'remeda';
 
-export class FormContextApi<
-  Schema extends StandardSchema,
-  Values extends StandardSchema.InferInput<Schema> = StandardSchema.InferInput<Schema>,
-  Field extends DeepKeys<Values> = DeepKeys<Values>,
-> {
-  public options!: FormOptions<Schema>;
-  public persisted: Store<FormBaseStore<Schema>>;
-  public store!: Derived<FormStore<Schema>>;
+export class FormContextApi<Values> {
+  public options!: FormOptions<Values>;
+  public persisted: Store<FormBaseStore<Values>>;
+  public store!: Derived<FormStore<Values>>;
 
-  constructor(options: FormOptions<Schema>) {
+  constructor(options: FormOptions<Values>) {
     const values = mergeDeep(options.defaultValues as never, options.values ?? {}) as Values;
 
     this.options = options;
 
-    this.persisted = new Store<FormBaseStore<Schema>>({
+    this.persisted = new Store<FormBaseStore<Values>>({
       values,
       fields: {},
       refs: {},
@@ -38,10 +33,10 @@ export class FormContextApi<
       errors: {},
     });
 
-    this.store = new Derived<FormStore<Schema>>({
+    this.store = new Derived<FormStore<Values>>({
       deps: [this.persisted],
       fn: ({ currDepVals }) => {
-        const persisted = currDepVals[0] as FormBaseStore<Schema>;
+        const persisted = currDepVals[0] as FormBaseStore<Values>;
 
         const invalid = Object.values(persisted.errors).some(issues => issues.length > 0);
         const dirty = Object.values(persisted.fields).some(meta => meta.dirty);
@@ -175,7 +170,10 @@ export class FormContextApi<
     });
   };
 
-  public validate = async (field?: Field | Field[], options?: ValidateOptions) => {
+  public validate = async (
+    field?: FormFields<FormApi<Values>> | FormFields<FormApi<Values>>[],
+    options?: ValidateOptions,
+  ) => {
     const validator = options?.type ? this.validator[options.type] : this.options.schema;
 
     if (!validator) return [];

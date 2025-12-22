@@ -1,26 +1,15 @@
 import { useArrayField, type UseArrayFieldReturn } from '#use-array-field';
-import type { DeepKeysOfType, DeepValue, FieldOptions } from 'oxform-core';
-import type { StandardSchema } from 'oxform-core/schema';
+import type { AnyFormApi, FieldOptions, FormArrayFields, FormFieldValue } from 'oxform-core';
 import { useMemo } from 'react';
 
-export type ArrayFieldProps<
-  Schema extends StandardSchema,
-  Name extends DeepKeysOfType<StandardSchema.InferInput<Schema>, any[] | null | undefined>,
-> = FieldOptions<Schema, Name> & {
-  children:
-    | React.ReactNode
-    | ((
-        field: UseArrayFieldReturn<Schema, Name, DeepValue<StandardSchema.InferInput<Schema>, Name>>,
-      ) => React.ReactNode);
+export type ArrayFieldProps<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = FieldOptions<Form, Name> & {
+  children: React.ReactNode | ((field: UseArrayFieldReturn<FormFieldValue<Form, Name>>) => React.ReactNode);
 };
 
-export const ArrayField = <
-  Schema extends StandardSchema,
-  Name extends DeepKeysOfType<StandardSchema.InferInput<Schema>, any[] | null | undefined>,
->({
+export const ArrayField = <Form extends AnyFormApi, const Name extends FormArrayFields<Form>>({
   children,
   ...options
-}: ArrayFieldProps<Schema, Name>) => {
+}: ArrayFieldProps<Form, Name>) => {
   const field = useArrayField(options);
 
   return useMemo(() => {

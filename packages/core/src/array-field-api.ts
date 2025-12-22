@@ -1,4 +1,5 @@
 import { FieldApi, type FieldOptions } from '#field-api';
+import { type AnyFormApi, type FormArrayFields, type FormFieldValue } from '#form-api';
 import type {
   FieldChangeOptions,
   FormIssue,
@@ -6,19 +7,22 @@ import type {
   FormSetErrorsOptions,
   ValidateOptions,
 } from '#form-api.types';
-import type { DeepKeysOfType, DeepValue, UnwrapOneLevelOfArray } from '#more-types';
-import type { StandardSchema } from '#types';
+import type { UnwrapOneLevelOfArray } from '#more-types';
+import type { ArrayLike } from '#types';
 import type { Updater } from '#utils/update';
 
-export class ArrayFieldApi<
-  Schema extends StandardSchema,
-  Name extends DeepKeysOfType<StandardSchema.InferInput<Schema>, any[] | null | undefined>,
-  in out Value extends DeepValue<StandardSchema.InferInput<Schema>, Name>,
-> {
-  private field: FieldApi<Schema, Name, Value>;
+export type ArrayFieldOptions<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = {
+  form: Form;
+  name: Name;
+};
 
-  constructor(options: FieldOptions<Schema, Name>) {
-    this.field = new FieldApi<Schema, Name, Value>(options);
+export type AnyArrayFieldApi = ArrayFieldApi<any>;
+
+export class ArrayFieldApi<Value extends ArrayLike> {
+  private field: FieldApi<Value>;
+
+  constructor(options: FieldOptions<AnyFormApi, string>) {
+    this.field = new FieldApi<Value>(options);
   }
 
   private get _options() {
@@ -31,7 +35,7 @@ export class ArrayFieldApi<
     return unsubscribe;
   };
 
-  public '~update' = (options: FieldOptions<Schema, Name>) => {
+  public '~update' = (options: FieldOptions<AnyFormApi, string>) => {
     this.field['~update'](options);
   };
 
@@ -145,3 +149,9 @@ export class ArrayFieldApi<
     return this._options.form.field.setErrors(this._options.name, errors, options);
   };
 }
+
+export const createArrayFieldApi = <FormApi extends AnyFormApi, const Name extends FormArrayFields<FormApi>>(
+  options: ArrayFieldOptions<FormApi, Name>,
+) => {
+  return new ArrayFieldApi(options) as ArrayFieldApi<FormFieldValue<FormApi, Name>>;
+};

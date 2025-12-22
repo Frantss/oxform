@@ -9,7 +9,11 @@ const schema = z.object({
 });
 
 const Form = () => {
-  const form = useForm({ schema, defaultValues: { name: '3213', directions: undefined }, validate: { change: schema } });
+  const form = useForm({
+    schema,
+    defaultValues: { name: '3213', directions: undefined },
+    validate: { change: schema },
+  });
 
   useEffect(() => {
     (window as any)['_form'] = form;

@@ -1,18 +1,12 @@
-import type { EventLike, FieldStore } from 'oxform-core';
+import type { AnyFormApi, EventLike, FieldState, FormFields, FormFieldValue } from 'oxform-core';
 import { FieldApi, type FieldOptions } from 'oxform-core';
 
 import { useFieldApi } from '#use-field-api';
 import { useStore } from '@tanstack/react-store';
-import type { DeepKeys, DeepValue } from 'oxform-core';
-import type { StandardSchema } from 'oxform-core/schema';
 import { useMemo } from 'react';
 
-export type UseFieldReturn<
-  Schema extends StandardSchema,
-  Name extends DeepKeys<StandardSchema.InferInput<Schema>> = DeepKeys<StandardSchema.InferInput<Schema>>,
-  Value extends DeepValue<StandardSchema.InferInput<Schema>, Name> = DeepValue<StandardSchema.InferInput<Schema>, Name>,
-> = Omit<FieldApi<Schema, Name, Value>, '~mount' | '~update' | 'state'> & {
-  state: FieldStore<Value>;
+export type UseFieldReturn<Value> = Omit<FieldApi<Value>, '~mount' | '~update' | 'state'> & {
+  state: FieldState<Value>;
   props: {
     value: Value;
     ref: (element: HTMLElement | null) => void;
@@ -22,11 +16,9 @@ export type UseFieldReturn<
   };
 };
 
-export const useField = <Schema extends StandardSchema, Name extends DeepKeys<StandardSchema.InferInput<Schema>>>(
-  options: FieldOptions<Schema, Name>,
-) => {
-  type Value = DeepValue<StandardSchema.InferInput<Schema>, Name>;
-
+export const useField = <Form extends AnyFormApi, const Name extends FormFields<Form>>(
+  options: FieldOptions<Form, Name>,
+): UseFieldReturn<FormFieldValue<Form, Name>> => {
   const api = useFieldApi(options);
 
   const value = useStore(api.store(), state => state.value);
@@ -64,6 +56,6 @@ export const useField = <Schema extends StandardSchema, Name extends DeepKeys<St
         onChange: (event: EventLike) => api.change(event.target?.value),
         ref: api.register,
       },
-    } satisfies UseFieldReturn<Schema, Name, Value> as UseFieldReturn<Schema, Name, Value>;
+    } satisfies UseFieldReturn<any> as any;
   }, [api, errors, value, defaultValue, dirty, touched, blurred, pristine, valid, isDefault]);
 };

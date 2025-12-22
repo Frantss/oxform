@@ -32,16 +32,16 @@ export type FieldMeta = Simplify<
   }
 >;
 
-export type FormBaseStore<Schema extends StandardSchema> = {
-  values: StandardSchema.InferInput<Schema>;
+export type FormBaseStore<Values> = {
+  values: Values;
   fields: Record<string, PersistedFieldMeta>;
   refs: Record<string, HTMLElement | null>;
   status: PersistedFormStatus;
   errors: Record<string, FormIssue[]>;
 };
 
-export type FormStore<Schema extends StandardSchema> = {
-  values: StandardSchema.InferInput<Schema>;
+export type FormStore<Values> = {
+  values: Values;
   fields: Record<string, FieldMeta>;
   refs: Record<string, HTMLElement | null>;
   status: FormStatus;
@@ -55,23 +55,21 @@ export type FieldControl<Value> = {
   register: (element: HTMLElement | null) => void;
 };
 
-type FormValidatorSchema<Schema extends StandardSchema> = NoInfer<
-  StandardSchema<PartialDeep<StandardSchema.InferInput<Schema>>>
->;
-type FormValidatorFunction<Schema extends StandardSchema> = (store: FormStore<Schema>) => FormValidatorSchema<Schema>;
-type FormValidator<Schema extends StandardSchema> = FormValidatorSchema<Schema> | FormValidatorFunction<Schema>;
+type FormValidatorSchema<Values> = StandardSchema<PartialDeep<Values>>;
+type FormValidatorFunction<Values> = (store: FormStore<Values>) => FormValidatorSchema<Values>;
+type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction<Values>;
 
-export type FormOptions<Schema extends StandardSchema> = {
-  schema: Schema;
-  values?: StandardSchema.InferInput<Schema>;
-  defaultValues: StandardSchema.InferInput<Schema>;
+export type FormOptions<Values> = {
+  schema: StandardSchema<Values>;
+  values?: Values;
+  defaultValues: Values;
   validate?: {
-    change?: FormValidator<Schema>;
-    submit?: FormValidator<Schema>;
-    blur?: FormValidator<Schema>;
-    focus?: FormValidator<Schema>;
+    change?: FormValidator<Values>;
+    submit?: FormValidator<Values>;
+    blur?: FormValidator<Values>;
+    focus?: FormValidator<Values>;
   };
-  related?: Record<DeepKeys<StandardSchema.InferInput<Schema>>, DeepKeys<StandardSchema.InferInput<Schema>>[]>;
+  related?: Record<DeepKeys<Values>, DeepKeys<Values>[]>;
 };
 
 export type FormIssue = StandardSchema.Issue;

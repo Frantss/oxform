@@ -1,19 +1,15 @@
 import { defaultMeta } from '#field-api.constants';
+import type { FormApi, FormFields } from '#form-api';
 import type { FieldChangeOptions, FormIssue, FormResetFieldOptions, FormSetErrorsOptions } from '#form-api.types';
 import type { FormContextApi } from '#form-context-api';
-import type { DeepKeys, DeepValue } from '#more-types';
-import type { StandardSchema } from '#types';
+import type { DeepValue } from '#more-types';
 import { get } from '#utils/get';
 import { update, type Updater } from '#utils/update';
 import { batch } from '@tanstack/store';
 import { setPath, stringToPath } from 'remeda';
 
-export class FormFieldApi<
-  Schema extends StandardSchema,
-  Values extends StandardSchema.InferInput<Schema> = StandardSchema.InferInput<Schema>,
-  Field extends DeepKeys<Values> = DeepKeys<Values>,
-> {
-  constructor(private context: FormContextApi<Schema>) {}
+export class FormFieldApi<Values> {
+  constructor(private context: FormContextApi<Values>) {}
 
   /**
    * Changes the value of a specific field with optional control over side effects.
@@ -21,7 +17,7 @@ export class FormFieldApi<
    * @param value - The new value to set for the field
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
-  public change = <Name extends Field>(
+  public change = <const Name extends FormFields<FormApi<Values>>>(
     name: Name,
     updater: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -53,7 +49,7 @@ export class FormFieldApi<
     });
   };
 
-  public focus = <Name extends Field>(name: Name) => {
+  public focus = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     const ref = this.context.store.state.refs[name as never];
 
     if (ref) ref.focus();
@@ -62,7 +58,7 @@ export class FormFieldApi<
     void this.context.validate(name as never, { type: 'focus' });
   };
 
-  public blur = <Name extends Field>(name: Name) => {
+  public blur = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     const ref = this.context.store.state.refs[name as never];
 
     if (ref) ref.blur();
@@ -71,11 +67,11 @@ export class FormFieldApi<
     void this.context.validate(name as never, { type: 'blur' });
   };
 
-  public get = <Name extends Field>(name: Name) => {
+  public get = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     return get(this.context.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <Name extends Field>(name: Name) => {
+  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     const meta = this.context.store.state.fields[name];
 
     if (meta) return meta;
@@ -92,7 +88,7 @@ export class FormFieldApi<
     return updated;
   };
 
-  public register = <Name extends Field>(name: Name) => {
+  public register = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     return (element: HTMLElement | null) => {
       if (!element) return;
 
@@ -108,11 +104,15 @@ export class FormFieldApi<
     };
   };
 
-  public errors = <Name extends Field>(name: Name) => {
+  public errors = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
     return this.context.store.state.errors[name] ?? [];
   };
 
-  public setErrors = <Name extends Field>(name: Name, errors: FormIssue[], options?: FormSetErrorsOptions) => {
+  public setErrors = <const Name extends FormFields<FormApi<Values>>>(
+    name: Name,
+    errors: FormIssue[],
+    options?: FormSetErrorsOptions,
+  ) => {
     this.context.persisted.setState(current => {
       const existing = current.errors[name] ?? [];
       let updated: FormIssue[];
@@ -140,7 +140,10 @@ export class FormFieldApi<
     });
   };
 
-  public reset = <Name extends Field>(name: Name, options?: FormResetFieldOptions<DeepValue<Values, Name>>) => {
+  public reset = <const Name extends FormFields<FormApi<Values>>>(
+    name: Name,
+    options?: FormResetFieldOptions<DeepValue<Values, Name>>,
+  ) => {
     const path = stringToPath(name as never);
     const defaultValue = get(this.context.options.defaultValues, path) as DeepValue<Values, Name>;
     const value = options?.value ?? defaultValue;

@@ -4,6 +4,7 @@ export { useFieldApi, type UseFieldApiReturn } from '#use-field-api';
 export { useForm, type UseFormReturn } from '#use-form';
 export { useFormStatus, type UseFormStatusProps, type UseFormStatusReturn } from '#use-form-status';
 export { useSubscribe } from '#use-subscribe';
+export type * from 'oxform-core';
 export { ArrayField, type ArrayFieldProps } from '../src/array-field';
 export { Field, type FieldProps } from '../src/field';
 export { Subscribe, type SubscribeProps } from '../src/subscribe';

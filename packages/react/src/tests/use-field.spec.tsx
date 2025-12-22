@@ -10,6 +10,7 @@ const setup = async () => {
   const form = new FormApi({
     schema: z.object({
       name: z.string(),
+      other: z.string().array().optional(),
       nested: z.object({
         deep: z.object({
           deeper: z.string().array(),

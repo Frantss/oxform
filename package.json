@@ -24,8 +24,8 @@
     }
   },
   "scripts": {
-    "build": "bun --filter 'oxform-*' build",
-    "build:dev": "bun --filter 'oxform-*' build --watch",
+    "build": "bun --filter '*' build",
+    "build:dev": "bun --filter '*' build --watch",
     "postbuild": "bun run fix:format",
     "test": "bun --filter '*' test",
     "check:package": "bun --filter '*' check:package",
@@ -34,14 +34,13 @@
     "check:format": "oxfmt --check",
     "fix:rules": "oxlint --type-aware --fix --fix-suggestions",
     "fix:format": "oxfmt",
-    "fix:all": "bun run fix:rules && bun run fix:format"
-  },
-  "dependencies": {
-    "zod": "^4.2.1"
+    "fix:all": "bun run fix:rules && bun run fix:format",
+    "publish": "bun --filter '*' publish",
+    "prepublish": "bun run check:rules && bun run check:format && bun run check:types && bun check:package"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@vitest/browser-playwright": "catalog:oxform",
-    "bumpp": "^10.3.2",
     "oxfmt": "^0.18.0",
     "oxlint": "^1.33.0",
     "oxlint-tsgolint": "^0.9.1",

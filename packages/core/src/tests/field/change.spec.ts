@@ -1,5 +1,6 @@
 import { FormApi } from '#form-api';
 import type { FormOptions } from '#form-api.types';
+import type { StandardSchema } from '#types';
 import { sleep } from '#utils/testing/sleep';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
@@ -34,7 +35,7 @@ const defaultValues = {
   },
 };
 
-const setup = (options?: Partial<FormOptions<typeof schema>>) => {
+const setup = (options?: Partial<FormOptions<StandardSchema.InferInput<typeof schema>>>) => {
   const form = new FormApi({
     schema,
     defaultValues,

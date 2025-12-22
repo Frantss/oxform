@@ -1,30 +1,23 @@
 import { defaultMeta } from '#field-api.constants';
+import type { FormApi, FormArrayFields } from '#form-api';
 import type { FieldChangeOptions } from '#form-api.types';
 import type { FormContextApi } from '#form-context-api';
 import type { FormFieldApi } from '#form-field-api';
-import type { DeepKeysOfType, DeepValue, UnwrapOneLevelOfArray } from '#more-types';
-import type { StandardSchema } from '#types';
+import type { DeepValue, UnwrapOneLevelOfArray } from '#more-types';
 import { get } from '#utils/get';
 import { update, type Updater } from '#utils/update';
 import { stringToPath } from 'remeda';
 
-export class FormArrayFieldApi<
-  Schema extends StandardSchema<any>,
-  Values extends StandardSchema.InferInput<Schema> = StandardSchema.InferInput<Schema>,
-  ArrayField extends DeepKeysOfType<Values, any[] | null | undefined> = DeepKeysOfType<
-    Values,
-    any[] | null | undefined
-  >,
-> {
-  private context: FormContextApi<Schema>;
-  private field: FormFieldApi<Schema>;
+export class FormArrayFieldApi<Values> {
+  private context: FormContextApi<Values>;
+  private field: FormFieldApi<Values>;
 
-  constructor({ field, context }: { field: FormFieldApi<Schema>; context: FormContextApi<Schema> }) {
+  constructor({ field, context }: { field: FormFieldApi<Values>; context: FormContextApi<Values> }) {
     this.context = context;
     this.field = field;
   }
 
-  public insert = <Name extends ArrayField>(
+  public insert = <const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     index: number,
     value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
@@ -68,7 +61,7 @@ export class FormArrayFieldApi<
     });
   };
 
-  public append = <Name extends ArrayField>(
+  public append = <const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -77,7 +70,7 @@ export class FormArrayFieldApi<
     return this.insert(name, current?.length ?? 0, value, options);
   };
 
-  public prepend = <Name extends ArrayField>(
+  public prepend = <const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -85,7 +78,12 @@ export class FormArrayFieldApi<
     return this.insert(name, 0, value, options);
   };
 
-  public swap = <Name extends ArrayField>(name: Name, from: number, to: number, options?: FieldChangeOptions) => {
+  public swap = <const Name extends FormArrayFields<FormApi<Values>>>(
+    name: Name,
+    from: number,
+    to: number,
+    options?: FieldChangeOptions,
+  ) => {
     const start = from >= 0 ? from : 0;
     const end = to >= 0 ? to : 0;
 
@@ -117,7 +115,12 @@ export class FormArrayFieldApi<
     });
   };
 
-  public move<Name extends ArrayField>(name: Name, _from: number, _to: number, options?: FieldChangeOptions) {
+  public move<const Name extends FormArrayFields<FormApi<Values>>>(
+    name: Name,
+    _from: number,
+    _to: number,
+    options?: FieldChangeOptions,
+  ) {
     const from = Math.max(_from, 0);
     const to = Math.max(_to, 0);
     const backwards = from > to;
@@ -162,7 +165,7 @@ export class FormArrayFieldApi<
     });
   }
 
-  public update = <Name extends ArrayField>(
+  public update = <const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     index: number,
     value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
@@ -186,7 +189,11 @@ export class FormArrayFieldApi<
     });
   };
 
-  public remove<Name extends ArrayField>(name: Name, index: number, options?: FieldChangeOptions) {
+  public remove<const Name extends FormArrayFields<FormApi<Values>>>(
+    name: Name,
+    index: number,
+    options?: FieldChangeOptions,
+  ) {
     let position = index;
 
     this.field.change(
@@ -222,7 +229,7 @@ export class FormArrayFieldApi<
     if (shouldValidate) void this.context.validate(name, { type: 'change' });
   }
 
-  public replace<Name extends ArrayField>(
+  public replace<const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     value: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,

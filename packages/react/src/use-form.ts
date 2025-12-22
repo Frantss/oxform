@@ -1,12 +1,11 @@
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import type { FormOptions } from 'oxform-core';
 import { FormApi } from 'oxform-core';
-import type { StandardSchema } from 'oxform-core/schema';
 import { useState } from 'react';
 
-export type UseFormReturn<Schema extends StandardSchema> = FormApi<Schema>;
+export type UseFormReturn<Values> = FormApi<Values>;
 
-export const useForm = <Schema extends StandardSchema>(options: FormOptions<Schema>) => {
+export const useForm = <Values>(options: FormOptions<Values>) => {
   const [api] = useState(() => {
     return new FormApi({ ...options });
   });
@@ -18,5 +17,5 @@ export const useForm = <Schema extends StandardSchema>(options: FormOptions<Sche
 
   // todo: re-create api if id changes
 
-  return api satisfies UseFormReturn<Schema> as UseFormReturn<Schema>;
+  return api satisfies UseFormReturn<Values> as UseFormReturn<Values>;
 };
