@@ -13,7 +13,7 @@ import type {
 import { get } from '#utils/get';
 import { validate } from '#utils/validate';
 import { Derived, Store } from '@tanstack/store';
-import { isDeepEqual, isFunction, mergeDeep, stringToPath } from 'remeda';
+import { isFunction, mergeDeep, stringToPath } from 'remeda';
 
 export class FormContextApi<Values> {
   public options!: FormOptions<Values>;
@@ -69,14 +69,14 @@ export class FormContextApi<Values> {
   }
 
   private get validator() {
-    const store = this.store.state;
+    const { state } = this.store;
     const validate = this.options.validate;
 
     return {
-      change: isFunction(validate?.change) ? validate.change(store) : validate?.change,
-      submit: isFunction(validate?.submit) ? validate.submit(store) : (validate?.submit ?? this.options.schema),
-      blur: isFunction(validate?.blur) ? validate.blur(store) : validate?.blur,
-      focus: isFunction(validate?.focus) ? validate.focus(store) : validate?.focus,
+      change: isFunction(validate?.change) ? validate.change(state) : validate?.change,
+      submit: isFunction(validate?.submit) ? validate.submit(state) : (validate?.submit ?? this.options.schema),
+      blur: isFunction(validate?.blur) ? validate.blur(state) : validate?.blur,
+      focus: isFunction(validate?.focus) ? validate.focus(state) : validate?.focus,
     };
   }
 
@@ -94,7 +94,7 @@ export class FormContextApi<Values> {
 
     return {
       ...baseMeta,
-      default: isDeepEqual(value, defaultValue),
+      default: value === defaultValue,
       pristine: !baseMeta.dirty,
       valid: !invalid,
     } satisfies FieldMeta;
@@ -129,31 +129,6 @@ export class FormContextApi<Values> {
       return {
         ...current,
         fields,
-      };
-    });
-  };
-
-  public recomputeFieldMeta = (name: string) => {
-    this.persisted.setState(current => {
-      const related: string[] = this.options.related?.[name as never] ?? [];
-      const all = Object.keys(current.fields);
-      const affected = all.filter(key => key.startsWith(name) || related.includes(key));
-      const updated = affected.reduce(
-        (acc, key) => {
-          return {
-            ...acc,
-            [key]: this.buildFieldMeta(key, current.fields[key], current.values as Values, current.errors),
-          };
-        },
-        {} as Record<string, FieldMeta>,
-      );
-
-      return {
-        ...current,
-        fields: {
-          ...current.fields,
-          ...updated,
-        },
       };
     });
   };

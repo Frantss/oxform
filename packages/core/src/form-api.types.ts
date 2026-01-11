@@ -25,7 +25,6 @@ export type PersistedFieldMeta = {
 
 export type FieldMeta = Simplify<
   PersistedFieldMeta & {
-    touched: boolean;
     default: boolean;
     valid: boolean;
     pristine: boolean;
@@ -128,6 +127,10 @@ export type FieldSetErrorsMode = 'replace' | 'append' | 'keep';
 
 export type FormSetErrorsOptions = {
   mode?: FieldSetErrorsMode;
+};
+
+export type FormErrorsOptions = {
+  nested?: boolean;
 };
 
 export type FormSubmitSuccessHandler<Schema extends StandardSchema> = (

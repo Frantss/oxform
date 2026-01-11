@@ -1,6 +1,13 @@
 import { defaultMeta } from '#field-api.constants';
 import type { FormApi, FormFields } from '#form-api';
-import type { FieldChangeOptions, FormIssue, FormResetFieldOptions, FormSetErrorsOptions } from '#form-api.types';
+import type {
+  FieldChangeOptions,
+  FieldMeta,
+  FormErrorsOptions,
+  FormIssue,
+  FormResetFieldOptions,
+  FormSetErrorsOptions,
+} from '#form-api.types';
 import type { FormContextApi } from '#form-context-api';
 import type { DeepValue } from '#more-types';
 import { get } from '#utils/get';
@@ -9,7 +16,7 @@ import { batch } from '@tanstack/store';
 import { setPath, stringToPath } from 'remeda';
 
 export class FormFieldApi<Values> {
-  constructor(private context: FormContextApi<Values>) {}
+  constructor(private context: FormContextApi<Values>) { }
 
   /**
    * Changes the value of a specific field with optional control over side effects.
@@ -71,21 +78,31 @@ export class FormFieldApi<Values> {
     return get(this.context.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
-    const meta = this.context.store.state.fields[name];
-
-    if (meta) return meta;
-
-    const updated = this.context.buildFieldMeta(
+  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name): FieldMeta => {
+    const base = this.context.buildFieldMeta(
       name,
-      undefined,
-      this.context.store.state.values as Values,
+      this.context.store.state.fields[name],
+      this.context.store.state.values,
       this.context.store.state.errors,
     );
 
-    this.context.setFieldMeta(name, updated);
+    const all = Object.keys(this.context.store.state.fields);
+    const nested = all.filter(key => key.startsWith(`${name}.`));
+    const meta = nested.reduce((acc, curr) => {
+      const sub = this.meta(curr);
+      const dirty = sub.dirty || acc.dirty;
 
-    return updated;
+      return {
+        blurred: sub.blurred || acc.blurred,
+        touched: sub.touched || acc.touched,
+        dirty,
+        default: sub.default ? acc.default : false,
+        valid: sub.valid ? acc.valid : false,
+        pristine: !dirty,
+      } satisfies FieldMeta;
+    }, base);
+
+    return meta;
   };
 
   public register = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
@@ -104,8 +121,19 @@ export class FormFieldApi<Values> {
     };
   };
 
-  public errors = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
-    return this.context.store.state.errors[name] ?? [];
+  public errors = <const Name extends FormFields<FormApi<Values>>>(
+    name: Name,
+    options?: FormErrorsOptions,
+  ): FormIssue[] => {
+    if (!options?.nested) return this.context.store.state.errors[name] ?? [];
+
+    const all = Object.keys(this.context.store.state.errors);
+    const nested = all.filter(key => key.startsWith(name));
+
+    return nested.reduce((acc, curr) => {
+      const sub = this.errors(curr);
+      return [...acc, ...sub];
+    }, [] as FormIssue[]);
   };
 
   public setErrors = <const Name extends FormFields<FormApi<Values>>>(
