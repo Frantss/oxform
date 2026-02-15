@@ -1,8 +1,6 @@
-import { defaultMeta } from '#field-api.constants';
 import type { FormApi, FormFields } from '#form-api';
 import type {
   FieldChangeOptions,
-  FieldMeta,
   FormErrorsOptions,
   FormIssue,
   FormResetFieldOptions,
@@ -11,15 +9,17 @@ import type {
 import type { FormCore } from '#form/form-core';
 import type { FormCoreFields } from '#form/form-core-fields';
 import type { DeepValue } from '#more-types';
+import { fields_root } from '#utils/fields';
 import { get } from '#utils/get';
-import { update, type Updater } from '#utils/update';
+import { type Updater } from '#utils/update';
+import { batch } from '@tanstack/store';
 import { setPath, stringToPath } from 'remeda';
 
-export class FormField<Values> {
+export class FormCoreField<Values> {
   private core: FormCore<Values>;
   private fields: FormCoreFields<Values>;
 
-  constructor({ core }: { core: FormCore<Values>; fields: FormCoreFields<Values> }) {
+  constructor({ core, fields }: { core: FormCore<Values>; fields: FormCoreFields<Values> }) {
     this.core = core;
     this.fields = fields;
   }
@@ -37,22 +37,9 @@ export class FormField<Values> {
   ) => {
     const shouldDirty = options?.should?.dirty !== false;
     const shouldTouch = options?.should?.touch !== false;
-    const shouldValidate = options?.should?.validate !== false;
+    // const shouldValidate = options?.should?.validate !== false;
 
-    this.core.persisted.setState(state => {
-      const value = get(state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
-
-      const values = setPath(
-        state.values as never,
-        stringToPath(name) as never,
-        update(updater, value) as never,
-      ) as Values;
-
-      return {
-        ...state,
-        values,
-      };
-    });
+    this.core.set(name, updater);
 
     // if (shouldValidate) void this.core.validate(name, { type: 'change' });
 
@@ -86,8 +73,8 @@ export class FormField<Values> {
     return get(this.core.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name): FieldMeta => {
-    return this.core.store.state.fields[name].meta;
+  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+    return this.core.store.state.fields[`${fields_root}.${name}`].meta;
   };
 
   public register = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
@@ -145,30 +132,14 @@ export class FormField<Values> {
     const defaultValue = get(this.core.options.defaultValues, path) as DeepValue<Values, Name>;
     const value = options?.value ?? defaultValue;
 
-    this.core.persisted.setState(current => {
-      const values = setPath(current.values as never, path as never, value as never);
-      const fields = { ...current.fields };
-      const refs = { ...current.refs };
-      const errors = { ...current.errors };
-
-      if (options?.meta) {
-        const currentMeta = options?.keep?.meta ? (fields[name as string] ?? defaultMeta) : defaultMeta;
-        fields[name as string] = {
-          ...currentMeta,
-          ...options.meta,
+    batch(() => {
+      this.fields.reset(name);
+      this.core.persisted.setState(state => {
+        return {
+          ...state,
+          values: setPath(state.values as never, path as never, value as never),
         };
-      } else if (!options?.keep?.meta) delete fields[name as string];
-
-      if (!options?.keep?.refs) delete refs[name as string];
-      if (!options?.keep?.errors) delete errors[name as string];
-
-      return {
-        ...current,
-        values,
-        fields,
-        refs,
-        errors,
-      };
+      });
     });
   };
 }

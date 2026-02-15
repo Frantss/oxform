@@ -1,8 +1,8 @@
 import { defaultStatus } from '#field-api.constants';
 import type { FormOptions, FormResetOptions, FormSubmitErrorHandler, FormSubmitSuccessHandler } from '#form-api.types';
 import { FormArrayFieldApi } from '#form-array-field-api';
-import { FormContextApi } from '#form-context-api';
-import { FormFieldApi } from '#form-field-api';
+import { FormField } from '#form-field-api';
+import { FormContextApi } from '#form/form-core';
 import type { DeepKeys, DeepKeysOfType, DeepValue } from '#more-types';
 import type { ArrayLike, StandardSchema } from '#types';
 
@@ -15,14 +15,14 @@ export type FormFieldValue<Form extends AnyFormApi, Name extends FormFields<Form
 
 export class FormApi<Values> {
   private context: FormContextApi<Values>;
-  public field: FormFieldApi<Values>;
+  public field: FormField<Values>;
   public array: FormArrayFieldApi<Values>;
 
   constructor(options: FormOptions<Values>) {
     // todo: add form id to options
 
     this.context = new FormContextApi(options);
-    this.field = new FormFieldApi(this.context);
+    this.field = new FormField(this.context);
     this.array = new FormArrayFieldApi({ field: this.field, context: this.context });
   }
 

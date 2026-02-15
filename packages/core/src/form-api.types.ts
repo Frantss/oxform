@@ -1,6 +1,7 @@
 import type { FormApi } from '#form-api';
 import type { DeepKeys } from '#more-types';
 import type { PartialDeep, Simplify, StandardSchema } from '#types';
+import type { PersistedFields } from '#utils/fields';
 
 export type PersistedFormStatus = {
   submits: number;
@@ -31,20 +32,26 @@ export type FieldMeta = Simplify<
   }
 >;
 
+export type Fields = Record<
+  string,
+  {
+    id: string;
+    meta: FieldMeta;
+    errors: FormIssue[];
+    ref: HTMLElement | null;
+  }
+>;
+
 export type FormBaseStore<Values> = {
   values: Values;
-  fields: Record<string, PersistedFieldMeta>;
-  refs: Record<string, HTMLElement | null>;
+  fields: PersistedFields;
   status: PersistedFormStatus;
-  errors: Record<string, FormIssue[]>;
 };
 
 export type FormStore<Values> = {
   values: Values;
-  fields: Record<string, FieldMeta>;
-  refs: Record<string, HTMLElement | null>;
+  fields: Fields;
   status: FormStatus;
-  errors: Record<string, FormIssue[]>;
 };
 
 export type FieldControl<Value> = {
@@ -60,8 +67,7 @@ type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction
 
 export type FormOptions<Values> = {
   schema: StandardSchema<Values>;
-  values?: Values;
-  defaultValues: Values;
+  defaultValues: NoInfer<Values>;
   validate?: {
     change?: FormValidator<Values>;
     submit?: FormValidator<Values>;

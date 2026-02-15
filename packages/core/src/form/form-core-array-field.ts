@@ -1,20 +1,32 @@
 import { defaultMeta } from '#field-api.constants';
 import type { FormApi, FormArrayFields } from '#form-api';
 import type { FieldChangeOptions } from '#form-api.types';
-import type { FormField } from '#form-field-api';
-import type { FormContextApi } from '#form/form-core';
+import type { FormCore } from '#form/form-core';
+import type { FormCoreField } from '#form/form-core-field';
+import type { FormCoreFields } from '#form/form-core-fields';
 import type { DeepValue, UnwrapOneLevelOfArray } from '#more-types';
 import { get } from '#utils/get';
 import { update, type Updater } from '#utils/update';
+import { batch } from '@tanstack/store';
 import { stringToPath } from 'remeda';
 
-export class FormArrayFieldApi<Values> {
-  private context: FormContextApi<Values>;
-  private field: FormField<Values>;
+export class FormCoreArray<Values> {
+  private core: FormCore<Values>;
+  private fields: FormCoreFields<Values>;
+  private field: FormCoreField<Values>;
 
-  constructor({ field, context }: { field: FormField<Values>; context: FormContextApi<Values> }) {
-    this.context = context;
+  constructor({
+    core,
+    fields,
+    field,
+  }: {
+    core: FormCore<Values>;
+    fields: FormCoreFields<Values>;
+    field: FormCoreField<Values>;
+  }) {
+    this.core = core;
     this.field = field;
+    this.fields = fields;
   }
 
   public insert = <const Name extends FormArrayFields<FormApi<Values>>>(
@@ -25,39 +37,27 @@ export class FormArrayFieldApi<Values> {
   ) => {
     if (index < 0) index = 0;
 
-    this.field.change(
-      name,
-      current => {
-        const array = (current as any[]) ?? [];
+    batch(() => {
+      this.core.set(name, (incoming: unknown) => {
+        const current = (incoming ?? []) as unknown[];
 
         return [
-          ...array.slice(0, index),
-          ...(Array.from({ length: index - array.length }, () => undefined) as any[]),
-          update(value, current as never),
-          ...array.slice(index),
+          ...current.slice(0, index),
+          ...(Array.from({ length: index - current.length }, () => undefined) as any[]),
+          update(current, value as never),
+          ...current.slice(index),
         ] as never;
-      },
-      options,
-    );
+      });
 
-    this.context.persisted.setState(current => {
-      const fields = { ...current.fields };
-      const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
-      const length = value?.length;
+      this.fields.set(name, {
+        meta: {
+          touched: options?.should?.dirty !== false,
+          dirty: options?.should?.touch !== false,
+        },
+      });
 
-      if (length === undefined) return current;
-
-      for (let i = index; i < length; i++) {
-        const moving = current.fields[`${name}.${i}`];
-        fields[`${name}.${i + 1}`] = moving ?? defaultMeta;
-      }
-
-      fields[`${name}.${index}`] = defaultMeta;
-
-      return {
-        ...current,
-        fields,
-      };
+      this.fields.reset(`${name}.${index}`);
+      this.fields.adjust();
     });
   };
 
@@ -66,8 +66,24 @@ export class FormArrayFieldApi<Values> {
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
   ) => {
-    const current = this.field.get(name) as any[];
-    return this.insert(name, current?.length ?? 0, value, options);
+    batch(() => {
+      this.core.set(name, (incoming: unknown) => {
+        const current = (incoming ?? []) as unknown[];
+
+        return [
+          ...current, value
+        ];
+      });
+
+      this.fields.set(name, {
+        meta: {
+          touched: options?.should?.dirty !== false,
+          dirty: options?.should?.touch !== false,
+        },
+      });
+
+      this.fields.adjust();
+    })
   };
 
   public prepend = <const Name extends FormArrayFields<FormApi<Values>>>(
@@ -75,7 +91,24 @@ export class FormArrayFieldApi<Values> {
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
   ) => {
-    return this.insert(name, 0, value, options);
+    batch(() => {
+      this.core.set(name, (incoming: unknown) => {
+        const current = (incoming ?? []) as unknown[];
+
+        return [
+          value, ...current
+        ];
+      });
+
+      this.fields.set(name, {
+        meta: {
+          touched: options?.should?.dirty !== false,
+          dirty: options?.should?.touch !== false,
+        },
+      });
+
+      this.fields.shift(name, 0, 'right')
+    })
   };
 
   public swap = <const Name extends FormArrayFields<FormApi<Values>>>(
@@ -87,32 +120,41 @@ export class FormArrayFieldApi<Values> {
     const start = from >= 0 ? from : 0;
     const end = to >= 0 ? to : 0;
 
-    this.field.change(
-      name,
-      current => {
-        const array = (current as any[]) ?? [];
+    if (start === end) return; // no-op
 
-        if (start === end) return array as never; // no-op
+    batch(() => {
+      this.core.set(name, (incoming: unknown) => {
+        const current = (incoming ?? []) as unknown[];
 
-        const a = array[start];
-        const b = array[end];
+        const a = current[start];
+        const b = current[end];
 
-        return [...array.slice(0, start), b, ...array.slice(start + 1, end), a, ...array.slice(end + 1)] as never;
-      },
-      options,
-    );
+        return [...current.slice(0, start), b, ...current.slice(start + 1, end), a, ...current.slice(end + 1)] as never;
+      });
 
-    this.context.persisted.setState(current => {
-      const fields = { ...current.fields };
+      this.fields.set(name, {
+        meta: {
+          touched: options?.should?.dirty !== false,
+          dirty: options?.should?.touch !== false,
+        },
+      });
 
-      fields[`${name}.${start}`] = current.fields[`${name}.${end}`] ?? defaultMeta;
-      fields[`${name}.${end}`] = current.fields[`${name}.${start}`] ?? defaultMeta;
+      this.fields.shift(name, 0, 'right')
+    })
 
-      return {
-        ...current,
-        fields,
-      };
-    });
+    // this.core
+
+    // this.core.persisted.setState(current => {
+    //   const fields = { ...current.fields };
+
+    //   fields[`${name}.${start}`] = current.fields[`${name}.${end}`] ?? defaultMeta;
+    //   fields[`${name}.${end}`] = current.fields[`${name}.${start}`] ?? defaultMeta;
+
+    //   return {
+    //     ...current,
+    //     fields,
+    //   };
+    // });
   };
 
   public move<const Name extends FormArrayFields<FormApi<Values>>>(
@@ -138,7 +180,7 @@ export class FormArrayFieldApi<Values> {
       options,
     );
 
-    this.context.persisted.setState(current => {
+    this.core.persisted.setState(current => {
       const fields = { ...current.fields };
       const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
       const length = value?.length;
@@ -182,8 +224,8 @@ export class FormArrayFieldApi<Values> {
       options,
     );
 
-    this.context.resetFieldMeta(`${name}.${index}`);
-    this.context.setFieldMeta(`${name}.${index}`, {
+    this.core.resetFieldMeta(`${name}.${index}`);
+    this.core.setFieldMeta(`${name}.${index}`, {
       dirty: options?.should?.dirty !== false,
       touched: options?.should?.touch !== false,
     });
@@ -207,7 +249,7 @@ export class FormArrayFieldApi<Values> {
       { ...options, should: { ...options?.should, validate: false } },
     );
 
-    this.context.persisted.setState(current => {
+    this.core.persisted.setState(current => {
       const fields = { ...current.fields };
       const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
       const length = value?.length ?? 0;
@@ -226,7 +268,7 @@ export class FormArrayFieldApi<Values> {
     });
 
     const shouldValidate = options?.should?.validate !== false;
-    if (shouldValidate) void this.context.validate(name, { type: 'change' });
+    if (shouldValidate) void this.core.validate(name, { type: 'change' });
   }
 
   public replace<const Name extends FormArrayFields<FormApi<Values>>>(
@@ -234,7 +276,7 @@ export class FormArrayFieldApi<Values> {
     value: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
   ) {
-    this.context.resetFieldMeta(name);
+    this.core.resetFieldMeta(name);
     this.field.change(name, value as never, options);
   }
 }
