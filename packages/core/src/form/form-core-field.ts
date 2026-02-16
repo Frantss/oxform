@@ -1,15 +1,16 @@
 import type {
   FieldChangeOptions,
+  FieldValidationOptions,
   FormErrorsOptions,
   FormIssue,
   FormResetFieldOptions,
   FormSetErrorsOptions,
 } from '#form-api.types';
 import type { FormCore } from '#form/form-core';
-import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
 import type { FormCoreFields } from '#form/form-core-fields';
+import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
 import type { DeepValue } from '#more-types';
-import { fields_root } from '#utils/fields';
+import { fields_fixPath } from '#utils/fields';
 import { get } from '#utils/get';
 import { type Updater } from '#utils/update';
 import { batch } from '@tanstack/store';
@@ -37,11 +38,11 @@ export class FormCoreField<Values> {
   ) => {
     const shouldDirty = options?.should?.dirty !== false;
     const shouldTouch = options?.should?.touch !== false;
-    // const shouldValidate = options?.should?.validate !== false;
+    const shouldValidate = options?.should?.validate !== false;
 
     this.core.set(name, updater);
 
-    // if (shouldValidate) void this.core.validate(name, { type: 'change' });
+    if (shouldValidate) void this.core.validate(name, { type: 'change' });
 
     this.fields.set(name, {
       meta: {
@@ -51,22 +52,24 @@ export class FormCoreField<Values> {
     });
   };
 
-  public focus = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public focus = <const Name extends FormCoreFieldPaths<Values>>(name: Name, options?: FieldValidationOptions) => {
+    const shouldValidate = options?.should?.validate !== false;
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.focus();
 
     this.fields.set(name as never, { meta: { touched: true } });
-    // void this.core.validate(name as never, { type: 'focus' });
+    if (shouldValidate) void this.core.validate(name as never, { type: 'focus' });
   };
 
-  public blur = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public blur = <const Name extends FormCoreFieldPaths<Values>>(name: Name, options?: FieldValidationOptions) => {
+    const shouldValidate = options?.should?.validate !== false;
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.blur();
 
     this.fields.set(name as never, { meta: { blurred: true } });
-    // void this.core.validate(name as never, { type: 'blur' });
+    if (shouldValidate) void this.core.validate(name as never, { type: 'blur' });
   };
 
   public get = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
@@ -74,7 +77,7 @@ export class FormCoreField<Values> {
   };
 
   public meta = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
-    return this.core.store.state.fields[`${fields_root}.${name}`].meta;
+    return this.core.store.state.fields[fields_fixPath(name)].meta;
   };
 
   public register = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
@@ -92,7 +95,7 @@ export class FormCoreField<Values> {
     name: Name,
     options?: FormErrorsOptions,
   ): FormIssue[] => {
-    const path = name.startsWith(fields_root) ? name : `${fields_root}.${name}`;
+    const path = fields_fixPath(name);
     const field = this.core.store.state.fields[path];
     if (!options?.nested) return field.errors;
 
@@ -110,7 +113,7 @@ export class FormCoreField<Values> {
     errors: FormIssue[],
     options?: FormSetErrorsOptions,
   ) => {
-    const path = name.startsWith(fields_root) ? name : `${fields_root}.${name}`;
+    const path = fields_fixPath(name);
     const existing = this.core.persisted.state.fields[path].errors;
     let updated: FormIssue[];
 

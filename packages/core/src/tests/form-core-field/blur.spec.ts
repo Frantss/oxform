@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 import { setup } from './setup';
 
@@ -40,4 +40,23 @@ it('does not mark a descendant field as blurred when blurring a parent field', (
   const meta = context.field.meta('nested.value');
 
   expect(meta.blurred).toBe(false);
+});
+
+it('validates by default when blurring a field', () => {
+  using context = setup();
+  const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
+
+  context.field.blur('name');
+
+  expect(validate).toHaveBeenCalledOnce();
+  expect(validate).toHaveBeenCalledWith('name', { type: 'blur' });
+});
+
+it('skips validation when should.validate is false', () => {
+  using context = setup();
+  const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
+
+  context.field.blur('name', { should: { validate: false } });
+
+  expect(validate).not.toHaveBeenCalled();
 });

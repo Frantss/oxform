@@ -12,19 +12,25 @@
 - Honors options:
   - `should.dirty = false` keeps `dirty` unchanged
   - `should.touch = false` keeps `touched` unchanged
+  - `should.validate = false` skips validation
 - Does not propagate `dirty`/`touched` down to descendants when changing a parent path.
+- Triggers `FormCore.validate(name, { type: 'change' })` by default.
 
 ### `focus(name)`
 
 - Calls `.focus()` on registered element refs.
 - Sets `meta.touched = true` for target and ascendants.
 - Does not update descendant `touched`.
+- Triggers `FormCore.validate(name, { type: 'focus' })`.
+- Accepts `options.should.validate = false` to skip validation.
 
 ### `blur(name)`
 
 - Calls `.blur()` on registered element refs.
 - Sets `meta.blurred = true` for target and ascendants.
 - Does not update descendant `blurred`.
+- Triggers `FormCore.validate(name, { type: 'blur' })`.
+- Accepts `options.should.validate = false` to skip validation.
 
 ### `get(name)`
 
@@ -71,6 +77,23 @@
   - `blurred = false`
   - `errors = []`
 - Does not affect sibling values.
+
+## FormCore
+
+### `validate(fields?, options?)`
+
+- Validates current form values with the selected schema.
+- Uses event schema when `options.type` is provided (`change`, `blur`, `focus`, `submit`), otherwise uses the base form schema.
+- `fields` behavior:
+  - Omitted: validates the entire form and updates all field errors.
+  - Single field: validates that field path and descendants.
+  - Field list: validates each provided path and descendants.
+- When validating a subset of fields, non-target field errors remain unchanged.
+- Always rewrites errors for targeted fields (including clearing stale errors when field becomes valid).
+- Sets `status.validating = true` during validation and `false` after field states are updated.
+- Returns `[valid, issues]`:
+  - `valid = true` when no issues were found
+  - `valid = false` when issues were found
 
 ## FormCoreFields
 

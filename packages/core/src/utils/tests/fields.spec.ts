@@ -1,4 +1,13 @@
-import { fields_build, fields_delete, fields_move, fields_remove, fields_reset, fields_root, fields_set, fields_shift } from '#utils/fields';
+import {
+  fields_build,
+  fields_delete,
+  fields_move,
+  fields_remove,
+  fields_reset,
+  fields_root,
+  fields_set,
+  fields_shift,
+} from '#utils/fields';
 import { generateId } from '#utils/generate-id';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -118,7 +127,9 @@ describe('fields_set', () => {
     const { fields } = setup();
     const expected = fields[`${fields_root}.complex.0.array`].errors;
 
-    const updated = fields_set(fields, 'complex.0.array.string', { errors: [{ path: ['complex', 0, 'array', 'string'] }] as never });
+    const updated = fields_set(fields, 'complex.0.array.string', {
+      errors: [{ path: ['complex', 0, 'array', 'string'] }] as never,
+    });
     const errors = updated[`${fields_root}.complex.0.array`].errors;
 
     expect(errors).toStrictEqual(expected);

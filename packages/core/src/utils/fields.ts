@@ -14,7 +14,7 @@ export type PersistedFields = Record<string, FieldEntry>;
 
 export const fields_root = '~root';
 
-const fields_fixPath = (path: string) => {
+export const fields_fixPath = (path: string) => {
   if (path.startsWith(fields_root)) return path;
 
   return `${fields_root}.${path}`;
@@ -42,11 +42,7 @@ export type FieldSetOptions = {
   ref?: HTMLElement | null;
 };
 
-export const fields_set = (
-  fields: PersistedFields,
-  path: string,
-  field: FieldSetOptions,
-): PersistedFields => {
+export const fields_set = (fields: PersistedFields, path: string, field: FieldSetOptions): PersistedFields => {
   const fixed = fields_fixPath(path);
   const paths = getAscendantPaths(fixed);
   const updated = paths.reduce((acc, curr) => {
@@ -76,10 +72,7 @@ export const fields_set = (
   };
 };
 
-export const fields_delete = (
-  fields: PersistedFields,
-  path: string,
-): PersistedFields => {
+export const fields_delete = (fields: PersistedFields, path: string): PersistedFields => {
   const fixed = fields_fixPath(path);
 
   return Object.fromEntries(
@@ -89,11 +82,7 @@ export const fields_delete = (
   );
 };
 
-export const fields_reset = (
-  fields: PersistedFields,
-  path: string,
-  values: unknown,
-): PersistedFields => {
+export const fields_reset = (fields: PersistedFields, path: string, values: unknown): PersistedFields => {
   const deleted = fields_delete(fields, path);
   const updated = fields_build(values);
 

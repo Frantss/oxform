@@ -1,10 +1,12 @@
 import { defaultStatus } from '#field-api.constants';
-import type { FormBaseStore, FormOptions, FormStore } from '#form-api.types';
-import { fields_build, fields_root } from '#utils/fields';
+import type { FormBaseStore, FormIssue, FormOptions, FormStore, ValidateOptions } from '#form-api.types';
+import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
+import { fields_build, fields_fixPath, fields_root } from '#utils/fields';
 import { get } from '#utils/get';
+import { schema_validate } from '#utils/schema-validate';
 import { update, type Updater } from '#utils/update';
 import { Derived, Store } from '@tanstack/store';
-import { entries, fromEntries, isDeepEqual, map, pipe, setPath, stringToPath } from 'remeda';
+import { entries, fromEntries, isDeepEqual, isFunction, map, pipe, setPath, stringToPath } from 'remeda';
 
 export class FormCore<Values> {
   public options!: FormOptions<Values>;
@@ -76,103 +78,67 @@ export class FormCore<Values> {
     });
   };
 
-  // public get status() {
-  //   return this.store.state.status;
-  // }
+  public validate = async <const Name extends FormCoreFieldPaths<Values>>(
+    fields?: Name | Name[],
+    options?: ValidateOptions,
+  ): Promise<[boolean, FormIssue[]]> => {
+    const schemaOrBuilder = options?.type
+      ? (this.options.validate?.[options.type] ?? this.options.schema)
+      : this.options.schema;
+    const schema = isFunction(schemaOrBuilder) ? schemaOrBuilder(this.store.state) : schemaOrBuilder;
+    const targets = fields
+      ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_fixPath(field))
+      : undefined;
 
-  // public get values() {
-  //   return this.store.state.values;
-  // }
+    this.persisted.setState(state => {
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          validating: true,
+        },
+      };
+    });
 
-  // private get validator() {
-  //   const { state } = this.store;
-  //   const validate = this.options.validate;
+    const result = await schema_validate(schema, this.store.state.values);
+    const allIssues = result.issues ?? [];
+    const issues: FormIssue[] = [];
+    const grouped: Record<string, FormIssue[]> = {};
 
-  //   return {
-  //     change: isFunction(validate?.change) ? validate.change(state) : validate?.change,
-  //     submit: isFunction(validate?.submit) ? validate.submit(state) : (validate?.submit ?? this.options.schema),
-  //     blur: isFunction(validate?.blur) ? validate.blur(state) : validate?.blur,
-  //     focus: isFunction(validate?.focus) ? validate.focus(state) : validate?.focus,
-  //   };
-  // }
+    for (const issue of allIssues) {
+      const issuePath = !issue.path || issue.path.length === 0 ? fields_root : `${fields_root}.${issue.path.join('.')}`;
 
-  // public setFields = (fields: Fields) => {
-  //   this.persisted.setState(current => {
-  //     return {
-  //       ...current,
-  //       fields,
-  //     };
-  //   });
-  // };
+      const shouldInclude =
+        !targets || targets.some(target => issuePath === target || issuePath.startsWith(`${target}.`));
+      if (!shouldInclude) continue;
 
-  // public setStatus = (status: Partial<PersistedFormStatus>) => {
-  //   this.persisted.setState(current => {
-  //     return {
-  //       ...current,
-  //       status: {
-  //         ...current.status,
-  //         ...status,
-  //       },
-  //     };
-  //   });
-  // };
+      issues.push(issue);
+      (grouped[issuePath] ??= []).push(issue);
+    }
 
-  // public validate = async (
-  //   field?: FormFields<FormApi<Values>> | FormFields<FormApi<Values>>[],
-  //   options?: ValidateOptions,
-  // ) => {
-  //   const validator = options?.type ? this.validator[options.type] : this.options.schema;
+    this.persisted.setState(state => {
+      const updatedFields = { ...state.fields };
 
-  //   if (!validator) return [];
+      for (const [path, field] of Object.entries(state.fields)) {
+        const shouldUpdate = !targets || targets.some(target => path === target || path.startsWith(`${target}.`));
+        if (!shouldUpdate) continue;
 
-  //   this.setStatus({ validating: true });
+        updatedFields[path] = {
+          ...field,
+          errors: grouped[path] ?? [],
+        };
+      }
 
-  //   const { issues: allIssues } = await validate(validator, this.store.state.values);
+      return {
+        ...state,
+        fields: updatedFields,
+        status: {
+          ...state.status,
+          validating: false,
+        },
+      };
+    });
 
-  //   if (!allIssues) {
-  //     this.persisted.setState(current => {
-  //       return { ...current, errors: {}, status: { ...current.status, validating: false } };
-  //     });
-
-  //     return [];
-  //   }
-
-  //   const fields = field ? (Array.isArray(field) ? field : [field]) : undefined;
-  //   const related: string[] = fields?.flatMap(field => this.options.related?.[field as never] ?? []) ?? [];
-  //   const affected = [...(fields ?? []), ...related];
-
-  //   const issues = allIssues.filter(issue => {
-  //     const path = issue.path?.join('.') ?? 'root';
-  //     return !fields || affected.some(key => path.startsWith(key));
-  //   });
-
-  //   // FIXME: this is all wrong
-  //   const errors = issues.reduce((acc, issue) => {
-  //     const path = issue.path?.join('.') ?? 'root';
-  //     return {
-  //       ...acc,
-  //       [path]: [...(acc[path] ?? []), issue],
-  //     };
-  //   }, {} as any);
-
-  //   this.persisted.setState(current => {
-  //     const existing = { ...current.fields };
-
-  //     for (const key of affected) {
-  //       existing[key].errors = [];
-  //     }
-
-  //     return {
-  //       ...current,
-  //       errors: {
-  //         ...(fields ? existing : {}), // when validating a specific set of fields, keep the existing errors
-  //         ...errors,
-  //       },
-  //     };
-  //   });
-
-  //   this.setStatus({ validating: false });
-
-  //   return issues;
-  // };
+    return [issues.length === 0, issues] as const;
+  };
 }

@@ -84,6 +84,13 @@ export type ValidateOptions = {
   type?: ValidationType;
 };
 
+export type FieldValidationOptions = {
+  should?: {
+    /** Whether to validate the field after the event. Defaults to true. */
+    validate?: boolean;
+  };
+};
+
 export type FieldChangeOptions = {
   should?: {
     /** Whether to validate the field after changing its value. Defaults to true. */

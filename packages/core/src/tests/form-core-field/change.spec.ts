@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 import { setup } from './setup';
 
@@ -99,4 +99,23 @@ it('does not mark a descendant field as touched when changing its parent field',
   const meta = context.field.meta('nested.value');
 
   expect(meta.touched).toBe(false);
+});
+
+it('validates by default when changing a field', () => {
+  using context = setup();
+  const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
+
+  context.field.change('name', 'updated');
+
+  expect(validate).toHaveBeenCalledOnce();
+  expect(validate).toHaveBeenCalledWith('name', { type: 'change' });
+});
+
+it('skips validation when should.validate is false', () => {
+  using context = setup();
+  const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
+
+  context.field.change('name', 'updated', { should: { validate: false } });
+
+  expect(validate).not.toHaveBeenCalled();
 });

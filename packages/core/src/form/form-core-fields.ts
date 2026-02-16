@@ -1,5 +1,14 @@
 import type { FormCore } from '#form/form-core';
-import { fields_build, fields_move, fields_remove, fields_reset, fields_set, fields_shift, fields_swap, type FieldSetOptions } from '#utils/fields';
+import {
+  fields_build,
+  fields_move,
+  fields_remove,
+  fields_reset,
+  fields_set,
+  fields_shift,
+  fields_swap,
+  type FieldSetOptions,
+} from '#utils/fields';
 
 export class FormCoreFields<Values> {
   private core: FormCore<Values>;

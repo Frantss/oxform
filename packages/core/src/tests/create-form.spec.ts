@@ -1,6 +1,6 @@
-import { createForm } from "#form/create-form";
-import { expect, expectTypeOf, it } from "vitest";
-import z from "zod";
+import { createForm } from '#form/create-form';
+import { expect, expectTypeOf, it } from 'vitest';
+import z from 'zod';
 
 const schema = z.object({
   name: z.string(),
@@ -19,15 +19,15 @@ const schema = z.object({
 });
 
 const defaultValues = {
-  name: "john",
+  name: 'john',
   age: 20,
   object: {
-    array: [{ value: "first" }],
+    array: [{ value: 'first' }],
   },
   nested: {
     enabled: false,
   },
-  tags: ["a"],
+  tags: ['a'],
 };
 
 const setup = () => {
@@ -45,64 +45,64 @@ const setup = () => {
   };
 };
 
-it("accepts valid field paths for get and change", () => {
+it('accepts valid field paths for get and change', () => {
   using context = setup();
   const { form } = context;
 
-  form.field.change("name", "jane");
-  form.field.change("age", 21);
-  form.field.change("nested.enabled", true);
+  form.field.change('name', 'jane');
+  form.field.change('age', 21);
+  form.field.change('nested.enabled', true);
 
-  const name = form.field.get("name");
-  const age = form.field.get("age");
-  const enabled = form.field.get("nested.enabled");
+  const name = form.field.get('name');
+  const age = form.field.get('age');
+  const enabled = form.field.get('nested.enabled');
 
-  expect(name).toBe("jane");
+  expect(name).toBe('jane');
   expect(age).toBe(21);
   expect(enabled).toBe(true);
 });
 
-it("accepts valid array field paths for array methods", () => {
+it('accepts valid array field paths for array methods', () => {
   using context = setup();
   const { form } = context;
 
-  form.array.append("tags", "b");
-  const tags = form.field.get("tags");
+  form.array.append('tags', 'b');
+  const tags = form.field.get('tags');
 
-  expect(tags).toEqual(["a", "b"]);
+  expect(tags).toEqual(['a', 'b']);
 });
 
-it("infers correct value types from field paths", () => {
+it('infers correct value types from field paths', () => {
   using context = setup();
   const { form } = context;
 
-  expectTypeOf(form.field.get("name")).toEqualTypeOf<string>();
-  expectTypeOf(form.field.get("age")).toEqualTypeOf<number>();
-  expectTypeOf(form.field.get("nested.enabled")).toEqualTypeOf<boolean>();
-  expectTypeOf(form.field.get("tags")).toEqualTypeOf<string[]>();
-  expectTypeOf(form.field.get("tags.0")).toEqualTypeOf<string | undefined>();
-  expectTypeOf(form.field.get("object.array.0.value")).toEqualTypeOf<string | undefined>();
+  expectTypeOf(form.field.get('name')).toEqualTypeOf<string>();
+  expectTypeOf(form.field.get('age')).toEqualTypeOf<number>();
+  expectTypeOf(form.field.get('nested.enabled')).toEqualTypeOf<boolean>();
+  expectTypeOf(form.field.get('tags')).toEqualTypeOf<string[]>();
+  expectTypeOf(form.field.get('tags.0')).toEqualTypeOf<string | undefined>();
+  expectTypeOf(form.field.get('object.array.0.value')).toEqualTypeOf<string | undefined>();
 });
 
-it("infers updater types for change correctly", () => {
+it('infers updater types for change correctly', () => {
   using context = setup();
   const { form } = context;
 
-  form.field.change("name", (current) => {
+  form.field.change('name', current => {
     expectTypeOf(current).toEqualTypeOf<string>();
     return current.toUpperCase();
   });
 
-  form.field.change("age", (current) => {
+  form.field.change('age', current => {
     expectTypeOf(current).toEqualTypeOf<number>();
     return current + 1;
   });
 
-  form.field.change("nested.enabled", (current) => {
+  form.field.change('nested.enabled', current => {
     expectTypeOf(current).toEqualTypeOf<boolean>();
     return !current;
   });
 
-  const age = form.field.get("age");
+  const age = form.field.get('age');
   expect(age).toBe(21);
 });
