@@ -1,4 +1,3 @@
-import type { FormApi } from '#form-api';
 import type { DeepKeys } from '#more-types';
 import type { PartialDeep, Simplify, StandardSchema } from '#types';
 import type { PersistedFields } from '#utils/fields';
@@ -137,19 +136,4 @@ export type FormSetErrorsOptions = {
 
 export type FormErrorsOptions = {
   nested?: boolean;
-};
-
-export type FormSubmitSuccessHandler<Schema extends StandardSchema> = (
-  data: StandardSchema.InferOutput<Schema>,
-  form: FormApi<Schema>,
-) => void | Promise<void>;
-
-export type FormSubmitErrorHandler<Schema extends StandardSchema> = (
-  issues: FormIssue[],
-  form: FormApi<Schema>,
-) => void | Promise<void>;
-
-export type FormSubmitHandlers<Schema extends StandardSchema> = {
-  onSuccess: FormSubmitSuccessHandler<Schema>;
-  onError?: FormSubmitErrorHandler<Schema>;
 };

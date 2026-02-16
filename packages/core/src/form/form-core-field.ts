@@ -1,4 +1,3 @@
-import type { FormApi, FormFields } from '#form-api';
 import type {
   FieldChangeOptions,
   FormErrorsOptions,
@@ -7,6 +6,7 @@ import type {
   FormSetErrorsOptions,
 } from '#form-api.types';
 import type { FormCore } from '#form/form-core';
+import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
 import type { FormCoreFields } from '#form/form-core-fields';
 import type { DeepValue } from '#more-types';
 import { fields_root } from '#utils/fields';
@@ -30,7 +30,7 @@ export class FormCoreField<Values> {
    * @param value - The new value to set for the field
    * @param options - Optional configuration for controlling validation, dirty state, and touched state
    */
-  public change = <const Name extends FormFields<FormApi<Values>>>(
+  public change = <const Name extends FormCoreFieldPaths<Values>>(
     name: Name,
     updater: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -51,7 +51,7 @@ export class FormCoreField<Values> {
     });
   };
 
-  public focus = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public focus = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.focus();
@@ -60,7 +60,7 @@ export class FormCoreField<Values> {
     // void this.core.validate(name as never, { type: 'focus' });
   };
 
-  public blur = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public blur = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.blur();
@@ -69,26 +69,26 @@ export class FormCoreField<Values> {
     // void this.core.validate(name as never, { type: 'blur' });
   };
 
-  public get = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public get = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     return get(this.core.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public meta = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     return this.core.store.state.fields[`${fields_root}.${name}`].meta;
   };
 
-  public register = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public register = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     return (element: HTMLElement | null) => {
       if (!element) return;
       this.fields.set(name, { ref: element });
     };
   };
 
-  public unregister = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+  public unregister = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
     this.fields.set(name, { ref: null });
   };
 
-  public errors = <const Name extends FormFields<FormApi<Values>>>(
+  public errors = <const Name extends FormCoreFieldPaths<Values>>(
     name: Name,
     options?: FormErrorsOptions,
   ): FormIssue[] => {
@@ -105,7 +105,7 @@ export class FormCoreField<Values> {
     }, [] as FormIssue[]);
   };
 
-  public setErrors = <const Name extends FormFields<FormApi<Values>>>(
+  public setErrors = <const Name extends FormCoreFieldPaths<Values>>(
     name: Name,
     errors: FormIssue[],
     options?: FormSetErrorsOptions,
@@ -130,7 +130,7 @@ export class FormCoreField<Values> {
     this.fields.set(name, { errors: updated });
   };
 
-  public reset = <const Name extends FormFields<FormApi<Values>>>(
+  public reset = <const Name extends FormCoreFieldPaths<Values>>(
     name: Name,
     options?: FormResetFieldOptions<DeepValue<Values, Name>>,
   ) => {

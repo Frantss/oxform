@@ -1,6 +1,6 @@
-import type { FormApi, FormArrayFields } from '#form-api';
 import type { FieldChangeOptions } from '#form-api.types';
 import type { FormCore } from '#form/form-core';
+import type { FormCoreArrayFields } from '#form/form-core.types';
 import type { FormCoreField } from '#form/form-core-field';
 import type { FormCoreFields } from '#form/form-core-fields';
 import type { DeepValue, UnwrapOneLevelOfArray } from '#more-types';
@@ -8,7 +8,6 @@ import { update, type Updater } from '#utils/update';
 import { batch } from '@tanstack/store';
 
 export class FormCoreArray<Values> {
-  private core: FormCore<Values>;
   private fields: FormCoreFields<Values>;
   private field: FormCoreField<Values>;
 
@@ -21,12 +20,11 @@ export class FormCoreArray<Values> {
     fields: FormCoreFields<Values>;
     field: FormCoreField<Values>;
   }) {
-    this.core = core;
     this.field = field;
     this.fields = fields;
   }
 
-  public insert = <const Name extends FormArrayFields<FormApi<Values>>>(
+  public insert = <const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     index: number,
     value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
@@ -57,7 +55,7 @@ export class FormCoreArray<Values> {
     });
   };
 
-  public append = <const Name extends FormArrayFields<FormApi<Values>>>(
+  public append = <const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -76,7 +74,7 @@ export class FormCoreArray<Values> {
     });
   };
 
-  public prepend = <const Name extends FormArrayFields<FormApi<Values>>>(
+  public prepend = <const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -84,7 +82,7 @@ export class FormCoreArray<Values> {
     return this.insert(name, 0, value, options);
   };
 
-  public swap = <const Name extends FormArrayFields<FormApi<Values>>>(
+  public swap = <const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     from: number,
     to: number,
@@ -114,7 +112,7 @@ export class FormCoreArray<Values> {
     });
   };
 
-  public move<const Name extends FormArrayFields<FormApi<Values>>>(
+  public move<const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     _from: number,
     _to: number,
@@ -143,7 +141,7 @@ export class FormCoreArray<Values> {
     });
   }
 
-  public update = <const Name extends FormArrayFields<FormApi<Values>>>(
+  public update = <const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     index: number,
     value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
@@ -177,7 +175,7 @@ export class FormCoreArray<Values> {
     });
   };
 
-  public remove<const Name extends FormArrayFields<FormApi<Values>>>(
+  public remove<const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     index: number,
     options?: FieldChangeOptions,
@@ -200,7 +198,7 @@ export class FormCoreArray<Values> {
     });
   }
 
-  public replace<const Name extends FormArrayFields<FormApi<Values>>>(
+  public replace<const Name extends FormCoreArrayFields<Values>>(
     name: Name,
     value: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
