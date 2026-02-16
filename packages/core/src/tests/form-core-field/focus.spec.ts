@@ -1,42 +1,42 @@
-import { expect, it } from "vitest";
+import { expect, it } from 'vitest';
 
-import { setup } from "./setup";
+import { setup } from './setup';
 
-it("focuses a registered element reference", () => {
-    using context = setup();
-    const element = document.createElement("input");
-    document.body.append(element);
+it('focuses a registered element reference', () => {
+  using context = setup();
+  const element = document.createElement('input');
+  document.body.append(element);
 
-    context.field.register("name")(element);
-    context.field.focus("name");
+  context.field.register('name')(element);
+  context.field.focus('name');
 
-    expect(document.activeElement).toBe(element);
-    element.remove();
-  });
+  expect(document.activeElement).toBe(element);
+  element.remove();
+});
 
-it("marks the field as touched", () => {
-    using context = setup();
+it('marks the field as touched', () => {
+  using context = setup();
 
-    context.field.focus("name");
-    const meta = context.field.meta("name");
+  context.field.focus('name');
+  const meta = context.field.meta('name');
 
-    expect(meta.touched).toBe(true);
-  });
+  expect(meta.touched).toBe(true);
+});
 
-it("marks an ascendant field as touched when focusing a nested field", () => {
-    using context = setup();
+it('marks an ascendant field as touched when focusing a nested field', () => {
+  using context = setup();
 
-    context.field.focus("nested.value");
-    const meta = context.field.meta("nested");
+  context.field.focus('nested.value');
+  const meta = context.field.meta('nested');
 
-    expect(meta.touched).toBe(true);
-  });
+  expect(meta.touched).toBe(true);
+});
 
-it("does not mark a descendant field as touched when focusing a parent field", () => {
-    using context = setup();
+it('does not mark a descendant field as touched when focusing a parent field', () => {
+  using context = setup();
 
-    context.field.focus("nested");
-    const meta = context.field.meta("nested.value");
+  context.field.focus('nested');
+  const meta = context.field.meta('nested.value');
 
-    expect(meta.touched).toBe(false);
-  });
+  expect(meta.touched).toBe(false);
+});

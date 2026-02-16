@@ -1,4 +1,4 @@
-import { fields_build, fields_delete, fields_reset, fields_root, fields_set, fields_shift } from '#utils/fields';
+import { fields_build, fields_delete, fields_move, fields_remove, fields_reset, fields_root, fields_set, fields_shift } from '#utils/fields';
 import { generateId } from '#utils/generate-id';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -112,6 +112,27 @@ describe('fields_set', () => {
     expect(updated[`${fields_root}.complex`].meta.dirty).toBe(false);
     expect(updated[`${fields_root}.complex`].meta.touched).toBe(true);
     expect(updated[`${fields_root}.complex`].meta.blurred).toBe(true);
+  });
+
+  it('should not propagate errors to ascendant paths', () => {
+    const { fields } = setup();
+    const expected = fields[`${fields_root}.complex.0.array`].errors;
+
+    const updated = fields_set(fields, 'complex.0.array.string', { errors: [{ path: ['complex', 0, 'array', 'string'] }] as never });
+    const errors = updated[`${fields_root}.complex.0.array`].errors;
+
+    expect(errors).toStrictEqual(expected);
+  });
+
+  it('should not propagate refs to ascendant paths', () => {
+    const { fields } = setup();
+    const expected = fields[`${fields_root}.complex.0.array`].ref;
+    const ref = {} as HTMLElement;
+
+    const updated = fields_set(fields, 'complex.0.array.string', { ref });
+    const ascendantRef = updated[`${fields_root}.complex.0.array`].ref;
+
+    expect(ascendantRef).toStrictEqual(expected);
   });
 });
 
@@ -245,5 +266,62 @@ describe('fields_shift', () => {
     expect(updated[`${fields_root}.array.7`]).toStrictEqual(fields[`${fields_root}.array.6`]);
 
     expect(updated[`${fields_root}.array.8`]).not.toBeDefined();
+  });
+});
+
+describe('fields_move', () => {
+  it('should move entry forward', () => {
+    const { fields } = setup();
+
+    const updated = fields_move(fields, 'array', 0, 2);
+
+    expect(updated[`${fields_root}.array.0`]).toStrictEqual(fields[`${fields_root}.array.1`]);
+    expect(updated[`${fields_root}.array.1`]).toStrictEqual(fields[`${fields_root}.array.2`]);
+    expect(updated[`${fields_root}.array.2`]).toStrictEqual(fields[`${fields_root}.array.0`]);
+  });
+
+  it('should move entry backward', () => {
+    const { fields } = setup();
+
+    const updated = fields_move(fields, 'array', 2, 0);
+
+    expect(updated[`${fields_root}.array.0`]).toStrictEqual(fields[`${fields_root}.array.2`]);
+    expect(updated[`${fields_root}.array.1`]).toStrictEqual(fields[`${fields_root}.array.0`]);
+    expect(updated[`${fields_root}.array.2`]).toStrictEqual(fields[`${fields_root}.array.1`]);
+  });
+
+  it('should keep entries unchanged when moving to same index', () => {
+    const { fields } = setup();
+
+    const updated = fields_move(fields, 'array', 1, 1);
+
+    expect(updated).toStrictEqual(fields);
+  });
+});
+
+describe('fields_remove', () => {
+  it('should shift following entries left', () => {
+    const { fields } = setup();
+
+    const updated = fields_remove(fields, 'array', 0);
+
+    expect(updated[`${fields_root}.array.0`]).toStrictEqual(fields[`${fields_root}.array.1`]);
+    expect(updated[`${fields_root}.array.1`]).toStrictEqual(fields[`${fields_root}.array.2`]);
+  });
+
+  it('should delete trailing entry after shift', () => {
+    const { fields } = setup();
+
+    const updated = fields_remove(fields, 'array', 0);
+
+    expect(updated[`${fields_root}.array.2`]).not.toBeDefined();
+  });
+
+  it('should delete target entry when removing last index', () => {
+    const { fields } = setup();
+
+    const updated = fields_remove(fields, 'array', 2);
+
+    expect(updated[`${fields_root}.array.2`]).not.toBeDefined();
   });
 });

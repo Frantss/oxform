@@ -1,15 +1,11 @@
-import { defaultMeta } from '#field-api.constants';
 import type { FormApi, FormArrayFields } from '#form-api';
 import type { FieldChangeOptions } from '#form-api.types';
 import type { FormCore } from '#form/form-core';
 import type { FormCoreField } from '#form/form-core-field';
 import type { FormCoreFields } from '#form/form-core-fields';
 import type { DeepValue, UnwrapOneLevelOfArray } from '#more-types';
-import { generateId } from '#utils/generate-id';
-import { get } from '#utils/get';
 import { update, type Updater } from '#utils/update';
 import { batch } from '@tanstack/store';
-import { stringToPath } from 'remeda';
 
 export class FormCoreArray<Values> {
   private core: FormCore<Values>;
@@ -30,15 +26,6 @@ export class FormCoreArray<Values> {
     this.fields = fields;
   }
 
-  private createField = () => {
-    return {
-      id: generateId(),
-      meta: { ...defaultMeta },
-      errors: [],
-      ref: null,
-    };
-  };
-
   public insert = <const Name extends FormArrayFields<FormApi<Values>>>(
     name: Name,
     index: number,
@@ -46,40 +33,27 @@ export class FormCoreArray<Values> {
     options?: FieldChangeOptions,
   ) => {
     if (index < 0) index = 0;
+    const previous = this.field.get(name) as any[] | undefined;
+    const previousLength = previous?.length ?? 0;
 
-    this.field.change(
-      name,
-      current => {
-        const array = (current as any[]) ?? [];
+    batch(() => {
+      this.field.change(
+        name,
+        current => {
+          const array = (current as any[]) ?? [];
 
-        return [
-          ...array.slice(0, index),
-          ...(Array.from({ length: index - array.length }, () => undefined) as any[]),
-          update(value, current as never),
-          ...array.slice(index),
-        ] as never;
-      },
-      options,
-    );
+          return [
+            ...array.slice(0, index),
+            ...(Array.from({ length: index - array.length }, () => undefined) as any[]),
+            update(value, current as never),
+            ...array.slice(index),
+          ] as never;
+        },
+        options,
+      );
 
-    this.core.persisted.setState(current => {
-      const fields = { ...current.fields };
-      const currentValue = get(current.values as never, stringToPath(name)) as any[] | undefined;
-      const length = currentValue?.length;
-
-      if (length === undefined) return current;
-
-      for (let i = index; i < length; i++) {
-        const moving = current.fields[`${name}.${i}`];
-        fields[`${name}.${i + 1}`] = moving ?? this.createField();
-      }
-
-      fields[`${name}.${index}`] = this.createField();
-
-      return {
-        ...current,
-        fields,
-      };
+      if (index < previousLength) this.fields.shift(name, index, 'right');
+      this.fields.adjust();
     });
   };
 
@@ -88,8 +62,18 @@ export class FormCoreArray<Values> {
     value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
   ) => {
-    const current = this.field.get(name) as any[] | undefined;
-    return this.insert(name, current?.length ?? 0, value, options);
+    batch(() => {
+      this.field.change(
+        name,
+        current => {
+          const array = (current as any[]) ?? [];
+          return [...array, value] as never;
+        },
+        options,
+      );
+
+      this.fields.adjust();
+    });
   };
 
   public prepend = <const Name extends FormArrayFields<FormApi<Values>>>(
@@ -111,29 +95,22 @@ export class FormCoreArray<Values> {
 
     if (start === end) return; // no-op
 
-    this.field.change(
-      name,
-      current => {
-        const array = (current as any[]) ?? [];
-        const updated = [...array];
+    batch(() => {
+      this.field.change(
+        name,
+        current => {
+          const array = (current as any[]) ?? [];
+          const updated = [...array];
 
-        [updated[start], updated[end]] = [updated[end], updated[start]];
+          [updated[start], updated[end]] = [updated[end], updated[start]];
 
-        return updated as never;
-      },
-      options,
-    );
+          return updated as never;
+        },
+        options,
+      );
 
-    this.core.persisted.setState(current => {
-      const fields = { ...current.fields };
-
-      fields[`${name}.${start}`] = current.fields[`${name}.${end}`] ?? this.createField();
-      fields[`${name}.${end}`] = current.fields[`${name}.${start}`] ?? this.createField();
-
-      return {
-        ...current,
-        fields,
-      };
+      this.fields.swap(name, start, end);
+      this.fields.adjust();
     });
   };
 
@@ -145,45 +122,24 @@ export class FormCoreArray<Values> {
   ) {
     const from = Math.max(_from, 0);
     const to = Math.max(_to, 0);
-    const backwards = from > to;
 
-    this.field.change(
-      name,
-      current => {
-        const array: any[] = current ? [...(current as any[])] : [];
+    batch(() => {
+      this.field.change(
+        name,
+        current => {
+          const array: any[] = current ? [...(current as any[])] : [];
+          const backwards = from > to;
 
-        if (from === to) return array as never;
+          if (from === to) return array as never;
 
-        const moved = array[from];
-        return array.toSpliced(backwards ? to : to + 1, 0, moved).toSpliced(backwards ? from + 1 : from, 1) as never;
-      },
-      options,
-    );
+          const moved = array[from];
+          return array.toSpliced(backwards ? to : to + 1, 0, moved).toSpliced(backwards ? from + 1 : from, 1) as never;
+        },
+        options,
+      );
 
-    this.core.persisted.setState(current => {
-      const fields = { ...current.fields };
-      const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
-      const length = value?.length;
-
-      const start = Math.min(from, to);
-      const end = Math.max(from, to);
-
-      if (length === undefined) return current;
-
-      if (!backwards) {
-        fields[`${name}.${to}`] = current.fields[`${name}.${from}`] ?? this.createField();
-      }
-
-      for (let i = backwards ? start + 1 : start; i < end; i++) {
-        const shift = backwards ? -1 : 1;
-        const moving = current.fields[`${name}.${i + shift}`];
-        fields[`${name}.${i}`] = moving ?? this.createField();
-      }
-
-      return {
-        ...current,
-        fields,
-      };
+      this.fields.move(name, from, to);
+      this.fields.adjust();
     });
   }
 
@@ -201,7 +157,11 @@ export class FormCoreArray<Values> {
         const array = (current as any[]) ?? [];
         position = Math.max(Math.min(index, array.length - 1), 0);
 
-        return [...array.slice(0, position), update(value, array[position] as never), ...array.slice(position + 1)] as never;
+        return [
+          ...array.slice(0, position),
+          update(value, array[position] as never),
+          ...array.slice(position + 1),
+        ] as never;
       },
       options,
     );
@@ -224,35 +184,20 @@ export class FormCoreArray<Values> {
   ) {
     let position = index;
 
-    this.field.change(
-      name,
-      current => {
-        const array = (current as any[]) ?? [];
-        position = Math.max(Math.min(index, array.length - 1), 0);
+    batch(() => {
+      this.field.change(
+        name,
+        current => {
+          const array = (current as any[]) ?? [];
+          position = Math.max(Math.min(index, array.length - 1), 0);
 
-        return [...array.slice(0, position), ...array.slice(position + 1)] as never;
-      },
-      { ...options, should: { ...options?.should, validate: false } },
-    );
+          return [...array.slice(0, position), ...array.slice(position + 1)] as never;
+        },
+        { ...options, should: { ...options?.should, validate: false } },
+      );
 
-    this.core.persisted.setState(current => {
-      const fields = { ...current.fields };
-      const value = get(current.values as never, stringToPath(name)) as any[] | undefined;
-      const length = value?.length ?? 0;
-
-      for (let i = position; i < length; i++) {
-        const moving = current.fields[`${name}.${i + 1}`];
-        fields[`${name}.${i}`] = moving ?? this.createField();
-      }
-
-      delete fields[`${name}.${length}`];
-
-      return {
-        ...current,
-        fields,
-      };
+      this.fields.remove(name, position);
     });
-
   }
 
   public replace<const Name extends FormArrayFields<FormApi<Values>>>(
@@ -260,9 +205,18 @@ export class FormCoreArray<Values> {
     value: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
   ) {
+    const shouldDirty = options?.should?.dirty !== false;
+    const shouldTouch = options?.should?.touch !== false;
+
     batch(() => {
-      this.fields.reset(name);
       this.field.change(name, value as never, options);
+      this.fields.reset(name);
+      this.fields.set(name, {
+        meta: {
+          dirty: shouldDirty ? true : undefined,
+          touched: shouldTouch ? true : undefined,
+        },
+      });
     });
   }
 }

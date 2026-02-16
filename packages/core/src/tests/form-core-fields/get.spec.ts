@@ -1,0 +1,27 @@
+import { expect, it } from 'vitest';
+
+import { setup } from './setup';
+
+it('returns the root field entry when using a root-prefixed path', () => {
+  using context = setup();
+
+  const entry = context.fields.get('~root.name');
+
+  expect(entry).toBeDefined();
+});
+
+it('returns the field entry when path omits the root prefix', () => {
+  using context = setup();
+
+  const entry = context.fields.get('name');
+
+  expect(entry).toBeDefined();
+});
+
+it('returns undefined for a missing path', () => {
+  using context = setup();
+
+  const entry = context.fields.get('missing');
+
+  expect(entry).toBeUndefined();
+});

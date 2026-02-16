@@ -34,7 +34,7 @@ export interface ArrayDeepKeyAndValue<
   in out T extends ReadonlyArray<any>,
 > extends AnyDeepKeyAndValue {
   key: ArrayAccessor<TParent>;
-  value: T[number] | Nullable<TParent['value']>;
+  value: T[number] | undefined | Extract<TParent['value'], null | undefined>;
 }
 
 export type DeepKeyAndValueArray<

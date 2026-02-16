@@ -16,37 +16,37 @@ const nestedIssue: FormIssue = {
 } as never;
 
 it('returns an empty array by default', () => {
-    using context = setup();
+  using context = setup();
 
-    const errors = context.field.errors('name');
+  const errors = context.field.errors('name');
 
-    expect(errors).toEqual([]);
-  });
+  expect(errors).toEqual([]);
+});
 
 it('returns errors for a specific field', () => {
-    using context = setup();
+  using context = setup();
 
-    context.field.setErrors('name', [nameIssue]);
-    const errors = context.field.errors('name');
+  context.field.setErrors('name', [nameIssue]);
+  const errors = context.field.errors('name');
 
-    expect(errors).toEqual([nameIssue]);
-  });
+  expect(errors).toEqual([nameIssue]);
+});
 
 it('returns the ascendant field errors updated by descendant setErrors', () => {
-    using context = setup();
+  using context = setup();
 
-    context.field.setErrors('nested', [nameIssue]);
-    context.field.setErrors('nested.value', [nestedIssue]);
-    const errors = context.field.errors('nested');
+  context.field.setErrors('nested', [nameIssue]);
+  context.field.setErrors('nested.value', [nestedIssue]);
+  const errors = context.field.errors('nested');
 
-    expect(errors).toEqual([nestedIssue]);
-  });
+  expect(errors).toEqual([nameIssue]);
+});
 
 it('returns aggregated nested errors when nested option is enabled', () => {
-    using context = setup();
+  using context = setup();
 
-    context.field.setErrors('nested.value', [nestedIssue]);
-    const errors = context.field.errors('nested', { nested: true });
+  context.field.setErrors('nested.value', [nestedIssue]);
+  const errors = context.field.errors('nested', { nested: true });
 
-    expect(errors).toHaveLength(2);
-  });
+  expect(errors).toEqual([nestedIssue]);
+});

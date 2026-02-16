@@ -1,5 +1,5 @@
 import type { FormCore } from '#form/form-core';
-import { fields_build, fields_reset, fields_set, fields_shift, type FieldSetOptions } from '#utils/fields';
+import { fields_build, fields_move, fields_remove, fields_reset, fields_set, fields_shift, fields_swap, type FieldSetOptions } from '#utils/fields';
 
 export class FormCoreFields<Values> {
   private core: FormCore<Values>;
@@ -35,6 +35,33 @@ export class FormCoreFields<Values> {
       return {
         ...state,
         fields: fields_shift(state.fields, path, position, direction),
+      };
+    });
+  };
+
+  public swap = (path: string, from: number, to: number) => {
+    this.core.persisted.setState(state => {
+      return {
+        ...state,
+        fields: fields_swap(state.fields, path, from, to),
+      };
+    });
+  };
+
+  public move = (path: string, from: number, to: number) => {
+    this.core.persisted.setState(state => {
+      return {
+        ...state,
+        fields: fields_move(state.fields, path, from, to),
+      };
+    });
+  };
+
+  public remove = (path: string, index: number) => {
+    this.core.persisted.setState(state => {
+      return {
+        ...state,
+        fields: fields_remove(state.fields, path, index),
       };
     });
   };
