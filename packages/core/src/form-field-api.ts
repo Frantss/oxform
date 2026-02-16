@@ -97,6 +97,10 @@ export class FormField<Values> {
     };
   };
 
+  public unregister = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+    this.fields.set(name, { ref: null });
+  };
+
   public errors = <const Name extends FormFields<FormApi<Values>>>(
     name: Name,
     options?: FormErrorsOptions,

@@ -9,7 +9,7 @@ export class FormCoreFields<Values> {
   }
 
   public get = (path: string) => {
-    return this.core.persisted.state.fields[path];
+    return this.core.persisted.state.fields[path] ?? this.core.persisted.state.fields[`~root.${path}`];
   };
 
   public set = (path: string, options: FieldSetOptions) => {

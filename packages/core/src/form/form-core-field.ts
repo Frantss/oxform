@@ -84,18 +84,23 @@ export class FormCoreField<Values> {
     };
   };
 
+  public unregister = <const Name extends FormFields<FormApi<Values>>>(name: Name) => {
+    this.fields.set(name, { ref: null });
+  };
+
   public errors = <const Name extends FormFields<FormApi<Values>>>(
     name: Name,
     options?: FormErrorsOptions,
   ): FormIssue[] => {
-    const field = this.core.store.state.fields[name];
+    const path = name.startsWith(fields_root) ? name : `${fields_root}.${name}`;
+    const field = this.core.store.state.fields[path];
     if (!options?.nested) return field.errors;
 
     const all = Object.keys(this.core.store.state.fields);
-    const nested = all.filter(key => key.startsWith(name));
+    const nested = all.filter(key => key.startsWith(path));
 
     return nested.reduce((acc, curr) => {
-      const sub = this.errors(curr);
+      const sub = this.errors(curr as never);
       return [...acc, ...sub];
     }, [] as FormIssue[]);
   };
@@ -105,7 +110,8 @@ export class FormCoreField<Values> {
     errors: FormIssue[],
     options?: FormSetErrorsOptions,
   ) => {
-    const existing = this.core.persisted.state.fields[name].errors;
+    const path = name.startsWith(fields_root) ? name : `${fields_root}.${name}`;
+    const existing = this.core.persisted.state.fields[path].errors;
     let updated: FormIssue[];
 
     switch (options?.mode) {

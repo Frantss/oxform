@@ -1,0 +1,27 @@
+import { expect, it } from 'vitest';
+
+import { setup } from './setup';
+
+it('clears the stored field reference', () => {
+  using context = setup();
+  const element = document.createElement('input');
+
+  context.field.register('name')(element);
+  context.field.unregister('name');
+  const ref = context.fields.get('name').ref;
+
+  expect(ref).toBe(null);
+});
+
+it('keeps sibling field references unchanged', () => {
+  using context = setup();
+  const nameElement = document.createElement('input');
+  const nestedElement = document.createElement('input');
+
+  context.field.register('name')(nameElement);
+  context.field.register('nested.value')(nestedElement);
+  context.field.unregister('name');
+  const ref = context.fields.get('nested.value').ref;
+
+  expect(ref).toBe(nestedElement);
+});

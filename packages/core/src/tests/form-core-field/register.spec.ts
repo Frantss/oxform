@@ -1,0 +1,22 @@
+import { expect, it } from 'vitest';
+
+import { setup } from './setup';
+
+it('stores a field reference when a DOM element is provided', () => {
+    using context = setup();
+    const element = document.createElement('input');
+
+    context.field.register('name')(element);
+    const ref = context.fields.get('name').ref;
+
+    expect(ref).toBe(element);
+  });
+
+it('keeps the existing ref when the registered element is null', () => {
+    using context = setup();
+
+    context.field.register('name')(null);
+    const ref = context.fields.get('name').ref;
+
+    expect(ref).toBe(null);
+  });
