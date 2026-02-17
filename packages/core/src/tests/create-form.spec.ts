@@ -106,3 +106,39 @@ it('infers updater types for change correctly', () => {
   const age = form.field.get('age');
   expect(age).toBe(21);
 });
+
+it('exposes status via form.status getter', () => {
+  using context = setup();
+  const { form } = context;
+
+  expect(form.status).toEqual(form.store.state.status);
+  expectTypeOf(form.status).toEqualTypeOf(form.store.state.status);
+});
+
+it('updates options via ~update', async () => {
+  using context = setup();
+  const { form } = context;
+  const next = {
+    schema: z.object({
+      name: z.string().min(6, 'Name too short after update'),
+      age: z.number(),
+      object: z.object({
+        array: z
+          .object({
+            value: z.string(),
+          })
+          .array(),
+      }),
+      nested: z.object({
+        enabled: z.boolean(),
+      }),
+      tags: z.string().array(),
+    }),
+    defaultValues,
+  };
+
+  form['~update'](next);
+  const [valid] = await form.validate('name');
+
+  expect(valid).toBe(false);
+});

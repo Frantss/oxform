@@ -1,4 +1,4 @@
-import type { FormIssue } from '#form-api.types';
+import type { FormIssue } from '#types/api';
 import { expect, it } from 'vitest';
 
 import { setup } from './setup';

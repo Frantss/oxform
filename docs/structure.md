@@ -28,9 +28,7 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 **Core (`packages/core/src/`):**
 
-- `form-api.ts` - Main FormApi class
-- `field-api.ts`, `array-field-api.ts` - Field management
-- `form/` - Internal form modules
+- `form/` - Main API and core modules (`form-api.ts`, `field-api.ts`, `form-core*.ts`)
 - `types/` - TypeScript type definitions
 - `utils/` - Utility functions
 - `tests/` - Test suites

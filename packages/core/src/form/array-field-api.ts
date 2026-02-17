@@ -1,0 +1,78 @@
+import { createField } from '#form/create-field';
+import type { FieldApi } from '#form/field-api';
+import type { FieldChangeOptions } from '#types/api';
+import type { AnyFormApi } from '#types/form';
+import type { ArrayLike } from '#types/misc';
+
+type ArrayFieldApiOptions = {
+  form: AnyFormApi;
+  name: string;
+};
+
+export class ArrayFieldApi<Value extends ArrayLike> {
+  private field!: FieldApi<Value>;
+
+  constructor(options: ArrayFieldApiOptions) {
+    this.field = createField(options);
+  }
+
+  private get form() {
+    return this.field.options.form;
+  }
+
+  private get name() {
+    return this.field.options.name;
+  }
+
+  public get options() {
+    return this.field.options;
+  }
+
+  public get state() {
+    return this.field.state;
+  }
+
+  public '~mount' = () => {
+    return this.field['~mount']();
+  };
+
+  public '~update' = (options: ArrayFieldApiOptions) => {
+    return this.field['~update'](options);
+  };
+
+  public insert = (index: number, value: any, options?: FieldChangeOptions) => {
+    this.form.array.insert(this.name as never, index, value, options);
+  };
+
+  public append = (value: any, options?: FieldChangeOptions) => {
+    this.form.array.append(this.name as never, value, options);
+  };
+
+  public prepend = (value: any, options?: FieldChangeOptions) => {
+    this.form.array.prepend(this.name as never, value, options);
+  };
+
+  public swap = (from: number, to: number, options?: FieldChangeOptions) => {
+    this.form.array.swap(this.name as never, from, to, options);
+  };
+
+  public move = (from: number, to: number, options?: FieldChangeOptions) => {
+    this.form.array.move(this.name as never, from, to, options);
+  };
+
+  public update = (index: number, value: any, options?: FieldChangeOptions) => {
+    this.form.array.update(this.name as never, index, value, options);
+  };
+
+  public remove = (index: number, options?: FieldChangeOptions) => {
+    this.form.array.remove(this.name as never, index, options);
+  };
+
+  public replace = (value: Value | ((current: Value) => Value), options?: FieldChangeOptions) => {
+    this.form.array.replace(this.name as never, value as never, options);
+  };
+
+  public get = () => {
+    return this.form.field.get(this.name as never) as Value;
+  };
+}

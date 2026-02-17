@@ -1,15 +1,10 @@
+export { ArrayFieldApi } from '#form/array-field-api';
+export { createArrayField } from '#form/create-array-field';
+export { createField } from '#form/create-field';
 export { createForm } from '#form/create-form';
+export { FieldApi } from '#form/field-api';
 export { FormApi } from '#form/form-api';
-export { FormCore } from '#form/form-core';
-export { FormCoreField } from '#form/form-core-field';
-export { FormCoreFields } from '#form/form-core-fields';
-export { FormCoreArray } from '#form/form-core-array-field';
 
-export type {
-  FormCoreArrayFields,
-  FormCoreFields as FormCoreFieldPaths,
-  FormCoreFieldValue,
-} from '#form/form-core.types';
-export type * from '#form-api.types';
-export type * from '#more-types';
-export type { ArrayLike, Simplify, StandardSchema } from '#types';
+export type * from '#types/api';
+export type * from '#types/form';
+export type { StandardSchema } from '#types/misc';

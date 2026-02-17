@@ -1,14 +1,8 @@
-import type { DeepKeys } from '#more-types';
-import type { PartialDeep, Simplify, StandardSchema } from '#types';
-import type { PersistedFields } from '#utils/fields';
-
-export type PersistedFormStatus = {
-  submits: number;
-  submitting: boolean;
-  validating: boolean;
-  successful: boolean;
-  dirty: boolean;
-};
+import type { FormApi } from '#form/form-api';
+import type { DeepKeys } from '#types/deep';
+import type { AnyFormApi, FormArrayFields, FormFields } from '#types/form';
+import type { Fields as InternalFields, PersistedFieldMeta, PersistedFormStatus } from '#types/internal';
+import type { ArrayLike, PartialDeep, Simplify, StandardSchema } from '#types/misc';
 
 export type FormStatus = Simplify<
   PersistedFormStatus & {
@@ -16,12 +10,6 @@ export type FormStatus = Simplify<
     valid: boolean;
   }
 >;
-
-export type PersistedFieldMeta = {
-  blurred: boolean;
-  touched: boolean;
-  dirty: boolean;
-};
 
 export type FieldMeta = Simplify<
   PersistedFieldMeta & {
@@ -31,33 +19,10 @@ export type FieldMeta = Simplify<
   }
 >;
 
-export type Fields = Record<
-  string,
-  {
-    id: string;
-    meta: FieldMeta;
-    errors: FormIssue[];
-    ref: HTMLElement | null;
-  }
->;
-
-export type FormBaseStore<Values> = {
-  values: Values;
-  fields: PersistedFields;
-  status: PersistedFormStatus;
-};
-
 export type FormStore<Values> = {
   values: Values;
-  fields: Fields;
+  fields: InternalFields<FormIssue>;
   status: FormStatus;
-};
-
-export type FieldControl<Value> = {
-  focus: () => void;
-  blur: () => void;
-  change: (value: Value) => void;
-  register: (element: HTMLElement | null) => void;
 };
 
 type FormValidatorSchema<Values> = StandardSchema<PartialDeep<Values>>;
@@ -84,9 +49,20 @@ export type ValidateOptions = {
   type?: ValidationType;
 };
 
-export type FieldValidationOptions = {
+export type FormSubmitSuccessHandler<Values> = (values: Values, form: FormApi<Values>) => void | Promise<void>;
+
+export type FormSubmitErrorHandler<Values> = (issues: FormIssue[], form: FormApi<Values>) => void | Promise<void>;
+
+export type FieldFocusOptions = {
   should?: {
-    /** Whether to validate the field after the event. Defaults to true. */
+    /** Whether to validate the field after focusing. Defaults to true. */
+    validate?: boolean;
+  };
+};
+
+export type FieldBlurOptions = {
+  should?: {
+    /** Whether to validate the field after blurring. Defaults to true. */
     validate?: boolean;
   };
 };
@@ -143,4 +119,31 @@ export type FormSetErrorsOptions = {
 
 export type FormErrorsOptions = {
   nested?: boolean;
+};
+
+export type FieldState = {
+  id: string;
+  meta: FieldMeta;
+  errors: FormIssue[];
+  ref: HTMLElement | null;
+};
+
+export type FieldStore<Value> = {
+  value: Value;
+  defaultValue: Value;
+} & FieldState;
+
+export type FieldOptions<Form extends AnyFormApi, Name extends FormFields<Form>> = {
+  form: Form;
+  name: Name;
+};
+
+export type ArrayFieldStore<Value extends ArrayLike> = {
+  value: Value;
+  defaultValue: Value;
+};
+
+export type ArrayFieldOptions<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = {
+  form: Form;
+  name: Name;
 };

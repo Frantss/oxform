@@ -1,4 +1,5 @@
-import type { FormIssue, PersistedFieldMeta } from '#form-api.types';
+import type { FormIssue } from '#types/api';
+import type { PersistedFieldMeta } from '#types/internal';
 import { buildPathsMap } from '#utils/build-paths-map';
 import { generateId } from '#utils/generate-id';
 import { getAscendantPaths } from '#utils/get-ascendant-paths';

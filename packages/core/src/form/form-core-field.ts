@@ -1,15 +1,15 @@
+import type { FormCore } from '#form/form-core';
+import type { FormCoreFields } from '#form/form-core-fields';
 import type {
+  FieldBlurOptions,
   FieldChangeOptions,
-  FieldValidationOptions,
+  FieldFocusOptions,
   FormErrorsOptions,
   FormIssue,
   FormResetFieldOptions,
   FormSetErrorsOptions,
-} from '#form-api.types';
-import type { FormCore } from '#form/form-core';
-import type { FormCoreFields } from '#form/form-core-fields';
-import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
-import type { DeepValue } from '#more-types';
+} from '#types/api';
+import type { DeepKeys, DeepValue } from '#types/deep';
 import { fields_fixPath } from '#utils/fields';
 import { get } from '#utils/get';
 import { type Updater } from '#utils/update';
@@ -25,13 +25,7 @@ export class FormCoreField<Values> {
     this.fields = fields;
   }
 
-  /**
-   * Changes the value of a specific field with optional control over side effects.
-   * @param name - The name of the field to change
-   * @param value - The new value to set for the field
-   * @param options - Optional configuration for controlling validation, dirty state, and touched state
-   */
-  public change = <const Name extends FormCoreFieldPaths<Values>>(
+  public change = <const Name extends DeepKeys<Values>>(
     name: Name,
     updater: Updater<DeepValue<Values, Name>>,
     options?: FieldChangeOptions,
@@ -52,7 +46,7 @@ export class FormCoreField<Values> {
     });
   };
 
-  public focus = <const Name extends FormCoreFieldPaths<Values>>(name: Name, options?: FieldValidationOptions) => {
+  public focus = <const Name extends DeepKeys<Values>>(name: Name, options?: FieldFocusOptions) => {
     const shouldValidate = options?.should?.validate !== false;
     const field = this.fields.get(name);
 
@@ -62,7 +56,7 @@ export class FormCoreField<Values> {
     if (shouldValidate) void this.core.validate(name as never, { type: 'focus' });
   };
 
-  public blur = <const Name extends FormCoreFieldPaths<Values>>(name: Name, options?: FieldValidationOptions) => {
+  public blur = <const Name extends DeepKeys<Values>>(name: Name, options?: FieldBlurOptions) => {
     const shouldValidate = options?.should?.validate !== false;
     const field = this.fields.get(name);
 
@@ -72,29 +66,26 @@ export class FormCoreField<Values> {
     if (shouldValidate) void this.core.validate(name as never, { type: 'blur' });
   };
 
-  public get = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public get = <const Name extends DeepKeys<Values>>(name: Name) => {
     return get(this.core.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public meta = <const Name extends DeepKeys<Values>>(name: Name) => {
     return this.core.store.state.fields[fields_fixPath(name)].meta;
   };
 
-  public register = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public register = <const Name extends DeepKeys<Values>>(name: Name) => {
     return (element: HTMLElement | null) => {
       if (!element) return;
       this.fields.set(name, { ref: element });
     };
   };
 
-  public unregister = <const Name extends FormCoreFieldPaths<Values>>(name: Name) => {
+  public unregister = <const Name extends DeepKeys<Values>>(name: Name) => {
     this.fields.set(name, { ref: null });
   };
 
-  public errors = <const Name extends FormCoreFieldPaths<Values>>(
-    name: Name,
-    options?: FormErrorsOptions,
-  ): FormIssue[] => {
+  public errors = <const Name extends DeepKeys<Values>>(name: Name, options?: FormErrorsOptions): FormIssue[] => {
     const path = fields_fixPath(name);
     const field = this.core.store.state.fields[path];
     if (!options?.nested) return field.errors;
@@ -108,7 +99,7 @@ export class FormCoreField<Values> {
     }, [] as FormIssue[]);
   };
 
-  public setErrors = <const Name extends FormCoreFieldPaths<Values>>(
+  public setErrors = <const Name extends DeepKeys<Values>>(
     name: Name,
     errors: FormIssue[],
     options?: FormSetErrorsOptions,
@@ -133,7 +124,7 @@ export class FormCoreField<Values> {
     this.fields.set(name, { errors: updated });
   };
 
-  public reset = <const Name extends FormCoreFieldPaths<Values>>(
+  public reset = <const Name extends DeepKeys<Values>>(
     name: Name,
     options?: FormResetFieldOptions<DeepValue<Values, Name>>,
   ) => {

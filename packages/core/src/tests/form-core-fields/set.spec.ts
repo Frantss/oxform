@@ -1,4 +1,4 @@
-import type { FormIssue } from '#form-api.types';
+import type { FormIssue } from '#types/api';
 import { expect, it } from 'vitest';
 
 import { setup } from './setup';
@@ -58,7 +58,10 @@ it('does not propagate errors to ascendant entries when setting a descendant pat
   using context = setup();
   const expected = context.fields.get('nested');
 
-  context.fields.set('nested.value', { meta: { touched: true }, errors: [issue] });
+  context.fields.set('nested.value', {
+    meta: { touched: true },
+    errors: [issue],
+  });
   const entry = context.fields.get('nested');
 
   expect(entry).toEqual({
@@ -85,7 +88,9 @@ it('does not update descendant entry when setting a parent path', () => {
   using context = setup();
   const expected = context.fields.get('nested.value');
 
-  context.fields.set('nested', { meta: { touched: true, dirty: true, blurred: true } });
+  context.fields.set('nested', {
+    meta: { touched: true, dirty: true, blurred: true },
+  });
   const entry = context.fields.get('nested.value');
 
   expect(entry).toEqual(expected);

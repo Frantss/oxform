@@ -1,6 +1,7 @@
-import { defaultStatus } from '#field-api.constants';
-import type { FormBaseStore, FormIssue, FormOptions, FormStore, ValidateOptions } from '#form-api.types';
-import type { FormCoreFields as FormCoreFieldPaths } from '#form/form-core.types';
+import { DEFAULT_FORM_STATUS } from '#constants';
+import type { FormIssue, FormOptions, FormResetOptions, FormStore, ValidateOptions } from '#types/api';
+import type { DeepKeys } from '#types/deep';
+import type { FormBaseStore } from '#types/internal';
 import { fields_build, fields_fixPath, fields_root } from '#utils/fields';
 import { get } from '#utils/get';
 import { schema_validate } from '#utils/schema-validate';
@@ -19,7 +20,7 @@ export class FormCore<Values> {
     this.persisted = new Store<FormBaseStore<Values>>({
       values: options.defaultValues,
       fields: fields_build(options.defaultValues),
-      status: defaultStatus,
+      status: DEFAULT_FORM_STATUS,
     });
 
     this.store = new Derived<FormStore<Values>>({
@@ -78,7 +79,7 @@ export class FormCore<Values> {
     });
   };
 
-  public validate = async <const Name extends FormCoreFieldPaths<Values>>(
+  public validate = async <const Name extends DeepKeys<Values>>(
     fields?: Name | Name[],
     options?: ValidateOptions,
   ): Promise<[boolean, FormIssue[]]> => {
@@ -140,5 +141,38 @@ export class FormCore<Values> {
     });
 
     return [issues.length === 0, issues] as const;
+  };
+
+  public reset = (options?: FormResetOptions<Values>) => {
+    this.persisted.setState(current => {
+      const values = options?.values ?? this.options.defaultValues;
+      let fields = options?.keep?.fields ? current.fields : fields_build(values);
+
+      if (!options?.keep?.fields && (options?.keep?.errors || options?.keep?.refs)) {
+        const merged = { ...fields };
+
+        for (const key of Object.keys(fields)) {
+          const existing = current.fields[key];
+          if (!existing) continue;
+
+          merged[key] = {
+            ...fields[key],
+            errors: options.keep.errors ? existing.errors : fields[key].errors,
+            ref: options.keep.refs ? existing.ref : fields[key].ref,
+          };
+        }
+
+        fields = merged;
+      }
+
+      return {
+        values,
+        fields,
+        status: {
+          ...DEFAULT_FORM_STATUS,
+          ...options?.status,
+        },
+      };
+    });
   };
 }

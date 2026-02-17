@@ -95,6 +95,120 @@
   - `valid = true` when no issues were found
   - `valid = false` when issues were found
 
+## FormApi
+
+### `status`
+
+- Returns `store.state.status`.
+
+### `values`
+
+- Returns `store.state.values`.
+
+### `validate`
+
+- Exposes `FormCore.validate`.
+
+### `~mount()`
+
+- Mounts the underlying store and returns its unsubscribe function.
+
+### `~update(options)`
+
+- Replaces current form options (schema/default values/validation config).
+
+### `submit(onSuccess, onError?)`
+
+- Returns an async submit handler.
+- On run:
+  - sets `status.submitting = true` and `status.dirty = true`
+  - runs `validate(undefined, { type: 'submit' })`
+  - when valid: calls `onSuccess(values, formApi)`
+  - when invalid: calls `onError?.(issues, formApi)`
+  - increments `status.submits`
+  - sets `status.submitting = false`
+  - sets `status.successful` to the validation result
+
+## FieldApi
+
+### `createFieldApi({ form, name })`
+
+- Creates a field-scoped API bound to a single field path.
+
+### `change(valueOrUpdater, options?)`
+
+- Proxies to `form.field.change(name, valueOrUpdater, options)`.
+
+### `focus(options?)`
+
+- Proxies to `form.field.focus(name, options)`.
+
+### `blur(options?)`
+
+- Proxies to `form.field.blur(name, options)`.
+
+### `get()`
+
+- Returns current field value.
+
+### `meta()`
+
+- Returns field meta for the bound field path.
+
+### `register(element)` / `unregister()`
+
+- Proxies register/unregister for the bound field.
+
+### `errors(options?)` / `setErrors(errors, options?)`
+
+- Reads/updates errors for the bound field.
+
+### `reset(options?)`
+
+- Resets the bound field.
+
+### `store()` / `state()`
+
+- `store()` returns a derived store with `{ value, defaultValue, errors, meta }`.
+- `state()` returns the current value of that derived store.
+
+### `~mount()` / `~update(options)`
+
+- `~mount()` mounts the derived field store.
+- `~update(options)` replaces `{ form, name }` used by the API.
+
+## ArrayFieldApi
+
+### `createArrayField({ form, name })` / `createArrayFieldApi({ form, name })`
+
+- Creates an array-field API bound to one array field path.
+
+### `append(value, options?)` / `prepend(value, options?)` / `insert(index, value, options?)`
+
+- Proxy to the corresponding `form.array` methods for the bound array path.
+
+### `swap(from, to, options?)` / `move(from, to, options?)` / `update(index, value, options?)`
+
+- Proxy to `form.array` methods for reordering/updating array items.
+
+### `remove(index, options?)` / `replace(valueOrUpdater, options?)`
+
+- Proxy to `form.array` methods for removing/replacing array values.
+
+### `get()`
+
+- Returns current array value for the bound path.
+
+### `store` / `state`
+
+- `store` is a derived store with `{ value, defaultValue }`.
+- `state` returns the current value of that derived store.
+
+### `~mount()` / `~update(options)`
+
+- `~mount()` mounts the derived array store.
+- `~update(options)` replaces `{ form, name }` used by the API.
+
 ## FormCoreFields
 
 ### `get(path)`

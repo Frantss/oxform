@@ -1,5 +1,7 @@
 // reference: https://github.com/TanStack/form/blob/main/packages/form-core/src/util-types.ts#L161
 
+import type { ArrayLike } from '#types/misc';
+
 /**
  * @private
  */
@@ -176,3 +178,5 @@ export type FieldsMap<TFormData, TFieldGroupData> = TFieldGroupData extends any[
     : {
         [K in keyof TFieldGroupData]: DeepKeysOfType<TFormData, TFieldGroupData[K]>;
       };
+
+export type ArrayDeepKeys<Value> = DeepKeysOfType<Value, ArrayLike>;
