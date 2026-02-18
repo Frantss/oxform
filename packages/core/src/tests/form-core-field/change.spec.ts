@@ -1,4 +1,5 @@
 import { expect, it, vi } from 'vitest';
+import z from 'zod';
 
 import { setup } from './setup';
 
@@ -101,8 +102,23 @@ it('does not mark a descendant field as touched when changing its parent field',
   expect(meta.touched).toBe(false);
 });
 
-it('validates by default when changing a field', () => {
+it('does not validate by default when changing a field', () => {
   using context = setup();
+  const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
+
+  context.field.change('name', 'updated');
+
+  expect(validate).not.toHaveBeenCalled();
+});
+
+it('validates by default when changing a field and a change validator is configured', () => {
+  using context = setup({
+    validate: {
+      change: z.object({
+        name: z.string(),
+      }),
+    },
+  });
   const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
 
   context.field.change('name', 'updated');
@@ -112,10 +128,35 @@ it('validates by default when changing a field', () => {
 });
 
 it('skips validation when should.validate is false', () => {
-  using context = setup();
+  using context = setup({
+    validate: {
+      change: z.object({
+        name: z.string(),
+      }),
+    },
+  });
   const validate = vi.spyOn(context.core, 'validate').mockResolvedValue([true, []]);
 
   context.field.change('name', 'updated', { should: { validate: false } });
 
   expect(validate).not.toHaveBeenCalled();
+});
+
+it('batches value and meta updates into a single store notification', () => {
+  using context = setup();
+  const listener = vi.fn();
+
+  context.core.persisted.subscribe(listener);
+  context.field.change('name', 'updated', { should: { validate: false } });
+
+  // core.set + fields.set are batched, so listeners fire only once
+  expect(listener).toHaveBeenCalledOnce();
+
+  // Verify both value and meta were applied in the same notification
+  const value = context.field.get('name');
+  const meta = context.field.meta('name');
+
+  expect(value).toBe('updated');
+  expect(meta.touched).toBe(true);
+  expect(meta.dirty).toBe(true);
 });

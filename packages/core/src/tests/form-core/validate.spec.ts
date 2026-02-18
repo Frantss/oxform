@@ -22,6 +22,18 @@ const defaultValues = {
 
 type Values = z.infer<typeof schema>;
 
+const deferred = () => {
+  let resolve!: () => void;
+  const promise = new Promise<void>(resolver => {
+    resolve = resolver;
+  });
+
+  return {
+    promise,
+    resolve,
+  };
+};
+
 const setup = () => {
   const core = new FormCore<Values>({
     schema,
@@ -55,6 +67,55 @@ it('validates the entire form when no fields are provided', async () => {
   expect(context.core.persisted.state.fields['~root.name'].errors).toHaveLength(1);
   expect(context.core.persisted.state.fields['~root.nested.value'].errors).toHaveLength(1);
   expect(context.core.persisted.state.status.validating).toBe(false);
+});
+
+it('does not toggle validating status for sync schemas', async () => {
+  using context = setup();
+  const validatingStates: boolean[] = [];
+  const unmount = context.core.persisted.subscribe(() => {
+    validatingStates.push(context.core.persisted.state.status.validating);
+  });
+
+  await context.core.validate('name');
+
+  unmount();
+  expect(validatingStates).not.toContain(true);
+  expect(context.core.persisted.state.status.validating).toBe(false);
+});
+
+it('toggles validating status for async schemas', async () => {
+  const gate = deferred();
+  const asyncSchema = z.object({
+    name: z.string().superRefine(async () => {
+      await gate.promise;
+    }),
+    count: z.number(),
+    nested: z.object({
+      value: z.string(),
+    }),
+  });
+
+  const core = new FormCore<z.infer<typeof asyncSchema>>({
+    schema: asyncSchema,
+    defaultValues,
+  });
+  const unmountStore = core.store.mount();
+  const validatingStates: boolean[] = [];
+  const unmountSubscribe = core.persisted.subscribe(() => {
+    validatingStates.push(core.persisted.state.status.validating);
+  });
+
+  const validation = core.validate('name');
+
+  expect(core.persisted.state.status.validating).toBe(true);
+
+  gate.resolve();
+  await validation;
+
+  unmountSubscribe();
+  unmountStore();
+  expect(validatingStates).toContain(true);
+  expect(core.persisted.state.status.validating).toBe(false);
 });
 
 it('validates only the selected fields when a field list is provided', async () => {

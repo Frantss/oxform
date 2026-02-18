@@ -14,14 +14,14 @@
   - `should.touch = false` keeps `touched` unchanged
   - `should.validate = false` skips validation
 - Does not propagate `dirty`/`touched` down to descendants when changing a parent path.
-- Triggers `FormCore.validate(name, { type: 'change' })` by default.
+- Triggers `FormCore.validate(name, { type: 'change' })` by default only when a change validator is configured.
 
 ### `focus(name)`
 
 - Calls `.focus()` on registered element refs.
 - Sets `meta.touched = true` for target and ascendants.
 - Does not update descendant `touched`.
-- Triggers `FormCore.validate(name, { type: 'focus' })`.
+- Triggers `FormCore.validate(name, { type: 'focus' })` when a focus validator is configured.
 - Accepts `options.should.validate = false` to skip validation.
 
 ### `blur(name)`
@@ -29,7 +29,7 @@
 - Calls `.blur()` on registered element refs.
 - Sets `meta.blurred = true` for target and ascendants.
 - Does not update descendant `blurred`.
-- Triggers `FormCore.validate(name, { type: 'blur' })`.
+- Triggers `FormCore.validate(name, { type: 'blur' })` when a blur validator is configured.
 - Accepts `options.should.validate = false` to skip validation.
 
 ### `get(name)`

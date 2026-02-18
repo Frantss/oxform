@@ -32,37 +32,41 @@ export class FormCoreField<Values> {
   ) => {
     const shouldDirty = options?.should?.dirty !== false;
     const shouldTouch = options?.should?.touch !== false;
-    const shouldValidate = options?.should?.validate !== false;
+    const hasChangeSchema = this.core.options.validate?.change !== undefined;
+    const shouldValidate = options?.should?.validate ?? hasChangeSchema;
 
-    this.core.set(name, updater);
+    batch(() => {
+      this.core.set(name, updater);
+      this.fields.set(name, {
+        meta: {
+          touched: shouldTouch ? true : undefined,
+          dirty: shouldDirty ? true : undefined,
+        },
+      });
+    });
 
     if (shouldValidate) void this.core.validate(name, { type: 'change' });
-
-    this.fields.set(name, {
-      meta: {
-        touched: shouldTouch ? true : undefined,
-        dirty: shouldDirty ? true : undefined,
-      },
-    });
   };
 
   public focus = <const Name extends DeepKeys<Values>>(name: Name, options?: FieldFocusOptions) => {
-    const shouldValidate = options?.should?.validate !== false;
+    const hasFocusSchema = this.core.options.validate?.focus !== undefined;
+    const shouldValidate = options?.should?.validate ?? hasFocusSchema;
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.focus();
 
-    this.fields.set(name as never, { meta: { touched: true } });
+    if (!field.meta.touched) this.fields.set(name as never, { meta: { touched: true } });
     if (shouldValidate) void this.core.validate(name as never, { type: 'focus' });
   };
 
   public blur = <const Name extends DeepKeys<Values>>(name: Name, options?: FieldBlurOptions) => {
-    const shouldValidate = options?.should?.validate !== false;
+    const hasBlurSchema = this.core.options.validate?.blur !== undefined;
+    const shouldValidate = options?.should?.validate ?? hasBlurSchema;
     const field = this.fields.get(name);
 
     if (field.ref) field.ref.blur();
 
-    this.fields.set(name as never, { meta: { blurred: true } });
+    if (!field.meta.blurred) this.fields.set(name as never, { meta: { blurred: true } });
     if (shouldValidate) void this.core.validate(name as never, { type: 'blur' });
   };
 

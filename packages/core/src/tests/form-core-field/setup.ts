@@ -1,6 +1,7 @@
 import { FormCore } from '#form/form-core';
 import { FormCoreField } from '#form/form-core-field';
 import { FormCoreFields } from '#form/form-core-fields';
+import type { FormOptions } from '#types/api';
 import z from 'zod';
 
 const schema = z.object({
@@ -21,10 +22,11 @@ const defaultValues = {
 
 type Values = z.infer<typeof schema>;
 
-export const setup = () => {
+export const setup = (options?: { validate?: FormOptions<Values>['validate'] }) => {
   const core = new FormCore<Values>({
     schema,
     defaultValues,
+    validate: options?.validate,
   });
   const unmount = core.store.mount();
 

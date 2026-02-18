@@ -55,21 +55,21 @@ export type FormSubmitErrorHandler<Values> = (issues: FormIssue[], form: FormApi
 
 export type FieldFocusOptions = {
   should?: {
-    /** Whether to validate the field after focusing. Defaults to true. */
+    /** Whether to validate the field after focusing. Defaults to true only when a focus validator is configured. */
     validate?: boolean;
   };
 };
 
 export type FieldBlurOptions = {
   should?: {
-    /** Whether to validate the field after blurring. Defaults to true. */
+    /** Whether to validate the field after blurring. Defaults to true only when a blur validator is configured. */
     validate?: boolean;
   };
 };
 
 export type FieldChangeOptions = {
   should?: {
-    /** Whether to validate the field after changing its value. Defaults to true. */
+    /** Whether to validate the field after changing its value. Defaults to true only when a change validator is configured. */
     validate?: boolean;
     /** Whether to mark the field as dirty after changing its value. Defaults to true. */
     dirty?: boolean;

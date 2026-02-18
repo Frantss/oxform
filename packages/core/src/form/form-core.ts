@@ -4,7 +4,6 @@ import type { DeepKeys } from '#types/deep';
 import type { FormBaseStore } from '#types/internal';
 import { fields_build, fields_fixPath, fields_root } from '#utils/fields';
 import { get } from '#utils/get';
-import { schema_validate } from '#utils/schema-validate';
 import { update, type Updater } from '#utils/update';
 import { Derived, Store } from '@tanstack/store';
 import { entries, fromEntries, isDeepEqual, isFunction, map, pipe, setPath, stringToPath } from 'remeda';
@@ -91,17 +90,22 @@ export class FormCore<Values> {
       ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_fixPath(field))
       : undefined;
 
-    this.persisted.setState(state => {
-      return {
-        ...state,
-        status: {
-          ...state.status,
-          validating: true,
-        },
-      };
-    });
+    const validationResult = schema['~standard'].validate(this.store.state.values);
+    const isAsyncValidation = validationResult instanceof Promise;
 
-    const result = await schema_validate(schema, this.store.state.values);
+    if (isAsyncValidation) {
+      this.persisted.setState(state => {
+        return {
+          ...state,
+          status: {
+            ...state.status,
+            validating: true,
+          },
+        };
+      });
+    }
+
+    const result = await validationResult;
     const allIssues = result.issues ?? [];
     const issues: FormIssue[] = [];
     const grouped: Record<string, FormIssue[]> = {};
@@ -130,14 +134,19 @@ export class FormCore<Values> {
         };
       }
 
-      return {
-        ...state,
-        fields: updatedFields,
-        status: {
-          ...state.status,
-          validating: false,
-        },
-      };
+      return isAsyncValidation
+        ? {
+            ...state,
+            fields: updatedFields,
+            status: {
+              ...state.status,
+              validating: false,
+            },
+          }
+        : {
+            ...state,
+            fields: updatedFields,
+          };
     });
 
     return [issues.length === 0, issues] as const;
