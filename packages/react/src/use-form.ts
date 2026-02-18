@@ -1,13 +1,13 @@
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
-import type { FormOptions } from 'oxform-core';
-import { FormApi } from 'oxform-core';
+import type { FormApi, FormOptions } from 'oxform-core';
+import { createForm } from 'oxform-core';
 import { useState } from 'react';
 
 export type UseFormReturn<Values> = FormApi<Values>;
 
 export const useForm = <Values>(options: FormOptions<Values>) => {
   const [api] = useState(() => {
-    return new FormApi({ ...options });
+    return createForm({ ...options });
   });
 
   useIsomorphicLayoutEffect(api['~mount'], [api]);

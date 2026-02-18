@@ -1,8 +1,8 @@
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
-import { createListener, type AnyFormLikeApi, type ApiSelector } from 'oxform-core';
+import { createEffect, type AnyFormLikeApi, type ApiSelector } from 'oxform-core';
 import { useRef, useState } from 'react';
 
-export const useListener = <Api extends AnyFormLikeApi, Selected>(
+export const useFormEffect = <Api extends AnyFormLikeApi, Selected>(
   api: Api,
   selector: ApiSelector<Api, Selected>,
   fn: (state: Selected) => void | Promise<void>,
@@ -13,13 +13,13 @@ export const useListener = <Api extends AnyFormLikeApi, Selected>(
   selectorRef.current = selector;
   fnRef.current = fn;
 
-  const [effect, setEffect] = useState(() => createListener(api, selectorRef.current, fnRef.current));
+  const [effect, setEffect] = useState(() => createEffect(api, selectorRef.current, fnRef.current));
 
   useIsomorphicLayoutEffect(() => {
     return effect.mount();
   }, [effect]);
 
   useIsomorphicLayoutEffect(() => {
-    setEffect(createListener(api, selector, fn));
+    setEffect(createEffect(api, selector, fn));
   }, [api]);
 };

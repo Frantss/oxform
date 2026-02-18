@@ -1,4 +1,4 @@
-import { createFieldApi, FieldApi, type FieldOptions } from 'oxform-core';
+import { createField, type FieldApi, type FieldOptions } from 'oxform-core';
 
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import type { AnyFormApi, FormFields, FormFieldValue } from 'oxform-core';
@@ -10,7 +10,7 @@ export const useFieldApi = <Form extends AnyFormApi, const Name extends FormFiel
   options: FieldOptions<Form, Name>,
 ): UseFieldApiReturn<FormFieldValue<Form, Name>> => {
   const [api] = useState(() => {
-    return createFieldApi(options);
+    return createField(options);
   });
 
   // todo: re-create api if form or name changes

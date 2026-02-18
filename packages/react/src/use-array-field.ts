@@ -1,4 +1,4 @@
-import { ArrayFieldApi, createArrayFieldApi } from 'oxform-core';
+import { ArrayFieldApi, createArrayField } from 'oxform-core';
 
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import { useSubscribe } from '#use-subscribe';
@@ -13,7 +13,7 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
   options: ArrayFieldOptions<Form, Name>,
 ): UseArrayFieldReturn<FormFieldValue<Form, Name>> => {
   const [api] = useState(() => {
-    return createArrayFieldApi({ ...options });
+    return createArrayField({ ...options });
   });
 
   useIsomorphicLayoutEffect(api['~mount'], [api]);
@@ -29,11 +29,11 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
   return useMemo(() => {
     void length;
 
-    return {
-      ...api,
-      get fields() {
-        return api.state().value;
+    return Object.create(api, {
+      fields: {
+        enumerable: true,
+        get: () => api.state.value,
       },
-    } satisfies UseArrayFieldReturn<FormFieldValue<Form, Name>>;
+    }) as UseArrayFieldReturn<FormFieldValue<Form, Name>>;
   }, [api, length]);
 };

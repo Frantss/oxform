@@ -11,6 +11,15 @@ it('appends a value to the end of an array', () => {
   expect(value).toEqual(['item1', 'item2', 'item3']);
 });
 
+it('appends a value from an updater function', () => {
+  using context = setup();
+
+  context.array.append('array', () => 'item3');
+  const value = context.field.get('array');
+
+  expect(value).toEqual(['item1', 'item2', 'item3']);
+});
+
 it('appends a value when array is undefined', () => {
   using context = setup();
 

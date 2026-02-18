@@ -54,7 +54,7 @@ it("should update the form's values on change", async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'Jane');
 
-  expect(form.store().state.values.name).toBe('Jane');
+  expect(form.store.state.values.name).toBe('Jane');
 });
 
 it('should mark the field as touched on focus', async () => {
@@ -62,7 +62,7 @@ it('should mark the field as touched on focus', async () => {
 
   await ui.input.click();
 
-  const meta = form.store().state.fields['name'];
+  const meta = form.field.meta('name');
 
   expect(meta).toBeDefined();
   expect(meta.touched).toBe(true);
@@ -74,7 +74,7 @@ it('should mark the fields as blurred on blur', async () => {
   await ui.input.click();
   await ui.outside.click(); // blur the input
 
-  const meta = form.store().state.fields['name'];
+  const meta = form.field.meta('name');
 
   expect(meta).toBeDefined();
   expect(meta.blurred).toBe(true);
@@ -86,7 +86,7 @@ it('should keep the field as pristine when field is not dirty', async () => {
   await ui.input.click();
   await ui.outside.click(); // blur the input
 
-  const meta = form.store().state.fields['name'];
+  const meta = form.field.meta('name');
 
   expect(meta).toBeDefined();
   expect(meta.pristine).toBe(true);
@@ -100,7 +100,7 @@ test('default is true when value is equal to default value', async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'John');
 
-  const meta = form.store().state.fields['name'];
+  const meta = form.field.meta('name');
 
   expect(meta.default).toBe(true);
 });
@@ -111,7 +111,7 @@ test('default is false when value is not equal to default value', async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'Jane');
 
-  const meta = form.store().state.fields['name'];
+  const meta = form.field.meta('name');
 
   expect(meta.default).toBe(false);
 });

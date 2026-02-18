@@ -42,6 +42,16 @@ it('appends and prepends values', () => {
   expect(context.form.field.get('tags')).toEqual(['z', 'a', 'b']);
 });
 
+it('appends and prepends values from updater functions', () => {
+  using context = setup();
+
+  context.array.append(() => 'b');
+  context.array.prepend(() => 'z');
+
+  expect(context.array.get()).toEqual(['z', 'a', 'b']);
+  expect(context.form.field.get('tags')).toEqual(['z', 'a', 'b']);
+});
+
 it('inserts and removes values', () => {
   using context = setup();
 

@@ -1,5 +1,5 @@
-import { Field, Subscribe, useFieldApi, useForm, useListener } from 'oxform-react';
-import { useEffect } from 'react';
+import { Field, Subscribe, useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { useEffect, useState } from 'react';
 import z from 'zod';
 
 const schema = z.object({
@@ -7,7 +7,9 @@ const schema = z.object({
   directions: z.string().array().optional(),
 });
 
-export const Example_Listener = () => {
+export const Example_Effect = () => {
+  const [logs, setLogs] = useState<string[]>([]);
+
   const form = useForm({
     schema,
     defaultValues: { name: '3213', directions: undefined },
@@ -20,19 +22,21 @@ export const Example_Listener = () => {
     (window as any)['_form'] = form;
   }, [form]);
 
-  useListener(
+  useFormEffect(
     form,
     state => state.status.submits,
     submits => {
+      setLogs(current => [...current, `[form] submits -> ${String(submits)}`]);
       console.info({ submits });
     },
   );
 
-  useListener(
+  useFormEffect(
     name,
     state => state.value,
-    name => {
-      console.info({ name });
+    fieldName => {
+      setLogs(current => [...current, `[field:name] value -> ${String(fieldName)}`]);
+      console.info({ name: fieldName });
     },
   );
 
@@ -61,6 +65,15 @@ export const Example_Listener = () => {
       <Subscribe api={form} selector={state => state.status.submits}>
         {submits => <div>Submits: {submits}</div>}
       </Subscribe>
+
+      <div>
+        <h3>Effect Logs</h3>
+        <ol>
+          {logs.map((log, index) => (
+            <li key={`${index}-${log}`}>{log}</li>
+          ))}
+        </ol>
+      </div>
     </form>
   );
 };

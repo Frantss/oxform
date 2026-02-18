@@ -55,7 +55,7 @@ export class FormCoreArray<Values> {
 
   public append = <const Name extends ArrayDeepKeys<Values>>(
     name: Name,
-    value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
+    value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
     options?: FieldChangeOptions,
   ) => {
     batch(() => {
@@ -63,7 +63,7 @@ export class FormCoreArray<Values> {
         name,
         current => {
           const array = (current as any[]) ?? [];
-          return [...array, value] as never;
+          return [...array, update(value, current as never)] as never;
         },
         options,
       );
@@ -74,7 +74,7 @@ export class FormCoreArray<Values> {
 
   public prepend = <const Name extends ArrayDeepKeys<Values>>(
     name: Name,
-    value: UnwrapOneLevelOfArray<DeepValue<Values, Name>>,
+    value: Updater<UnwrapOneLevelOfArray<DeepValue<Values, Name>>>,
     options?: FieldChangeOptions,
   ) => {
     return this.insert(name, 0, value, options);

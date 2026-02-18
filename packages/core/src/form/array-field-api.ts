@@ -3,6 +3,9 @@ import type { FieldApi } from '#form/field-api';
 import type { FieldChangeOptions } from '#types/api';
 import type { AnyFormApi } from '#types/form';
 import type { ArrayLike } from '#types/misc';
+import type { Updater } from '#utils/update';
+
+type ArrayFieldItem<Value extends ArrayLike> = NonNullable<Value>[number];
 
 type ArrayFieldApiOptions = {
   form: AnyFormApi;
@@ -28,6 +31,10 @@ export class ArrayFieldApi<Value extends ArrayLike> {
     return this.field.options;
   }
 
+  public get store() {
+    return this.field.store;
+  }
+
   public get state() {
     return this.field.state;
   }
@@ -40,15 +47,15 @@ export class ArrayFieldApi<Value extends ArrayLike> {
     return this.field['~update'](options);
   };
 
-  public insert = (index: number, value: any, options?: FieldChangeOptions) => {
+  public insert = (index: number, value: Updater<ArrayFieldItem<Value>>, options?: FieldChangeOptions) => {
     this.form.array.insert(this.name as never, index, value, options);
   };
 
-  public append = (value: any, options?: FieldChangeOptions) => {
+  public append = (value: Updater<ArrayFieldItem<Value>>, options?: FieldChangeOptions) => {
     this.form.array.append(this.name as never, value, options);
   };
 
-  public prepend = (value: any, options?: FieldChangeOptions) => {
+  public prepend = (value: Updater<ArrayFieldItem<Value>>, options?: FieldChangeOptions) => {
     this.form.array.prepend(this.name as never, value, options);
   };
 
@@ -60,7 +67,7 @@ export class ArrayFieldApi<Value extends ArrayLike> {
     this.form.array.move(this.name as never, from, to, options);
   };
 
-  public update = (index: number, value: any, options?: FieldChangeOptions) => {
+  public update = (index: number, value: Updater<ArrayFieldItem<Value>>, options?: FieldChangeOptions) => {
     this.form.array.update(this.name as never, index, value, options);
   };
 
@@ -68,7 +75,7 @@ export class ArrayFieldApi<Value extends ArrayLike> {
     this.form.array.remove(this.name as never, index, options);
   };
 
-  public replace = (value: Value | ((current: Value) => Value), options?: FieldChangeOptions) => {
+  public replace = (value: Updater<Value>, options?: FieldChangeOptions) => {
     this.form.array.replace(this.name as never, value as never, options);
   };
 

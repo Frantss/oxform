@@ -34,7 +34,7 @@ export class FormCore<Values> {
           persisted.fields,
           entries(),
           map(([key, field]) => {
-            const path = stringToPath(key);
+            const path = key === fields_root ? [] : stringToPath(key.slice(fields_root.length + 1));
             const value = get(persisted.values as never, path);
             const defaultValue = get(this.options.defaultValues, path);
 
@@ -45,7 +45,7 @@ export class FormCore<Values> {
                 meta: {
                   ...field.meta,
                   default: isDeepEqual(value, defaultValue),
-                  invalid: field.errors.length > 0,
+                  valid: field.errors.length === 0,
                   pristine: !field.meta.dirty,
                 },
               },
