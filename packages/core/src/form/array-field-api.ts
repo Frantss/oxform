@@ -3,6 +3,7 @@ import type { FieldApi } from '#form/field-api';
 import type { FieldChangeOptions } from '#types/api';
 import type { AnyFormApi } from '#types/form';
 import type { ArrayLike } from '#types/misc';
+import { generateId } from '#utils/generate-id';
 import type { Updater } from '#utils/update';
 
 type ArrayFieldItem<Value extends ArrayLike> = NonNullable<Value>[number];
@@ -37,6 +38,10 @@ export class ArrayFieldApi<Value extends ArrayLike> {
 
   public get state() {
     return this.field.state;
+  }
+
+  public get ids() {
+    return this.state.value?.map(() => generateId()) ?? [];
   }
 
   public '~mount' = () => {

@@ -22,6 +22,7 @@ export const useField = <Form extends AnyFormApi, const Name extends FormFields<
   const api = useFieldApi(options);
 
   const value = useStore(api.store, state => state.value);
+  const id = useStore(api.store, state => state.id);
   const defaultValue = useStore(api.store, state => state.defaultValue);
   const dirty = useStore(api.store, state => state.meta.dirty);
   const touched = useStore(api.store, state => state.meta.touched);
@@ -34,6 +35,7 @@ export const useField = <Form extends AnyFormApi, const Name extends FormFields<
   return useMemo(() => {
     return {
       ...api,
+      id,
       state: {
         ...api.store.state,
         value,
@@ -57,5 +59,5 @@ export const useField = <Form extends AnyFormApi, const Name extends FormFields<
         ref: api.register,
       },
     } satisfies UseFieldReturn<any> as any;
-  }, [api, errors, value, defaultValue, dirty, touched, blurred, pristine, valid, isDefault]);
+  }, [api, id, errors, value, defaultValue, dirty, touched, blurred, pristine, valid, isDefault]);
 };

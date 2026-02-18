@@ -39,6 +39,10 @@ export class FieldApi<Value> {
     });
   }
 
+  public get id() {
+    return this.store.state.id;
+  }
+
   public get state() {
     return this.store.state;
   }

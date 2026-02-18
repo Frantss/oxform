@@ -33,6 +33,7 @@ const setup = async () => {
     return (
       <>
         <input {...field.props} />
+        <output data-testid='field-id'>{`${field.id}:${field.state.id}`}</output>
         <button type='button'>outside</button>
       </>
     );
@@ -43,10 +44,19 @@ const setup = async () => {
   const ui = {
     input: utils.getByRole('textbox'),
     outside: utils.getByRole('button'),
+    fieldId: utils.getByTestId('field-id'),
   };
 
   return { utils, ui, form };
 };
+
+it('should expose the field id', async () => {
+  const { ui } = await setup();
+  const [id, stateId] = ui.fieldId.element().textContent?.split(':') ?? [];
+
+  expect(id).toBeDefined();
+  expect(id).toBe(stateId);
+});
 
 it("should update the form's values on change", async () => {
   const { form, ui } = await setup();
