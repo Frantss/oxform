@@ -66,11 +66,7 @@ export const Example_Array = () => {
               type='button'
               onClick={() => {
                 const parsedIndex = Number.parseInt(insertIndex, 10);
-                form.array.insert(
-                  'directions',
-                  Number.isNaN(parsedIndex) ? 0 : parsedIndex,
-                  () => randomDirection()
-                );
+                form.array.insert('directions', Number.isNaN(parsedIndex) ? 0 : parsedIndex, () => randomDirection());
               }}
             >
               + Insert at index

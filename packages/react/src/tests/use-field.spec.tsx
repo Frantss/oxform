@@ -32,7 +32,13 @@ const setup = async () => {
 
     return (
       <>
-        <input {...field.props} />
+        <input
+          value={field.state.value}
+          ref={field.register}
+          onChange={event => field.change(event.target.value)}
+          onBlur={() => field.blur()}
+          onFocus={() => field.focus()}
+        />
         <output data-testid='field-id'>{`${field.id}:${field.state.id}`}</output>
         <button type='button'>outside</button>
       </>
