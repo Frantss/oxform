@@ -1,3 +1,4 @@
+import { createField } from '#form/create-field';
 import { createForm } from '#form/create-form';
 import { expect, expectTypeOf, it } from 'vitest';
 import z from 'zod';
@@ -141,4 +142,32 @@ it('updates options via ~update', async () => {
   const [valid] = await form.validate('name');
 
   expect(valid).toBe(false);
+});
+
+it('infers field extra from global and field plugins (single or array)', () => {
+  const form = createForm({
+    schema,
+    defaultValues,
+    with: {
+      '*': field => ({
+        dirty: field.options.form.status.dirty,
+      }),
+      name: [
+        field => ({
+          length: field.value.length,
+        }),
+      ],
+      age: field => ({
+        next: field.value + 1,
+      }),
+    },
+  });
+
+  const nameField = createField({ form, name: 'name' });
+  const ageField = createField({ form, name: 'age' });
+
+  expectTypeOf(nameField.extra.dirty).toEqualTypeOf<boolean>();
+  expectTypeOf(nameField.extra.length).toEqualTypeOf<number>();
+  expectTypeOf(ageField.extra.dirty).toEqualTypeOf<boolean>();
+  expectTypeOf(ageField.extra.next).toEqualTypeOf<number>();
 });

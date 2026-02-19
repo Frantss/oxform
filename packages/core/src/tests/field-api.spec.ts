@@ -21,6 +21,20 @@ const setup = () => {
   const form = createForm({
     schema,
     defaultValues,
+    with: {
+      '*': field => ({
+        globalLength: field.value.length,
+        source: 'global',
+      }),
+      name: [
+        field => ({
+          localLength: field.value.length,
+        }),
+        () => ({
+          source: 'field',
+        }),
+      ],
+    },
   });
   const unmount = form['~mount']();
 
@@ -44,7 +58,27 @@ it('gets and changes the field value', () => {
   context.field.change('updated');
 
   expect(context.field.get()).toBe('updated');
+  expect(context.field.value).toBe('updated');
   expect(context.form.field.get('name')).toBe('updated');
+});
+
+it('builds extra from global and field plugins', () => {
+  using context = setup();
+
+  expect(context.field.extra.globalLength).toBe(4);
+  expect(context.field.extra.localLength).toBe(4);
+  expect(context.field.extra.source).toBe('field');
+});
+
+it('recomputes extra values on read', () => {
+  using context = setup();
+
+  expect(context.field.extra.localLength).toBe(4);
+
+  context.field.change('updated');
+
+  expect(context.field.extra.localLength).toBe(7);
+  expect(context.field.extra.globalLength).toBe(7);
 });
 
 it('forwards focus and blur behavior to the underlying field', () => {

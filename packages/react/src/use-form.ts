@@ -51,6 +51,5 @@ export const useForm = <Values>(options: FormOptions<Values>): UseFormReturn<Val
     statusDirty,
     statusSubmitted,
     statusValid,
-    values,
   ]) as UseFormReturn<Values>;
 };

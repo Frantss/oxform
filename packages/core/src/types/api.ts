@@ -1,5 +1,5 @@
 import type { FormApi } from '#form/form-api';
-import type { DeepKeys } from '#types/deep';
+import type { DeepKeys, DeepValue } from '#types/deep';
 import type { AnyFormApi, FormArrayFields, FormFields } from '#types/form';
 import type { Fields as InternalFields, PersistedFieldMeta, PersistedFormStatus } from '#types/internal';
 import type { ArrayLike, PartialDeep, Simplify, StandardSchema } from '#types/misc';
@@ -29,7 +29,28 @@ type FormValidatorSchema<Values> = StandardSchema<PartialDeep<Values>>;
 type FormValidatorFunction<Values> = (store: FormStore<Values>) => FormValidatorSchema<Values>;
 type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction<Values>;
 
-export type FormOptions<Values> = {
+export type FieldExtra = Record<string, unknown>;
+
+export type FieldPlugin<Value, Extra extends FieldExtra> = (field: {
+  value: Value;
+  state: FieldStore<Value>;
+  options: {
+    form: AnyFormApi;
+    name: string;
+  };
+}) => Extra;
+
+export type FieldPluginsInput<Value> = FieldPlugin<Value, any> | readonly FieldPlugin<Value, any>[];
+
+export type FormWithOptions<Values> = Partial<
+  {
+    '*': FieldPluginsInput<any>;
+  } & {
+    [Name in DeepKeys<Values>]: FieldPluginsInput<DeepValue<Values, Name>>;
+  }
+>;
+
+export type FormOptions<Values, With extends FormWithOptions<Values> = FormWithOptions<Values>> = {
   schema: StandardSchema<Values>;
   defaultValues: NoInfer<Values>;
   validate?: {
@@ -39,6 +60,7 @@ export type FormOptions<Values> = {
     focus?: FormValidator<Values>;
   };
   related?: Record<DeepKeys<Values>, DeepKeys<Values>[]>;
+  with?: With;
 };
 
 export type FormIssue = StandardSchema.Issue;
@@ -49,9 +71,9 @@ export type ValidateOptions = {
   type?: ValidationType;
 };
 
-export type FormSubmitSuccessHandler<Values> = (values: Values, form: FormApi<Values>) => void | Promise<void>;
+export type FormSubmitSuccessHandler<Values> = (values: Values, form: FormApi<Values, any>) => void | Promise<void>;
 
-export type FormSubmitErrorHandler<Values> = (issues: FormIssue[], form: FormApi<Values>) => void | Promise<void>;
+export type FormSubmitErrorHandler<Values> = (issues: FormIssue[], form: FormApi<Values, any>) => void | Promise<void>;
 
 export type FieldFocusOptions = {
   should?: {

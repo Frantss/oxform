@@ -1,8 +1,10 @@
 import type {
   FieldBlurOptions,
   FieldChangeOptions,
+  FieldExtra,
   FieldFocusOptions,
   FieldOptions,
+  FieldPluginsInput,
   FieldStore,
   FormErrorsOptions,
   FormIssue,
@@ -15,7 +17,7 @@ import { get } from '#utils/get';
 import { Derived } from '@tanstack/store';
 import { stringToPath } from 'remeda';
 
-export class FieldApi<Value> {
+export class FieldApi<Value, Extra extends FieldExtra = {}> {
   public options: FieldOptions<any, any>;
   public store: Derived<FieldStore<Value>>;
 
@@ -45,6 +47,30 @@ export class FieldApi<Value> {
 
   public get state() {
     return this.store.state;
+  }
+
+  public get value() {
+    return this.get();
+  }
+
+  public get extra() {
+    const withOptions = this.options.form.options.with as Record<string, FieldPluginsInput<Value> | undefined> | undefined;
+    const globalInput = withOptions?.['*'];
+    const fieldInput = withOptions?.[this.options.name as string];
+    const globalPlugins = globalInput ? (Array.isArray(globalInput) ? globalInput : [globalInput]) : [];
+    const fieldPlugins = fieldInput ? (Array.isArray(fieldInput) ? fieldInput : [fieldInput]) : [];
+    const plugins = [...globalPlugins, ...fieldPlugins];
+
+    let output: FieldExtra = {};
+
+    for (const plugin of plugins) {
+      output = {
+        ...output,
+        ...plugin(this),
+      };
+    }
+
+    return output as Extra;
   }
 
   public '~mount' = () => {
