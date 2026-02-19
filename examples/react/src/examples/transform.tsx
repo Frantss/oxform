@@ -1,21 +1,18 @@
-import { Field, Subscribe, useForm } from "oxform-react";
-import z from "zod";
-import { FieldError } from "../components/field-error";
-import { FormStatus } from "../components/form-status";
+import { Field, Subscribe, useForm } from 'oxform-react';
+import z from 'zod';
+import { FieldError } from '../components/field-error';
+import { FormStatus } from '../components/form-status';
 
 const schema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  monthlyIncome: z.number().min(0, "Monthly income must be 0 or more"),
-  taxRate: z
-    .number()
-    .min(0, "Tax rate must be 0 or more")
-    .max(1, "Tax rate must be 1 or less"),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  monthlyIncome: z.number().min(0, 'Monthly income must be 0 or more'),
+  taxRate: z.number().min(0, 'Tax rate must be 0 or more').max(1, 'Tax rate must be 1 or less'),
 });
 
-const money = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
+const money = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
   maximumFractionDigits: 0,
 });
 
@@ -23,8 +20,8 @@ export const Example_Transform = () => {
   const form = useForm({
     schema,
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      firstName: '',
+      lastName: '',
       monthlyIncome: 5500,
       taxRate: 0.22,
     },
@@ -33,54 +30,44 @@ export const Example_Transform = () => {
 
   return (
     <form
-      className="form"
-      onSubmit={(event) => {
+      className='form'
+      onSubmit={event => {
         event.preventDefault();
         event.stopPropagation();
 
         return form.submit(console.log, console.error)();
       }}
     >
-      <Field form={form} name="firstName">
-        {(field) => (
-          <div className="field">
-            <label className="field-label">First name</label>
-            <input
-              className="input"
-              type="text"
-              placeholder="Ada"
-              {...field.props}
-            />
+      <Field form={form} name='firstName'>
+        {field => (
+          <div className='field'>
+            <label className='field-label'>First name</label>
+            <input className='input' type='text' placeholder='Enter text...' {...field.props} />
             <FieldError field={field} />
           </div>
         )}
       </Field>
 
-      <Field form={form} name="lastName">
-        {(field) => (
-          <div className="field">
-            <label className="field-label">Last name</label>
-            <input
-              className="input"
-              type="text"
-              placeholder="Lovelace"
-              {...field.props}
-            />
+      <Field form={form} name='lastName'>
+        {field => (
+          <div className='field'>
+            <label className='field-label'>Last name</label>
+            <input className='input' type='text' placeholder='Enter text...' {...field.props} />
             <FieldError field={field} />
           </div>
         )}
       </Field>
 
-      <Field form={form} name="monthlyIncome">
-        {(field) => (
-          <div className="field">
-            <label className="field-label">Monthly income (USD)</label>
+      <Field form={form} name='monthlyIncome'>
+        {field => (
+          <div className='field'>
+            <label className='field-label'>Monthly income (USD)</label>
             <input
-              className="input"
-              type="number"
-              placeholder="5500"
+              className='input'
+              type='number'
+              placeholder='Enter number...'
               {...field.props}
-              onChange={(event) => {
+              onChange={event => {
                 const next = event.currentTarget.valueAsNumber;
                 field.change(Number.isNaN(next) ? 0 : next);
               }}
@@ -90,19 +77,19 @@ export const Example_Transform = () => {
         )}
       </Field>
 
-      <Field form={form} name="taxRate">
-        {(field) => (
-          <div className="field">
-            <label className="field-label">Tax rate (0 - 1)</label>
+      <Field form={form} name='taxRate'>
+        {field => (
+          <div className='field'>
+            <label className='field-label'>Tax rate (0 - 1)</label>
             <input
-              className="input"
-              type="number"
+              className='input'
+              type='number'
               min={0}
               max={1}
               step={0.01}
-              placeholder="0.22"
+              placeholder='Enter number...'
               {...field.props}
-              onChange={(event) => {
+              onChange={event => {
                 const next = event.currentTarget.valueAsNumber;
                 field.change(Number.isNaN(next) ? 0 : next);
               }}
@@ -114,22 +101,19 @@ export const Example_Transform = () => {
 
       <Subscribe
         api={form}
-        selector={(state) => {
-          const fullName = `${state.values.firstName} ${state.values.lastName}`
-            .trim()
-            .replace(/\s+/g, " ");
+        selector={state => {
+          const fullName = `${state.values.firstName} ${state.values.lastName}`.trim().replace(/\s+/g, ' ');
           const annualGross = state.values.monthlyIncome * 12;
           const annualNet = annualGross * (1 - state.values.taxRate);
 
           return {
-            displayName:
-              fullName.length > 0 ? fullName.toUpperCase() : "ANONYMOUS",
+            displayName: fullName.length > 0 ? fullName.toUpperCase() : 'ANONYMOUS',
             initials:
               fullName
-                .split(" ")
+                .split(' ')
                 .filter(Boolean)
-                .map((part) => part[0]?.toUpperCase())
-                .join("") || "NA",
+                .map(part => part[0]?.toUpperCase())
+                .join('') || 'NA',
             annualGross: money.format(annualGross),
             annualNet: money.format(annualNet),
             payload: JSON.stringify(
@@ -145,33 +129,38 @@ export const Example_Transform = () => {
           };
         }}
       >
-        {(summary) => (
-          <div className="status">
-            <div className="status-title">Transformed subscribe output</div>
-            <div className="status-tag" data-on={true}>
-              <span className="status-dot" />
+        {summary => (
+          <div className='status'>
+            <div className='status-title'>Transformed subscribe output</div>
+            <div className='status-tag' data-on={true}>
+              <span className='status-dot' />
               name: {summary.displayName}
             </div>
-            <div className="status-tag" data-on={true}>
-              <span className="status-dot" />
+            <div className='status-tag' data-on={true}>
+              <span className='status-dot' />
               initials: {summary.initials}
             </div>
-            <div className="status-tag" data-on={true}>
-              <span className="status-dot" />
+            <div className='status-tag' data-on={true}>
+              <span className='status-dot' />
               gross/year: {summary.annualGross}
             </div>
-            <div className="status-tag" data-on={true}>
-              <span className="status-dot" />
+            <div className='status-tag' data-on={true}>
+              <span className='status-dot' />
               net/year: {summary.annualNet}
             </div>
-            <pre className="transform-json">{summary.payload}</pre>
+            <pre className='transform-json'>{summary.payload}</pre>
           </div>
         )}
       </Subscribe>
 
-      <button className="btn btn-primary" type="submit">
-        Submit
-      </button>
+      <div className='form-actions'>
+        <button className='btn btn-primary' type='submit'>
+          Submit
+        </button>
+        <button className='btn' type='button' onClick={() => form.reset()}>
+          Reset
+        </button>
+      </div>
 
       <FormStatus form={form} />
     </form>

@@ -1,4 +1,4 @@
-import type { FieldMeta } from 'oxform-react';
+import type { FieldApi } from 'oxform-react';
 
 const formatValue = (value: unknown) => {
   if (typeof value === 'string') {
@@ -16,33 +16,22 @@ const formatValue = (value: unknown) => {
   return JSON.stringify(value);
 };
 
-type FieldStatusField = {
-  options: {
-    name: string;
-  };
-  state: {
-    meta: FieldMeta;
-    value?: unknown;
-  };
-};
-
-export const FieldStatus = ({ field }: { field: FieldStatusField }) => {
-  const { meta, value } = field.state;
-  const fieldId = field.options.name;
-
+export const FieldStatus = ({ field }: { field: FieldApi<any> }) => {
   return (
     <div className='field-status'>
       <span className='status-tag' data-on={true}>
         <span className='status-dot' />
-        id: {fieldId}
+        id: {field.id}
       </span>
-      {typeof value !== 'undefined' && (
+
+      {typeof field.state.value !== 'undefined' && (
         <span className='status-tag' data-on={true}>
           <span className='status-dot' />
-          value: {formatValue(value)}
+          value: {formatValue(field.state.value)}
         </span>
       )}
-      {Object.entries(meta).map(([key, isOn]) => (
+
+      {Object.entries(field.state.meta).map(([key, isOn]) => (
         <span key={key} className='status-tag' data-on={isOn}>
           <span className='status-dot' />
           {key}

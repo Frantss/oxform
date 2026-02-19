@@ -1,8 +1,8 @@
-import { Field, useFieldApi, useForm, useFormEffect } from "oxform-react";
-import { useEffect, useRef, useState } from "react";
-import z from "zod";
-import { FieldError } from "../components/field-error";
-import { FormStatus } from "../components/form-status";
+import { Field, useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { useEffect, useRef, useState } from 'react';
+import z from 'zod';
+import { FieldError } from '../components/field-error';
+import { FormStatus } from '../components/form-status';
 
 const schema = z.object({
   name: z.string().min(3),
@@ -14,7 +14,7 @@ export const Example_Effect = () => {
   const logsListRef = useRef<HTMLOListElement | null>(null);
 
   const appendLog = (message: string) => {
-    setLogs((current) => {
+    setLogs(current => {
       const next = [...current, message];
 
       requestAnimationFrame(() => {
@@ -31,20 +31,20 @@ export const Example_Effect = () => {
 
   const form = useForm({
     schema,
-    defaultValues: { name: "3213", directions: undefined },
+    defaultValues: { name: '3213', directions: undefined },
     validate: { change: schema },
   });
 
-  const name = useFieldApi({ form, name: "name" });
+  const name = useFieldApi({ form, name: 'name' });
 
   useEffect(() => {
-    (window as any)["_form"] = form;
+    (window as any)['_form'] = form;
   }, [form]);
 
   useFormEffect(
     form,
-    (state) => state.status.submits,
-    (submits) => {
+    state => state.status.submits,
+    submits => {
       appendLog(`[form] submits -> ${String(submits)}`);
       console.info({ submits });
     },
@@ -52,8 +52,8 @@ export const Example_Effect = () => {
 
   useFormEffect(
     name,
-    (state) => state.value,
-    (fieldName) => {
+    state => state.value,
+    fieldName => {
       appendLog(`[field:name] value -> ${String(fieldName)}`);
       console.info({ name: fieldName });
     },
@@ -61,42 +61,53 @@ export const Example_Effect = () => {
 
   return (
     <form
-      className="form"
-      onSubmit={(event) => {
+      className='form'
+      onSubmit={event => {
         event.preventDefault();
         event.stopPropagation();
 
         return form.submit(() => {
-          console.log("submit");
+          console.log('submit');
         })();
       }}
     >
-      <Field form={form} name="name">
-        {(field) => (
-          <div className="field">
-            <label className="field-label">Name</label>
-            <input
-              className="input"
-              type="text"
-              placeholder="Enter name..."
-              {...field.props}
-            />
+      <Field form={form} name='name'>
+        {field => (
+          <div className='field'>
+            <label className='field-label'>Name</label>
+            <input className='input' type='text' placeholder='Enter text...' {...field.props} />
             <FieldError field={field} />
           </div>
         )}
       </Field>
 
-      <button className="btn btn-primary" type="submit">
-        Submit
-      </button>
+      <div className='form-actions'>
+        <button className='btn btn-primary' type='submit'>
+          Submit
+        </button>
+        <button className='btn' type='button' onClick={() => form.reset()}>
+          Reset
+        </button>
+      </div>
 
       <FormStatus form={form} />
 
-      <div className="logs">
-        <div className="logs-header">Effect Logs</div>
-        <ol className="logs-list" ref={logsListRef}>
+      <div className='logs'>
+        <div className='logs-header'>
+          <span>Effect Logs</span>
+          <button
+            className='logs-clear-btn'
+            type='button'
+            onClick={() => {
+              setLogs([]);
+            }}
+          >
+            Clear logs
+          </button>
+        </div>
+        <ol className='logs-list' ref={logsListRef}>
           {logs.map((log, index) => (
-            <li className="logs-item" key={`${index}-${log}`}>
+            <li className='logs-item' key={`${index}-${log}`}>
               {log}
             </li>
           ))}
