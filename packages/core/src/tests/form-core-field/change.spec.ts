@@ -1,7 +1,7 @@
 import { expect, it, vi } from 'vitest';
 import z from 'zod';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-field/setup';
 
 it('updates a field value with a direct value', () => {
   using context = setup();

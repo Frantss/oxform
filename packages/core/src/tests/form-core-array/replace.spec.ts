@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-array/setup';
 
 it('replaces array values with provided array', () => {
   using context = setup();

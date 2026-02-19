@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-field/setup';
 
 it('stores a field reference when a DOM element is provided', () => {
   using context = setup();

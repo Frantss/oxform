@@ -1,11 +1,10 @@
-import type { AnyFormApi, FieldExtra, FormFieldExtra, FormFields, FormFieldValue } from 'oxform-core';
-import { type FieldApi, type FieldOptions } from 'oxform-core';
+import type { AnyFormApi, EventLike, FormFieldExtra, FormFields, FormFieldValue } from 'oxform-core';
+import type { FieldOptions } from 'oxform-core';
 
+import type { UseFieldReturn } from '#types/use-field-return';
 import { useFieldApi } from '#use-field-api';
 import { useStore } from '@tanstack/react-store';
 import { useMemo } from 'react';
-
-export type UseFieldReturn<Value, Extra extends FieldExtra> = FieldApi<Value, Extra>;
 
 export const useField = <Form extends AnyFormApi, const Name extends FormFields<Form>>(
   options: FieldOptions<Form, Name>,
@@ -48,6 +47,18 @@ export const useField = <Form extends AnyFormApi, const Name extends FormFields<
       state: {
         enumerable: true,
         get: () => state,
+      },
+      props: {
+        enumerable: true,
+        get: () => {
+          return {
+            value,
+            onBlur: (_event: EventLike) => api.blur(),
+            onFocus: (_event: EventLike) => api.focus(),
+            onChange: (event: EventLike) => api.change(event.target?.value),
+            ref: api.register,
+          };
+        },
       },
     });
   }, [

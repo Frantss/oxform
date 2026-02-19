@@ -1,5 +1,7 @@
 import { FormApi } from '#form/form-api';
-import type { FormIssue, FormSubmitErrorHandler, FormSubmitSuccessHandler } from '#types/api';
+import type { FormIssue } from '#types/api/form-issue';
+import type { FormSubmitErrorHandler } from '#types/api/form-submit-error-handler';
+import type { FormSubmitSuccessHandler } from '#types/api/form-submit-success-handler';
 import { expect, expectTypeOf, it, vi } from 'vitest';
 import z from 'zod';
 

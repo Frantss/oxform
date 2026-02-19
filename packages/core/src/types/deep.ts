@@ -1,6 +1,4 @@
-// reference: https://github.com/TanStack/form/blob/main/packages/form-core/src/util-types.ts#L161
-
-import type { ArrayLike } from '#types/misc';
+import type { ArrayLike } from '#types/misc/array-like';
 
 /**
  * @private

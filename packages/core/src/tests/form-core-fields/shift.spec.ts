@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-fields/setup';
 
 it('shifts entries to the left from a position', () => {
   using context = setup();

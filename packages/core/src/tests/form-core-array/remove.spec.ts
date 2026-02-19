@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-array/setup';
 
 it('removes an item at the provided index', () => {
   using context = setup();

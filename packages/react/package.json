@@ -13,6 +13,10 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.cts",
   "imports": {
+    "#array-field": "./src/array-field.tsx",
+    "#field": "./src/field.tsx",
+    "#subscribe": "./src/subscribe.tsx",
+    "#use-form-effect": "./src/use-form-effect.ts",
     "#*": "./src/*.ts"
   },
   "exports": {

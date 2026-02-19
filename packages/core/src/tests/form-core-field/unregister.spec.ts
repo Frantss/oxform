@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-field/setup';
 
 it('clears the stored field reference', () => {
   using context = setup();

@@ -1,4 +1,4 @@
-import type { StandardSchema } from '#types/misc';
+import type { StandardSchemaV1 as StandardSchema } from '@standard-schema/spec';
 
 export const schema_validate = async <Schema extends StandardSchema>(schema: Schema, input: unknown) => {
   let result = schema['~standard'].validate(input);

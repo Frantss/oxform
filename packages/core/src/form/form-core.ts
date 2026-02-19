@@ -1,10 +1,15 @@
 import { DEFAULT_FORM_STATUS } from '#constants';
-import type { FormIssue, FormOptions, FormResetOptions, FormStore, ValidateOptions } from '#types/api';
+import type { FormIssue } from '#types/api/form-issue';
+import type { FormOptions } from '#types/api/form-options';
+import type { FormResetOptions } from '#types/api/form-reset-options';
+import type { FormStore } from '#types/api/form-store';
+import type { ValidateOptions } from '#types/api/validate-options';
 import type { DeepKeys } from '#types/deep';
-import type { FormBaseStore } from '#types/internal';
+import type { FormBaseStore } from '#types/internal/form-base-store';
 import { fields_build, fields_fixPath, fields_root } from '#utils/fields';
 import { get } from '#utils/get';
-import { update, type Updater } from '#utils/update';
+import { update } from '#utils/update';
+import type { Updater } from '#utils/update/updater-';
 import { Derived, Store } from '@tanstack/store';
 import { entries, fromEntries, isDeepEqual, isFunction, map, pipe, setPath, stringToPath } from 'remeda';
 

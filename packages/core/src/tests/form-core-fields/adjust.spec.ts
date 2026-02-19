@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-fields/setup';
 
 it('adds entries for new value paths', () => {
   using context = setup();

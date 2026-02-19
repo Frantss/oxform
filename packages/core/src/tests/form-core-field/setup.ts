@@ -1,7 +1,7 @@
 import { FormCore } from '#form/form-core';
 import { FormCoreField } from '#form/form-core-field';
 import { FormCoreFields } from '#form/form-core-fields';
-import type { FormOptions } from '#types/api';
+import type { FormOptions } from '#types/api/form-options';
 import z from 'zod';
 
 const schema = z.object({

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-field/setup';
 
 it('returns the default value of a field', () => {
   using context = setup();

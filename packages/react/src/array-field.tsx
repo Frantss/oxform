@@ -1,10 +1,7 @@
-import { useArrayField, type UseArrayFieldReturn } from '#use-array-field';
-import type { AnyFormApi, FieldOptions, FormArrayFields, FormFieldValue } from 'oxform-core';
+import { useArrayField } from '#use-array-field';
+import type { ArrayFieldProps } from '#types/array-field-props';
+import type { AnyFormApi, FormArrayFields } from 'oxform-core';
 import { useMemo } from 'react';
-
-export type ArrayFieldProps<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = FieldOptions<Form, Name> & {
-  children: React.ReactNode | ((field: UseArrayFieldReturn<FormFieldValue<Form, Name>>) => React.ReactNode);
-};
 
 export const ArrayField = <Form extends AnyFormApi, const Name extends FormArrayFields<Form>>({
   children,

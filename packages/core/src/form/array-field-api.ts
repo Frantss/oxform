@@ -1,10 +1,10 @@
 import { createField } from '#form/create-field';
 import type { FieldApi } from '#form/field-api';
-import type { FieldChangeOptions } from '#types/api';
-import type { AnyFormApi } from '#types/form';
-import type { ArrayLike } from '#types/misc';
+import type { FieldChangeOptions } from '#types/api/field-change-options';
+import type { AnyFormApi } from '#types/form/any-form-api';
+import type { ArrayLike } from '#types/misc/array-like';
 import { generateId } from '#utils/generate-id';
-import type { Updater } from '#utils/update';
+import type { Updater } from '#utils/update/updater-';
 
 type ArrayFieldItem<Value extends ArrayLike> = NonNullable<Value>[number];
 

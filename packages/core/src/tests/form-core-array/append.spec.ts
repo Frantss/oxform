@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-array/setup';
 
 it('appends a value to the end of an array', () => {
   using context = setup();

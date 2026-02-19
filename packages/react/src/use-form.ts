@@ -1,10 +1,9 @@
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
+import type { UseFormReturn } from '#types/use-form-return';
 import { useStore } from '@tanstack/react-store';
-import type { FormApi, FormOptions } from 'oxform-core';
+import type { FormOptions } from 'oxform-core';
 import { createForm } from 'oxform-core';
 import { useMemo, useState } from 'react';
-
-export type UseFormReturn<Values> = FormApi<Values>;
 
 export const useForm = <Values>(options: FormOptions<Values>): UseFormReturn<Values> => {
   const [api] = useState(() => {

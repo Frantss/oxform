@@ -163,11 +163,11 @@ it('infers field extra from global and field plugins (single or array)', () => {
     },
   });
 
-  const nameField = createField({ form, name: 'name' });
-  const ageField = createField({ form, name: 'age' });
+  const name = createField({ form, name: 'name' });
+  const age = createField({ form, name: 'age' });
 
-  expectTypeOf(nameField.extra.dirty).toEqualTypeOf<boolean>();
-  expectTypeOf(nameField.extra.length).toEqualTypeOf<number>();
-  expectTypeOf(ageField.extra.dirty).toEqualTypeOf<boolean>();
-  expectTypeOf(ageField.extra.next).toEqualTypeOf<number>();
+  expectTypeOf(name.extra.dirty).toEqualTypeOf<boolean>();
+  expectTypeOf(name.extra.length).toEqualTypeOf<number>();
+  expectTypeOf(age.extra.dirty).toEqualTypeOf<boolean>();
+  expectTypeOf(age.extra.next).toEqualTypeOf<number>();
 });

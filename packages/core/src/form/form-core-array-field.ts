@@ -1,9 +1,10 @@
 import type { FormCore } from '#form/form-core';
 import type { FormCoreField } from '#form/form-core-field';
 import type { FormCoreFields } from '#form/form-core-fields';
-import type { FieldChangeOptions } from '#types/api';
+import type { FieldChangeOptions } from '#types/api/field-change-options';
 import type { ArrayDeepKeys, DeepValue, UnwrapOneLevelOfArray } from '#types/deep';
-import { update, type Updater } from '#utils/update';
+import { update } from '#utils/update';
+import type { Updater } from '#utils/update/updater-';
 import { batch } from '@tanstack/store';
 
 export class FormCoreArray<Values> {

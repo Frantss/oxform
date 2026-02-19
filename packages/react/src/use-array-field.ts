@@ -1,11 +1,10 @@
-import { ArrayFieldApi, createArrayField } from 'oxform-core';
+import { createArrayField } from 'oxform-core';
 
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
+import type { UseArrayFieldReturn } from '#types/use-array-field-return';
 import { useStore } from '@tanstack/react-store';
-import type { AnyFormApi, ArrayFieldOptions, ArrayLike, FormArrayFields, FormFieldValue } from 'oxform-core';
+import type { AnyFormApi, ArrayFieldOptions, FormArrayFields, FormFieldValue } from 'oxform-core';
 import { useMemo, useState } from 'react';
-
-export type UseArrayFieldReturn<Value extends ArrayLike> = ArrayFieldApi<Value>;
 
 export const useArrayField = <Form extends AnyFormApi, const Name extends FormArrayFields<Form>>(
   options: ArrayFieldOptions<Form, Name>,

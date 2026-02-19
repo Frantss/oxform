@@ -1,7 +1,7 @@
-import type { FormIssue } from '#types/api';
+import type { FormIssue } from '#types/api/form-issue';
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-field/setup';
 
 const issue: FormIssue = {
   code: 'custom',

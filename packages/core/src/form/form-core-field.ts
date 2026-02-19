@@ -1,18 +1,16 @@
 import type { FormCore } from '#form/form-core';
 import type { FormCoreFields } from '#form/form-core-fields';
-import type {
-  FieldBlurOptions,
-  FieldChangeOptions,
-  FieldFocusOptions,
-  FormErrorsOptions,
-  FormIssue,
-  FormResetFieldOptions,
-  FormSetErrorsOptions,
-} from '#types/api';
+import type { FieldBlurOptions } from '#types/api/field-blur-options';
+import type { FieldChangeOptions } from '#types/api/field-change-options';
+import type { FieldFocusOptions } from '#types/api/field-focus-options';
+import type { FormErrorsOptions } from '#types/api/form-errors-options';
+import type { FormIssue } from '#types/api/form-issue';
+import type { FormResetFieldOptions } from '#types/api/form-reset-field-options';
+import type { FormSetErrorsOptions } from '#types/api/form-set-errors-options';
 import type { DeepKeys, DeepValue } from '#types/deep';
 import { fields_fixPath } from '#utils/fields';
 import { get } from '#utils/get';
-import { type Updater } from '#utils/update';
+import type { Updater } from '#utils/update/updater-';
 import { batch } from '@tanstack/store';
 import { setPath, stringToPath } from 'remeda';
 

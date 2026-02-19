@@ -1,4 +1,5 @@
-import type { PersistedFieldMeta, PersistedFormStatus } from '#types/internal';
+import type { PersistedFieldMeta } from '#types/internal/persisted-field-meta';
+import type { PersistedFormStatus } from '#types/internal/persisted-form-status';
 
 export const DEFAULT_FIELD_META = {
   blurred: false,

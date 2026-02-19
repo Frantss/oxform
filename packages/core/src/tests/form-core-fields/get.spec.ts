@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 
-import { setup } from './setup';
+import { setup } from '#tests/form-core-fields/setup';
 
 it('returns the root field entry when using a root-prefixed path', () => {
   using context = setup();

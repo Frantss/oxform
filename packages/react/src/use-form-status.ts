@@ -1,12 +1,7 @@
 import { useStore } from '@tanstack/react-store';
-import type { FormApi, FormStatus } from 'oxform-core';
+import type { UseFormStatusProps } from '#types/use-form-status-props';
+import type { UseFormStatusReturn } from '#types/use-form-status-return';
 import { useMemo } from 'react';
-
-export type UseFormStatusProps<Values> = {
-  form: FormApi<Values>;
-};
-
-export type UseFormStatusReturn = FormStatus;
 
 export const useFormStatus = <Values>({ form }: UseFormStatusProps<Values>): UseFormStatusReturn => {
   const dirty = useStore(form.store, state => state.status.dirty);

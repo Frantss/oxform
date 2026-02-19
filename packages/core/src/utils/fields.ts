@@ -1,17 +1,13 @@
-import type { FormIssue } from '#types/api';
-import type { PersistedFieldMeta } from '#types/internal';
 import { buildPathsMap } from '#utils/build-paths-map';
 import { generateId } from '#utils/generate-id';
 import { getAscendantPaths } from '#utils/get-ascendant-paths';
+import type { FieldEntry } from '#utils/fields/field-entry';
+import type { FieldSetOptions } from '#utils/fields/field-set-options';
+import type { PersistedFields } from '#utils/fields/persisted-fields';
 
-type FieldEntry = {
-  id: string;
-  meta: PersistedFieldMeta;
-  errors: FormIssue[];
-  ref: HTMLElement | null;
-};
-
-export type PersistedFields = Record<string, FieldEntry>;
+export type { FieldEntry } from '#utils/fields/field-entry';
+export type { FieldSetOptions } from '#utils/fields/field-set-options';
+export type { PersistedFields } from '#utils/fields/persisted-fields';
 
 export const fields_root = '~root';
 
@@ -35,12 +31,6 @@ export const fields_build = (values: unknown): PersistedFields => {
     [fields_root]: build(),
     ...buildPathsMap(values, build, fields_root),
   } satisfies PersistedFields;
-};
-
-export type FieldSetOptions = {
-  meta?: Partial<PersistedFieldMeta>;
-  errors?: FormIssue[];
-  ref?: HTMLElement | null;
 };
 
 export const fields_set = (fields: PersistedFields, path: string, field: FieldSetOptions): PersistedFields => {

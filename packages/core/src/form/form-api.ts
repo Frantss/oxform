@@ -2,7 +2,10 @@ import { FormCore } from '#form/form-core';
 import { FormCoreArray } from '#form/form-core-array-field';
 import { FormCoreField } from '#form/form-core-field';
 import { FormCoreFields } from '#form/form-core-fields';
-import type { FormOptions, FormSubmitErrorHandler, FormSubmitSuccessHandler, FormWithOptions } from '#types/api';
+import type { FormOptions } from '#types/api/form-options';
+import type { FormSubmitErrorHandler } from '#types/api/form-submit-error-handler';
+import type { FormSubmitSuccessHandler } from '#types/api/form-submit-success-handler';
+import type { FormWithOptions } from '#types/api/form-with-options';
 
 export class FormApi<Values, With extends FormWithOptions<Values> = any> {
   private core!: FormCore<Values>;
