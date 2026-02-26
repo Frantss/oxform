@@ -1,5 +1,4 @@
-import type { AnyFormApi, EventLike, FormFieldExtra, FormFields, FormFieldValue } from 'oxform-core';
-import type { FieldOptions } from 'oxform-core';
+import type { AnyFormApi, EventLike, FieldOptions, FormFields, FormFieldValue } from 'oxform-core';
 
 import type { UseFieldReturn } from '#types/use-field-return';
 import { useFieldApi } from '#use-field-api';
@@ -8,7 +7,7 @@ import { useMemo } from 'react';
 
 export const useField = <Form extends AnyFormApi, const Name extends FormFields<Form>>(
   options: FieldOptions<Form, Name>,
-): UseFieldReturn<FormFieldValue<Form, Name>, FormFieldExtra<Form, Name>> => {
+): UseFieldReturn<FormFieldValue<Form, Name>> => {
   const api = useFieldApi(options);
   const id = useStore(api.store, state => state.id);
   const value = useStore(api.store, state => state.value);
@@ -74,5 +73,5 @@ export const useField = <Form extends AnyFormApi, const Name extends FormFields<
     metaDefault,
     metaValid,
     metaPristine,
-  ]) as UseFieldReturn<FormFieldValue<Form, Name>, FormFieldExtra<Form, Name>>;
+  ]) as UseFieldReturn<FormFieldValue<Form, Name>>;
 };

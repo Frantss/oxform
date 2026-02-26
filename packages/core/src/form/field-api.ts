@@ -1,9 +1,7 @@
 import type { FieldBlurOptions } from '#types/api/field-blur-options';
 import type { FieldChangeOptions } from '#types/api/field-change-options';
-import type { FieldExtra } from '#types/api/field-extra';
 import type { FieldFocusOptions } from '#types/api/field-focus-options';
 import type { FieldOptions } from '#types/api/field-options';
-import type { FieldPluginsInput } from '#types/api/field-plugins-input';
 import type { FieldStore } from '#types/api/field-store';
 import type { FormErrorsOptions } from '#types/api/form-errors-options';
 import type { FormIssue } from '#types/api/form-issue';
@@ -15,7 +13,7 @@ import { get } from '#utils/get';
 import { Derived } from '@tanstack/store';
 import { stringToPath } from 'remeda';
 
-export class FieldApi<Value, Extra extends FieldExtra = {}> {
+export class FieldApi<Value> {
   public options: FieldOptions<any, any>;
   public store: Derived<FieldStore<Value>>;
 
@@ -49,28 +47,6 @@ export class FieldApi<Value, Extra extends FieldExtra = {}> {
 
   public get value() {
     return this.get();
-  }
-
-  public get extra() {
-    const withOptions = this.options.form.options.with as
-      | Record<string, FieldPluginsInput<Value> | undefined>
-      | undefined;
-    const globalInput = withOptions?.['*'];
-    const fieldInput = withOptions?.[this.options.name as string];
-    const globalPlugins = globalInput ? (Array.isArray(globalInput) ? globalInput : [globalInput]) : [];
-    const fieldPlugins = fieldInput ? (Array.isArray(fieldInput) ? fieldInput : [fieldInput]) : [];
-    const plugins = [...globalPlugins, ...fieldPlugins];
-
-    let output: FieldExtra = {};
-
-    for (const plugin of plugins) {
-      output = {
-        ...output,
-        ...plugin(this),
-      };
-    }
-
-    return output as Extra;
   }
 
   public '~mount' = () => {

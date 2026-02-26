@@ -1,5 +1,5 @@
 import { useField } from '#use-field';
-import { FormApi, createForm } from 'oxform-core';
+import { FormApi } from 'oxform-core';
 import 'react';
 import { expect, it, test } from 'vitest';
 import { render } from 'vitest-browser-react';
@@ -106,35 +106,6 @@ it('should keep the field as pristine when field is not dirty', async () => {
 
   expect(meta).toBeDefined();
   expect(meta.pristine).toBe(true);
-});
-
-it('should expose extra from with plugins', async () => {
-  const form = createForm({
-    schema: z.object({
-      name: z.string(),
-    }),
-    defaultValues: {
-      name: 'John',
-    },
-    with: {
-      '*': () => ({
-        fromGlobal: true,
-      }),
-      name: field => ({
-        length: field.value.length,
-      }),
-    },
-  });
-
-  const Component = () => {
-    const field = useField({ form, name: 'name' });
-
-    return <output data-testid='extra'>{`${field.extra.fromGlobal}:${field.extra.length}`}</output>;
-  };
-
-  const utils = await render(<Component />);
-
-  expect(utils.getByTestId('extra').element().textContent).toBe('true:4');
 });
 
 test('default is true when value is equal to default value', async () => {

@@ -5,14 +5,13 @@ import { FormCoreFields } from '#form/form-core-fields';
 import type { FormOptions } from '#types/api/form-options';
 import type { FormSubmitErrorHandler } from '#types/api/form-submit-error-handler';
 import type { FormSubmitSuccessHandler } from '#types/api/form-submit-success-handler';
-import type { FormWithOptions } from '#types/api/form-with-options';
 
-export class FormApi<Values, With extends FormWithOptions<Values> = any> {
+export class FormApi<Values> {
   private core!: FormCore<Values>;
   public field: FormCoreField<Values>;
   public array: FormCoreArray<Values>;
 
-  constructor(options: FormOptions<Values, With>) {
+  constructor(options: FormOptions<Values>) {
     this.core = new FormCore<Values>(options);
     const fields = new FormCoreFields<Values>({ core: this.core });
 
@@ -52,7 +51,7 @@ export class FormApi<Values, With extends FormWithOptions<Values> = any> {
     return this.core.store.mount();
   };
 
-  public '~update' = (options: FormOptions<Values, With>) => {
+  public '~update' = (options: FormOptions<Values>) => {
     this.core.options = options;
   };
 

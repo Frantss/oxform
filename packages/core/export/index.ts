@@ -40,7 +40,6 @@ export type { AnyFormApi } from '#types/form/any-form-api';
 export type { AnyFormLikeApi } from '#types/form/any-form-like-api';
 export type { ApiSelector } from '#types/form/api-selector';
 export type { FormArrayFields } from '#types/form/form-array-fields';
-export type { FormFieldExtra } from '#types/form/form-field-extra';
 export type { FormFieldValue } from '#types/form/form-field-value';
 export type { FormFields } from '#types/form/form-fields';
 export type { FormLikeStore } from '#types/form/form-like-store';
