@@ -17,14 +17,17 @@ export { useForm } from '#use-form';
 export { useFormEffect } from '#use-form-effect';
 export { useFormStatus } from '#use-form-status';
 export { useSubscribe } from '#use-subscribe';
+
 export type {
   AnyFormApi,
   AnyFormLikeApi,
   ApiSelector,
+  ArrayFieldApi,
   ArrayFieldOptions,
   ArrayFieldStore,
   ArrayLike,
   EventLike,
+  FieldApi,
   FieldBlurOptions,
   FieldChangeOptions,
   FieldExtra,
@@ -38,6 +41,7 @@ export type {
   FieldSetErrorsMode,
   FieldState,
   FieldStore,
+  FormApi,
   FormArrayFields,
   FormErrorsOptions,
   FormFields,

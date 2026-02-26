@@ -1,4 +1,4 @@
-import type { FieldApi } from 'oxform-react';
+import type { UseFieldReturn } from 'oxform-react';
 
 const formatValue = (value: unknown) => {
   if (typeof value === 'string') {
@@ -16,7 +16,7 @@ const formatValue = (value: unknown) => {
   return JSON.stringify(value);
 };
 
-export const FieldStatus = ({ field }: { field: FieldApi<any> }) => {
+export const FieldStatus = ({ field }: { field: UseFieldReturn<any> }) => {
   return (
     <div className='field-status'>
       <span className='status-tag' data-on={true}>
