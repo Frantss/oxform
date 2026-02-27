@@ -8,7 +8,7 @@ import type { FormIssue } from '#types/api/form-issue';
 import type { FormResetFieldOptions } from '#types/api/form-reset-field-options';
 import type { FormSetErrorsOptions } from '#types/api/form-set-errors-options';
 import type { FormStore } from '#types/api/form-store';
-import { fields_fixPath } from '#utils/fields';
+import { fields_pathWithRoot } from '#utils/fields';
 import { get } from '#utils/get';
 import { Derived } from '@tanstack/store';
 import { stringToPath } from 'remeda';
@@ -23,7 +23,7 @@ export class FieldApi<Value> {
       deps: [this.options.form.store],
       fn: ({ currDepVals }) => {
         const form = currDepVals[0]! as FormStore<any>;
-        const state = form.fields[fields_fixPath(this.options.name) as never];
+        const state = form.fields[fields_pathWithRoot(this.options.name) as never];
         const path = stringToPath(this.options.name as never);
         const value = get(form.values as never, path as never) as Value;
         const defaultValue = get(this.options.form.options.defaultValues as never, path as never) as Value;

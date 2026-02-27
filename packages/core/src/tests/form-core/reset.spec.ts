@@ -1,6 +1,7 @@
 import { FormCore } from '#form/form-core';
 import { FormCoreField } from '#form/form-core-field';
 import { FormCoreFields } from '#form/form-core-fields';
+import type { FormOptions } from '#types/api/form-options';
 import { expect, it } from 'vitest';
 import z from 'zod';
 
@@ -20,10 +21,15 @@ const defaultValues = {
 
 type Values = z.infer<typeof schema>;
 
-const setup = () => {
+const setup = (options?: {
+  defaultStatus?: FormOptions<Values>['defaultStatus'];
+  defaultFieldMeta?: FormOptions<Values>['defaultFieldMeta'];
+}) => {
   const core = new FormCore<Values>({
     schema,
     defaultValues,
+    defaultStatus: options?.defaultStatus,
+    defaultFieldMeta: options?.defaultFieldMeta,
   });
   const unmount = core.store.mount();
   const fields = new FormCoreFields<Values>({ core });
@@ -37,6 +43,69 @@ const setup = () => {
     },
   };
 };
+
+it('initializes and resets status with configured defaults', () => {
+  using context = setup({
+    defaultStatus: {
+      dirty: true,
+      submitting: true,
+      submits: 4,
+      successful: true,
+    },
+  });
+
+  expect(context.core.store.state.status.dirty).toBe(true);
+  expect(context.core.store.state.status.submitting).toBe(true);
+  expect(context.core.store.state.status.submits).toBe(4);
+  expect(context.core.store.state.status.successful).toBe(true);
+
+  context.core.persisted.setState(state => {
+    return {
+      ...state,
+      status: {
+        ...state.status,
+        dirty: false,
+        submits: 1,
+        submitting: false,
+        successful: false,
+      },
+    };
+  });
+
+  context.core.reset();
+
+  expect(context.core.store.state.status.dirty).toBe(true);
+  expect(context.core.store.state.status.submitting).toBe(true);
+  expect(context.core.store.state.status.submits).toBe(4);
+  expect(context.core.store.state.status.successful).toBe(true);
+});
+
+it('resets field meta using wildcard and field-specific defaults', () => {
+  using context = setup({
+    defaultFieldMeta: {
+      '*': { touched: true },
+      name: { dirty: true },
+      'nested.value': { blurred: true },
+    },
+  });
+
+  context.field.change('name', 'changed');
+  context.field.focus('nested.value');
+  context.field.blur('nested.value');
+
+  context.core.reset();
+
+  expect(context.core.store.state.fields['~root.name'].meta).toMatchObject({
+    dirty: true,
+    touched: true,
+    blurred: false,
+  });
+  expect(context.core.store.state.fields['~root.nested.value'].meta).toMatchObject({
+    dirty: false,
+    touched: true,
+    blurred: true,
+  });
+});
 
 it('resets values, fields, and status by default', () => {
   using context = setup();

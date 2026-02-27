@@ -69,6 +69,26 @@ it('sets blurred to false after reset', () => {
   expect(meta.blurred).toBe(false);
 });
 
+it('resets field meta using wildcard and per-field defaults', () => {
+  using context = setup({
+    defaultFieldMeta: {
+      '*': { touched: true },
+      name: { dirty: true },
+    },
+  });
+
+  context.field.change('name', 'updated');
+  context.field.blur('name');
+  context.field.reset('name');
+  const meta = context.field.meta('name');
+
+  expect(meta).toMatchObject({
+    dirty: true,
+    touched: true,
+    blurred: false,
+  });
+});
+
 it('clears field errors after reset', () => {
   using context = setup();
 

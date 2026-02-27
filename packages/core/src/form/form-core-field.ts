@@ -8,7 +8,7 @@ import type { FormIssue } from '#types/api/form-issue';
 import type { FormResetFieldOptions } from '#types/api/form-reset-field-options';
 import type { FormSetErrorsOptions } from '#types/api/form-set-errors-options';
 import type { DeepKeys, DeepValue } from '#types/deep';
-import { fields_fixPath } from '#utils/fields';
+import { fields_pathWithRoot } from '#utils/fields';
 import { get } from '#utils/get';
 import type { Updater } from '#utils/update/updater-';
 import { batch } from '@tanstack/store';
@@ -73,7 +73,7 @@ export class FormCoreField<Values> {
   };
 
   public meta = <const Name extends DeepKeys<Values>>(name: Name) => {
-    return this.core.store.state.fields[fields_fixPath(name)].meta;
+    return this.core.store.state.fields[fields_pathWithRoot(name)].meta;
   };
 
   public register = <const Name extends DeepKeys<Values>>(name: Name) => {
@@ -88,7 +88,7 @@ export class FormCoreField<Values> {
   };
 
   public errors = <const Name extends DeepKeys<Values>>(name: Name, options?: FormErrorsOptions): FormIssue[] => {
-    const path = fields_fixPath(name);
+    const path = fields_pathWithRoot(name);
     const field = this.core.store.state.fields[path];
     if (!options?.nested) return field.errors;
 
@@ -106,7 +106,7 @@ export class FormCoreField<Values> {
     errors: FormIssue[],
     options?: FormSetErrorsOptions,
   ) => {
-    const path = fields_fixPath(name);
+    const path = fields_pathWithRoot(name);
     const existing = this.core.persisted.state.fields[path].errors;
     let updated: FormIssue[];
 

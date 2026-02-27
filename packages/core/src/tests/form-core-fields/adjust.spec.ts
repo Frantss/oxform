@@ -40,3 +40,22 @@ it('keeps unrelated entries unchanged', () => {
 
   expect(entry).toEqual(expected);
 });
+
+it('adds new entries using wildcard defaults', () => {
+  using context = setup({
+    defaultFieldMeta: {
+      '*': { touched: true },
+    },
+  });
+
+  context.core.set('nested.extra', 'extra');
+  context.fields.adjust();
+  const entry = context.fields.get('nested.extra');
+
+  expect(entry).toEqual({
+    id: entry.id,
+    meta: { dirty: false, touched: true, blurred: false },
+    errors: [],
+    ref: null,
+  });
+});

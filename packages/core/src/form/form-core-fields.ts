@@ -34,7 +34,7 @@ export class FormCoreFields<Values> {
     this.core.persisted.setState(state => {
       return {
         ...state,
-        fields: fields_reset(state.fields, path, state.values),
+        fields: fields_reset(state.fields, path, this.core.options, state.values),
       };
     });
   };
@@ -77,7 +77,7 @@ export class FormCoreFields<Values> {
 
   public adjust = () => {
     this.core.persisted.setState(state => {
-      const updated = fields_build(state.values);
+      const updated = fields_build(this.core.options, state.values);
 
       return {
         ...state,

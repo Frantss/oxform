@@ -1,5 +1,6 @@
 import { FormCore } from '#form/form-core';
 import { FormCoreFields } from '#form/form-core-fields';
+import type { FormOptions } from '#types/api/form-options';
 import z from 'zod';
 
 const schema = z.object({
@@ -20,10 +21,15 @@ const defaultValues = {
 
 type Values = z.infer<typeof schema>;
 
-export const setup = () => {
+export const setup = (options?: {
+  defaultStatus?: FormOptions<Values>['defaultStatus'];
+  defaultFieldMeta?: FormOptions<Values>['defaultFieldMeta'];
+}) => {
   const core = new FormCore<Values>({
     schema,
     defaultValues,
+    defaultStatus: options?.defaultStatus,
+    defaultFieldMeta: options?.defaultFieldMeta,
   });
 
   const fields = new FormCoreFields<Values>({ core });

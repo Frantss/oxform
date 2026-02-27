@@ -6,7 +6,7 @@ import type { FormStore } from '#types/api/form-store';
 import type { ValidateOptions } from '#types/api/validate-options';
 import type { DeepKeys } from '#types/deep';
 import type { FormBaseStore } from '#types/internal/form-base-store';
-import { fields_build, fields_fixPath, fields_root } from '#utils/fields';
+import { fields_build, fields_pathWithRoot, fields_root } from '#utils/fields';
 import { get } from '#utils/get';
 import { update } from '#utils/update';
 import type { Updater } from '#utils/update/updater-';
@@ -23,8 +23,11 @@ export class FormCore<Values> {
 
     this.persisted = new Store<FormBaseStore<Values>>({
       values: options.defaultValues,
-      fields: fields_build(options.defaultValues),
-      status: DEFAULT_FORM_STATUS,
+      fields: fields_build(options),
+      status: {
+        ...DEFAULT_FORM_STATUS,
+        ...this.options.defaultStatus,
+      },
     });
 
     this.store = new Derived<FormStore<Values>>({
@@ -95,7 +98,7 @@ export class FormCore<Values> {
       : this.options.schema;
     const schema = isFunction(schemaOrBuilder) ? schemaOrBuilder(this.store.state) : schemaOrBuilder;
     const targets = fields
-      ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_fixPath(field))
+      ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_pathWithRoot(field))
       : undefined;
 
     const validationResult = schema['~standard'].validate(this.store.state.values);
@@ -163,7 +166,7 @@ export class FormCore<Values> {
   public reset = (options?: FormResetOptions<Values>) => {
     this.persisted.setState(current => {
       const values = options?.values ?? this.options.defaultValues;
-      let fields = options?.keep?.fields ? current.fields : fields_build(values);
+      let fields = options?.keep?.fields ? current.fields : fields_build(this.options, values);
 
       if (!options?.keep?.fields && (options?.keep?.errors || options?.keep?.refs)) {
         const merged = { ...fields };
@@ -187,6 +190,7 @@ export class FormCore<Values> {
         fields,
         status: {
           ...DEFAULT_FORM_STATUS,
+          ...this.options.defaultStatus,
           ...options?.status,
         },
       };

@@ -21,6 +21,23 @@ it('resets target field meta to defaults', () => {
   expect(entry.meta).toEqual({ dirty: false, touched: false, blurred: false });
 });
 
+it('resets target field meta using wildcard and field-specific defaults', () => {
+  using context = setup({
+    defaultFieldMeta: {
+      '*': { touched: true },
+      'nested.value': { dirty: true },
+    },
+  });
+
+  context.fields.set('nested.value', {
+    meta: { dirty: false, touched: false, blurred: true },
+  });
+  context.fields.reset('nested.value');
+  const entry = context.fields.get('nested.value');
+
+  expect(entry.meta).toEqual({ dirty: true, touched: true, blurred: false });
+});
+
 it('clears target field errors', () => {
   using context = setup();
 

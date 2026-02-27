@@ -8,6 +8,7 @@ import {
   fields_set,
   fields_shift,
 } from '#utils/fields';
+import type { FormOptions } from '#types/api/form-options';
 import { generateId } from '#utils/generate-id';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -26,7 +27,10 @@ const setup = (overrides?: { values?: unknown; id?: string }) => {
 
   if (overrides?.id) vi.mocked(generateId).mockReturnValue(overrides.id);
 
-  const fields = fields_build(overrides?.values ?? values);
+  const fields = fields_build({
+    defaultValues: overrides?.values ?? values,
+    defaultFieldMeta: undefined,
+  } as unknown as FormOptions<any>);
 
   return {
     fields,
@@ -65,6 +69,43 @@ describe('fields_build', () => {
     expect(entry.meta.touched).toBe(false);
     expect(entry.errors).toStrictEqual([]);
     expect(entry.ref).toBeNull();
+  });
+
+  it('should apply wildcard and field-specific meta defaults', () => {
+    const { fields } = setup();
+
+    const updated = fields_build({
+      defaultValues: {
+        name: 'name',
+        nested: { value: 'value' },
+      },
+      defaultFieldMeta: {
+        '*': { touched: true },
+        name: { dirty: true },
+        'nested.value': { blurred: true },
+      },
+    } as unknown as FormOptions<any>);
+
+    expect(updated[fields_root].meta).toEqual({
+      dirty: false,
+      touched: true,
+      blurred: false,
+    });
+    expect(updated[`${fields_root}.name`].meta).toEqual({
+      dirty: true,
+      touched: true,
+      blurred: false,
+    });
+    expect(updated[`${fields_root}.nested.value`].meta).toEqual({
+      dirty: false,
+      touched: true,
+      blurred: true,
+    });
+    expect(fields[`${fields_root}.object`].meta).toEqual({
+      dirty: false,
+      touched: false,
+      blurred: false,
+    });
   });
 });
 
@@ -192,7 +233,11 @@ describe('fields_reset', () => {
     const { fields, values } = setup();
 
     const set = fields_set(fields, 'object', { meta: { blurred: true } });
-    const updated = fields_reset(set, 'object', values);
+    const updated = fields_reset(
+      set,
+      'object',
+      { defaultValues: values } as unknown as FormOptions<any>,
+    );
 
     expect(updated[`${fields_root}.object`].meta.blurred).toBe(false);
   });
@@ -201,7 +246,11 @@ describe('fields_reset', () => {
     const { fields, values } = setup();
 
     const set = fields_set(fields, 'complex', { meta: { blurred: true } });
-    const updated = fields_reset(set, 'complex', values);
+    const updated = fields_reset(
+      set,
+      'complex',
+      { defaultValues: values } as unknown as FormOptions<any>,
+    );
 
     expect(updated[`${fields_root}.complex`].meta.blurred).toBe(false);
     expect(updated[`${fields_root}.complex.0`].meta.blurred).toBe(false);
@@ -212,7 +261,12 @@ describe('fields_reset', () => {
   it('should reset meta shape', () => {
     const { fields, values } = setup();
 
-    const updated = fields_reset(fields, 'object', { ...values, object: { new: { nested: ['string'] } } });
+    const updated = fields_reset(
+      fields,
+      'object',
+      { defaultValues: values } as unknown as FormOptions<any>,
+      { ...values, object: { new: { nested: ['string'] } } },
+    );
 
     expect(updated[`${fields_root}.object`]).toBeDefined();
     expect(updated[`${fields_root}.object.new`]).toBeDefined();
@@ -222,6 +276,25 @@ describe('fields_reset', () => {
     expect(updated[`${fields_root}.object.string`]).not.toBeDefined();
     expect(updated[`${fields_root}.object.number`]).not.toBeDefined();
     expect(updated[`${fields_root}.object.boolean`]).not.toBeDefined();
+  });
+
+  it('should reset with wildcard and field-specific meta defaults', () => {
+    const { fields, values } = setup({ values: { object: { string: 'string' } } });
+    const set = fields_set(fields, 'object.string', { meta: { touched: false, dirty: false, blurred: true } });
+
+    const updated = fields_reset(set, 'object.string', {
+      defaultValues: values,
+      defaultFieldMeta: {
+        '*': { touched: true },
+        'object.string': { dirty: true },
+      },
+    } as unknown as FormOptions<any>);
+
+    expect(updated[`${fields_root}.object.string`].meta).toEqual({
+      dirty: true,
+      touched: true,
+      blurred: false,
+    });
   });
 });
 
