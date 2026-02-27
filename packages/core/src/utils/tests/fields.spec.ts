@@ -1,13 +1,4 @@
-import {
-  fields_build,
-  fields_delete,
-  fields_move,
-  fields_remove,
-  fields_reset,
-  fields_root,
-  fields_set,
-  fields_shift,
-} from '#utils/fields';
+import { fields_build, fields_delete, fields_move, fields_remove, fields_reset, fields_root, fields_set, fields_shift } from '#utils/fields';
 import type { FormOptions } from '#types/api/form-options';
 import { generateId } from '#utils/generate-id';
 import { describe, expect, it, vi } from 'vitest';
@@ -233,11 +224,7 @@ describe('fields_reset', () => {
     const { fields, values } = setup();
 
     const set = fields_set(fields, 'object', { status: { blurred: true } });
-    const updated = fields_reset(
-      set,
-      'object',
-      { defaultValues: values } as unknown as FormOptions<any>,
-    );
+    const updated = fields_reset(set, 'object', { defaultValues: values } as unknown as FormOptions<any>);
 
     expect(updated[`${fields_root}.object`].status.blurred).toBe(false);
   });
@@ -246,11 +233,7 @@ describe('fields_reset', () => {
     const { fields, values } = setup();
 
     const set = fields_set(fields, 'complex', { status: { blurred: true } });
-    const updated = fields_reset(
-      set,
-      'complex',
-      { defaultValues: values } as unknown as FormOptions<any>,
-    );
+    const updated = fields_reset(set, 'complex', { defaultValues: values } as unknown as FormOptions<any>);
 
     expect(updated[`${fields_root}.complex`].status.blurred).toBe(false);
     expect(updated[`${fields_root}.complex.0`].status.blurred).toBe(false);
@@ -261,12 +244,10 @@ describe('fields_reset', () => {
   it('should reset status shape', () => {
     const { fields, values } = setup();
 
-    const updated = fields_reset(
-      fields,
-      'object',
-      { defaultValues: values } as unknown as FormOptions<any>,
-      { ...values, object: { new: { nested: ['string'] } } },
-    );
+    const updated = fields_reset(fields, 'object', { defaultValues: values } as unknown as FormOptions<any>, {
+      ...values,
+      object: { new: { nested: ['string'] } },
+    });
 
     expect(updated[`${fields_root}.object`]).toBeDefined();
     expect(updated[`${fields_root}.object.new`]).toBeDefined();

@@ -18,6 +18,8 @@ export { useFormEffect } from '#use-form-effect';
 export { useFormStatus } from '#use-form-status';
 export { useSubscribe } from '#use-subscribe';
 
+export { formOptions } from 'oxform-core';
+
 export type {
   AnyFormApi,
   AnyFormLikeApi,

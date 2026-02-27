@@ -4,5 +4,13 @@
   "singleQuote": true,
   "jsxSingleQuote": true,
   "printWidth": 120,
-  "objectWrap": "preserve"
+  "objectWrap": "preserve",
+  "overrides": [
+    {
+      "files": ["*.spec.ts", "*.spec.tsx"],
+      "options": {
+        "printWidth": 150
+      }
+    }
+  ]
 }

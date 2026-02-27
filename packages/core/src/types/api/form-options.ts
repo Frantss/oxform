@@ -7,7 +7,7 @@ import type { PartialDeep } from 'type-fest';
 
 type FormValidatorSchema<Values> = StandardSchema<PartialDeep<Values>>;
 type FormValidatorFunction<Values> = (store: FormStore<Values>) => FormValidatorSchema<Values>;
-type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction<Values>;
+export type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction<Values>;
 
 export type FormOptions<Values> = {
   schema: StandardSchema<Values>;

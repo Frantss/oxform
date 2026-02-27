@@ -3,6 +3,7 @@ export { createArrayField } from '#form/create-array-field';
 export { createEffect } from '#form/create-effect';
 export { createField } from '#form/create-field';
 export { createForm } from '#form/create-form';
+export { formOptions } from '#form/form-options';
 export { FieldApi } from '#form/field-api';
 export { FormApi } from '#form/form-api';
 
