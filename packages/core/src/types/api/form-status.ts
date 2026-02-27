@@ -5,5 +5,8 @@ export type FormStatus = Simplify<
   PersistedFormStatus & {
     submitted: boolean;
     valid: boolean;
+    blurred: boolean;
+    touched: boolean;
+    pristine: boolean;
   }
 >;

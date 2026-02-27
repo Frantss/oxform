@@ -32,8 +32,8 @@ export class FormCore<Values> {
       fn: ({ currDepVals }) => {
         const persisted = currDepVals[0] as FormBaseStore<Values>;
 
+        const root = persisted.fields[fields_root];
         const invalid = Object.values(persisted.fields).some(field => field.errors.length > 0);
-        const dirty = persisted.fields[fields_root].meta.dirty;
         const fields = pipe(
           persisted.fields,
           entries(),
@@ -65,7 +65,10 @@ export class FormCore<Values> {
             ...persisted.status,
             submitted: persisted.status.submits > 0,
             valid: !invalid,
-            dirty: persisted.status.dirty || dirty,
+            dirty: persisted.status.dirty || root.meta.dirty,
+            blurred: root.meta.blurred,
+            touched: root.meta.touched,
+            pristine: !root.meta.dirty,
           },
         };
       },

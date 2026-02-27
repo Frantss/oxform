@@ -11,6 +11,9 @@ export const useFormStatus = <Values>({ form }: UseFormStatusProps<Values>): Use
   const validating = useStore(form.store, state => state.status.validating);
   const submits = useStore(form.store, state => state.status.submits);
   const submitted = useStore(form.store, state => state.status.submitted);
+  const blurred = useStore(form.store, state => state.status.blurred);
+  const touched = useStore(form.store, state => state.status.touched);
+  const pristine = useStore(form.store, state => state.status.pristine);
 
   return useMemo(() => {
     return {
@@ -21,6 +24,9 @@ export const useFormStatus = <Values>({ form }: UseFormStatusProps<Values>): Use
       validating,
       submits,
       submitted,
+      blurred,
+      touched,
+      pristine,
     } satisfies UseFormStatusReturn;
-  }, [dirty, valid, submitting, successful, validating, submits, submitted]);
+  }, [dirty, valid, submitting, successful, validating, submits, submitted, blurred, touched, pristine]);
 };
