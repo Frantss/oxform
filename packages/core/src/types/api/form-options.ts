@@ -10,6 +10,7 @@ type FormValidatorFunction<Values> = (store: FormStore<Values>) => FormValidator
 export type FormValidator<Values> = FormValidatorSchema<Values> | FormValidatorFunction<Values>;
 
 export type FormOptions<Values> = {
+  id?: string;
   schema: StandardSchema<Values>;
   defaultValues: NoInfer<Values>;
   defaultStatus?: Partial<PersistedFormStatus>;

@@ -115,10 +115,31 @@ it('exposes status via form.status getter', () => {
   expectTypeOf(form.status).toEqualTypeOf(form.store.state.status);
 });
 
+it('creates form id when id is not provided', () => {
+  using context = setup();
+  const { form } = context;
+
+  expectTypeOf(form.id).toEqualTypeOf<string>();
+  expect(form.id).toBeTypeOf('string');
+  expect(form.id.length).toBeGreaterThan(0);
+});
+
+it('uses provided id', () => {
+  const form = createForm({
+    id: 'provided-form-id',
+    schema,
+    defaultValues,
+  });
+
+  expect(form.id).toBe('provided-form-id');
+});
+
 it('updates options via ~update', async () => {
   using context = setup();
   const { form } = context;
+  const initialId = form.id;
   const next = {
+    id: 'updated-form-id',
     schema: z.object({
       name: z.string().min(6, 'Name too short after update'),
       age: z.number(),
@@ -141,4 +162,5 @@ it('updates options via ~update', async () => {
   const [valid] = await form.validate('name');
 
   expect(valid).toBe(false);
+  expect(form.id).toBe(initialId);
 });

@@ -90,3 +90,27 @@ it('types callback second argument as FormApi', () => {
 
   void context.form.submit(onSuccess, onError);
 });
+
+it('creates id when id is not provided', () => {
+  const form = new FormApi<Values>({
+    schema: baseSchema,
+    defaultValues: {
+      name: 'valid',
+    },
+  });
+
+  expect(form.id).toBeTypeOf('string');
+  expect(form.id.length).toBeGreaterThan(0);
+});
+
+it('uses provided id', () => {
+  const form = new FormApi<Values>({
+    id: 'provided-form-id',
+    schema: baseSchema,
+    defaultValues: {
+      name: 'valid',
+    },
+  });
+
+  expect(form.id).toBe('provided-form-id');
+});

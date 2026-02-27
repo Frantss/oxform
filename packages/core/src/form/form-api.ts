@@ -5,13 +5,16 @@ import { FormCoreFields } from '#form/form-core-fields';
 import type { FormOptions } from '#types/api/form-options';
 import type { FormSubmitErrorHandler } from '#types/api/form-submit-error-handler';
 import type { FormSubmitSuccessHandler } from '#types/api/form-submit-success-handler';
+import { generateId } from '#utils/generate-id';
 
 export class FormApi<Values> {
   private core!: FormCore<Values>;
+  public id: string;
   public field: FormCoreField<Values>;
   public array: FormCoreArray<Values>;
 
   constructor(options: FormOptions<Values>) {
+    this.id = options.id ?? generateId();
     this.core = new FormCore<Values>(options);
     const fields = new FormCoreFields<Values>({ core: this.core });
 

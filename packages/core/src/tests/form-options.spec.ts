@@ -4,6 +4,7 @@ import { expect, expectTypeOf, it } from 'vitest';
 import z from 'zod';
 
 const defaults: FormOptions<{ name: string; age: number }> = {
+  id: 'form-id',
   schema: z.object({
     name: z.string(),
     age: z.number(),
@@ -64,6 +65,13 @@ it('types schema property', () => {
   const options = setup();
 
   expectTypeOf(options.schema).toEqualTypeOf<FormOptions<{ name: string; age: number }>['schema']>();
+});
+
+it('types id property and keeps values', () => {
+  const options = setup();
+
+  expectTypeOf(options.id).toEqualTypeOf<string | undefined>();
+  expect(options.id).toBe('form-id');
 });
 
 it('types defaultStatus sub-properties and keeps values', () => {
