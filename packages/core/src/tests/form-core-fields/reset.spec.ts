@@ -9,33 +9,33 @@ const issue: FormIssue = {
   path: ['nested', 'value'],
 } as never;
 
-it('resets target field meta to defaults', () => {
+it('resets target field status to defaults', () => {
   using context = setup();
 
   context.fields.set('nested.value', {
-    meta: { dirty: true, touched: true, blurred: true },
+    status: { dirty: true, touched: true, blurred: true },
   });
   context.fields.reset('nested.value');
   const entry = context.fields.get('nested.value');
 
-  expect(entry.meta).toEqual({ dirty: false, touched: false, blurred: false });
+  expect(entry.status).toEqual({ dirty: false, touched: false, blurred: false });
 });
 
-it('resets target field meta using wildcard and field-specific defaults', () => {
+it('resets target field status using wildcard and field-specific defaults', () => {
   using context = setup({
-    defaultFieldMeta: {
+    defaultFieldStatus: {
       '*': { touched: true },
       'nested.value': { dirty: true },
     },
   });
 
   context.fields.set('nested.value', {
-    meta: { dirty: false, touched: false, blurred: true },
+    status: { dirty: false, touched: false, blurred: true },
   });
   context.fields.reset('nested.value');
   const entry = context.fields.get('nested.value');
 
-  expect(entry.meta).toEqual({ dirty: true, touched: true, blurred: false });
+  expect(entry.status).toEqual({ dirty: true, touched: true, blurred: false });
 });
 
 it('clears target field errors', () => {
@@ -64,7 +64,7 @@ it('resets descendant field when resetting a parent path', () => {
   const element = {} as HTMLElement;
 
   context.fields.set('nested.value', {
-    meta: { dirty: true, touched: true, blurred: true },
+    status: { dirty: true, touched: true, blurred: true },
     errors: [issue],
     ref: element,
   });
@@ -73,7 +73,7 @@ it('resets descendant field when resetting a parent path', () => {
 
   expect(entry).toEqual({
     id: entry.id,
-    meta: { dirty: false, touched: false, blurred: false },
+    status: { dirty: false, touched: false, blurred: false },
     errors: [],
     ref: null,
   });
@@ -84,7 +84,7 @@ it('keeps sibling field state unchanged when resetting another path', () => {
   const element = {} as HTMLElement;
 
   context.fields.set('name', {
-    meta: { dirty: true, touched: true, blurred: true },
+    status: { dirty: true, touched: true, blurred: true },
     errors: [issue],
     ref: element,
   });
@@ -100,7 +100,7 @@ it('does not affect ascendant field state when resetting a descendant path', () 
   const element = {} as HTMLElement;
 
   context.fields.set('nested', {
-    meta: { dirty: true, touched: true, blurred: true },
+    status: { dirty: true, touched: true, blurred: true },
     errors: [issue],
     ref: element,
   });

@@ -1,8 +1,8 @@
 import type { FieldResetKeepOptions } from '#types/api/field-reset-keep-options';
-import type { FieldResetMeta } from '#types/api/field-reset-meta';
+import type { FieldResetStatus } from '#types/api/field-reset-status';
 
 export type FormResetFieldOptions<Value> = {
   value?: Value;
-  meta?: FieldResetMeta;
+  status?: FieldResetStatus;
   keep?: FieldResetKeepOptions;
 };

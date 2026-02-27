@@ -34,72 +34,72 @@ it('marks the field as dirty by default', () => {
   using context = setup();
 
   context.field.change('name', 'updated');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.dirty).toBe(true);
+  expect(status.dirty).toBe(true);
 });
 
 it('marks the field as touched by default', () => {
   using context = setup();
 
   context.field.change('name', 'updated');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.touched).toBe(true);
+  expect(status.touched).toBe(true);
 });
 
 it('does not mark the field as dirty when should.dirty is false', () => {
   using context = setup();
 
   context.field.change('name', 'updated', { should: { dirty: false } });
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.dirty).toBe(false);
+  expect(status.dirty).toBe(false);
 });
 
 it('does not mark the field as touched when should.touch is false', () => {
   using context = setup();
 
   context.field.change('name', 'updated', { should: { touch: false } });
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.touched).toBe(false);
+  expect(status.touched).toBe(false);
 });
 
 it('marks an ascendant field as dirty when changing a nested field', () => {
   using context = setup();
 
   context.field.change('nested.value', 'updated nested');
-  const meta = context.field.meta('nested');
+  const status = context.field.status('nested');
 
-  expect(meta.dirty).toBe(true);
+  expect(status.dirty).toBe(true);
 });
 
 it('marks an ascendant field as touched when changing a nested field', () => {
   using context = setup();
 
   context.field.change('nested.value', 'updated nested');
-  const meta = context.field.meta('nested');
+  const status = context.field.status('nested');
 
-  expect(meta.touched).toBe(true);
+  expect(status.touched).toBe(true);
 });
 
 it('does not mark a descendant field as dirty when changing its parent field', () => {
   using context = setup();
 
   context.field.change('nested', { value: 'updated nested parent' });
-  const meta = context.field.meta('nested.value');
+  const status = context.field.status('nested.value');
 
-  expect(meta.dirty).toBe(false);
+  expect(status.dirty).toBe(false);
 });
 
 it('does not mark a descendant field as touched when changing its parent field', () => {
   using context = setup();
 
   context.field.change('nested', { value: 'updated nested parent' });
-  const meta = context.field.meta('nested.value');
+  const status = context.field.status('nested.value');
 
-  expect(meta.touched).toBe(false);
+  expect(status.touched).toBe(false);
 });
 
 it('does not validate by default when changing a field', () => {
@@ -142,7 +142,7 @@ it('skips validation when should.validate is false', () => {
   expect(validate).not.toHaveBeenCalled();
 });
 
-it('batches value and meta updates into a single store notification', () => {
+it('batches value and status updates into a single store notification', () => {
   using context = setup();
   const listener = vi.fn();
 
@@ -152,11 +152,11 @@ it('batches value and meta updates into a single store notification', () => {
   // core.set + fields.set are batched, so listeners fire only once
   expect(listener).toHaveBeenCalledOnce();
 
-  // Verify both value and meta were applied in the same notification
+  // Verify both value and status were applied in the same notification
   const value = context.field.get('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
   expect(value).toBe('updated');
-  expect(meta.touched).toBe(true);
-  expect(meta.dirty).toBe(true);
+  expect(status.touched).toBe(true);
+  expect(status.dirty).toBe(true);
 });

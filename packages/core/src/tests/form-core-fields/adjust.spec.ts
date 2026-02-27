@@ -11,7 +11,7 @@ it('adds entries for new value paths', () => {
 
   expect(entry).toEqual({
     id: entry.id,
-    meta: { dirty: false, touched: false, blurred: false },
+    status: { dirty: false, touched: false, blurred: false },
     errors: [],
     ref: null,
   });
@@ -21,7 +21,7 @@ it('preserves existing entry state when path already exists', () => {
   using context = setup();
 
   context.fields.set('name', {
-    meta: { dirty: true, touched: true, blurred: true },
+    status: { dirty: true, touched: true, blurred: true },
   });
   const expected = context.fields.get('name');
   context.fields.adjust();
@@ -43,7 +43,7 @@ it('keeps unrelated entries unchanged', () => {
 
 it('adds new entries using wildcard defaults', () => {
   using context = setup({
-    defaultFieldMeta: {
+    defaultFieldStatus: {
       '*': { touched: true },
     },
   });
@@ -54,7 +54,7 @@ it('adds new entries using wildcard defaults', () => {
 
   expect(entry).toEqual({
     id: entry.id,
-    meta: { dirty: false, touched: true, blurred: false },
+    status: { dirty: false, touched: true, blurred: false },
     errors: [],
     ref: null,
   });

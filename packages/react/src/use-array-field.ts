@@ -1,7 +1,7 @@
 import { createArrayField } from 'oxform-core';
 
-import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import type { UseArrayFieldReturn } from '#types/use-array-field-return';
+import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import { useStore } from '@tanstack/react-store';
 import type { AnyFormApi, ArrayFieldOptions, FormArrayFields, FormFieldValue } from 'oxform-core';
 import { useMemo, useState } from 'react';
@@ -26,12 +26,12 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
   const defaultValue = useStore(api.store, state => state.defaultValue);
   const errors = useStore(api.store, state => state.errors);
   const ref = useStore(api.store, state => state.ref);
-  const metaBlurred = useStore(api.store, state => state.meta.blurred);
-  const metaTouched = useStore(api.store, state => state.meta.touched);
-  const metaDirty = useStore(api.store, state => state.meta.dirty);
-  const metaDefault = useStore(api.store, state => state.meta.default);
-  const metaValid = useStore(api.store, state => state.meta.valid);
-  const metaPristine = useStore(api.store, state => state.meta.pristine);
+  const statusBlurred = useStore(api.store, state => state.status.blurred);
+  const statusTouched = useStore(api.store, state => state.status.touched);
+  const statusDirty = useStore(api.store, state => state.status.dirty);
+  const statusDefault = useStore(api.store, state => state.status.default);
+  const statusValid = useStore(api.store, state => state.status.valid);
+  const statusPristine = useStore(api.store, state => state.status.pristine);
 
   return useMemo(() => {
     const state = {
@@ -40,13 +40,13 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
       defaultValue,
       errors,
       ref,
-      meta: {
-        blurred: metaBlurred,
-        touched: metaTouched,
-        dirty: metaDirty,
-        default: metaDefault,
-        valid: metaValid,
-        pristine: metaPristine,
+      status: {
+        blurred: statusBlurred,
+        touched: statusTouched,
+        dirty: statusDirty,
+        default: statusDefault,
+        valid: statusValid,
+        pristine: statusPristine,
       },
     };
 
@@ -63,11 +63,11 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
     defaultValue,
     errors,
     ref,
-    metaBlurred,
-    metaTouched,
-    metaDirty,
-    metaDefault,
-    metaValid,
-    metaPristine,
+    statusBlurred,
+    statusTouched,
+    statusDirty,
+    statusDefault,
+    statusValid,
+    statusPristine,
   ]) as UseArrayFieldReturn<FormFieldValue<Form, Name>>;
 };

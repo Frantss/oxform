@@ -1,4 +1,4 @@
-import { DEFAULT_FIELD_META } from '#constants';
+import { DEFAULT_FIELD_STATUS } from '#constants';
 import type { FormOptions } from '#types/api/form-options';
 import { buildPathsMap } from '#utils/build-paths-map';
 import type { FieldEntry } from '#utils/fields/field-entry';
@@ -29,10 +29,10 @@ export const fields_build = (options: FormOptions<any>, values: unknown = option
   const build = (path: string) => {
     return {
       id: generateId(),
-      meta: {
-        ...DEFAULT_FIELD_META,
-        ...options?.defaultFieldMeta?.['*'],
-        ...options?.defaultFieldMeta?.[fields_pathWithoutRoot(path)],
+      status: {
+        ...DEFAULT_FIELD_STATUS,
+        ...options?.defaultFieldStatus?.['*'],
+        ...options?.defaultFieldStatus?.[fields_pathWithoutRoot(path)],
       },
       errors: [],
       ref: null,
@@ -60,10 +60,10 @@ export const fields_set = (fields: PersistedFields, path: string, field: FieldSe
         ...entry,
         errors,
         ref,
-        meta: {
-          dirty: field.meta?.dirty ?? entry.meta.dirty,
-          touched: field.meta?.touched ?? entry.meta.touched,
-          blurred: field.meta?.blurred ?? entry.meta.blurred,
+        status: {
+          dirty: field.status?.dirty ?? entry.status.dirty,
+          touched: field.status?.touched ?? entry.status.touched,
+          blurred: field.status?.blurred ?? entry.status.blurred,
         },
       },
     };

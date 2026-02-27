@@ -20,27 +20,27 @@ it('marks the field as blurred', () => {
   using context = setup();
 
   context.field.blur('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.blurred).toBe(true);
+  expect(status.blurred).toBe(true);
 });
 
 it('marks an ascendant field as blurred when blurring a nested field', () => {
   using context = setup();
 
   context.field.blur('nested.value');
-  const meta = context.field.meta('nested');
+  const status = context.field.status('nested');
 
-  expect(meta.blurred).toBe(true);
+  expect(status.blurred).toBe(true);
 });
 
 it('does not mark a descendant field as blurred when blurring a parent field', () => {
   using context = setup();
 
   context.field.blur('nested');
-  const meta = context.field.meta('nested.value');
+  const status = context.field.status('nested.value');
 
-  expect(meta.blurred).toBe(false);
+  expect(status.blurred).toBe(false);
 });
 
 it('does not validate by default when blurring a field', () => {

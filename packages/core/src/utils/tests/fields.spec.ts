@@ -29,7 +29,7 @@ const setup = (overrides?: { values?: unknown; id?: string }) => {
 
   const fields = fields_build({
     defaultValues: overrides?.values ?? values,
-    defaultFieldMeta: undefined,
+    defaultFieldStatus: undefined,
   } as unknown as FormOptions<any>);
 
   return {
@@ -64,14 +64,14 @@ describe('fields_build', () => {
     const entry = fields[`${fields_root}.object`];
 
     expect(entry.id).toBeDefined();
-    expect(entry.meta.blurred).toBe(false);
-    expect(entry.meta.dirty).toBe(false);
-    expect(entry.meta.touched).toBe(false);
+    expect(entry.status.blurred).toBe(false);
+    expect(entry.status.dirty).toBe(false);
+    expect(entry.status.touched).toBe(false);
     expect(entry.errors).toStrictEqual([]);
     expect(entry.ref).toBeNull();
   });
 
-  it('should apply wildcard and field-specific meta defaults', () => {
+  it('should apply wildcard and field-specific status defaults', () => {
     const { fields } = setup();
 
     const updated = fields_build({
@@ -79,29 +79,29 @@ describe('fields_build', () => {
         name: 'name',
         nested: { value: 'value' },
       },
-      defaultFieldMeta: {
+      defaultFieldStatus: {
         '*': { touched: true },
         name: { dirty: true },
         'nested.value': { blurred: true },
       },
     } as unknown as FormOptions<any>);
 
-    expect(updated[fields_root].meta).toEqual({
+    expect(updated[fields_root].status).toEqual({
       dirty: false,
       touched: true,
       blurred: false,
     });
-    expect(updated[`${fields_root}.name`].meta).toEqual({
+    expect(updated[`${fields_root}.name`].status).toEqual({
       dirty: true,
       touched: true,
       blurred: false,
     });
-    expect(updated[`${fields_root}.nested.value`].meta).toEqual({
+    expect(updated[`${fields_root}.nested.value`].status).toEqual({
       dirty: false,
       touched: true,
       blurred: true,
     });
-    expect(fields[`${fields_root}.object`].meta).toEqual({
+    expect(fields[`${fields_root}.object`].status).toEqual({
       dirty: false,
       touched: false,
       blurred: false,
@@ -113,55 +113,55 @@ describe('fields_set', () => {
   it('should update the specific path', () => {
     const { fields } = setup();
 
-    const updated = fields_set(fields, 'object', { meta: { blurred: true, touched: true } });
+    const updated = fields_set(fields, 'object', { status: { blurred: true, touched: true } });
 
-    expect(updated[`${fields_root}.object`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.object`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.object`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.object`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.object`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.object`].status.blurred).toBe(true);
   });
 
   it('should update the all ascendent paths', () => {
     const { fields } = setup();
 
-    const updated = fields_set(fields, 'complex.0.array.string', { meta: { blurred: true, touched: true } });
+    const updated = fields_set(fields, 'complex.0.array.string', { status: { blurred: true, touched: true } });
 
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.blurred).toBe(true);
 
-    expect(updated[`${fields_root}.complex.0.array`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.complex.0.array`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array`].status.blurred).toBe(true);
 
-    expect(updated[`${fields_root}.complex.0.array`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.complex.0.array`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.complex.0.array`].status.blurred).toBe(true);
 
-    expect(updated[`${fields_root}.complex`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.complex`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.complex`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.complex`].status.blurred).toBe(true);
   });
 
   it('should update the descendant paths', () => {
     const { fields } = setup();
 
-    const updated = fields_set(fields, 'complex', { meta: { blurred: true, touched: true } });
+    const updated = fields_set(fields, 'complex', { status: { blurred: true, touched: true } });
 
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.touched).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.touched).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.blurred).toBe(false);
 
-    expect(updated[`${fields_root}.complex.0.array`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.touched).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.touched).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.blurred).toBe(false);
 
-    expect(updated[`${fields_root}.complex.0.array`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.touched).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.touched).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.blurred).toBe(false);
 
-    expect(updated[`${fields_root}.complex`].meta.dirty).toBe(false);
-    expect(updated[`${fields_root}.complex`].meta.touched).toBe(true);
-    expect(updated[`${fields_root}.complex`].meta.blurred).toBe(true);
+    expect(updated[`${fields_root}.complex`].status.dirty).toBe(false);
+    expect(updated[`${fields_root}.complex`].status.touched).toBe(true);
+    expect(updated[`${fields_root}.complex`].status.blurred).toBe(true);
   });
 
   it('should not propagate errors to ascendant paths', () => {
@@ -232,33 +232,33 @@ describe('fields_reset', () => {
   it('should reset path', () => {
     const { fields, values } = setup();
 
-    const set = fields_set(fields, 'object', { meta: { blurred: true } });
+    const set = fields_set(fields, 'object', { status: { blurred: true } });
     const updated = fields_reset(
       set,
       'object',
       { defaultValues: values } as unknown as FormOptions<any>,
     );
 
-    expect(updated[`${fields_root}.object`].meta.blurred).toBe(false);
+    expect(updated[`${fields_root}.object`].status.blurred).toBe(false);
   });
 
   it('should reset descendant paths', () => {
     const { fields, values } = setup();
 
-    const set = fields_set(fields, 'complex', { meta: { blurred: true } });
+    const set = fields_set(fields, 'complex', { status: { blurred: true } });
     const updated = fields_reset(
       set,
       'complex',
       { defaultValues: values } as unknown as FormOptions<any>,
     );
 
-    expect(updated[`${fields_root}.complex`].meta.blurred).toBe(false);
-    expect(updated[`${fields_root}.complex.0`].meta.blurred).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array`].meta.blurred).toBe(false);
-    expect(updated[`${fields_root}.complex.0.array.string`].meta.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex`].status.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0`].status.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array`].status.blurred).toBe(false);
+    expect(updated[`${fields_root}.complex.0.array.string`].status.blurred).toBe(false);
   });
 
-  it('should reset meta shape', () => {
+  it('should reset status shape', () => {
     const { fields, values } = setup();
 
     const updated = fields_reset(
@@ -278,19 +278,19 @@ describe('fields_reset', () => {
     expect(updated[`${fields_root}.object.boolean`]).not.toBeDefined();
   });
 
-  it('should reset with wildcard and field-specific meta defaults', () => {
+  it('should reset with wildcard and field-specific status defaults', () => {
     const { fields, values } = setup({ values: { object: { string: 'string' } } });
-    const set = fields_set(fields, 'object.string', { meta: { touched: false, dirty: false, blurred: true } });
+    const set = fields_set(fields, 'object.string', { status: { touched: false, dirty: false, blurred: true } });
 
     const updated = fields_reset(set, 'object.string', {
       defaultValues: values,
-      defaultFieldMeta: {
+      defaultFieldStatus: {
         '*': { touched: true },
         'object.string': { dirty: true },
       },
     } as unknown as FormOptions<any>);
 
-    expect(updated[`${fields_root}.object.string`].meta).toEqual({
+    expect(updated[`${fields_root}.object.string`].status).toEqual({
       dirty: true,
       touched: true,
       blurred: false,
@@ -299,7 +299,7 @@ describe('fields_reset', () => {
 });
 
 describe('fields_shift', () => {
-  it('should correctly shift meta to left', () => {
+  it('should correctly shift status to left', () => {
     const { fields } = setup();
 
     const updated = fields_shift(fields, 'array', 2, 'left');
@@ -309,7 +309,7 @@ describe('fields_shift', () => {
     expect(updated[`${fields_root}.array.2`]).not.toBeDefined();
   });
 
-  it('should correctly shift multiple meta to left', () => {
+  it('should correctly shift multiple status to left', () => {
     const { fields } = setup({ values: { array: [1, 2, 3, 4, 5, 6, 7] } });
 
     const updated = fields_shift(fields, 'array', 4, 'left');
@@ -324,7 +324,7 @@ describe('fields_shift', () => {
     expect(updated[`${fields_root}.array.7`]).not.toBeDefined();
   });
 
-  it('should correctly shift meta to right', () => {
+  it('should correctly shift status to right', () => {
     const { fields } = setup();
 
     const updated = fields_shift(fields, 'array', 1, 'right');
@@ -335,7 +335,7 @@ describe('fields_shift', () => {
     expect(updated[`${fields_root}.array.3`]).toStrictEqual(fields[`${fields_root}.array.2`]);
   });
 
-  it('should correctly shift multiple meta to right', () => {
+  it('should correctly shift multiple status to right', () => {
     const { fields } = setup({ values: { array: [1, 2, 3, 4, 5, 6, 7] } });
 
     const updated = fields_shift(fields, 'array', 4, 'right');

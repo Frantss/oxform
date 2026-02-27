@@ -1,9 +1,9 @@
 import type { FormIssue } from '#types/api/form-issue';
-import type { PersistedFieldMeta } from '#types/internal/persisted-field-meta';
+import type { PersistedFieldStatus } from '#types/internal/persisted-field-status';
 
 export type FieldEntry = {
   id: string;
-  meta: PersistedFieldMeta;
+  status: PersistedFieldStatus;
   errors: FormIssue[];
   ref: HTMLElement | null;
 };

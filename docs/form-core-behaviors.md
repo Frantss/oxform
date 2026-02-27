@@ -7,8 +7,8 @@
 - Updates field values for flat and nested paths.
 - Supports direct values and updater functions.
 - Marks target and ascendant fields as:
-  - `meta.dirty = true` by default
-  - `meta.touched = true` by default
+  - `status.dirty = true` by default
+  - `status.touched = true` by default
 - Honors options:
   - `should.dirty = false` keeps `dirty` unchanged
   - `should.touch = false` keeps `touched` unchanged
@@ -19,7 +19,7 @@
 ### `focus(name)`
 
 - Calls `.focus()` on registered element refs.
-- Sets `meta.touched = true` for target and ascendants.
+- Sets `status.touched = true` for target and ascendants.
 - Does not update descendant `touched`.
 - Triggers `FormCore.validate(name, { type: 'focus' })` when a focus validator is configured.
 - Accepts `options.should.validate = false` to skip validation.
@@ -27,7 +27,7 @@
 ### `blur(name)`
 
 - Calls `.blur()` on registered element refs.
-- Sets `meta.blurred = true` for target and ascendants.
+- Sets `status.blurred = true` for target and ascendants.
 - Does not update descendant `blurred`.
 - Triggers `FormCore.validate(name, { type: 'blur' })` when a blur validator is configured.
 - Accepts `options.should.validate = false` to skip validation.
@@ -37,10 +37,10 @@
 - Returns current value for flat and nested fields.
 - Reflects updates after `change`.
 
-### `meta(name)`
+### `status(name)`
 
-- Returns field meta state.
-- Default meta includes `dirty/touched/blurred = false`.
+- Returns field status state.
+- Default status includes `dirty/touched/blurred = false`.
 - Reflects updates from `focus`, `blur`, `change`.
 
 ### `register(name)`
@@ -151,9 +151,9 @@
 
 - Returns current field value.
 
-### `meta()`
+### `status()`
 
-- Returns field meta for the bound field path.
+- Returns field status for the bound field path.
 
 ### `register(element)` / `unregister()`
 
@@ -169,7 +169,7 @@
 
 ### `store()` / `state()`
 
-- `store()` returns a derived store with `{ value, defaultValue, errors, meta }`.
+- `store()` returns a derived store with `{ value, defaultValue, errors, status }`.
 - `state()` returns the current value of that derived store.
 
 ### `~mount()` / `~update(options)`
@@ -219,13 +219,13 @@
 ### `set(path, options)`
 
 - Updates target entry.
-- Propagates only `meta` to ascendant entries.
+- Propagates only `status` to ascendant entries.
 - `errors` and `ref` are applied only to the target entry.
 - Does not update descendants or siblings.
 
 ### `reset(path)`
 
-- Resets target entry meta/errors/ref to defaults.
+- Resets target entry status/errors/ref to defaults.
 - Resets descendant entries when resetting a parent path.
 - Does not affect sibling or ascendant entries.
 

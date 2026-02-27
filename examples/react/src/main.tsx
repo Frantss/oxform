@@ -6,7 +6,6 @@ import { Example_Array } from './examples/array';
 import { Example_Async } from './examples/async';
 import { Example_Basic } from './examples/basic';
 import { Example_Effect } from './examples/effect';
-import { Example_Plugins } from './examples/plugins';
 import { Example_Transform } from './examples/transform';
 import './styles.css';
 
@@ -41,12 +40,6 @@ const examples = {
     description: 'Subscribe to selectors that derive and format computed data.',
     component: Example_Transform,
   },
-  plugins: {
-    id: 'plugins',
-    label: 'Plugins',
-    description: 'Use FormOptions.with to attach global and per-field computed metadata on field.extra.',
-    component: Example_Plugins,
-  },
 } as const;
 
 const tabs = [
@@ -57,10 +50,6 @@ const tabs = [
   {
     id: examples.transform.id,
     label: examples.transform.label,
-  },
-  {
-    id: examples.plugins.id,
-    label: examples.plugins.label,
   },
 ] as const;
 
@@ -73,7 +62,6 @@ const Main = () => {
       examples.async.id,
       examples.effect.id,
       examples.transform.id,
-      examples.plugins.id,
     ]).withDefault(examples.basic.id),
   );
 

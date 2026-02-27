@@ -44,9 +44,9 @@ it('sets dirty to false after reset', () => {
 
   context.field.change('name', 'updated');
   context.field.reset('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.dirty).toBe(false);
+  expect(status.dirty).toBe(false);
 });
 
 it('sets touched to false after reset', () => {
@@ -54,9 +54,9 @@ it('sets touched to false after reset', () => {
 
   context.field.focus('name');
   context.field.reset('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.touched).toBe(false);
+  expect(status.touched).toBe(false);
 });
 
 it('sets blurred to false after reset', () => {
@@ -64,14 +64,14 @@ it('sets blurred to false after reset', () => {
 
   context.field.blur('name');
   context.field.reset('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.blurred).toBe(false);
+  expect(status.blurred).toBe(false);
 });
 
-it('resets field meta using wildcard and per-field defaults', () => {
+it('resets field status using wildcard and per-field defaults', () => {
   using context = setup({
-    defaultFieldMeta: {
+    defaultFieldStatus: {
       '*': { touched: true },
       name: { dirty: true },
     },
@@ -80,9 +80,9 @@ it('resets field meta using wildcard and per-field defaults', () => {
   context.field.change('name', 'updated');
   context.field.blur('name');
   context.field.reset('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta).toMatchObject({
+  expect(status).toMatchObject({
     dirty: true,
     touched: true,
     blurred: false,

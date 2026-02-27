@@ -33,36 +33,36 @@ it('marks the array field as dirty by default', () => {
   using context = setup();
 
   context.array.insert('array', 1, 'item1.5');
-  const meta = context.field.meta('array');
+  const status = context.field.status('array');
 
-  expect(meta.dirty).toBe(true);
+  expect(status.dirty).toBe(true);
 });
 
 it('marks the array field as touched by default', () => {
   using context = setup();
 
   context.array.insert('array', 1, 'item1.5');
-  const meta = context.field.meta('array');
+  const status = context.field.status('array');
 
-  expect(meta.touched).toBe(true);
+  expect(status.touched).toBe(true);
 });
 
 it('does not mark the array field as dirty when should.dirty is false', () => {
   using context = setup();
 
   context.array.insert('array', 1, 'item1.5', { should: { dirty: false } });
-  const meta = context.field.meta('array');
+  const status = context.field.status('array');
 
-  expect(meta.dirty).toBe(false);
+  expect(status.dirty).toBe(false);
 });
 
 it('does not mark the array field as touched when should.touch is false', () => {
   using context = setup();
 
   context.array.insert('array', 1, 'item1.5', { should: { touch: false } });
-  const meta = context.field.meta('array');
+  const status = context.field.status('array');
 
-  expect(meta.touched).toBe(false);
+  expect(status.touched).toBe(false);
 });
 
 it('creates a field entry for the inserted index', () => {
@@ -73,7 +73,7 @@ it('creates a field entry for the inserted index', () => {
 
   expect(entry).toEqual({
     id: entry.id,
-    meta: { dirty: false, touched: false, blurred: false },
+    status: { dirty: false, touched: false, blurred: false },
     errors: [],
     ref: null,
   });

@@ -23,13 +23,13 @@ type Values = z.infer<typeof schema>;
 
 const setup = (options?: {
   defaultStatus?: FormOptions<Values>['defaultStatus'];
-  defaultFieldMeta?: FormOptions<Values>['defaultFieldMeta'];
+  defaultFieldStatus?: FormOptions<Values>['defaultFieldStatus'];
 }) => {
   const core = new FormCore<Values>({
     schema,
     defaultValues,
     defaultStatus: options?.defaultStatus,
-    defaultFieldMeta: options?.defaultFieldMeta,
+    defaultFieldStatus: options?.defaultFieldStatus,
   });
   const unmount = core.store.mount();
   const fields = new FormCoreFields<Values>({ core });
@@ -80,9 +80,9 @@ it('initializes and resets status with configured defaults', () => {
   expect(context.core.store.state.status.successful).toBe(true);
 });
 
-it('resets field meta using wildcard and field-specific defaults', () => {
+it('resets field status using wildcard and field-specific defaults', () => {
   using context = setup({
-    defaultFieldMeta: {
+    defaultFieldStatus: {
       '*': { touched: true },
       name: { dirty: true },
       'nested.value': { blurred: true },
@@ -95,12 +95,12 @@ it('resets field meta using wildcard and field-specific defaults', () => {
 
   context.core.reset();
 
-  expect(context.core.store.state.fields['~root.name'].meta).toMatchObject({
+  expect(context.core.store.state.fields['~root.name'].status).toMatchObject({
     dirty: true,
     touched: true,
     blurred: false,
   });
-  expect(context.core.store.state.fields['~root.nested.value'].meta).toMatchObject({
+  expect(context.core.store.state.fields['~root.nested.value'].status).toMatchObject({
     dirty: false,
     touched: true,
     blurred: true,
@@ -132,7 +132,7 @@ it('resets values, fields, and status by default', () => {
   expect(context.core.store.state.values).toEqual(defaultValues);
   expect(context.core.store.state.fields['~root.name'].errors).toEqual([]);
   expect(context.core.store.state.fields['~root.name'].ref).toBeNull();
-  expect(context.core.store.state.fields['~root.name'].meta.dirty).toBe(false);
+  expect(context.core.store.state.fields['~root.name'].status.dirty).toBe(false);
   expect(context.core.store.state.status.submits).toBe(0);
   expect(context.core.store.state.status.submitting).toBe(false);
   expect(context.core.store.state.status.successful).toBe(false);
@@ -179,7 +179,7 @@ it('keeps fields when keep.fields is true', () => {
   expect(context.core.store.state.values).toEqual(defaultValues);
   expect(context.core.store.state.fields['~root.name'].errors).toHaveLength(1);
   expect(context.core.store.state.fields['~root.name'].ref).toBe(element);
-  expect(context.core.store.state.fields['~root.name'].meta.dirty).toBe(true);
+  expect(context.core.store.state.fields['~root.name'].status.dirty).toBe(true);
 });
 
 it('keeps refs and errors when requested without keep.fields', () => {
@@ -194,6 +194,6 @@ it('keeps refs and errors when requested without keep.fields', () => {
 
   expect(context.core.store.state.fields['~root.name'].errors).toHaveLength(1);
   expect(context.core.store.state.fields['~root.name'].ref).toBe(element);
-  expect(context.core.store.state.fields['~root.name'].meta.dirty).toBe(false);
-  expect(context.core.store.state.fields['~root.name'].meta.touched).toBe(false);
+  expect(context.core.store.state.fields['~root.name'].status.dirty).toBe(false);
+  expect(context.core.store.state.fields['~root.name'].status.touched).toBe(false);
 });

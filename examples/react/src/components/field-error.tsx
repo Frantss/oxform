@@ -1,6 +1,6 @@
 type FieldErrorField = {
   state: {
-    meta: {
+    status: {
       valid: boolean;
     };
     errors: Array<{
@@ -10,7 +10,7 @@ type FieldErrorField = {
 };
 
 export const FieldError = ({ field }: { field: FieldErrorField }) => {
-  if (field.state.meta.valid) {
+  if (field.state.status.valid) {
     return null;
   }
 

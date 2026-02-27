@@ -51,10 +51,10 @@ it('forwards focus and blur behavior to the underlying field', () => {
   using context = setup();
 
   context.field.focus();
-  expect(context.form.field.meta('name').touched).toBe(true);
+  expect(context.form.field.status('name').touched).toBe(true);
 
   context.field.blur();
-  expect(context.form.field.meta('name').blurred).toBe(true);
+  expect(context.form.field.status('name').blurred).toBe(true);
 });
 
 it('forwards errors and reset operations', () => {

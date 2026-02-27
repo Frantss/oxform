@@ -2,7 +2,7 @@ export type Fields<Issue = unknown> = Record<
   string,
   {
     id: string;
-    meta: {
+    status: {
       blurred: boolean;
       touched: boolean;
       dirty: boolean;

@@ -78,10 +78,10 @@ it('should mark the field as touched on focus', async () => {
 
   await ui.input.click();
 
-  const meta = form.field.meta('name');
+  const status = form.field.status('name');
 
-  expect(meta).toBeDefined();
-  expect(meta.touched).toBe(true);
+  expect(status).toBeDefined();
+  expect(status.touched).toBe(true);
 });
 
 it('should mark the fields as blurred on blur', async () => {
@@ -90,10 +90,10 @@ it('should mark the fields as blurred on blur', async () => {
   await ui.input.click();
   await ui.outside.click(); // blur the input
 
-  const meta = form.field.meta('name');
+  const status = form.field.status('name');
 
-  expect(meta).toBeDefined();
-  expect(meta.blurred).toBe(true);
+  expect(status).toBeDefined();
+  expect(status.blurred).toBe(true);
 });
 
 it('should keep the field as pristine when field is not dirty', async () => {
@@ -102,10 +102,10 @@ it('should keep the field as pristine when field is not dirty', async () => {
   await ui.input.click();
   await ui.outside.click(); // blur the input
 
-  const meta = form.field.meta('name');
+  const status = form.field.status('name');
 
-  expect(meta).toBeDefined();
-  expect(meta.pristine).toBe(true);
+  expect(status).toBeDefined();
+  expect(status.pristine).toBe(true);
 });
 
 test('default is true when value is equal to default value', async () => {
@@ -116,9 +116,9 @@ test('default is true when value is equal to default value', async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'John');
 
-  const meta = form.field.meta('name');
+  const status = form.field.status('name');
 
-  expect(meta.default).toBe(true);
+  expect(status.default).toBe(true);
 });
 
 test('default is false when value is not equal to default value', async () => {
@@ -127,7 +127,7 @@ test('default is false when value is not equal to default value', async () => {
   await userEvent.clear(ui.input);
   await userEvent.type(ui.input, 'Jane');
 
-  const meta = form.field.meta('name');
+  const status = form.field.status('name');
 
-  expect(meta.default).toBe(false);
+  expect(status.default).toBe(false);
 });

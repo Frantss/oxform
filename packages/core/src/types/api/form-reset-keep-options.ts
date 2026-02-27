@@ -3,6 +3,6 @@ export type FormResetKeepOptions = {
   errors?: boolean;
   /** Keep current references to html input elements */
   refs?: boolean;
-  /** Keep current field metadata */
+  /** Keep current field status */
   fields?: boolean;
 };

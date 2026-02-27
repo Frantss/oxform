@@ -166,7 +166,7 @@ export class FormCoreArray<Values> {
     batch(() => {
       this.fields.reset(`${name}.${position}`);
       this.fields.set(`${name}.${position}`, {
-        meta: {
+        status: {
           dirty: options?.should?.dirty !== false,
           touched: options?.should?.touch !== false,
         },
@@ -205,7 +205,7 @@ export class FormCoreArray<Values> {
       this.field.change(name, value as never, options);
       this.fields.reset(name);
       this.fields.set(name, {
-        meta: {
+        status: {
           dirty: shouldDirty ? true : undefined,
           touched: shouldTouch ? true : undefined,
         },

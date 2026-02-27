@@ -36,7 +36,7 @@ export class FormCoreField<Values> {
     batch(() => {
       this.core.set(name, updater);
       this.fields.set(name, {
-        meta: {
+        status: {
           touched: shouldTouch ? true : undefined,
           dirty: shouldDirty ? true : undefined,
         },
@@ -53,7 +53,7 @@ export class FormCoreField<Values> {
 
     if (field.ref) field.ref.focus();
 
-    if (!field.meta.touched) this.fields.set(name as never, { meta: { touched: true } });
+    if (!field.status.touched) this.fields.set(name as never, { status: { touched: true } });
     if (shouldValidate) void this.core.validate(name as never, { type: 'focus' });
   };
 
@@ -64,7 +64,7 @@ export class FormCoreField<Values> {
 
     if (field.ref) field.ref.blur();
 
-    if (!field.meta.blurred) this.fields.set(name as never, { meta: { blurred: true } });
+    if (!field.status.blurred) this.fields.set(name as never, { status: { blurred: true } });
     if (shouldValidate) void this.core.validate(name as never, { type: 'blur' });
   };
 
@@ -72,8 +72,8 @@ export class FormCoreField<Values> {
     return get(this.core.store.state.values as never, stringToPath(name)) as DeepValue<Values, Name>;
   };
 
-  public meta = <const Name extends DeepKeys<Values>>(name: Name) => {
-    return this.core.store.state.fields[fields_pathWithRoot(name)].meta;
+  public status = <const Name extends DeepKeys<Values>>(name: Name) => {
+    return this.core.store.state.fields[fields_pathWithRoot(name)].status;
   };
 
   public register = <const Name extends DeepKeys<Values>>(name: Name) => {

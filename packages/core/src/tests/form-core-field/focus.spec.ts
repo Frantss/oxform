@@ -19,27 +19,27 @@ it('marks the field as touched', () => {
   using context = setup();
 
   context.field.focus('name');
-  const meta = context.field.meta('name');
+  const status = context.field.status('name');
 
-  expect(meta.touched).toBe(true);
+  expect(status.touched).toBe(true);
 });
 
 it('marks an ascendant field as touched when focusing a nested field', () => {
   using context = setup();
 
   context.field.focus('nested.value');
-  const meta = context.field.meta('nested');
+  const status = context.field.status('nested');
 
-  expect(meta.touched).toBe(true);
+  expect(status.touched).toBe(true);
 });
 
 it('does not mark a descendant field as touched when focusing a parent field', () => {
   using context = setup();
 
   context.field.focus('nested');
-  const meta = context.field.meta('nested.value');
+  const status = context.field.status('nested.value');
 
-  expect(meta.touched).toBe(false);
+  expect(status.touched).toBe(false);
 });
 
 it('does not validate by default when focusing a field', () => {

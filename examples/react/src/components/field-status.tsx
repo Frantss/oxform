@@ -31,7 +31,7 @@ export const FieldStatus = ({ field }: { field: UseFieldReturn<any> }) => {
         </span>
       )}
 
-      {Object.entries(field.state.meta).map(([key, isOn]) => (
+      {Object.entries(field.state.status).map(([key, isOn]) => (
         <span key={key} className='status-tag' data-on={isOn}>
           <span className='status-dot' />
           {key}

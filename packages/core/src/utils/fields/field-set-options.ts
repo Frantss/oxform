@@ -1,8 +1,8 @@
 import type { FormIssue } from '#types/api/form-issue';
-import type { PersistedFieldMeta } from '#types/internal/persisted-field-meta';
+import type { PersistedFieldStatus } from '#types/internal/persisted-field-status';
 
 export type FieldSetOptions = {
-  meta?: Partial<PersistedFieldMeta>;
+  status?: Partial<PersistedFieldStatus>;
   errors?: FormIssue[];
   ref?: HTMLElement | null;
 };

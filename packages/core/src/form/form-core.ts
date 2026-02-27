@@ -49,11 +49,11 @@ export class FormCore<Values> {
               key,
               {
                 ...field,
-                meta: {
-                  ...field.meta,
+                status: {
+                  ...field.status,
                   default: isDeepEqual(value, defaultValue),
                   valid: field.errors.length === 0,
-                  pristine: !field.meta.dirty,
+                  pristine: !field.status.dirty,
                 },
               },
             ] as const;
@@ -68,10 +68,10 @@ export class FormCore<Values> {
             ...persisted.status,
             submitted: persisted.status.submits > 0,
             valid: !invalid,
-            dirty: persisted.status.dirty || root.meta.dirty,
-            blurred: root.meta.blurred,
-            touched: root.meta.touched,
-            pristine: !root.meta.dirty,
+            dirty: persisted.status.dirty || root.status.dirty,
+            blurred: root.status.blurred,
+            touched: root.status.touched,
+            pristine: !root.status.dirty,
           },
         };
       },
