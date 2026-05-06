@@ -3,9 +3,9 @@ export { createArrayField } from '#form/create-array-field';
 export { createEffect } from '#form/create-effect';
 export { createField } from '#form/create-field';
 export { createForm } from '#form/create-form';
-export { formOptions } from '#form/form-options';
 export { FieldApi } from '#form/field-api';
 export { FormApi } from '#form/form-api';
+export { formOptions } from '#form/form-options';
 
 export type { ArrayFieldOptions } from '#types/api/array-field-options';
 export type { ArrayFieldStore } from '#types/api/array-field-store';
@@ -13,7 +13,6 @@ export type { FieldBlurOptions } from '#types/api/field-blur-options';
 export type { FieldChangeOptions } from '#types/api/field-change-options';
 export type { FieldExtra } from '#types/api/field-extra';
 export type { FieldFocusOptions } from '#types/api/field-focus-options';
-export type { FieldStatus } from '#types/api/field-status';
 export type { FieldOptions } from '#types/api/field-options';
 export type { FieldPlugin } from '#types/api/field-plugin';
 export type { FieldPluginsInput } from '#types/api/field-plugins-input';
@@ -21,6 +20,7 @@ export type { FieldResetKeepOptions } from '#types/api/field-reset-keep-options'
 export type { FieldResetStatus } from '#types/api/field-reset-status';
 export type { FieldSetErrorsMode } from '#types/api/field-set-errors-mode';
 export type { FieldState } from '#types/api/field-state';
+export type { FieldStatus } from '#types/api/field-status';
 export type { FieldStore } from '#types/api/field-store';
 export type { FormErrorsOptions } from '#types/api/form-errors-options';
 export type { FormIssue } from '#types/api/form-issue';
@@ -49,3 +49,5 @@ export type { FormValues } from '#types/form/form-values';
 export type { ArrayLike } from '#types/misc/array-like';
 export type { EventLike } from '#types/misc/event-like';
 export type { StandardSchemaV1 as StandardSchema } from '@standard-schema/spec';
+
+export type * from '#types/deep';
