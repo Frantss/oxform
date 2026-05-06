@@ -1,5 +1,16 @@
 # example-oxform-react
 
+## 0.1.0
+
+### Minor Changes
+
+- ee3af78: working release
+
+### Patch Changes
+
+- Updated dependencies [ee3af78]
+  - oxform-react@0.2.0
+
 ## 0.0.1
 
 ### Patch Changes
