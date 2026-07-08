@@ -1,0 +1,46 @@
+---
+title: Validation
+description: Validate Oxform forms with Standard Schema libraries.
+---
+
+# Validation
+
+Oxform accepts Standard Schema compatible validators. That includes libraries such as Zod, Valibot, and ArkType.
+
+```tsx twoslash
+import { Field, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.email(),
+});
+
+export function EmailForm() {
+  const form = useForm({
+    schema,
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  return (
+    <Field form={form} name='email'>
+      {field => (
+        <label>
+          Email
+          <input {...field.props} />
+          {field.state.issues.error.map(issue => (
+            <span key={issue.issue.message}>{issue.issue.message}</span>
+          ))}
+        </label>
+      )}
+    </Field>
+  );
+}
+```
+
+## Issue levels
+
+Validation errors live under the reserved `error` issue level. Additional configured levels can be used for non-blocking feedback or stricter blocking checks.
+
+Render issue levels from field state instead of parsing messages from DOM events.

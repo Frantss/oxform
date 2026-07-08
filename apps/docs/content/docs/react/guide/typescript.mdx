@@ -1,0 +1,38 @@
+---
+title: TypeScript
+description: Use inferred field names and values with Oxform.
+---
+
+# TypeScript
+
+Oxform infers field names and field values from `defaultValues` and schema configuration.
+
+```tsx twoslash
+import { useField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  account: z.object({
+    email: z.string(),
+  }),
+  newsletter: z.boolean(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    account: {
+      email: '',
+    },
+    newsletter: false,
+  },
+});
+
+const email = useField({ form, name: 'account.email' });
+//    ^?
+
+const newsletter = useField({ form, name: 'newsletter' });
+//    ^?
+```
+
+Field names are checked at compile time. Invalid paths are rejected before they reach runtime.

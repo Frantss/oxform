@@ -6,6 +6,7 @@
   "license": "MIT",
   "author": "Frantss <frantss.bongiovanni@gmail.com>",
   "workspaces": [
+    "apps/*",
     "packages/*",
     "examples/*"
   ],
@@ -13,6 +14,10 @@
   "scripts": {
     "build": "vp run -r build",
     "build:dev": "vp run -r build --watch",
+    "docs:dev": "vp run @oxform/docs#dev",
+    "docs:build": "vp run @oxform/docs#build",
+    "docs:check": "vp run @oxform/docs#check:types",
+    "docs:start": "vp run @oxform/docs#start",
     "postbuild": "vp fmt --write",
     "test": "vp run oxform-core#test && vp run oxform-react#test",
     "check:package": "vp run oxform-core#check:package && vp run oxform-react#check:package",

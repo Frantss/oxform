@@ -1,0 +1,37 @@
+---
+title: useArrayField
+description: Manage dynamic array fields.
+---
+
+# useArrayField
+
+`useArrayField` returns an array-field API for list operations such as append, insert, move, remove, and swap.
+
+```tsx twoslash
+import { useArrayField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  tags: z.string().array(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    tags: ['alpha'],
+  },
+});
+
+const tags = useArrayField({ form, name: 'tags' });
+//    ^?
+```
+
+Use the `ArrayField` component when you want a render-prop wrapper around the hook.
+
+## API
+
+<auto-type-table path='../oxform-react.ts' name='useArrayField' />
+
+## Return type
+
+<auto-type-table path='../oxform-react.ts' name='UseArrayFieldReturn' />

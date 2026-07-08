@@ -1,0 +1,50 @@
+---
+title: Form Effects
+description: Run effects when selected form or field state changes.
+---
+
+# Form Effects
+
+Use `useFormEffect` when you need to react to a selected state value without rendering it.
+
+```tsx twoslash
+import { Field, useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(3),
+});
+
+export function ProfileForm() {
+  const form = useForm({
+    schema,
+    defaultValues: {
+      name: '',
+    },
+  });
+
+  const name = useFieldApi({ form, name: 'name' });
+
+  useFormEffect(
+    form,
+    state => state.status.submits,
+    submits => {
+      console.info('submits changed', submits);
+    },
+  );
+
+  useFormEffect(
+    name,
+    state => state.value,
+    value => {
+      console.info('name changed', value);
+    },
+  );
+
+  return (
+    <Field form={form} name='name'>
+      {field => <input {...field.props} />}
+    </Field>
+  );
+}
+```

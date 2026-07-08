@@ -1,0 +1,60 @@
+---
+title: useField
+description: Connect a form field path to React state and input props.
+---
+
+# useField
+
+`useField` connects one field path to React. The returned field includes state, input props, and imperative helpers for advanced controls.
+
+```tsx twoslash
+import { useField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    email: '',
+  },
+});
+
+const email = useField({ form, name: 'email' });
+//    ^?
+```
+
+For markup-heavy forms, use the `Field` component. It calls `useField` and passes the result to a render prop.
+
+```tsx twoslash
+import { Field, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({ schema, defaultValues: { email: '' } });
+
+<Field form={form} name='email'>
+  {field => <input {...field.props} />}
+</Field>;
+```
+
+## API
+
+<auto-type-table path='../oxform-react.ts' name='useField' />
+
+## Options
+
+<auto-type-table path='../oxform-react.ts' name='FieldOptions' />
+
+## Return type
+
+<auto-type-table path='../oxform-react.ts' name='UseFieldReturn' />
+
+## Field state
+
+<auto-type-table path='../oxform-react.ts' name='FieldState' />

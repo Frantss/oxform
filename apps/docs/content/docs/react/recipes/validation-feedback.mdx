@@ -1,0 +1,36 @@
+---
+title: Validation Feedback
+description: Render field validation issues.
+---
+
+# Validation Feedback
+
+Use `field.state.issues.error` for blocking validation errors.
+
+```tsx twoslash
+import { Field, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.email(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    email: '',
+  },
+});
+
+<Field form={form} name='email'>
+  {field => (
+    <label>
+      Email
+      <input {...field.props} />
+      {field.state.issues.error.map(issue => (
+        <span key={issue.issue.message}>{issue.issue.message}</span>
+      ))}
+    </label>
+  )}
+</Field>;
+```

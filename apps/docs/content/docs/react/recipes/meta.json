@@ -1,0 +1,4 @@
+{
+  "title": "Recipes",
+  "pages": ["index", "basic-submit", "validation-feedback", "array-fields", "subscriptions", "form-effects"]
+}

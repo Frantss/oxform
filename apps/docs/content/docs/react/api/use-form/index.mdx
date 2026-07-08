@@ -1,0 +1,39 @@
+---
+title: useForm
+description: Create an Oxform React form API.
+---
+
+# useForm
+
+`useForm` creates the form API that fields, array fields, subscriptions, and submit handlers use.
+
+```tsx twoslash
+import { useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    email: '',
+  },
+});
+
+form.store.state.values.email;
+//                      ^?
+```
+
+## API
+
+<auto-type-table path='../oxform-react.ts' name='useForm' />
+
+## Return type
+
+<auto-type-table path='../oxform-react.ts' name='UseFormReturn' />
+
+## Core options
+
+<auto-type-table path='../oxform-core.ts' name='FormOptions' />

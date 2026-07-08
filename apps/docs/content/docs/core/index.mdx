@@ -1,0 +1,26 @@
+---
+title: Core
+description: Framework-agnostic Oxform primitives for forms, fields, validation, and array fields.
+---
+
+# Oxform Core
+
+`oxform-core` contains the framework-agnostic form primitives used by every adapter.
+
+Use it directly when you want to keep form state outside a UI framework, build your own adapter, or test form behavior without rendering a component tree.
+
+## What core owns
+
+- Form creation and form options
+- Field reads, writes, status, and validation
+- Array field operations
+- Standard Schema validation
+- Submit lifecycle and issue collection
+
+## Public entrypoints
+
+```ts
+import { createForm, formOptions } from 'oxform-core';
+```
+
+The React package re-exports the core types most React users need, so React applications can usually start with `oxform-react`.

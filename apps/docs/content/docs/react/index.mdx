@@ -1,0 +1,87 @@
+---
+title: React
+description: Build typed React forms with Oxform hooks and components.
+---
+
+# Oxform React
+
+`oxform-react` provides React hooks and render-prop components over `oxform-core`.
+
+It is designed around a small set of primitives:
+
+- `useForm` creates the form API.
+- `Field` and `useField` connect individual fields to UI controls.
+- `ArrayField` and `useArrayField` manage dynamic list fields.
+- `Subscribe` and `useSubscribe` read selected form state.
+
+## Install
+
+```bash
+bun add oxform-react
+```
+
+```bash
+npm install oxform-react
+```
+
+## First form
+
+```tsx twoslash
+import { Field, Subscribe, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+});
+
+export function LoginForm() {
+  const form = useForm({
+    schema,
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void form.submit(values => {
+          console.info(values.email);
+        });
+      }}
+    >
+      <Field form={form} name='email'>
+        {field => <input type='email' {...field.props} />}
+      </Field>
+
+      <Field form={form} name='password'>
+        {field => <input type='password' {...field.props} />}
+      </Field>
+
+      <Subscribe api={form} selector={state => state.status.submitting}>
+        {submitting => <button disabled={submitting}>Sign in</button>}
+      </Subscribe>
+    </form>
+  );
+}
+```
+
+## Next steps
+
+<Cards>
+  <Card
+    title='Concepts'
+    href='/docs/react/guide/concepts'
+    description='Learn the form, field, array field, and subscription model.'
+  />
+  <Card
+    title='Validation'
+    href='/docs/react/guide/validation'
+    description='Use Standard Schema validators with Oxform.'
+  />
+  <Card title='API reference' href='/docs/react/api' description='Browse public React APIs and types.' />
+  <Card title='Recipes' href='/docs/react/recipes' description='Copy focused examples for common form work.' />
+</Cards>

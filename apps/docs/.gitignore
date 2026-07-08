@@ -1,0 +1,8 @@
+.cache
+.next
+.output
+.source
+.tanstack
+.vite
+dist
+node_modules

@@ -1,0 +1,50 @@
+---
+title: Subscribe
+description: Render selected form or field state.
+---
+
+# Subscribe
+
+`Subscribe` renders a selected slice of form or field state. Use it when a piece of UI only needs one derived value.
+
+```tsx twoslash
+import { Subscribe, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({ schema, defaultValues: { email: '' } });
+
+<Subscribe api={form} selector={state => state.status.submitting}>
+  {submitting => <button disabled={submitting}>Submit</button>}
+</Subscribe>;
+```
+
+The hook form is `useSubscribe`.
+
+```tsx twoslash
+import { useSubscribe, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({ schema, defaultValues: { email: '' } });
+const submitting = useSubscribe(form, state => state.status.submitting);
+//    ^?
+```
+
+## Component API
+
+<auto-type-table path='../oxform-react.ts' name='Subscribe' />
+
+## Hook API
+
+<auto-type-table path='../oxform-react.ts' name='useSubscribe' />
+
+## Props
+
+<auto-type-table path='../oxform-react.ts' name='SubscribeProps' />

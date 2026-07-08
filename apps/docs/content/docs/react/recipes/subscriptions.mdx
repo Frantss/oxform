@@ -1,0 +1,28 @@
+---
+title: Subscriptions
+description: Render selected form state.
+---
+
+# Subscriptions
+
+Use `Subscribe` to render a selected value without wiring the whole form state through a parent component.
+
+```tsx twoslash
+import { Subscribe, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    email: '',
+  },
+});
+
+<Subscribe api={form} selector={state => state.status.valid}>
+  {valid => <span>{valid ? 'Ready' : 'Needs attention'}</span>}
+</Subscribe>;
+```

@@ -1,0 +1,48 @@
+---
+title: Basic Submit
+description: Handle form submission with success and error callbacks.
+---
+
+# Basic Submit
+
+`form.submit` returns an event-handler-friendly function. Call it from your submit handler after preventing the browser default.
+
+```tsx twoslash
+import { Field, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.email(),
+});
+
+export function SignupForm() {
+  const form = useForm({
+    schema,
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void form.submit(
+          values => {
+            console.info(values.email);
+          },
+          issues => {
+            console.error(issues.error);
+          },
+        )();
+      }}
+    >
+      <Field form={form} name='email'>
+        {field => <input type='email' {...field.props} />}
+      </Field>
+
+      <button type='submit'>Create account</button>
+    </form>
+  );
+}
+```

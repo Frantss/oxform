@@ -1,0 +1,32 @@
+---
+title: Array Fields
+description: Manage dynamic lists with ArrayField.
+---
+
+# Array Fields
+
+`ArrayField` exposes list operations while keeping field state attached to the right entries.
+
+```tsx twoslash
+import { ArrayField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  tags: z.string().array(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    tags: ['alpha'],
+  },
+});
+
+<ArrayField form={form} name='tags'>
+  {tags => (
+    <button type='button' onClick={() => tags.append('beta')}>
+      Add tag
+    </button>
+  )}
+</ArrayField>;
+```

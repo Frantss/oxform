@@ -1,0 +1,66 @@
+---
+title: Concepts
+description: The core ideas behind Oxform React forms.
+---
+
+# Concepts
+
+Oxform React keeps the form API separate from rendered controls. You create a form once, then connect fields and subscriptions to the parts of the UI that need them.
+
+## Form
+
+The form owns values, field state, validation, and submit lifecycle.
+
+```tsx twoslash
+import { useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({
+  schema,
+  defaultValues: {
+    email: '',
+  },
+});
+```
+
+## Field
+
+A field reads and writes one path in the form.
+
+```tsx twoslash
+import { Field, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({ schema, defaultValues: { email: '' } });
+
+<Field form={form} name='email'>
+  {field => <input {...field.props} />}
+</Field>;
+```
+
+## Subscription
+
+A subscription reads a selected piece of state. Use it for submit buttons, status badges, counters, and derived UI.
+
+```tsx twoslash
+import { Subscribe, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string(),
+});
+
+const form = useForm({ schema, defaultValues: { email: '' } });
+
+<Subscribe api={form} selector={state => state.status.submitting}>
+  {submitting => <button disabled={submitting}>Submit</button>}
+</Subscribe>;
+```
