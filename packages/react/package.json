@@ -1,6 +1,6 @@
 {
   "name": "oxform-react",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Oxform is a lean and flexible framework-agnostic form library.",
   "license": "MIT",
   "author": "Frantss <frantss.bongiovanni@gmail.com>",
@@ -51,7 +51,7 @@
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }

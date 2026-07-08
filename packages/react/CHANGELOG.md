@@ -1,5 +1,11 @@
 # oxform-react
 
+## 0.5.1
+
+### Patch Changes
+
+- Widen React peer dependencies to support every React version since hooks were introduced.
+
 ## 0.5.0
 
 ### Minor Changes

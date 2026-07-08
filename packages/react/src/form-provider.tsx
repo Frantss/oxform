@@ -1,5 +1,5 @@
 import type { AnyFormApi, FormApi, FormOptions } from 'oxform-core';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, createElement, useContext, useMemo } from 'react';
 
 const FormContext = createContext<AnyFormApi[]>([]);
 
@@ -7,7 +7,7 @@ export function FormProvider({ form, children }: { form: AnyFormApi; children: R
   const context = useContext(FormContext);
   const value = useMemo(() => [form].concat(context), [context, form]);
 
-  return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
+  return createElement(FormContext.Provider, { value }, children);
 }
 
 export const useFormContext = <Values = unknown, Level extends string = string>({
