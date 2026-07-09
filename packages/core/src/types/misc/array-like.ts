@@ -1,1 +1,1 @@
-export type ArrayLike = any[] | undefined | null;
+export type ArrayLike = readonly unknown[] | undefined | null;

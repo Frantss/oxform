@@ -3,29 +3,37 @@ import { createArrayField } from 'oxform-core';
 import type { UseArrayFieldReturn } from '#types/use-array-field-return';
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import { useSelector } from '@tanstack/react-store';
-import type {
-  AnyFormApi,
-  ArrayFieldOptions,
-  ArrayLike,
-  FormArrayFields,
-  FormIssueLevels,
-  FormFieldValue,
-} from 'oxform-core';
+import type { AnyFormApi, ArrayLike, FormArrayFields, FormIssueLevels, FormFieldValue } from 'oxform-core';
 import { useMemo, useState } from 'react';
 
-type ArrayFieldValue<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = FormFieldValue<Form, Name> &
-  ArrayLike;
+type UseArrayFieldForm<Options extends { form: unknown }> = Options['form'] extends AnyFormApi
+  ? Options['form']
+  : never;
 
-export const useArrayField = <Form extends AnyFormApi, const Name extends FormArrayFields<Form>>(
-  options: ArrayFieldOptions<Form, Name>,
-): UseArrayFieldReturn<ArrayFieldValue<Form, Name>, FormIssueLevels<Form>> => {
+type UseArrayFieldName<Options extends { form: unknown; name: string }> = Options['name'] &
+  FormArrayFields<UseArrayFieldForm<Options>>;
+
+type UseArrayFieldOptions<Options extends { form: unknown; name: string }> = Options['form'] extends AnyFormApi
+  ? Options & {
+      name: UseArrayFieldName<Options>;
+    }
+  : never;
+
+type ArrayFieldValue<Options extends { form: unknown; name: string }> = Extract<
+  FormFieldValue<UseArrayFieldForm<Options>, UseArrayFieldName<Options>>,
+  ArrayLike
+>;
+
+export const useArrayField = <const Options extends { form: unknown; name: string }>(
+  options: UseArrayFieldOptions<Options>,
+): UseArrayFieldReturn<ArrayFieldValue<Options>, FormIssueLevels<UseArrayFieldForm<Options>>> => {
   const [api] = useState(() => {
-    return createArrayField({ ...options });
+    return createArrayField({ ...options } as never);
   });
 
   useIsomorphicLayoutEffect(api['~mount'], [api]);
   useIsomorphicLayoutEffect(() => {
-    api['~update'](options);
+    api['~update'](options as { form: AnyFormApi; name: string });
   });
 
   // todo: re-create api if form or name changes
@@ -79,5 +87,5 @@ export const useArrayField = <Form extends AnyFormApi, const Name extends FormAr
     statusDefault,
     statusValid,
     statusPristine,
-  ]) as UseArrayFieldReturn<ArrayFieldValue<Form, Name>, FormIssueLevels<Form>>;
+  ]) as UseArrayFieldReturn<ArrayFieldValue<Options>, FormIssueLevels<UseArrayFieldForm<Options>>>;
 };
