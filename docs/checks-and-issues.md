@@ -41,7 +41,7 @@ const form = createForm({
 });
 ```
 
-Issues are grouped by issue level first, then by validation event:
+Checks are configured by issue level first, then by validation event:
 
 ```ts
 checks: {
@@ -82,7 +82,7 @@ type FormIssuesByLevel<Level extends string = string> = {
 };
 
 type FormChecksMap<Values, Level extends string = string> = {
-  [Key in Level]?: {
+  [Key in 'error' | Level]?: {
     blocking?: boolean;
     validate?: Partial<Record<ValidationType, FormCheckValidator<Values, Level>>>;
   };
@@ -92,8 +92,9 @@ type FormChecksMap<Values, Level extends string = string> = {
 `FormIssue` is the Standard Schema issue type. The `error` level is reserved
 for validation errors and is included in inferred issue levels.
 
-`type` is set when a issue was produced by event validation. Manual
-issues written with `setIssues` may omit it.
+`type` is set when an issue was produced by event validation. The root schema
+in an untyped run produces error entries without an event type. Manual issues
+written with `setIssues` may also omit it.
 
 ## Configuring Checks
 
@@ -141,7 +142,7 @@ Supported events match validation events:
 
 If `blocking` is omitted for a level, it is non-blocking by default.
 
-## Running Issues
+## Running Validation
 
 Call `validate` directly when you need explicit control:
 
@@ -172,9 +173,32 @@ validity.
 When `fields` is provided, only the field path and its descendants are updated.
 Other fields keep their current issues.
 
-When `options.type` is provided, only issues for that event are refreshed.
-Issues from other events stay visible. When `options.type` is omitted, all
-configured issue events are refreshed for the target subtree.
+When `options.type` is provided, custom-level issues for that event are
+refreshed, while custom issues from other events stay visible. Custom issues
+without a type are preserved. When `options.type` is omitted, all four
+custom-level event scopes are refreshed for the target subtree.
+
+Error issues have different replacement rules: if the run includes an error
+validator, all existing error issues at targeted paths are replaced, including
+manual errors and errors from other events. Without an error validator,
+existing error issues are preserved.
+
+Validators always receive the full values object. Targets filter returned
+issues and updated field state. A parent target includes descendants, but not
+ancestor or sibling issues. Root-level issues without a path are returned only
+for whole-form validation. Passing an empty target list returns no issues and
+updates no field paths. Parsed schema output does not replace values.
+
+## Validator Selection
+
+| Request                      | Error validation                                                       | Custom checks                                 |
+| ---------------------------- | ---------------------------------------------------------------------- | --------------------------------------------- |
+| No event type                | Root schema and all configured error events.                           | All configured events at all custom levels.   |
+| `submit`                     | Configured `checks.error.validate.submit`, or root schema as fallback. | Configured submit event at each custom level. |
+| `change`, `blur`, or `focus` | Only the matching `checks.error.validate` event; no root fallback.     | Matching event at each custom level.          |
+
+Creation and reset do not run validation. With no issues recorded, initial
+validity is true even when the default values would fail the schema.
 
 ## Automatic Event Validation
 
@@ -190,19 +214,22 @@ form.field.focus('email');
 For each operation, checks run by default only when a matching check event is
 configured:
 
-| Operation            | Check event     |
-| -------------------- | --------------- |
-| `field.change(...)`  | `checks.change` |
-| `field.blur(...)`    | `checks.blur`   |
-| `field.focus(...)`   | `checks.focus`  |
-| `form.submit(...)()` | `checks.submit` |
+| Operation            | Check event                     |
+| -------------------- | ------------------------------- |
+| `field.change(...)`  | `checks[level].validate.change` |
+| `field.blur(...)`    | `checks[level].validate.blur`   |
+| `field.focus(...)`   | `checks[level].validate.focus`  |
+| `form.submit(...)()` | `checks[level].validate.submit` |
 
 Pass `should.validate: false` to `change`, `blur`, or `focus` to skip both
-normal validation and checks for that field operation.
+normal validation and checks for that field operation. `should.validate: true`
+explicitly requests the matching event. Field operations return `void`; await
+`form.validate(...)` when validation completion is needed. Array removal skips
+validation regardless of this flag.
 
 ## Submit Behavior
 
-`submit` runs normal submit validation first, then submit issues:
+`submit` runs the selected error and custom-level submit validators:
 
 ```ts
 await form.submit(onSuccess, onError)();
@@ -273,7 +300,6 @@ form.field.setIssues('email', {
     {
       level: 'warning',
       issue: {
-        code: 'custom',
         message: 'This address may not receive transactional email.',
         path: ['email'],
       },
@@ -290,8 +316,15 @@ form.field.setIssues('email', issues, { mode: 'append' });
 form.field.setIssues('email', issues, { mode: 'keep' });
 ```
 
-Manual issues are preserved when event validation refreshes issues
-because they do not have a `type`.
+Manual custom-level issues without a `type` are preserved when event validation
+refreshes issues. Manual error issues are replaced when the run includes an
+error validator. Giving a manual custom issue a `type` makes it subject to that
+event's refresh rules.
+
+`replace` replaces all buckets for the named field, including omitted levels.
+`append` adds to existing buckets. `keep` preserves all existing buckets if any
+bucket is nonempty; it does not decide separately for each level. The payload's
+issue path does not redirect the write to another field.
 
 If a manual issue uses a blocking level, it affects field and form
 validity and can fail submit.
@@ -335,7 +368,8 @@ form.reset({
 
 ## Blocking Levels
 
-Only levels configured with `blocking: true` affect validity:
+The reserved `error` level always affects validity. Custom levels affect
+validity only when configured with `blocking: true`:
 
 ```ts
 checks: {
@@ -351,8 +385,7 @@ checks: {
 ```
 
 Blocking issues make the affected field invalid and make the form invalid.
-They do not move into `errors`; consumers should still read them from
-`issues`.
+Read both error and custom-level entries through `issues`.
 
 Non-blocking issues remain visible but do not affect `status.valid` or
 submit success.
@@ -422,7 +455,8 @@ issues.warning; // FormIssueEntry<'warning'>[]
 issues.risk; // FormIssueEntry<'risk'>[]
 ```
 
-If no levels can be inferred, issues fall back to `string`.
+With no configured checks keys, the inferred issue level is `error`. A broadly
+typed checks map can widen the inferred level to `string`.
 
 ## Async Checks
 
@@ -432,6 +466,16 @@ Check schemas may be asynchronous. While an async check is pending,
 If form values change before an async check resolves, the stale result is
 ignored and does not overwrite newer field state. Updates to unrelated target
 paths do not invalidate the pending check.
+
+A newer run with the same target set and event supersedes an older run. Form
+reset invalidates pending results. A discarded result resolves to
+`[true, emptyIssueBuckets]`, which does not establish validity of changed values.
+
+Concurrent async validators keep `status.validating` true until all pending
+validators settle. Synchronous validation does not set it to true. A thrown or
+rejected validator rejects `validate`; it is not converted into an issue.
+The async pending status clears as validators settle. Submission callbacks can
+also reject; submit completion status is not guaranteed after rejection.
 
 ## API Summary
 

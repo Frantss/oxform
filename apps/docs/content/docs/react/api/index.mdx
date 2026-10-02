@@ -5,11 +5,17 @@ description: Public Oxform React exports and types.
 
 # API Reference
 
-The API reference documents public exports from `oxform-react`. Examples should import from the same entrypoints that application code uses.
+The API reference groups public exports by the state they operate on. Each page describes its options, properties, methods, and usage. React bindings share the core form, field, array, validation, and issue contracts.
 
 <Cards>
   <Card title='useForm' href='/docs/react/api/use-form' description='Create a typed form API.' />
   <Card title='useField' href='/docs/react/api/use-field' description='Connect a field path to UI state and props.' />
   <Card title='useArrayField' href='/docs/react/api/use-array-field' description='Manage array field operations.' />
   <Card title='Subscribe' href='/docs/react/api/subscribe' description='Render selected form state.' />
+  <Card
+    title='Status'
+    href='/docs/react/api/status'
+    description='Observe interaction, validation, and submission status.'
+  />
+  <Card title='Effects' href='/docs/react/api/effects' description='Run callbacks when selected state changes.' />
 </Cards>

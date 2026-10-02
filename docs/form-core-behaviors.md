@@ -1,312 +1,392 @@
-# Form Core Classes: Expected Behaviors
+# Public API Behavior Reference and Reproduction Spec
 
-## FormCoreField
+This document describes caller-visible contracts of `oxform-core` and
+`oxform-react`. The documentation site contains the usage reference, grouped
+by form, field, array field, subscription, status, and effect.
 
-### `change(name, updater, options?)`
+## Form API
 
-- Updates field values for flat and nested paths.
-- Supports direct values and updater functions.
-- Marks target and ascendant fields as:
-  - `status.dirty = true` by default
-  - `status.touched = true` by default
-- Honors options:
-  - `should.dirty = false` keeps `dirty` unchanged
-  - `should.touch = false` keeps `touched` unchanged
-  - `should.validate = false` skips validation
-- Does not propagate `dirty`/`touched` down to descendants when changing a parent path.
-- Triggers `FormCore.validate(name, { type: 'change' })` by default only when a change validator is configured.
+### Creation and Options
 
-### `focus(name)`
+`createForm(options)` and `new FormApi(options)` create form state.
+`useForm(options)` exposes the same operations in React and subscribes to form
+status. `formOptions(options)` returns the input configuration with inferred
+types and creates no state.
 
-- Calls `.focus()` on registered element refs.
-- Sets `status.touched = true` for target and ascendants.
-- Does not update descendant `touched`.
-- Triggers `FormCore.validate(name, { type: 'focus' })` when a focus validator is configured.
-- Accepts `options.should.validate = false` to skip validation.
+| Option               | Public behavior                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `schema`             | Required Standard Schema validator; determines the values type.                                   |
+| `defaultValues`      | Required initial values and reset baseline, checked against schema-derived values.                |
+| `id`                 | Optional identifier; generated if absent. Does not change after creation.                         |
+| `defaultStatus`      | Optional initial and reset defaults for dirty and submit lifecycle status.                        |
+| `defaultFieldStatus` | Optional dirty, touched, and blurred defaults by path; path overrides take precedence over `'*'`. |
+| `checks`             | Issue-level configurations with blocking flags and event validators.                              |
 
-### `blur(name)`
+Creation does not validate. Updated defaults affect subsequent resets and
+default-value comparisons without replacing current values. Schema output
+transformations do not replace values during validation.
 
-- Calls `.blur()` on registered element refs.
-- Sets `status.blurred = true` for target and ascendants.
-- Does not update descendant `blurred`.
-- Triggers `FormCore.validate(name, { type: 'blur' })` when a blur validator is configured.
-- Accepts `options.should.validate = false` to skip validation.
+```ts
+import { createForm, formOptions } from 'oxform-core';
+import { z } from 'zod';
 
-### `get(name)`
+const schema = z.object({ email: z.string(), tags: z.array(z.string()) });
+const options = formOptions({ schema, defaultValues: { email: '', tags: ['alpha'] } });
+const form = createForm(options);
+```
 
-- Returns current value for flat and nested fields.
-- Reflects updates after `change`.
+### Properties
 
-### `status(name)`
+| Property  | Public behavior                                                  |
+| --------- | ---------------------------------------------------------------- |
+| `id`      | Form identifier.                                                 |
+| `options` | Current configuration.                                           |
+| `values`  | Current typed values snapshot.                                   |
+| `status`  | Aggregate interaction, validation, and submission status.        |
+| `store`   | Read-only observable state with values, field state, and status. |
+| `field`   | Path-based field operations.                                     |
+| `array`   | Path-based array mutations.                                      |
 
-- Returns field status state.
-- Default status includes `dirty/touched/blurred = false`.
-- Reflects updates from `focus`, `blur`, `change`.
-
-### `register(name)`
-
-- Stores provided DOM element as field ref.
-- No-op for `null` input.
-
-### `unregister(name)`
-
-- Clears stored ref for target field.
-- Does not affect sibling refs.
-
-### `issues(name, options?)`
-
-- Returns issues for target field, grouped by issue level.
-- `nested: true` aggregates issues for descendant paths.
-- Without `nested`, returns only target field issues.
-- Includes configured issue levels with empty arrays when no issues exist for that level.
-- Includes the reserved `error` level for normal validation errors.
-
-### `setIssues(name, issues, options?)`
-
-- Accepts issues grouped by level.
-- Supports modes:
-  - `replace` (default): replace existing issues
-  - `append`: append to existing issues
-  - `keep`: keep existing if non-empty, otherwise set new issues
-- Manual issues may omit `type`.
-- Updates form validity (`status.valid`) when error or blocking issues are set/cleared.
-
-### `reset(name, options?)`
-
-- Resets target value to default by default.
-- Supports custom reset value via `options.value`.
-- Resets target field state:
-  - `dirty = false`
-  - `touched = false`
-  - `blurred = false`
-  - `issues = []`
-- Does not affect sibling values.
-
-## FormCore
+Reads alone do not subscribe React components to values. `useForm` subscribes
+to status; `useSubscribe` selects values or other state.
 
 ### `validate(fields?, options?)`
 
-- Validates current form values with the unified issues pipeline.
-- Uses `issues.error.validate[options.type]` for event-specific error validation. Submit falls back to the root `schema`; change/blur/focus run error validation only when configured.
-- Uses all configured issue events plus the root `schema` when `options.type` is omitted.
-- `fields` behavior:
-  - Omitted: validates issues for the entire form and updates all field issues for the selected event scope.
-  - Single field: validates that field path and descendants.
-  - Field list: validates each provided path and descendants.
-- When validating a subset of fields, non-target field issues remain unchanged.
-- Rewrites event-produced issues for targeted fields and selected event scope.
-- Preserves manual issues, which have no `type`.
-- Preserves issues from other events when validating a single event.
-- Clears stale issues for targeted fields when the selected event no longer emits issues.
-- Sets `status.validating = true` during async validation and `false` after field states are updated.
-- Ignores stale async issue results when the validated target changes before the result resolves.
-- Returns `[valid, issues]`:
-  - `valid = true` when the run emitted no `error` or blocking issues
-  - `valid = false` when the run emitted at least one `error` or blocking issue
-- The returned `valid` value describes that validation run, not complete form validity.
+Returns `Promise<[boolean, FormIssuesByLevel<Level>]>`. Its boolean describes
+blocking issues emitted in this run, while `form.status.valid` includes all
+current issues.
 
-## FormApi
+Targets may be omitted, a path, or a path array. A target includes its
+descendants but excludes ancestors and siblings. Validators always receive
+full values. An empty array targets nothing. Pathless issues apply only to
+whole-form validation.
 
-### `status`
+| Event selection     | Validators                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| No type             | Root schema and all configured events at all levels.                                    |
+| Submit              | Explicit error submit validator, or root schema as fallback, plus custom submit checks. |
+| Change, blur, focus | Matching configured validators only; no root schema fallback.                           |
 
-- Returns `store.state.status`.
+An error validator replaces all existing error issues in scope, including
+manual errors and errors from other events. Without an error validator, errors
+are preserved. Custom-level issues are refreshed for the selected event, or
+all four events in an untyped run; entries without a type are preserved.
 
-### `values`
+Async pending validators set `validating`. An overlapping value change,
+a newer run for the same target set and event, or form reset prevents stale
+results from replacing issues. Discarded runs return true with empty buckets.
+Unrelated value changes do not invalidate targeted runs. Validators may reject
+the validation promise rather than produce issues.
 
-- Returns `store.state.values`.
+```ts
+const [valid, issues] = await form.validate('email', { type: 'blur' });
+await form.validate(['email', 'tags']);
+await form.validate();
+```
 
-### `validate`
-
-- Exposes `FormCore.validate`.
-
-### `~mount()`
-
-- Mounts the underlying store and returns its unsubscribe function.
-
-### `~update(options)`
-
-- Replaces current form options (schema/default values/validation config).
+See [Checks and Issues](./checks-and-issues.md) for the full validation contract.
 
 ### `submit(onSuccess, onError?)`
 
-- Returns an async submit handler.
-- On run:
-  - sets `status.submitting = true` and `status.dirty = true`
-  - runs `validate(undefined, { type: 'submit' })`
-  - when submit validation passes and no current blocking issues exist: calls `onSuccess(values, formApi)`
-  - otherwise: calls `onError?.(issues, formApi)`
-  - increments `status.submits`
-  - sets `status.submitting = false`
-  - sets `status.successful` to the submit result
+Returns `() => Promise<void>`. Calling it sets dirty and submitting, runs
+whole-form submit validation, and awaits the selected callback. Success
+requires both run validity and current aggregate validity.
+`onSuccess(values, form)` receives current values; `onError(issues, form)`
+receives all current issues.
 
-## FieldApi
+After a normally resolved callback, submits increments, submitting clears, and
+successful records the validation result. Validator or callback rejection
+rejects the handler and may leave completion status unchanged. Browser default
+submission and concurrent calls are not suppressed.
 
-### `createFieldApi({ form, name })`
-
-- Creates a field-scoped API bound to a single field path.
-
-### `change(valueOrUpdater, options?)`
-
-- Proxies to `form.field.change(name, valueOrUpdater, options)`.
-
-### `focus(options?)`
-
-- Proxies to `form.field.focus(name, options)`.
-
-### `blur(options?)`
-
-- Proxies to `form.field.blur(name, options)`.
-
-### `get()`
-
-- Returns current field value.
-
-### `status()`
-
-- Returns field status for the bound field path.
-
-### `register(element)` / `unregister()`
-
-- Proxies register/unregister for the bound field.
-
-### `issues(options?)` / `setIssues(issues, options?)`
-
-- Reads/updates issues for the bound field.
+```ts
+await form.submit(
+  values => {
+    console.info(values.email);
+  },
+  issues => {
+    console.error(issues.error);
+  },
+)();
+```
 
 ### `reset(options?)`
 
-- Resets the bound field.
+Restores configured defaults unless a full `values` object is supplied. It
+resets field state, issues, refs, and submit status without validating.
+Custom reset values do not change defaults. `status` overrides reset form
+status. `keep.issues` retains all or selected levels, `keep.refs` retains refs,
+and `keep.fields` preserves full field state and takes precedence over those
+flags. Issue/ref preservation applies to retained paths.
 
-### `store()` / `state()`
+```ts
+form.reset();
+form.reset({ keep: { refs: true, issues: ['error'] } });
+form.reset({ values: { email: 'ada@example.com', tags: [] }, status: { submits: 0 } });
+```
 
-- `store()` returns a derived store with `{ value, defaultValue, issues, status }`.
-- `state()` returns the current value of that derived store.
+### Adapter Lifecycle
 
-### `~mount()` / `~update(options)`
+`'~mount'()` returns cleanup. `'~update'(options)` replaces current
+configuration without resetting values. React calls these exposed lifecycle
+members for its consumers.
 
-- `~mount()` mounts the derived field store.
-- `~update(options)` replaces `{ form, name }` used by the API.
+## Field API
 
-## ArrayFieldApi
+`createField({ form, name })`, `new FieldApi(options)`, `useFieldApi(options)`,
+and `useField(options)` bind one schema-derived path. Prefer factories or
+hooks for inference. `useField` subscribes to field state and adds `props`;
+`useFieldApi` supplies imperative access without that subscription or props.
 
-### `createArrayField({ form, name })` / `createArrayFieldApi({ form, name })`
+Properties are `options`, `id`, `value`, `store`, and `state`.
+`state` contains `id`, `value`, `defaultValue`, `ref`, `status`, and
+level-keyed `issues`. Store and state are properties, not callable methods.
 
-- Creates an array-field API bound to one array field path.
+| Bound method                  | Path-based equivalent                          | Public behavior                                                               |
+| ----------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `get()`                       | `form.field.get(name)`                         | Reads the typed current value.                                                |
+| `change(updater, options?)`   | `form.field.change(name, updater, options?)`   | Accepts value or updater; marks field and ancestors dirty/touched by default. |
+| `focus(options?)`             | `form.field.focus(name, options?)`             | Focuses registered element and marks field/ancestors touched.                 |
+| `blur(options?)`              | `form.field.blur(name, options?)`              | Blurs registered element and marks field/ancestors blurred.                   |
+| `register(element)`           | `form.field.register(name)(element)`           | Stores element ref; null is a no-op.                                          |
+| `unregister()`                | `form.field.unregister(name)`                  | Clears ref without changing the value.                                        |
+| `issues(options?)`            | `form.field.issues(name, options?)`            | Reads path issues, or path and descendants with `nested: true`.               |
+| `setIssues(issues, options?)` | `form.field.setIssues(name, issues, options?)` | Writes partial level buckets with replace, append, or keep mode.              |
+| `reset(options?)`             | `form.field.reset(name, options?)`             | Resets value and descendant field state; keeps sibling values.                |
 
-### `append(value, options?)` / `prepend(value, options?)` / `insert(index, value, options?)`
+For status, bound APIs expose `state.status` while `form.field.status(name)`
+returns a snapshot.
 
-- Proxy to the corresponding `form.array` methods for the bound array path.
+Change options `should.dirty: false` and `should.touch: false` preserve those
+flags. Changing a parent does not mark descendant status. Field operations
+request matching events only when configured, unless `should.validate`
+overrides the default, and return void before async validation completes.
 
-### `swap(from, to, options?)` / `move(from, to, options?)` / `update(index, value, options?)`
+Issue replace mode replaces all buckets at the target, including omitted
+levels. Append adds entries. Keep preserves all existing buckets if any issue
+exists. Payload paths do not redirect manual writes.
 
-- Proxy to `form.array` methods for reordering/updating array items.
+Field reset uses the default or a non-nullish `value`, clears refs and issues,
+and restores configured default status for the subtree. Its signature accepts
+`status` and `keep`, but the current behavior ignores these options.
+Bound fields expose `'~mount'` and `'~update'` with the same lifecycle contract.
 
-### `remove(index, options?)` / `replace(valueOrUpdater, options?)`
+```ts
+import { createField } from 'oxform-core';
 
-- Proxy to `form.array` methods for removing/replacing array values.
+const email = createField({ form, name: 'email' });
+email.change('ada@example.com');
+email.change(current => current.trim(), { should: { validate: false } });
+email.focus();
+email.blur();
+email.register(document.querySelector('input'));
+email.unregister();
+email.issues();
+email.setIssues({ error: [{ level: 'error', issue: { message: 'Already registered' } }] });
+email.reset();
+```
 
-### `get()`
+### React Input Props and Component
 
-- Returns current array value for the bound path.
+`props.value` is the field value. `props.ref` registers an element.
+`props.onChange` forwards `event.target?.value`; it does not read checked or
+convert strings. `props.onFocus` and `props.onBlur` call their field operations.
+Use explicit handlers for checkbox, number, and custom controls.
 
-### `store` / `state`
+`Field` takes form, name, and static children or a render callback receiving
+the full hook return value. It adds no DOM wrapper.
 
-- `store` is a derived store with `{ value, defaultValue, errors, issues, status }`.
-- `state` returns the current value of that derived store.
+```tsx
+import { Field, useForm } from 'oxform-react';
 
-### `~mount()` / `~update(options)`
+function EmailForm() {
+  const form = useForm(options);
+  return (
+    <Field form={form} name='email'>
+      {email => <input {...email.props} />}
+    </Field>
+  );
+}
+```
 
-- `~mount()` mounts the derived array store.
-- `~update(options)` replaces `{ form, name }` used by the API.
+## Array Field API
 
-## FormCoreFields
+`createArrayField({ form, name })`, `new ArrayFieldApi(options)`,
+`useArrayField(options)`, and `ArrayField` bind an array path.
+Properties are `options`, `store`, `state`, and item `ids`.
+There is no props, value, or id shortcut. `get()` returns the array.
+`'~mount'` and `'~update'` expose lifecycle integration.
 
-### `get(path)`
+Every mutation returns void. The same methods on `form.array` take the name
+first. Normal options are `FieldChangeOptions`, with dirty/touch status and
+change validation applying to the array and ancestors.
 
-- Supports both `~root.*` paths and non-prefixed paths.
-- Returns `undefined` for missing paths.
+| Method                                    | Behavior                                                                                            |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `append(value, options?)`                 | Adds an item to the end; absent array starts empty.                                                 |
+| `prepend(value, options?)`                | Adds an item at zero and shifts other items.                                                        |
+| `insert(index, value, options?)`          | Inserts at a nonnegative index; negatives become zero; indices past length pad with undefined.      |
+| `swap(from, to, options?)`                | Exchanges items and associated state; negatives become zero; same index is a no-op.                 |
+| `move(from, to, options?)`                | Moves item/state and preserves intervening order; same index still applies change behavior.         |
+| `update(index, valueOrUpdater, options?)` | Clamps index to valid range and replaces item; resets its field state.                              |
+| `remove(index, options?)`                 | Clamps index and removes item; later item IDs follow shifted items; always skips validation.        |
+| `replace(valueOrUpdater, options?)`       | Replaces array and resets array/descendant field state; shorter replacement removes trailing state. |
 
-### `set(path, options)`
+Use existing indices for swap and move; positive out-of-range indices are not
+clamped. Update on an empty array selects zero. Insertion updater signatures
+describe an item argument, but append/prepend/insert currently pass the whole
+array at runtime. Update passes the current item; replace passes the full array.
 
-- Updates target entry.
-- Propagates only `status` to ascendant entries.
-- `errors` and `ref` are applied only to the target entry.
-- Does not update descendants or siblings.
+```ts
+import { createArrayField } from 'oxform-core';
 
-### `reset(path)`
+const tags = createArrayField({ form, name: 'tags' });
+tags.append('beta');
+tags.prepend('first');
+tags.insert(1, 'middle');
+tags.swap(0, 1);
+tags.move(0, 2);
+tags.update(0, current => current.toUpperCase());
+tags.remove(0);
+tags.replace(current => current.filter(value => value !== ''));
+tags.get();
+tags.ids;
+```
 
-- Resets target entry status/errors/ref to defaults.
-- Resets descendant entries when resetting a parent path.
-- Does not affect sibling or ascendant entries.
+`ArrayField` accepts static children or a render callback receiving the array
+hook return value and adds no DOM wrapper. Use item IDs for React keys and
+`Field` for item inputs.
 
-### `shift(path, position, direction)`
+## Status
 
-- Shifts array field entries left/right from a given position.
-- Preserves entry identity (`id`) for moved entries.
-- Handles single and multi-index shifts.
+Form status includes dirty, pristine, touched, blurred, valid, validating,
+submitting, submits, submitted, and successful. Field status includes dirty,
+pristine, touched, blurred, valid, and default.
 
-### `adjust()`
+Field default means deep equality with the current default value; dirty
+records interaction and is not cleared when a value returns to its default.
+Field valid considers only issues at its path. Form valid includes all paths.
+Form pristine reflects field interaction; submit can set form dirty while
+pristine remains true.
 
-- Rebuilds missing entries from current values.
-- Preserves existing entries when path already exists.
-- Keeps stale entries not present in values (non-destructive merge behavior).
+`useFormStatus({ form })` returns a reactive full form status snapshot. Core
+status reads alone are snapshots.
 
-## FormCoreArray
+## Subscription and Effect
 
-### `append(name, value, options?)`
+`useSubscribe(api, selector)` returns the selected value and subscribes React
+to its changes. `Subscribe` takes api, selector, and static children or a
+render callback. It adds no wrapper. Api may be a form, field, or array.
 
-- Appends value to array end.
-- Works when array is `undefined`.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Creates field entry for appended index.
-- Keeps sibling values unchanged.
+`createEffect(api, selector, callback)` invokes the callback on deeply unequal
+selected changes, not the initial selection. It returns a subscription with
+`unsubscribe()`. Callbacks may return promises and overlap.
+`useFormEffect` returns void and cleans up on unmount or API changes. Keep its
+selector and callback stable: changing only these arguments does not reliably
+replace the current subscription.
 
-### `insert(name, index, value, options?)`
+```ts
+import { createEffect } from 'oxform-core';
 
-- Inserts at index.
-- Negative index is normalized to `0`.
-- Out-of-range index pads with `undefined` values.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Creates entry for inserted index and shifts existing entries right.
+const subscription = createEffect(
+  form,
+  state => state.values.email,
+  value => {
+    console.info(value);
+  },
+);
+subscription.unsubscribe();
+```
 
-### `swap(name, from, to, options?)`
+## Reproduction Spec
 
-- Swaps two array positions.
-- Negative indices are normalized to `0`.
-- Same-index swap is no-op.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Swaps field entries accordingly (entry `id`s move with their items).
-- Keeps sibling values unchanged.
+### Problem Statement
 
-### `move(name, from, to, options?)`
+Consumers need a public contract precise enough to recreate the current core
+and React APIs without depending on their implementation. Signatures alone
+cannot describe validation scope, status changes, issue preservation, or
+React subscription behavior.
 
-- Moves an item from one index to another.
-- Negative indices are normalized to `0`.
-- Same-index move is no-op.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Moves field entries accordingly (`id` follows moved item).
+### Solution
 
-### `replace(name, valueOrUpdater, options?)`
+Provide a compatible public surface with schema-derived values, paths, arrays,
+and issue levels, preserving the observable behavior above. The reference
+documents current limitations as well as normal usage.
 
-- Replaces full array value.
-- Supports updater function.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Rebuilds field entries to match replaced array shape.
-- Removes stale trailing entries when new array is shorter.
-- Keeps sibling values unchanged.
+### User Stories
 
-### `remove(name, index, options?)`
+1. As a consumer, I want schema-derived form values so invalid defaults and writes fail type checking.
+2. As a consumer, I want typed nested field paths so controls select the correct value type.
+3. As a consumer, I want typed array paths and items so list edits respect the schema.
+4. As a consumer, I want issue levels inferred from checks so feedback retains its level-specific type.
+5. As a consumer, I want initial values without automatic validation so validation timing remains explicit.
+6. As a consumer, I want reusable form options so core and React share configuration.
+7. As a consumer, I want field status independent of default-value equality so interaction remains observable.
+8. As a consumer, I want event-specific checks so feedback appears at the intended time.
+9. As a consumer, I want subtree validation so unrelated issues remain unchanged.
+10. As a consumer, I want run validity distinct from aggregate validity so targeted results remain interpretable.
+11. As a consumer, I want blocking and non-blocking levels so warnings do not prevent submission.
+12. As a consumer, I want precise issue replacement rules so manual feedback behaves predictably.
+13. As a consumer, I want stale async results discarded so outdated issues do not overwrite current state.
+14. As a consumer, I want pending status across concurrent checks so progress remains visible.
+15. As a consumer, I want submit callbacks to receive current values or issues so I can act on the result.
+16. As a consumer, I want reset preservation flags so feedback and refs can survive a form reset.
+17. As a consumer, I want item IDs to follow list items so React preserves the intended controls.
+18. As a consumer, I want controlled input bindings and explicit custom handlers so different input types work.
+19. As a consumer, I want selected subscriptions so components observe the state they display.
+20. As an adapter author, I want lifecycle methods so bindings can update configuration and clean up.
 
-- Removes item at index.
-- Negative index is normalized to `0`.
-- Out-of-range index is normalized to last valid index.
-- Marks array field `dirty/touched` by default.
-- Honors `should.dirty` and `should.touch` options.
-- Shifts following field entries left (`id` movement preserved).
-- Removes trailing field entry.
-- Keeps sibling values unchanged.
+### Implementation Decisions
+
+These decisions concern public contracts only.
+
+- Export the current core factories, classes, options helper, effect function, and public types.
+- Export the current React hooks, render-prop components, return/prop types, and current core re-exports.
+- Preserve constructors, properties, getters, methods, exposed lifecycle members, argument shapes, and return types.
+- Infer values from Standard Schema input types and check defaults against those values.
+- Preserve path-to-value inference, optional array item values, and checks-key issue-level inference.
+- Preserve the current behavioral limitations identified in the reference instead of silently changing the API.
+- For a declaration-only package, expose declared values and types without runtime bodies or JavaScript entrypoints.
+
+### Acceptance Criteria
+
+1. Form creation exposes every documented member, uses the supplied defaults, and does not invoke validators.
+2. Field writes accept only the selected value type and update only the requested value path.
+3. Dirty/touched/blurred propagation and explicit suppression match the field contracts.
+4. All validation event combinations select exactly the documented error and custom validators.
+5. Targeted validation receives full values, filters emitted issues, and leaves unrelated buckets unchanged.
+6. Run validity and form validity differ when preserved blocking issues exist.
+7. Error validation replaces manual and other-event errors; custom replacement follows event and type rules.
+8. Empty validator results clear replaceable issues, while no-validator events preserve errors.
+9. Manual replace, append, and keep modes match the whole-bucket semantics.
+10. Error is always blocking; custom levels block only when configured.
+11. Async overlap, reset, and same-scope supersession produce the documented discard result.
+12. Concurrent pending checks and rejected validators produce the documented status and promise behavior.
+13. Submit awaits one selected callback and updates completion status only on normal resolution.
+14. Form reset preservation and current field reset limitations match the reference.
+15. Every array operation preserves or resets item identities and state according to its contract.
+16. React props use value events; static and function children are accepted without added wrappers.
+17. React state subscriptions and effect callbacks match their selected value types and observed behavior.
+18. A signatures package has no runtime implementation or emitted JavaScript.
+
+### Testing Decisions
+
+- Use the root package imports as the public test boundary.
+- Use Vitest `expectTypeOf` assertions for every property and callable member, with schema-derived values and literal paths.
+- Include negative type cases for incorrect values and paths, and positive cases for nested paths, optional arrays, and custom warning/risk levels.
+- Cover constructors, lifecycle members, callback parameters, store state fields, issue entries, and React props/render callbacks.
+- For a runtime reproduction, test values, issues, status, rendered controls, callbacks, and subscription cleanup; do not assert private state or helper calls.
+- Cover event selection, replacement, manual issues, blocking, target scopes, stale async results, concurrency, reset, and rejection as distinct observable cases.
+- Use current core validation/field/array tests and React hook tests as prior art. Declaration-only work requires type checks, not runtime behavior tests.
+
+### Out of Scope
+
+Private classes and helpers, data structures, validation scheduling algorithms,
+store construction, generated identifiers' format, undocumented subpath
+imports, plugin execution, behavior improvements, and package replacement.
+
+### Further Notes
+
+A broad issue-level type can widen to string; no inferred check keys yields
+error alone. The inferred issue-level marker is a type-level contract and must
+not be treated as a runtime value.

@@ -27,7 +27,7 @@ export default defineConfig({
           twoslashOptions: {
             compilerOptions: {
               strict: true,
-              jsx: 4,
+              jsx: 'react-jsx',
             },
           },
           langs: ['ts', 'tsx', 'js', 'jsx'],

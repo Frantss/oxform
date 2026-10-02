@@ -1,39 +1,149 @@
 ---
 title: useForm
-description: Create an Oxform React form API.
+description: Form configuration, values, status, validation, submission, and reset.
 ---
 
 # useForm
 
-`useForm` creates the form API that fields, array fields, subscriptions, and submit handlers use.
+`useForm(options)` returns a `UseFormReturn<Values, Level>` with the core `FormApi` methods. Call it inside a React component or custom hook. Values are inferred from `schema`; `defaultValues` must match that type. Issue levels are inferred from `checks`, with `error` always included.
 
 ```tsx twoslash
 import { useForm } from 'oxform-react';
 import { z } from 'zod';
 
-const schema = z.object({
-  email: z.string(),
-});
+function EmailForm() {
+  const form = useForm({
+    schema: z.object({ email: z.string() }),
+    defaultValues: { email: '' },
+  });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    email: '',
-  },
-});
-
-form.store.state.values.email;
-//                      ^?
+  return (
+    <button type='button' onClick={() => form.reset()}>
+      Reset
+    </button>
+  );
+}
 ```
 
-## API
+## Options
+
+| Property             | Behavior                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`             | Required Standard Schema validator. Determines the values type and supplies the default submit validator.                                   |
+| `defaultValues`      | Required initial values and reset baseline. Creation does not validate these values.                                                        |
+| `id`                 | Optional form identifier. An identifier is generated when omitted. Changing it after creation does not change `form.id`.                    |
+| `defaultStatus`      | Initial overrides for `dirty`, `submits`, `submitting`, `validating`, and `successful`. Also applied on reset.                              |
+| `defaultFieldStatus` | Initial `dirty`, `touched`, and `blurred` overrides by field path. `'*'` supplies common defaults; path-specific overrides take precedence. |
+| `checks`             | Level-keyed validators and blocking flags. See [Validation](/docs/react/guide/validation).                                                  |
+
+Updated options are used by later validation and resets. Updating `defaultValues` changes the reset baseline without replacing current values. Call `reset()` to apply it.
+
+## Properties
+
+| Property  | Behavior                                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`      | Form identifier.                                                                                                                          |
+| `options` | Current form configuration.                                                                                                               |
+| `values`  | Current values snapshot. Reading it does not subscribe the component to value changes.                                                    |
+| `status`  | Current form status. `useForm` subscribes to status changes.                                                                              |
+| `store`   | Read-only observable store containing `values`, `fields`, and `status`. Use `useSubscribe` or `Subscribe` for selected React state.       |
+| `field`   | Operations taking a field path: `get`, `status`, `change`, `focus`, `blur`, `register`, `unregister`, `issues`, `setIssues`, and `reset`. |
+| `array`   | Operations taking an array path: `insert`, `append`, `prepend`, `swap`, `move`, `update`, `remove`, and `replace`.                        |
+
+`field` and `array` operate on the same state as `useField` and `useArrayField`. Their first argument is the path; the remaining arguments match the corresponding bound API method. `form.field.status(name)` reads status; bound field APIs expose it as `field.state.status`. `form.field.register(name)` returns an element callback.
+
+```tsx twoslash
+import { useForm } from 'oxform-react';
+import { z } from 'zod';
+
+function Actions() {
+  const form = useForm({
+    schema: z.object({ email: z.string(), tags: z.array(z.string()) }),
+    defaultValues: { email: '', tags: [] },
+  });
+
+  return (
+    <button
+      type='button'
+      onClick={() => {
+        form.field.change('email', 'ada@example.com');
+        form.array.append('tags', 'customer');
+      }}
+    >
+      Fill
+    </button>
+  );
+}
+```
+
+## `validate(fields?, options?)`
+
+Returns `Promise<[boolean, FormIssuesByLevel<Level>]>`. Omit `fields` for the whole form, pass a path for its subtree, or pass an array of paths. `options.type` selects `change`, `blur`, `focus`, or `submit`; omitting it runs the root schema and all configured events.
+
+The boolean describes blocking issues emitted by this run. `form.status.valid` describes all current issues. The returned issue buckets contain issues emitted for the requested targets. See [Validation](/docs/react/guide/validation) for replacement and async behavior.
+
+```ts
+const [valid, issues] = await form.validate('email', { type: 'blur' });
+await form.validate(['email', 'profile']);
+await form.validate();
+```
+
+## `submit(onSuccess, onError?)`
+
+Returns a zero-argument `() => Promise<void>` handler. It validates the whole form for `submit` and calls one callback, awaiting it. `onSuccess(values, form)` runs only when the validation result and aggregate current validity both pass. `onError(issues, form)` receives all current form issues.
+
+```tsx twoslash
+import { useForm } from 'oxform-react';
+import { z } from 'zod';
+
+function SignupForm() {
+  const form = useForm({ schema: z.object({ email: z.email() }), defaultValues: { email: '' } });
+  const submit = form.submit(
+    values => {
+      console.info(values.email);
+    },
+    issues => {
+      console.error(issues.error);
+    },
+  );
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <button type='submit' disabled={form.status.submitting}>
+        Submit
+      </button>
+    </form>
+  );
+}
+```
+
+The handler sets `dirty` and `submitting` before validation. After the callback resolves, it increments `submits`, clears `submitting`, and records `successful`. A rejected validator or callback rejects the handler; these completion updates are not guaranteed after a rejection. The handler does not prevent browser submission or suppress concurrent calls.
+
+## `reset(options?)`
+
+Restores `defaultValues`, clears issues and refs, recreates field state, and resets submit status. `options.values` supplies a different full values object for this reset without changing `defaultValues`. `options.status` overrides the reset form status.
+
+`keep.issues: true` keeps all issues, or an array of levels keeps only those levels. `keep.refs` retains element references. `keep.fields` retains complete field state, including IDs, status, refs, and issues, and takes precedence over the other field preservation flags. Preservation of issues and refs applies to paths that remain after reset.
+
+```ts
+form.reset();
+form.reset({ keep: { refs: true, issues: ['error'] } });
+form.reset({ values: { email: 'ada@example.com' }, status: { submits: 0 } });
+```
+
+## Adapter Lifecycle
+
+`form['~mount']()` returns a cleanup function. `form['~update'](options)` updates configuration without resetting values. React manages these calls. They are exposed for adapter authors.
+
+## Signatures
 
 <auto-type-table path='../oxform-react.ts' name='useForm' />
 
-## Return type
-
 <auto-type-table path='../oxform-react.ts' name='UseFormReturn' />
-
-## Core options
 
 <auto-type-table path='../oxform-core.ts' name='FormOptions' />

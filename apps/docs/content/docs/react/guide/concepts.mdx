@@ -19,12 +19,15 @@ const schema = z.object({
   email: z.string(),
 });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    email: '',
-  },
-});
+function ResetButton() {
+  const form = useForm({ schema, defaultValues: { email: '' } });
+
+  return (
+    <button type='button' onClick={() => form.reset()}>
+      Reset
+    </button>
+  );
+}
 ```
 
 ## Field
@@ -39,11 +42,15 @@ const schema = z.object({
   email: z.string(),
 });
 
-const form = useForm({ schema, defaultValues: { email: '' } });
+function EmailForm() {
+  const form = useForm({ schema, defaultValues: { email: '' } });
 
-<Field form={form} name='email'>
-  {field => <input {...field.props} />}
-</Field>;
+  return (
+    <Field form={form} name='email'>
+      {field => <input {...field.props} />}
+    </Field>
+  );
+}
 ```
 
 ## Subscription
@@ -58,9 +65,17 @@ const schema = z.object({
   email: z.string(),
 });
 
-const form = useForm({ schema, defaultValues: { email: '' } });
+function SubmitButton() {
+  const form = useForm({ schema, defaultValues: { email: '' } });
 
-<Subscribe api={form} selector={state => state.status.submitting}>
-  {submitting => <button disabled={submitting}>Submit</button>}
-</Subscribe>;
+  return (
+    <Subscribe api={form} selector={state => state.status.submitting}>
+      {submitting => (
+        <button type='submit' disabled={submitting}>
+          Submit
+        </button>
+      )}
+    </Subscribe>
+  );
+}
 ```

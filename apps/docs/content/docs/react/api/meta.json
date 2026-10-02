@@ -1,4 +1,4 @@
 {
   "title": "API",
-  "pages": ["index", "use-form", "use-field", "use-array-field", "subscribe"]
+  "pages": ["index", "use-form", "use-field", "use-array-field", "subscribe", "status", "effects"]
 }

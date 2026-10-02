@@ -5,7 +5,7 @@ description: Use inferred field names and values with Oxform.
 
 # TypeScript
 
-Oxform infers field names and field values from `defaultValues` and schema configuration.
+Oxform infers the form values type from `schema`. `defaultValues` is checked against that type rather than supplying a separate type. Field paths and field values follow the inferred values type.
 
 ```tsx twoslash
 import { useField, useForm } from 'oxform-react';
@@ -18,21 +18,65 @@ const schema = z.object({
   newsletter: z.boolean(),
 });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    account: {
-      email: '',
+function Preferences() {
+  const form = useForm({
+    schema,
+    defaultValues: {
+      account: {
+        email: '',
+      },
+      newsletter: false,
     },
-    newsletter: false,
-  },
-});
+  });
 
-const email = useField({ form, name: 'account.email' });
-//    ^?
+  const email = useField({ form, name: 'account.email' });
+  //    ^?
 
-const newsletter = useField({ form, name: 'newsletter' });
-//    ^?
+  const newsletter = useField({ form, name: 'newsletter' });
+  //    ^?
+
+  return (
+    <>
+      <input {...email.props} />
+      <input
+        type='checkbox'
+        checked={newsletter.state.value}
+        onChange={event => newsletter.change(event.target.checked)}
+      />
+    </>
+  );
+}
 ```
 
 Field names are checked at compile time. Invalid paths are rejected before they reach runtime.
+
+## Shared Options
+
+`formOptions` preserves schema-derived value types and issue levels when sharing configuration. It returns the supplied options without creating a form or validating values.
+
+```tsx twoslash
+import { formOptions, useField, useForm } from 'oxform-react';
+import type { FormFieldValue, FormFields, FormIssueLevels, FormValues } from 'oxform-react';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.string() });
+const options = formOptions({
+  schema,
+  defaultValues: { email: '' },
+  checks: { warning: { validate: { change: schema } } },
+});
+
+function EmailForm() {
+  const form = useForm(options);
+  const email = useField({ form, name: 'email' });
+
+  type Values = FormValues<typeof form>;
+  type Paths = FormFields<typeof form>;
+  type Email = FormFieldValue<typeof form, 'email'>;
+  type Levels = FormIssueLevels<typeof form>;
+
+  return <input {...email.props} />;
+}
+```
+
+`FormArrayFields<Form>` selects array-valued paths. Array item paths can include `undefined` in their value type because an index may be absent. `InferFormIssueLevels<Options>` extracts checks keys and includes `error`; no configured keys infers `error` alone. The core package also exports `DeepKeys`, `DeepValue`, `DeepKeysOfType`, `ArrayDeepKeys`, and `FieldsMap` for value-level path typing.

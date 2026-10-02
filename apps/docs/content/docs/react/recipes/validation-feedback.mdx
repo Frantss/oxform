@@ -15,22 +15,25 @@ const schema = z.object({
   email: z.email(),
 });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    email: '',
-  },
-});
+function EmailForm() {
+  const form = useForm({
+    schema,
+    defaultValues: { email: '' },
+    checks: { error: { validate: { blur: schema } } },
+  });
 
-<Field form={form} name='email'>
-  {field => (
-    <label>
-      Email
-      <input {...field.props} />
-      {field.state.issues.error.map(issue => (
-        <span key={issue.issue.message}>{issue.issue.message}</span>
-      ))}
-    </label>
-  )}
-</Field>;
+  return (
+    <Field form={form} name='email'>
+      {field => (
+        <label>
+          Email
+          <input {...field.props} />
+          {field.state.issues.error.map((issue, index) => (
+            <span key={index}>{issue.issue.message}</span>
+          ))}
+        </label>
+      )}
+    </Field>
+  );
+}
 ```

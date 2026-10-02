@@ -1,50 +1,65 @@
 ---
 title: Subscribe
-description: Render selected form or field state.
+description: Read and render selected form, field, or array state.
 ---
 
 # Subscribe
 
-`Subscribe` renders a selected slice of form or field state. Use it when a piece of UI only needs one derived value.
+`Subscribe` and `useSubscribe` accept a form, field, or array API and a selector over its store state. The selector's return type determines the selected value type. Selecting state does not change values, status, or validation.
+
+## `useSubscribe(api, selector)`
+
+Returns the current selected value and subscribes the component to selected state changes. Form selectors receive `FormStore`; field and array selectors receive their respective stores.
+
+```tsx twoslash
+import { useFieldApi, useForm, useSubscribe } from 'oxform-react';
+import { z } from 'zod';
+
+function EmailPreview() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const email = useFieldApi({ form, name: 'email' });
+  const value = useSubscribe(email, state => state.value);
+  const submitting = useSubscribe(form, state => state.status.submitting);
+
+  return <span aria-busy={submitting}>{value}</span>;
+}
+```
+
+## `Subscribe`
+
+| Prop       | Behavior                                                        |
+| ---------- | --------------------------------------------------------------- |
+| `api`      | API whose store is observed.                                    |
+| `selector` | Function returning the selected value from current state.       |
+| `children` | Render function receiving that value, or static React children. |
+
+The component subscribes through `useSubscribe` and adds no DOM wrapper.
 
 ```tsx twoslash
 import { Subscribe, useForm } from 'oxform-react';
 import { z } from 'zod';
 
-const schema = z.object({
-  email: z.string(),
-});
+function SubmitButton() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
 
-const form = useForm({ schema, defaultValues: { email: '' } });
-
-<Subscribe api={form} selector={state => state.status.submitting}>
-  {submitting => <button disabled={submitting}>Submit</button>}
-</Subscribe>;
+  return (
+    <Subscribe api={form} selector={state => state.status.submitting}>
+      {submitting => (
+        <button type='submit' disabled={submitting}>
+          Submit
+        </button>
+      )}
+    </Subscribe>
+  );
+}
 ```
 
-The hook form is `useSubscribe`.
+Use [useFormEffect](/docs/react/api/effects) for a callback when selected state changes, or [useFormStatus](/docs/react/api/status) for all form status properties.
 
-```tsx twoslash
-import { useSubscribe, useForm } from 'oxform-react';
-import { z } from 'zod';
-
-const schema = z.object({
-  email: z.string(),
-});
-
-const form = useForm({ schema, defaultValues: { email: '' } });
-const submitting = useSubscribe(form, state => state.status.submitting);
-//    ^?
-```
-
-## Component API
+## Signatures
 
 <auto-type-table path='../oxform-react.ts' name='Subscribe' />
 
-## Hook API
-
 <auto-type-table path='../oxform-react.ts' name='useSubscribe' />
-
-## Props
 
 <auto-type-table path='../oxform-react.ts' name='SubscribeProps' />

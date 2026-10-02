@@ -15,14 +15,13 @@ const schema = z.object({
   email: z.string(),
 });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    email: '',
-  },
-});
+function ValidationStatus() {
+  const form = useForm({ schema, defaultValues: { email: '' } });
 
-<Subscribe api={form} selector={state => state.status.valid}>
-  {valid => <span>{valid ? 'Ready' : 'Needs attention'}</span>}
-</Subscribe>;
+  return (
+    <Subscribe api={form} selector={state => state.status.valid}>
+      {valid => <span>{valid ? 'No blocking issues' : 'Needs attention'}</span>}
+    </Subscribe>
+  );
+}
 ```

@@ -1,60 +1,200 @@
 ---
 title: useField
-description: Connect a form field path to React state and input props.
+description: Field values, state, input props, and imperative operations.
 ---
 
 # useField
 
-`useField` connects one field path to React. The returned field includes state, input props, and imperative helpers for advanced controls.
+`useField({ form, name })` returns a reactive field API and controlled-input props. `name` is a schema-derived field path, and the value type follows that path.
 
 ```tsx twoslash
 import { useField, useForm } from 'oxform-react';
 import { z } from 'zod';
 
-const schema = z.object({
-  email: z.string(),
-});
+function EmailInput() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const email = useField({ form, name: 'email' });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    email: '',
-  },
-});
-
-const email = useField({ form, name: 'email' });
-//    ^?
+  return <input {...email.props} />;
+}
 ```
 
-For markup-heavy forms, use the `Field` component. It calls `useField` and passes the result to a render prop.
+## Options
+
+`form` is the owning form API. `name` selects a path, including parent objects and array item paths such as `'contacts.0.email'`. There is no field-specific schema option; configure validators on the form.
+
+## Properties
+
+| Property  | Behavior                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------ |
+| `options` | Current `{ form, name }` binding.                                                          |
+| `id`      | Identifier of the bound field.                                                             |
+| `value`   | Current value, also available through `get()` and `state.value`.                           |
+| `store`   | Read-only observable field store.                                                          |
+| `state`   | Reactive snapshot containing `id`, `value`, `defaultValue`, `ref`, `issues`, and `status`. |
+| `props`   | Controlled-input bindings described below.                                                 |
+
+`state.defaultValue` is the value at this path in the current form defaults. `state.ref` is the registered `HTMLElement` or `null`. Issues are grouped by level and include `error` plus configured levels, even when their arrays are empty. Field status is described in [Status](/docs/react/api/status).
+
+## Input Props
+
+| Property          | Behavior                                                              |
+| ----------------- | --------------------------------------------------------------------- |
+| `value`           | Current field value.                                                  |
+| `ref(element)`    | Registers an `HTMLElement`. A `null` argument does not unregister it. |
+| `onChange(event)` | Writes `event.target?.value` through `change`.                        |
+| `onBlur(event)`   | Calls `blur()`.                                                       |
+| `onFocus(event)`  | Calls `focus()`.                                                      |
+
+These bindings read `value`, not `checked`, and do not convert strings into numbers. Use explicit handlers for checkboxes, numeric inputs, file inputs, and custom controls.
+
+```tsx twoslash
+import { useField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+function Preferences() {
+  const form = useForm({ schema: z.object({ enabled: z.boolean() }), defaultValues: { enabled: false } });
+  const enabled = useField({ form, name: 'enabled' });
+
+  return (
+    <input
+      type='checkbox'
+      ref={enabled.register}
+      checked={enabled.state.value}
+      onChange={event => enabled.change(event.target.checked)}
+      onBlur={() => enabled.blur()}
+      onFocus={() => enabled.focus()}
+    />
+  );
+}
+```
+
+## Methods
+
+### `get()`
+
+Returns the current value without changing status or running validation.
+
+```ts
+const emailValue = email.get();
+```
+
+### `change(valueOrUpdater, options?)`
+
+Accepts a direct value or `(current: Value) => Value`. Updates the bound value and marks it and its ancestor fields dirty and touched by default. Sibling values are unchanged. Changing a parent does not mark descendant status.
+
+`should.dirty: false` and `should.touch: false` preserve the corresponding status instead of clearing it. Validation runs for `change` when any level has a change validator. `should.validate: false` skips it; `true` requests the event explicitly. This method returns `void`; use `await form.validate(name, { type: 'change' })` when completion is needed.
+
+```ts
+email.change('ada@example.com');
+email.change(current => current.trim());
+email.change('', { should: { dirty: false, touch: false, validate: false } });
+```
+
+### `focus(options?)` and `blur(options?)`
+
+`focus` focuses a registered element and marks the field and ancestors touched. `blur` blurs the element and marks the field and ancestors blurred. These status updates also work without a registered element.
+
+Each operation requests its matching validation event when configured. `should.validate` overrides that default. Both return `void`.
+
+```ts
+email.focus();
+email.blur({ should: { validate: false } });
+```
+
+### `register(element)` and `unregister()`
+
+Register an `HTMLElement` for focus and blur operations. Registering `null` has no effect. `unregister()` clears the reference without changing the value.
+
+```ts
+email.register(document.querySelector('input'));
+email.unregister();
+```
+
+### `issues(options?)`
+
+Reads issues for the bound path. `{ nested: true }` includes descendant paths. `state.issues` contains only the bound path's issues.
+
+```ts
+const directIssues = email.issues();
+const profileIssues = profile.issues({ nested: true });
+```
+
+### `setIssues(issues, options?)`
+
+Accepts partial level buckets. `replace` is the default and replaces all buckets for this field, including omitted levels. `append` adds entries. `keep` retains all existing buckets if any existing bucket is nonempty; otherwise it writes the input. It is not a per-level merge.
+
+```ts
+email.setIssues({
+  error: [{ level: 'error', issue: { message: 'Address already registered', path: ['email'] } }],
+});
+email.setIssues({ error: [] });
+email.setIssues({ warning: [] }, { mode: 'append' });
+```
+
+Issue entries include `level`, `issue`, and optional event `type`. Error issues always block validity. Custom levels block only when configured. See [Validation](/docs/react/guide/validation) for how later validation replaces them.
+
+### `reset(options?)`
+
+Restores the bound value to its default, or to a non-nullish `options.value`. Clears issues and refs and restores default field status for the path and descendants. Sibling values are unchanged. It does not change the form's defaults or submit counter.
+
+The current signature accepts `status` and `keep` on field reset options, but the current API does not apply those options. Use the form-level reset preservation options when needed.
+
+```ts
+email.reset();
+email.reset({ value: 'ada@example.com' });
+```
+
+## `useFieldApi`
+
+`useFieldApi({ form, name })` returns the imperative `FieldApi` with the same operations and schema-derived types. It does not subscribe the component to field state and does not add `props`. Pair it with `useSubscribe` for selected state.
+
+```tsx twoslash
+import { useFieldApi, useForm, useSubscribe } from 'oxform-react';
+import { z } from 'zod';
+
+function EmailFeedback() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const email = useFieldApi({ form, name: 'email' });
+  const value = useSubscribe(email, state => state.value);
+
+  return <span>{value}</span>;
+}
+```
+
+## `Field`
+
+`Field` accepts `form`, `name`, and `children`. A render function receives the full `useField` return value. Static React children are also accepted. It does not add a DOM wrapper.
 
 ```tsx twoslash
 import { Field, useForm } from 'oxform-react';
 import { z } from 'zod';
 
-const schema = z.object({
-  email: z.string(),
-});
+function EmailInput() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
 
-const form = useForm({ schema, defaultValues: { email: '' } });
-
-<Field form={form} name='email'>
-  {field => <input {...field.props} />}
-</Field>;
+  return (
+    <Field form={form} name='email'>
+      {field => <input {...field.props} />}
+    </Field>
+  );
+}
 ```
 
-## API
+## Adapter Lifecycle
+
+`field['~mount']()` returns cleanup. `field['~update']({ form, name })` updates the binding. React handles these calls.
+
+## Signatures
 
 <auto-type-table path='../oxform-react.ts' name='useField' />
 
-## Options
+<auto-type-table path='../oxform-react.ts' name='useFieldApi' />
+
+<auto-type-table path='../oxform-react.ts' name='FieldProps' />
 
 <auto-type-table path='../oxform-react.ts' name='FieldOptions' />
 
-## Return type
-
 <auto-type-table path='../oxform-react.ts' name='UseFieldReturn' />
-
-## Field state
 
 <auto-type-table path='../oxform-react.ts' name='FieldState' />

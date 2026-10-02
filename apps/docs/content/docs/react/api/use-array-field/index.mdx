@@ -1,37 +1,151 @@
 ---
 title: useArrayField
-description: Manage dynamic array fields.
+description: Array values, item identifiers, and list operations.
 ---
 
 # useArrayField
 
-`useArrayField` returns an array-field API for list operations such as append, insert, move, remove, and swap.
+`useArrayField({ form, name })` returns a reactive `ArrayFieldApi`. The array and item types follow the selected schema path. It manages list values and item field identities; it does not create input props for the items.
 
 ```tsx twoslash
-import { useArrayField, useForm } from 'oxform-react';
+import { Field, useArrayField, useForm } from 'oxform-react';
 import { z } from 'zod';
 
-const schema = z.object({
-  tags: z.string().array(),
-});
+function TagsForm() {
+  const form = useForm({ schema: z.object({ tags: z.array(z.string()) }), defaultValues: { tags: ['alpha'] } });
+  const tags = useArrayField({ form, name: 'tags' });
 
-const form = useForm({
-  schema,
-  defaultValues: {
-    tags: ['alpha'],
-  },
-});
-
-const tags = useArrayField({ form, name: 'tags' });
-//    ^?
+  return (
+    <>
+      {tags.ids.map((id, index) => (
+        <Field key={id} form={form} name={`tags.${index}`}>
+          {field => <input {...field.props} />}
+        </Field>
+      ))}
+      <button type='button' onClick={() => tags.append('')}>
+        Add tag
+      </button>
+    </>
+  );
+}
 ```
 
-Use the `ArrayField` component when you want a render-prop wrapper around the hook.
+## Properties
 
-## API
+| Property  | Behavior                                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------------------------- |
+| `options` | Current `{ form, name }` binding.                                                                             |
+| `store`   | Read-only observable array field store.                                                                       |
+| `state`   | Reactive snapshot with `id`, `value`, `defaultValue`, `ref`, `issues`, and `status`.                          |
+| `ids`     | Item identifiers in current index order. Empty when the array is absent. Use these identifiers as React keys. |
+
+The API has no `props`, `value`, or `id` shortcut. Read `state.value` and `state.id`. Item IDs follow items when inserting, swapping, moving, and removing; update and replace reset affected field state.
+
+## Methods
+
+All mutation methods return `void` and accept `FieldChangeOptions` as their final argument. They mark the array and ancestors dirty and touched by default. `should.dirty: false` and `should.touch: false` preserve existing ancestor status. Except for `remove`, mutations request change validation when configured, unless disabled.
+
+### `get()`
+
+Returns the current array value. An optional array may return `undefined` or `null` as allowed by its schema.
+
+```ts
+const values = tags.get();
+```
+
+### `append(value, options?)` and `prepend(value, options?)`
+
+Add an item at the end or beginning. An absent array is treated as empty.
+
+```ts
+tags.append('beta');
+tags.prepend('alpha', { should: { validate: false } });
+```
+
+### `insert(index, value, options?)`
+
+Inserts an item and shifts later items right. Negative indices become zero. An index past the end pads intervening positions with `undefined`; choose an index between zero and the length to avoid padding.
+
+```ts
+tags.insert(1, 'middle');
+```
+
+Append, prepend, and insert also accept updater functions typed as receiving an item. The current runtime passes the current whole array to these insertion callbacks. Prefer direct item values for these operations.
+
+### `swap(from, to, options?)`
+
+Exchanges two items and their associated state. Negative indices become zero. Equal normalized indices are a no-op. Use existing indices; positive out-of-range indices are not clamped.
+
+```ts
+tags.swap(0, 1);
+```
+
+### `move(from, to, options?)`
+
+Moves an item while preserving the order of intervening items. Negative indices become zero. Moving to the same index preserves values but still applies normal change status and validation behavior. Use existing indices.
+
+```ts
+tags.move(0, 2);
+```
+
+### `update(index, valueOrUpdater, options?)`
+
+Replaces one item. An updater receives that item's current value. The index is clamped to the existing range; on an empty array it selects position zero. Resets affected item field state and marks the item dirty and touched according to the options.
+
+```ts
+tags.update(0, 'updated');
+tags.update(0, current => current.toUpperCase());
+```
+
+### `remove(index, options?)`
+
+Removes one item and shifts later items left, preserving their identities. Negative indices select the first item; an index past the end selects the last. Removing from an empty array leaves it empty. This operation skips validation even when `should.validate: true`; call `form.validate` explicitly if needed.
+
+```ts
+tags.remove(0);
+await form.validate('tags', { type: 'change' });
+```
+
+### `replace(valueOrUpdater, options?)`
+
+Replaces the full array; an updater receives the current array value. Resets field state for the array and descendants, removes trailing state from a shorter replacement, and applies array dirty/touched flags.
+
+```ts
+tags.replace(['alpha', 'beta']);
+tags.replace(current => current.filter(value => value !== ''));
+```
+
+## `ArrayField`
+
+Accepts `form`, an array `name`, and static children or a render function receiving the full `useArrayField` return value. It does not add a DOM wrapper.
+
+```tsx twoslash
+import { ArrayField, useForm } from 'oxform-react';
+import { z } from 'zod';
+
+function TagsForm() {
+  const form = useForm({ schema: z.object({ tags: z.array(z.string()) }), defaultValues: { tags: [] } });
+
+  return (
+    <ArrayField form={form} name='tags'>
+      {tags => (
+        <button type='button' onClick={() => tags.append('new')}>
+          Add tag
+        </button>
+      )}
+    </ArrayField>
+  );
+}
+```
+
+## Adapter Lifecycle
+
+`array['~mount']()` returns cleanup. `array['~update']({ form, name })` updates the binding. React handles these calls.
+
+## Signatures
 
 <auto-type-table path='../oxform-react.ts' name='useArrayField' />
 
-## Return type
-
 <auto-type-table path='../oxform-react.ts' name='UseArrayFieldReturn' />
+
+<auto-type-table path='../oxform-react.ts' name='ArrayFieldProps' />

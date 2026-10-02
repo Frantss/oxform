@@ -1,0 +1,62 @@
+---
+title: Status
+description: Observe form and field interaction, validation, and submission status.
+---
+
+# Status
+
+## `useFormStatus({ form })`
+
+Returns a reactive `UseFormStatusReturn<Level>` snapshot. `useForm` already exposes these subscribed properties through `form.status`. Use this hook when consuming a form created elsewhere.
+
+```tsx twoslash
+import { useForm, useFormStatus } from 'oxform-react';
+import { z } from 'zod';
+
+function FormStatus() {
+  const form = useForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const status = useFormStatus({ form });
+
+  return <span>{status.validating ? 'Checking' : status.valid ? 'Valid' : 'Invalid'}</span>;
+}
+```
+
+## Form Status Properties
+
+| Property     | Behavior                                                                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dirty`      | True after a dirty field operation or a submit attempt begins.                                                                                              |
+| `pristine`   | True when field interaction has not marked the form dirty. This can still be true after submit sets `dirty`.                                                |
+| `touched`    | Aggregate touched status propagated by field changes and focus.                                                                                             |
+| `blurred`    | Aggregate blurred status propagated by field blur.                                                                                                          |
+| `valid`      | True when no current field or form-level issue is `error` or belongs to a blocking custom level. This does not mean the current values have been validated. |
+| `validating` | True while asynchronous validators are pending; concurrent runs keep it true until all pending validators settle.                                           |
+| `submitting` | Set when a submit handler starts, cleared after its callback resolves normally.                                                                             |
+| `submits`    | Number of normally completed submit attempts, including invalid submissions. Defaults to zero.                                                              |
+| `submitted`  | Whether `submits` is greater than zero.                                                                                                                     |
+| `successful` | Whether the most recently completed submit attempt passed validation. Defaults to false.                                                                    |
+
+Without custom defaults, interaction flags and submit flags begin false, `submits` begins zero, and `valid` and `pristine` begin true. Creating a form does not validate its defaults. Reset restores configured initial status.
+
+## Field Status Properties
+
+Read `field.state.status` from `useField` or `useArrayField`, or `form.field.status(name)` for an imperative snapshot.
+
+| Property   | Behavior                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `dirty`    | Set by changes unless disabled. Returning to the default value does not clear it.                           |
+| `touched`  | Set by changes or focus unless change touching is disabled.                                                 |
+| `blurred`  | Set by blur.                                                                                                |
+| `default`  | Whether the current value deeply equals its current default value. Independent of `dirty`.                  |
+| `pristine` | The inverse of this field's `dirty`.                                                                        |
+| `valid`    | Whether this path has no error or blocking custom issues. Descendant issues are not automatically included. |
+
+Field `dirty`, `touched`, and `blurred` default to false unless configured otherwise. Parent fields receive interaction status from descendants, but their issue buckets and validity remain path-specific. The form's `valid` includes all paths.
+
+## Signatures
+
+<auto-type-table path='./oxform-react.ts' name='useFormStatus' />
+
+<auto-type-table path='./oxform-react.ts' name='UseFormStatusProps' />
+
+<auto-type-table path='./oxform-react.ts' name='UseFormStatusReturn' />
