@@ -8,13 +8,10 @@ type FormOptionsInput<Values, Checks extends FormChecksMap<NoInfer<Values>, stri
   Values,
   string
 > & {
-  checks?: Checks;
+  checks?: Checks & FormChecksMap<NoInfer<Values>, string>;
 };
 
-export const formOptions = <
-  Values,
-  const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = undefined,
->(
+export const formOptions = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = {}>(
   options: FormOptionsInput<Values, Checks>,
 ): FormOptions<Values, InferFormIssueLevels<{ checks: Checks }>> => {
   return options as FormOptions<Values, InferFormIssueLevels<{ checks: Checks }>>;

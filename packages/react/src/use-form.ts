@@ -9,7 +9,7 @@ type UseFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, string
   typeof createForm<Values, Checks>
 >[0];
 
-export const useForm = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = undefined>(
+export const useForm = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = {}>(
   options: UseFormOptions<Values, Checks>,
 ): UseFormReturn<Values, InferFormIssueLevels<{ checks: Checks }>> => {
   const [api] = useState(() => {

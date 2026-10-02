@@ -47,6 +47,27 @@ const setupOptional = () => {
   };
 };
 
+const setupNested = () => {
+  const form = createForm({
+    schema: z.object({
+      members: z.object({ name: z.string(), contacts: z.object({ email: z.string() }).array() }).array(),
+    }),
+    defaultValues: {
+      members: [
+        { name: 'Ada', contacts: [{ email: 'ada@example.com' }] },
+        { name: 'Grace', contacts: [{ email: 'grace@example.com' }] },
+      ],
+    },
+    checks: { warning: {} },
+  });
+  const array = createArrayField({ form, name: 'members' });
+  form.field.setIssues('members.0.contacts.0.email', {
+    warning: [{ level: 'warning', issue: { message: 'Review contact' } }],
+  });
+  const firstId = form.store.state.fields['~root.members.0.contacts.0.email'].id;
+  return { form, array, firstId };
+};
+
 it('appends a value', () => {
   const context = setup();
 
@@ -149,6 +170,59 @@ it('generates string ids for array items', () => {
   const context = setup();
 
   expect(context.array.ids[0]).toBeTypeOf('string');
+});
+
+it('should keep item ids stable when reading and editing array fields', () => {
+  const { array, form } = setup();
+  const ids = array.ids;
+  form.field.change('tags.0', 'edited');
+
+  expect({ firstRead: array.ids, secondRead: array.ids }).toEqual({ firstRead: ids, secondRead: ids });
+});
+
+it('should move stable item ids with reordered items', () => {
+  const { array } = setup();
+  array.append('b');
+  const [first, second] = array.ids;
+  array.move(1, 0);
+
+  expect(array.ids).toEqual([second, first]);
+});
+
+it('should move nested field ids and issues with array items', () => {
+  const { form, array, firstId } = setupNested();
+  array.move(0, 1);
+
+  expect({
+    id: form.store.state.fields['~root.members.1.contacts.0.email'].id,
+    warnings: form.field.issues('members.1.contacts.0.email').warning.map(entry => entry.issue.message),
+  }).toEqual({ id: firstId, warnings: ['Review contact'] });
+});
+
+it('should swap nested field ids with array items', () => {
+  const { form, array, firstId } = setupNested();
+  array.swap(0, 1);
+
+  expect(form.store.state.fields['~root.members.1.contacts.0.email'].id).toBe(firstId);
+});
+
+it('should shift nested field ids when inserting array items', () => {
+  const { form, array, firstId } = setupNested();
+  array.insert(0, { name: 'Katherine', contacts: [] });
+
+  expect(form.store.state.fields['~root.members.1.contacts.0.email'].id).toBe(firstId);
+});
+
+it('should delete removed descendants and shift the remaining nested fields', () => {
+  const { form, array } = setupNested();
+  const remainingId = form.store.state.fields['~root.members.1.contacts.0.email'].id;
+  array.remove(0);
+
+  expect({
+    id: form.store.state.fields['~root.members.0.contacts.0.email'].id,
+    warnings: form.field.issues('members.0.contacts.0.email').warning,
+    stalePaths: Object.keys(form.store.state.fields).filter(path => path.startsWith('~root.members.1')),
+  }).toEqual({ id: remainingId, warnings: [], stalePaths: [] });
 });
 
 it('returns empty generated ids when array value is absent', () => {

@@ -3,7 +3,7 @@ import type { FieldApi } from '#form/field-api';
 import type { FieldChangeOptions } from '#types/api/field-change-options';
 import type { AnyFormApi } from '#types/form/any-form-api';
 import type { ArrayLike } from '#types/misc/array-like';
-import { generateId } from '#utils/generate-id';
+import { fields_pathWithRoot } from '#utils/fields';
 import type { Updater } from '#utils/update/updater-';
 
 type ArrayFieldItem<Value extends ArrayLike> = NonNullable<Value>[number];
@@ -41,7 +41,11 @@ export class ArrayFieldApi<Value extends ArrayLike, Level extends string = strin
   }
 
   public get ids() {
-    return this.state.value?.map(() => generateId()) ?? [];
+    return (
+      this.state.value?.map(
+        (_, index) => this.form.store.state.fields[fields_pathWithRoot(`${this.name}.${index}`)].id,
+      ) ?? []
+    );
   }
 
   public '~mount' = () => {

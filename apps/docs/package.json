@@ -5,8 +5,8 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "vp dev",
+    "build": "vp build",
     "start": "node .output/server/index.mjs",
     "check:types": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"

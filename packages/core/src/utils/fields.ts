@@ -116,36 +116,40 @@ export const fields_reset = (
   };
 };
 
+const fields_remapArrayIndices = (
+  fields: PersistedFields<any>,
+  path: string,
+  remap: (index: number) => number | undefined,
+): PersistedFields<any> => {
+  const prefix = `${fields_pathWithRoot(path)}.`;
+
+  return Object.fromEntries(
+    Object.entries(fields).flatMap(([fieldPath, entry]) => {
+      if (!fieldPath.startsWith(prefix)) return [[fieldPath, entry]];
+
+      const suffix = fieldPath.slice(prefix.length);
+      const [segment] = suffix.split('.');
+      if (!/^\d+$/.test(segment)) return [[fieldPath, entry]];
+
+      const index = remap(Number(segment));
+      if (index === undefined) return [];
+
+      return [[`${prefix}${index}${suffix.slice(segment.length)}`, entry]];
+    }),
+  );
+};
+
 export const fields_shift = (
   fields: PersistedFields<any>,
   path: string,
   position: number,
   direction: 'left' | 'right',
 ): PersistedFields<any> => {
-  const fixed = fields_pathWithRoot(path);
-  let index = position;
-  const left = direction === 'left';
-  const swap = left ? -1 : 1;
-  let next = undefined;
-
-  const updated = { ...fields };
-
-  while (true) {
-    const from = `${fixed}.${index}`;
-    const to = `${fixed}.${index + swap}`;
-    const future = fields[to];
-    const shouldBreak = left ? index === 1 || !updated[from] : !future;
-
-    updated[to] = left ? updated[from] : (next ?? updated[from]);
-    if (left || index === position) delete updated[from];
-
-    if (shouldBreak) break;
-
-    next = future;
-    index = index + 1;
-  }
-
-  return updated;
+  return fields_remapArrayIndices(fields, path, index => {
+    if (direction === 'right') return index >= position ? index + 1 : index;
+    if (index === position - 1) return undefined;
+    return index >= position ? index - 1 : index;
+  });
 };
 
 export const fields_swap = (
@@ -154,20 +158,7 @@ export const fields_swap = (
   from: number,
   to: number,
 ): PersistedFields<any> => {
-  const fixed = fields_pathWithRoot(path);
-  const fromPath = `${fixed}.${from}`;
-  const toPath = `${fixed}.${to}`;
-  const fromEntry = fields[fromPath];
-  const toEntry = fields[toPath];
-  const updated = { ...fields };
-
-  if (toEntry) updated[fromPath] = toEntry;
-  else delete updated[fromPath];
-
-  if (fromEntry) updated[toPath] = fromEntry;
-  else delete updated[toPath];
-
-  return updated;
+  return fields_remapArrayIndices(fields, path, index => (index === from ? to : index === to ? from : index));
 };
 
 export const fields_move = (
@@ -176,55 +167,17 @@ export const fields_move = (
   from: number,
   to: number,
 ): PersistedFields<any> => {
-  const fixed = fields_pathWithRoot(path);
-  const updated = { ...fields };
-
-  if (from === to) return updated;
-
-  const sourcePath = `${fixed}.${from}`;
-  const sourceEntry = fields[sourcePath];
-  const start = Math.min(from, to);
-  const end = Math.max(from, to);
-  const backwards = from > to;
-
-  const setOrDelete = (targetPath: string, entry: FieldEntry<any> | undefined) => {
-    if (entry) updated[targetPath] = entry;
-    else delete updated[targetPath];
-  };
-
-  setOrDelete(`${fixed}.${to}`, sourceEntry);
-
-  if (backwards) {
-    for (let i = start + 1; i <= end; i++) {
-      setOrDelete(`${fixed}.${i}`, fields[`${fixed}.${i - 1}`]);
-    }
-  } else {
-    for (let i = start; i < end; i++) {
-      setOrDelete(`${fixed}.${i}`, fields[`${fixed}.${i + 1}`]);
-    }
-  }
-
-  return updated;
+  return fields_remapArrayIndices(fields, path, index => {
+    if (index === from) return to;
+    if (from < to && index > from && index <= to) return index - 1;
+    if (from > to && index >= to && index < from) return index + 1;
+    return index;
+  });
 };
 
 export const fields_remove = (fields: PersistedFields<any>, path: string, index: number): PersistedFields<any> => {
-  const fixed = fields_pathWithRoot(path);
-  const updated = { ...fields };
-  let position = index;
-
-  while (true) {
-    const currentPath = `${fixed}.${position}`;
-    const nextPath = `${fixed}.${position + 1}`;
-    const nextEntry = fields[nextPath];
-
-    if (nextEntry) updated[currentPath] = nextEntry;
-    else {
-      delete updated[currentPath];
-      break;
-    }
-
-    position = position + 1;
-  }
-
-  return updated;
+  return fields_remapArrayIndices(fields, path, current => {
+    if (current === index) return undefined;
+    return current > index ? current - 1 : current;
+  });
 };

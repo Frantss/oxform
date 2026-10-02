@@ -1,7 +1,9 @@
 import { formOptions } from '#form/form-options';
+import { createForm } from '#form/create-form';
 import type { FormChecksMap, FormCheckValidator } from '#types/api/form-checks-map';
 import type { FormOptions } from '#types/api/form-options';
 import type { FormStore } from '#types/api/form-store';
+import type { FormIssuesByLevel } from '#types/api/form-issue-entry';
 import { expect, expectTypeOf, it } from 'vite-plus/test';
 import z from 'zod';
 
@@ -77,6 +79,36 @@ const setup = (overrides: Partial<Omit<FormOptions<{ name: string; age: number }
     ...defaults,
     ...overrides,
   });
+
+it('should infer values and issue levels from inline check builders', () => {
+  const options = formOptions({
+    schema: z.object({ name: z.string() }),
+    defaultValues: { name: '' },
+    checks: {
+      warning: {
+        validate: {
+          change: store => {
+            expectTypeOf(store.values.name).toEqualTypeOf<string>();
+            return z.object({ name: z.string().min(store.values.name.length) });
+          },
+        },
+      },
+    },
+  });
+
+  const form = createForm(options);
+  expectTypeOf(form.field.issues('name')).toEqualTypeOf<FormIssuesByLevel<'error' | 'warning'>>();
+});
+
+it('should infer only error issues when checks are omitted', () => {
+  const options = formOptions({
+    schema: z.object({ name: z.string() }),
+    defaultValues: { name: '' },
+  });
+
+  const form = createForm(options);
+  expectTypeOf(form.field.issues('name')).toEqualTypeOf<FormIssuesByLevel<'error'>>();
+});
 
 it('rejects the old event-first checks shape', () => {
   formOptions({

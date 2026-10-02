@@ -17,6 +17,7 @@ export const base = defineConfig({
     },
   },
   fmt: {
+    ignorePatterns: ['apps/docs/src/routeTree.gen.ts'],
     arrowParens: 'avoid' as const,
     singleQuote: true,
     jsxSingleQuote: true,

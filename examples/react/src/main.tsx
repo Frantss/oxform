@@ -5,12 +5,19 @@ import { createRoot } from 'react-dom/client';
 import { Example_Array } from './examples/array';
 import { Example_Async } from './examples/async';
 import { Example_Basic } from './examples/basic';
+import { Example_Checks } from './examples/checks';
 import { Example_Issues } from './examples/issues';
 import { Example_Effect } from './examples/effect';
 import { Example_Transform } from './examples/transform';
 import './styles.css';
 
 const examples = {
+  checks: {
+    id: 'checks',
+    label: 'Account form',
+    description: 'Nested fields, members, warnings, async blocking checks, manual review, and reset.',
+    component: Example_Checks,
+  },
   basic: {
     id: 'basic',
     label: 'Basic',
@@ -50,6 +57,7 @@ const examples = {
 } as const;
 
 const tabs = [
+  { id: examples.checks.id, label: examples.checks.label },
   { id: examples.basic.id, label: examples.basic.label },
   { id: examples.array.id, label: examples.array.label },
   { id: examples.async.id, label: examples.async.label },
@@ -65,6 +73,7 @@ const Main = () => {
   const [example, setExample] = useQueryState(
     'example',
     parseAsStringLiteral([
+      examples.checks.id,
       examples.basic.id,
       examples.array.id,
       examples.async.id,

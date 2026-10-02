@@ -9,10 +9,7 @@ type DefineFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, str
   typeof useBaseForm<Values, Checks>
 >[0];
 
-export const defineForm = <
-  Values,
-  const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = undefined,
->({
+export const defineForm = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = {}>({
   options,
 }: {
   options: DefineFormOptions<Values, Checks>;

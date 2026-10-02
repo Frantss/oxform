@@ -11,7 +11,7 @@ type CreateFormOptionsInput<
   Values,
   Checks extends FormChecksMap<NoInfer<Values>, string> | undefined,
 > = FormOptionsBase<Values, string> & {
-  checks?: Checks;
+  checks?: Checks & FormChecksMap<NoInfer<Values>, string>;
 };
 
 type InferredFormApi<Values, Level extends string> = Omit<
@@ -27,7 +27,7 @@ type InferredFormApi<Values, Level extends string> = Omit<
     array: FormCoreArray<Values, Level>;
   };
 
-export const createForm = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = undefined>(
+export const createForm = <Values, const Checks extends FormChecksMap<NoInfer<Values>, string> | undefined = {}>(
   options: CreateFormOptionsInput<Values, Checks>,
 ): InferredFormApi<Values, InferFormIssueLevels<{ checks: Checks }>> => {
   return new FormApi<Values, string>(options as FormOptions<Values, string>) as unknown as InferredFormApi<

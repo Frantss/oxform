@@ -12,8 +12,7 @@ import {
 } from '#utils/fields';
 import type { FormOptions } from '#types/api/form-options';
 import { generateId } from '#utils/generate-id';
-import { describe, expect, it } from 'vite-plus/test';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('#utils/generate-id', { spy: true });
 
