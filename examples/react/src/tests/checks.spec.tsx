@@ -94,8 +94,8 @@ it('should preserve member identity and values when reordering and removing item
   expect(screen.getByRole('textbox', { name: 'Member 1', exact: true }).element().id).toBe(memberId);
   await screen.getByRole('button', { name: 'Remove member 2' }).click();
   await screen.getByRole('button', { name: 'Save account' }).click();
-  await expect.element(screen.getByLabelText('Current values')).toHaveTextContent('Katherine Johnson');
-  await expect.element(screen.getByLabelText('Current values')).not.toHaveTextContent('Grace Hopper');
+  await expect.element(screen.getByLabelText('Current values')).toMatchTextContent('Katherine Johnson');
+  await expect.element(screen.getByLabelText('Current values')).not.toMatchTextContent('Grace Hopper');
   await expect.element(screen.getByLabelText('Submission result')).toHaveTextContent('Saved Ada Lovelace with 1 member');
 });
 

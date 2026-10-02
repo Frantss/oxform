@@ -10,7 +10,6 @@ export default defineConfig({
       enabled: false,
       provider: 'v8' as const,
       reporter: ['text', 'html'] as const,
-      // @ts-expect-error Vitest coverage accepts this option at runtime, but the vite-plus config type omits it.
       all: true,
       include: ['src/constants.ts', 'src/form/**/*.ts', 'src/utils/**/*.ts'],
       exclude: [

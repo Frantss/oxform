@@ -34,14 +34,14 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/store": "^0.11.0",
-    "remeda": "^2.39.0",
-    "type-fest": "^5.7.0"
+    "@tanstack/store": "^0.11.2",
+    "remeda": "^2.50.0",
+    "type-fest": "^5.10.0"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.4",
-    "publint": "^0.3.21",
-    "typescript": "^6.0.3",
-    "zod": "^4.4.3"
+    "@arethetypeswrong/cli": "^0.18.5",
+    "publint": "^0.3.25",
+    "typescript": "^7.0.2",
+    "zod": "^4.6.5"
   }
 }
