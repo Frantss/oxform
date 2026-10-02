@@ -5,8 +5,8 @@
 **Always run formatting before finishing a task:**
 
 ```bash
-bun run fix:format      # Format only
-bun run fix:all         # Format + lint + auto-fix
+pnpm run fix:format      # Format only
+pnpm run fix:all         # Format + lint + auto-fix
 ```
 
 ## Naming Conventions

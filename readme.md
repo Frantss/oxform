@@ -83,9 +83,9 @@ the [examples directory](examples/react/src/examples) for runnable demos
 The [`examples/react`](examples/react) workspace contains runnable demos:
 
 ```bash
-bun install
+pnpm install
 cd examples/react
-bun run dev
+pnpm run dev
 ```
 
 ## Contributing
@@ -106,11 +106,11 @@ Development setup, conventions, and architecture are documented in the
 Common commands:
 
 ```bash
-bun install              # install workspace dependencies
-bun run build            # build all packages
-bun run test             # run all package test suites
-bun run check:all        # lint + format + types + package check
-bun run fix:all          # auto-fix lint and format
+pnpm install              # install workspace dependencies
+pnpm run build            # build all packages
+pnpm run test             # run all package test suites
+pnpm run check:all        # lint + format + types + package check
+pnpm run fix:all          # auto-fix lint and format
 ```
 
 ## License

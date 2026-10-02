@@ -1,25 +1,25 @@
 # Oxform Development Guide
 
-TypeScript monorepo for Oxform, a framework-agnostic form library using Bun workspaces.
+TypeScript monorepo for Oxform, a framework-agnostic form library using pnpm workspaces.
 
-**Package Manager**: Bun (not npm/yarn)
+**Package Manager**: pnpm
 
 ## Quick Reference
 
 ```bash
 # Build
-bun run build
-bun run build:dev        # watch mode
+pnpm run build
+pnpm run build:dev        # watch mode
 
 # Type check
-bun run check:types
+pnpm run check:types
 
 # Run a single test
-cd packages/<name> && bun vitest run src/tests/file.spec.ts
+cd packages/<name> && pnpm run test run src/tests/file.spec.ts
 
 # Lint/Format (Oxlint/Oxfmt, not ESLint/Prettier)
-bun run check:all        # lint + format + types + package
-bun run fix:all          # auto-fix all
+pnpm run check:all        # lint + format + types + package
+pnpm run fix:all          # auto-fix all
 ```
 
 ## Detailed Guides

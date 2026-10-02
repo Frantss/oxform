@@ -3,9 +3,9 @@
 Public documentation app for Oxform.
 
 ```bash
-bun run docs:dev
-bun run docs:build
-bun run docs:check
+pnpm run docs:dev
+pnpm run docs:build
+pnpm run docs:check
 ```
 
 The maintainer-facing repository guides stay in the root `docs` directory. This app owns the public documentation website.

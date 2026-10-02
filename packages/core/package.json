@@ -27,10 +27,10 @@
     "test": "vp test",
     "test:coverage": "vp test --coverage",
     "test:dev": "vp test --watch",
-    "check:test-duplicates": "bun scripts/check-test-duplicates.ts",
-    "check:test-structure": "bun scripts/check-test-structure.ts",
+    "check:test-duplicates": "node scripts/check-test-duplicates.ts",
+    "check:test-structure": "node scripts/check-test-structure.ts",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "bun run check:test-duplicates && bun run check:test-structure && publint --strict && attw --pack --no-emoji"
+    "check:package": "pnpm run check:test-duplicates && pnpm run check:test-structure && publint --strict && attw --pack --no-emoji"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",

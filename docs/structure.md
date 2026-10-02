@@ -48,6 +48,6 @@ Each package uses `#*` aliases pointing to `./src/*.ts`:
 
 ## Dependency Management
 
-- Shared dev dependencies use `catalog:oxform` (defined in root)
+- Shared dependency versions are listed in `pnpm-workspace.yaml` under `catalogs.oxform`
 - Internal packages reference each other with `workspace:*`
-- Run `bun install` from root to install all dependencies
+- Run `pnpm install` from root to install all dependencies
