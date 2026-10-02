@@ -1,0 +1,61 @@
+---
+title: Status
+description: Reactive form and field interaction, validation, and submission status.
+---
+
+# Status
+
+## `createFormStatus({ form })`
+
+Returns a stable container with reactive form status getters. `createForm` already exposes them as `form.status`. Use this primitive to observe a form created elsewhere, including a core-created form. Options may be an object with getters or an accessor.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createForm } from 'oxform-core';
+import { createFormStatus } from 'oxform-solid';
+import { z } from 'zod';
+
+function StatusLabel() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const status = createFormStatus({ form });
+  return <span>{status.validating ? 'Checking' : status.valid ? 'Valid' : 'Invalid'}</span>;
+}
+```
+
+## Form Status
+
+| Property             | Contract                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `dirty`              | True after a dirty field operation or a submit attempt starts.                                |
+| `pristine`           | Field interaction has not marked the form dirty; can remain true after submit marks it dirty. |
+| `touched`, `blurred` | Aggregate interaction status propagated from fields.                                          |
+| `valid`              | No current error or blocking custom-level issues. Does not prove values have been validated.  |
+| `validating`         | Asynchronous validators are pending; concurrent runs keep it true until all settle.           |
+| `submitting`         | A submit handler started and has not completed normally.                                      |
+| `submits`            | Normally completed attempts, including invalid ones; starts at zero by default.               |
+| `submitted`          | Whether `submits` is greater than zero.                                                       |
+| `successful`         | Whether the most recently completed attempt passed validation.                                |
+
+With default options, interaction and submit flags begin false, `submits` is zero, and `valid` and `pristine` are true. Creation does not validate defaults; reset restores configured initial status.
+
+## Field Status
+
+Read `field.state.status` or `array.state.status`. `form.field.status(name)` is an imperative snapshot.
+
+| Property   | Contract                                                                          |
+| ---------- | --------------------------------------------------------------------------------- |
+| `dirty`    | Set by changes unless disabled; returning to the default value does not clear it. |
+| `touched`  | Set by changes or focus unless change touching is disabled.                       |
+| `blurred`  | Set by blur.                                                                      |
+| `default`  | Current value deeply equals its default, independently of dirty status.           |
+| `pristine` | Inverse of this field's dirty flag.                                               |
+| `valid`    | No direct error or blocking custom issues at this path.                           |
+
+Parents receive interaction status from descendants, but their own issue buckets and validity remain path-specific. Form validity includes all paths. Field interaction defaults to false unless configured.
+
+## Types
+
+<auto-type-table path='./oxform-solid.ts' name='FormStatus' />
+
+<auto-type-table path='./oxform-solid.ts' name='FieldStatus' />

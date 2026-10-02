@@ -11,6 +11,12 @@ export const base = defineConfig({
     rules: {
       'typescript/no-base-to-string': 'off',
     },
+    overrides: [
+      {
+        files: ['packages/solid/**/*.{ts,tsx}', 'examples/solid/**/*.{ts,tsx}'],
+        rules: { 'react/refs': 'off' },
+      },
+    ],
     options: {
       typeAware: true,
       typeCheck: true,

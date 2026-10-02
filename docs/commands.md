@@ -19,6 +19,9 @@
 - Run a single test file with `vp test run src/tests/field/change.spec.ts`.
 - Filter tests by name with `vp test -t "<test name>"`.
 - Tests run in a headless Playwright browser (chromium) via Vite+ test mode.
+- `pnpm --dir packages/solid run test:ssr` runs server-rendering tests in Node through `vite.ssr.config.ts`.
+  The root test command runs both Solid suites.
+- Run the Solid example with `pnpm --dir examples/solid run dev`.
 
 ## Linting & Formatting Commands
 

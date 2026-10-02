@@ -1,7 +1,7 @@
 import { BookOpen, Code2, GitFork } from 'lucide-react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
-export function baseOptions(): BaseLayoutProps {
+export function baseOptions(framework: 'react' | 'solid' = 'react'): BaseLayoutProps {
   return {
     nav: {
       title: 'Oxform',
@@ -9,13 +9,13 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: 'Docs',
-        url: '/docs/react',
+        url: `/docs/${framework}`,
         icon: <BookOpen />,
         active: 'nested-url',
       },
       {
         text: 'API',
-        url: '/docs/react/api',
+        url: `/docs/${framework}/api`,
         icon: <Code2 />,
         active: 'nested-url',
       },

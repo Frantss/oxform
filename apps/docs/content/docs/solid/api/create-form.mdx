@@ -1,0 +1,103 @@
+---
+title: createForm
+description: Form configuration, values, status, validation, submission, and reset.
+---
+
+# createForm
+
+`createForm(options)` returns a stable `CreateFormReturn<Values, Checks>` with core form methods and reactive status getters. Values infer from `schema`; configured checks infer issue levels, with `error` always included. Options may be an object with getters or an accessor.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createField, createForm } from 'oxform-solid';
+import { z } from 'zod';
+
+function EmailForm() {
+  const form = createForm({ schema: z.object({ email: z.email() }), defaultValues: { email: '' } });
+  const email = createField({ form, name: 'email' });
+  const submit = form.submit(values => {
+    console.info(values.email);
+  });
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <input aria-label='Email' {...email.props} />
+      <button type='submit' disabled={form.status.submitting}>
+        Submit
+      </button>
+    </form>
+  );
+}
+```
+
+## Options
+
+| Option               | Contract                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `schema`             | Required Standard Schema validator. Infers values and supplies default submit validation.                     |
+| `defaultValues`      | Required initial values and reset baseline. Creation does not validate them.                                  |
+| `id`                 | Optional identifier, generated if omitted. Fixed after creation.                                              |
+| `defaultStatus`      | Initial overrides for `dirty`, `submits`, `submitting`, `validating`, and `successful`. Reset reapplies them. |
+| `defaultFieldStatus` | Initial `dirty`, `touched`, and `blurred` overrides by path; `'*'` supplies common defaults.                  |
+| `checks`             | Validators keyed by issue level and event, with optional blocking flags.                                      |
+
+Reactive updates change configuration for later operations. Updating defaults does not overwrite current values; call `reset()` to apply the new baseline.
+
+## Properties
+
+| Property        | Contract                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `id`, `options` | Identifier and current configuration.                                                                                |
+| `values`        | Imperative current-values snapshot; use [createSubscribe](/docs/solid/api/subscribe) to observe it.                  |
+| `status`        | Stable container with reactive [status getters](/docs/solid/api/status).                                             |
+| `store`         | Observable store containing values, fields, and status.                                                              |
+| `field`         | Path-based `get`, `status`, `change`, `focus`, `blur`, `register`, `unregister`, `issues`, `setIssues`, and `reset`. |
+| `array`         | Path-based `insert`, `append`, `prepend`, `swap`, `move`, `update`, `remove`, and `replace`.                         |
+
+Path-based operations use the same contracts as [bound fields](/docs/solid/api/create-field) and [bound arrays](/docs/solid/api/create-array-field), with the path as their first argument. `form.field.register(name)` returns an element callback.
+
+## `validate(fields?, options?)`
+
+Returns `Promise<[boolean, FormIssuesByLevel<Level>]>`. Omit targets for whole-form validation, or supply a path or list of paths for their subtrees. Validators receive the full values object; targets limit returned issues and updated paths.
+
+`options.type` selects `change`, `blur`, `focus`, or `submit`. Omitting it runs the root schema and all configured events. The boolean describes blocking issues emitted by this run; `form.status.valid` describes all current issues. See [Validation](/docs/solid/guide/validation).
+
+```ts
+const [valid, issues] = await form.validate('email', { type: 'blur' });
+await form.validate();
+```
+
+## `submit(onSuccess, onError?)`
+
+Returns a zero-argument `() => Promise<void>` handler. Invoke that handler to submit. It runs whole-form submit validation, then awaits `onSuccess(values, form)` if both the run and aggregate current validity pass, or `onError(issues, form)` otherwise.
+
+The handler marks the form dirty and submitting before validation. Normal completion increments `submits`, clears `submitting`, and records `successful`. A rejected validator or callback rejects the handler; these completion updates are not guaranteed after rejection. It does not prevent browser submission or suppress concurrent calls.
+
+## `reset(options?)`
+
+Restores defaults, clears issues and refs, recreates fields, and resets submit status. It does not validate. `values` supplies a full values object for this reset without changing the default baseline; `status` overrides reset status.
+
+| Keep option                          | Behavior                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `issues: true` or an array of levels | Preserve all issues or selected levels at retained paths.                                                                     |
+| `refs: true`                         | Preserve registered elements at retained paths.                                                                               |
+| `fields: true`                       | Preserve complete field state, including IDs, status, refs, and issues. Takes precedence over other field preservation flags. |
+
+```ts
+form.reset();
+form.reset({ keep: { refs: true, issues: ['error'] } });
+```
+
+Solid manages the internal mount and configuration-update calls. See [Lifecycle](/docs/solid/guide/reactivity) for disposal and server rendering.
+
+## Types
+
+<auto-type-table path='./oxform-solid.ts' name='CreateFormReturn' />
+
+<auto-type-table path='./oxform-solid.ts' name='FormOptions' />

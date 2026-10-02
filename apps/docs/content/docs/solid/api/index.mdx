@@ -1,0 +1,39 @@
+---
+title: API Reference
+description: Public Oxform Solid primitives, components, and types.
+---
+
+# API Reference
+
+The Solid adapter preserves the core validation, issue, submission, reset, and array contracts. Its primitives add owner cleanup, reactive getters, and dynamic bindings. Call them inside a component or `createRoot`.
+
+<Cards>
+  <Card
+    title='createForm'
+    href='/docs/solid/api/create-form'
+    description='Configure, validate, submit, and reset a typed form.'
+  />
+  <Card
+    title='createField'
+    href='/docs/solid/api/create-field'
+    description='Connect a field to controls or use an imperative field API.'
+  />
+  <Card
+    title='createArrayField'
+    href='/docs/solid/api/create-array-field'
+    description='Manage list operations and keyed row identities.'
+  />
+  <Card
+    title='Subscriptions'
+    href='/docs/solid/api/subscribe'
+    description='Observe selected state through an accessor.'
+  />
+  <Card
+    title='Status'
+    href='/docs/solid/api/status'
+    description='Read form and field interaction and validation status.'
+  />
+  <Card title='Effects' href='/docs/solid/api/effects' description='Run callbacks when selected values change.' />
+</Cards>
+
+`Field`, `ArrayField`, and `Subscribe` accept render functions and add no DOM wrapper. Their signatures are documented alongside the corresponding primitives.

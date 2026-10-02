@@ -8,7 +8,8 @@ See [Commands Reference](./commands.md) for navigation commands.
 /
 ├── packages/
 │   ├── core/          # oxform-core - Framework-agnostic form library
-│   └── react/         # oxform-react - React hooks and components
+│   ├── react/         # oxform-react - React hooks and components
+│   └── solid/         # oxform-solid - Solid primitives and components
 ├── docs/              # This documentation
 └── package.json       # Root workspace configuration
 ```
@@ -17,6 +18,7 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 - `oxform-core` - Standalone, no internal dependencies
 - `oxform-react` - Depends on `oxform-core` (via `workspace:*`)
+- `oxform-solid` - Depends on `oxform-core` (via `workspace:*`), with a Solid peer dependency
 
 ## Navigating Packages
 
@@ -38,6 +40,16 @@ See [Commands Reference](./commands.md) for navigation commands.
 - `use-form.ts`, `use-field.ts` - React hooks
 - `field.tsx`, `array-field.tsx` - React components
 - `tests/` - React-specific tests
+
+**Solid (`packages/solid/src/`):**
+
+- `create-*.ts` - Owned reactive primitives and core bindings
+- `field.ts`, `array-field.ts`, `subscribe.ts` - Render-function components
+- `internal/` - Store subscriptions, field rebinding, and reactive property selection
+- `tests/` - Browser behavior and public type contracts
+- `server-tests/` - Server-rendering behavior
+
+`examples/solid` provides the runnable Solid form demo.
 
 ## Import Paths
 

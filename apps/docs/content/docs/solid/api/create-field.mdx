@@ -1,0 +1,125 @@
+---
+title: createField
+description: Field values, input props, imperative methods, and the Field component.
+---
+
+# createField
+
+`createField({ form, name })` returns a stable field API with reactive `id`, `value`, `state`, and `props`. The path and its value type follow the form schema. Options accept an object, reactive getters, or an accessor. Changing `form` or `name` rebinds retained methods, subscriptions, and owned refs.
+
+## Properties
+
+| Property           | Contract                                                                                             |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `options`, `store` | Current binding and observable field store.                                                          |
+| `id`, `value`      | Reactive field identifier and current value.                                                         |
+| `state`            | Stable container with reactive `id`, `value`, `defaultValue`, `ref`, `issues`, and `status` getters. |
+| `props`            | Stable input props containing a reactive value and retained event handlers.                          |
+
+`state.issues` contains only this path's grouped issues. `issues({ nested: true })` reads descendants imperatively. Read [field status](/docs/solid/api/status) through `state.status`.
+
+## Input Props
+
+| Property         | Contract                                        |
+| ---------------- | ----------------------------------------------- |
+| `value`          | Current value.                                  |
+| `ref(element)`   | Registers an `HTMLElement`; `null` is a no-op.  |
+| `onInput(event)` | Passes `event.currentTarget.value` to `change`. |
+| `onBlur(event)`  | Calls `blur()`.                                 |
+| `onFocus(event)` | Calls `focus()`.                                |
+
+Spread props directly in JSX for text inputs, textareas, and single-value selects. `onInput` writes text during typing and triggers configured change validation. Solid's `onChange` uses native change-event timing.
+
+Checkboxes, numbers, files, and custom controls need explicit conversion. For a checkbox:
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createField, createForm } from 'oxform-solid';
+import { z } from 'zod';
+
+function Preferences() {
+  const form = createForm({ schema: z.object({ enabled: z.boolean() }), defaultValues: { enabled: false } });
+  const enabled = createField({ form, name: 'enabled' });
+
+  return (
+    <label>
+      <input
+        type='checkbox'
+        checked={enabled.value}
+        ref={enabled.register}
+        onChange={event => enabled.change(event.currentTarget.checked)}
+        onBlur={() => enabled.blur()}
+        onFocus={() => enabled.focus()}
+      />
+      Receive updates
+    </label>
+  );
+}
+```
+
+## Methods
+
+| Method                              | Contract                                                                                             |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `get()`                             | Current value snapshot.                                                                              |
+| `change(valueOrUpdater, options?)`  | Write a value or updater result. Marks this path and ancestors dirty and touched by default.         |
+| `focus(options?)`, `blur(options?)` | Operate on the registered element and update interaction status, also when no element is registered. |
+| `register(element)`, `unregister()` | Register an element or explicitly clear the ref.                                                     |
+| `issues(options?)`                  | Read direct issues, or descendants with `{ nested: true }`.                                          |
+| `setIssues(issues, options?)`       | Write level buckets using `replace` (default), `append`, or `keep`.                                  |
+| `reset(options?)`                   | Restore default value, issues, refs, and default field status for this path and descendants.         |
+
+Change options `should.dirty: false` and `should.touch: false` preserve existing flags. `should.validate` controls the matching event; by default it runs when configured. Change, focus, and blur return before asynchronous validation finishes. Await `form.validate` for completion.
+
+Issue mode `replace` replaces every bucket, including omitted levels. `append` adds entries. `keep` preserves all buckets if any existing bucket contains an issue. Later validation follows the [event replacement rules](/docs/solid/guide/validation).
+
+Field reset accepts a non-nullish `value` override. The current core API accepts `status` and `keep` in its type but does not apply those field reset options. Use form-level preservation when needed.
+
+## `createFieldApi`
+
+`createFieldApi(options)` provides the same imperative field operations, dynamic binding, and owned ref cleanup. It adds no reactive field state or input props. Observe a selected slice explicitly:
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createFieldApi, createForm, createSubscribe } from 'oxform-solid';
+import { z } from 'zod';
+
+function EmailPreview() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const email = createFieldApi({ form, name: 'email' });
+  const value = createSubscribe(email, state => state.value);
+  return <output>{value()}</output>;
+}
+```
+
+## `Field`
+
+Accepts `form`, `name`, and a render function receiving the full `createField` return value. It adds no DOM wrapper. Dynamic JSX props track changes to the binding.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { Field, createForm } from 'oxform-solid';
+import { z } from 'zod';
+
+function EmailInput() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  return (
+    <Field form={form} name='email'>
+      {field => <input aria-label='Email' {...field.props} />}
+    </Field>
+  );
+}
+```
+
+See [Lifecycle](/docs/solid/guide/reactivity) for cleanup and ref ownership.
+
+## Types
+
+<auto-type-table path='./oxform-solid.ts' name='CreateFieldReturn' />
+
+<auto-type-table path='./oxform-solid.ts' name='FieldInputProps' />
+
+<auto-type-table path='./oxform-solid.ts' name='FieldProps' />

@@ -10,6 +10,7 @@ allowing you to build forms with ease.
 - ✅ First-class TypeScript support
 - ✅ First-class [Standard Schema](https://standardschema.dev/) support
 - ⚛️ React integration
+- Solid integration
 
 ## Features
 
@@ -24,10 +25,11 @@ allowing you to build forms with ease.
 
 ## Packages
 
-| Package                          | Description                                        | Docs                               |
-| -------------------------------- | -------------------------------------------------- | ---------------------------------- |
-| [`oxform-react`](packages/react) | React bindings — hooks and components. Start here. | [readme](packages/react/readme.md) |
-| [`oxform-core`](packages/core)   | Framework-agnostic form engine                     | [readme](packages/core/readme.md)  |
+| Package                          | Description                                          | Docs                               |
+| -------------------------------- | ---------------------------------------------------- | ---------------------------------- |
+| [`oxform-react`](packages/react) | React bindings — hooks and components. Start here.   | [readme](packages/react/readme.md) |
+| [`oxform-solid`](packages/solid) | Solid bindings — reactive primitives and components. | [readme](packages/solid/readme.md) |
+| [`oxform-core`](packages/core)   | Framework-agnostic form engine                       | [readme](packages/core/readme.md)  |
 
 ## Quick start (React)
 
@@ -77,6 +79,10 @@ export function SignupForm() {
 See the [React package readme](packages/react/readme.md) for the full API and
 the [examples directory](examples/react/src/examples) for runnable demos
 (basic, array, async, effect, transform).
+
+For Solid, see the [Solid package readme](packages/solid/readme.md) and run
+the [Solid example](examples/solid/readme.md) with
+`pnpm --dir examples/solid run dev`.
 
 ## Examples
 

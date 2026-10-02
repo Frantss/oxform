@@ -1,0 +1,93 @@
+---
+title: createArrayField
+description: Array values, stable item identifiers, list operations, and the ArrayField component.
+---
+
+# createArrayField
+
+`createArrayField({ form, name })` returns a stable array API with reactive `state` and `ids`. The path must select an array value. Options accept an object, reactive getters, or an accessor; changing the form or name rebinds the API.
+
+## Render Keyed Rows
+
+Use Solid's `<For each={array.ids}>` to key rows by their field identifiers. Its index argument is an accessor. Derive the path from `index()` so retained rows read and write their current position after a move or removal.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { ArrayField, Field, createForm } from 'oxform-solid';
+import { For } from 'solid-js';
+import { z } from 'zod';
+
+function Contacts() {
+  const form = createForm({
+    schema: z.object({ contacts: z.array(z.object({ email: z.string() })) }),
+    defaultValues: { contacts: [{ email: '' }] },
+  });
+
+  return (
+    <ArrayField form={form} name='contacts'>
+      {contacts => (
+        <>
+          <For each={contacts.ids}>
+            {(_id, index) => (
+              <div>
+                <Field form={form} name={`contacts.${index()}.email`}>
+                  {field => <input aria-label={`Contact ${index() + 1} email`} {...field.props} />}
+                </Field>
+                <button type='button' disabled={index() === 0} onClick={() => contacts.move(index(), index() - 1)}>
+                  Move up
+                </button>
+                <button type='button' onClick={() => contacts.remove(index())}>
+                  Remove
+                </button>
+              </div>
+            )}
+          </For>
+          <button type='button' onClick={() => contacts.append({ email: '' })}>
+            Add contact
+          </button>
+        </>
+      )}
+    </ArrayField>
+  );
+}
+```
+
+With primitives inside a row, use ``createField(() => ({ form, name: `contacts.${index()}.email` as const }))``. Capture the reactive index in the accessor, rather than reading it once during row creation.
+
+## Properties
+
+| Property           | Contract                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `options`, `store` | Current binding and observable array store.                                                                                |
+| `state`            | Reactive `id`, `value`, `defaultValue`, `ref`, `issues`, and `status` getters.                                             |
+| `ids`              | Item identifiers in index order, empty for an absent array. The array object stays identical until its identifiers change. |
+
+Read values through `state.value` or the imperative `get()`. There are no `value`, `id`, or input `props` shortcuts. Item IDs follow items through inserts, moves, swaps, and removals; updates and replacements reset affected field state.
+
+## Methods
+
+| Method                                                | Contract                                                                                                                                      |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get()`                                               | Current array snapshot.                                                                                                                       |
+| `append(value, options?)`, `prepend(value, options?)` | Add an item at either end, treating an absent array as empty.                                                                                 |
+| `insert(index, value, options?)`                      | Insert and shift later items. Negative indices become zero; indices beyond the end pad with `undefined`.                                      |
+| `swap(from, to, options?)`                            | Exchange items and their field state. Equal normalized indices are a no-op.                                                                   |
+| `move(from, to, options?)`                            | Move an item, preserving intervening order and identities. Moving to the same index still applies change status and validation.               |
+| `update(index, valueOrUpdater, options?)`             | Replace an item; an updater receives that item. Clamp to the existing range, or position zero for an empty array. Reset affected field state. |
+| `remove(index, options?)`                             | Remove an item and preserve retained identities. Clamp to the existing range. Always skip validation.                                         |
+| `replace(valueOrUpdater, options?)`                   | Replace the whole array; an updater receives the array. Reset array and descendant field state.                                               |
+
+Mutation methods return `void` and accept `FieldChangeOptions` last. They mark the array and ancestors dirty and touched by default; `should.dirty: false` and `should.touch: false` preserve existing flags. Change validation runs when configured unless disabled, except `remove` always skips it. Call `form.validate` explicitly after removal when needed.
+
+Use existing indices for swap and move; negative indices become zero, but positive out-of-range indices are not clamped. Append, prepend, and insert accept updater functions typed as receiving an item, while the current core runtime passes the whole array. Prefer direct values for these insertion operations.
+
+## `ArrayField`
+
+Accepts `form`, an array-valued `name`, and a render function receiving the full `createArrayField` return value. It adds no DOM wrapper and tracks changes to JSX binding props.
+
+## Types
+
+<auto-type-table path='./oxform-solid.ts' name='CreateArrayFieldReturn' />
+
+<auto-type-table path='./oxform-solid.ts' name='ArrayFieldProps' />

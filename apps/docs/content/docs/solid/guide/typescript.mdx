@@ -1,0 +1,54 @@
+---
+title: TypeScript
+description: Infer values, field paths, array items, and issue levels.
+---
+
+# TypeScript
+
+`createForm` infers values from its Standard Schema validator and checks `defaultValues` against them. Field names select schema-derived paths; field writes and array items must match the selected value type.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createArrayField, createField, createForm, formOptions } from 'oxform-solid';
+import type { FormFields, FormFieldValue, FormIssueLevels, FormValues } from 'oxform-solid';
+import { z } from 'zod';
+
+const schema = z.object({
+  profile: z.object({ email: z.string() }),
+  contacts: z.array(z.object({ email: z.string() })),
+});
+const options = formOptions({
+  schema,
+  defaultValues: { profile: { email: '' }, contacts: [] },
+  checks: { warning: { validate: { change: schema } } },
+});
+
+function Contacts() {
+  const form = createForm(options);
+  const email = createField({ form, name: 'profile.email' });
+  const contacts = createArrayField({ form, name: 'contacts' });
+  contacts.append({ email: 'ada@example.com' });
+
+  type Values = FormValues<typeof form>;
+  type Paths = FormFields<typeof form>;
+  type Email = FormFieldValue<typeof form, 'profile.email'>;
+  type Levels = FormIssueLevels<typeof form>;
+
+  return <input aria-label='Email' {...email.props} />;
+}
+```
+
+`formOptions` preserves value and issue-level inference when sharing configuration; it returns the supplied options without creating state. Concrete checks keys infer a union such as `'error' | 'warning'`. Broadly typed checks can widen the union to `string`.
+
+`FormArrayFields<Form>` selects array-valued paths. Dynamic array item paths such as `contacts.${number}.email` can infer `string | undefined` because an index may be absent. Keep accessor paths literal with `as const` when needed:
+
+```ts
+const email = createField(() => ({ form, name: `contacts.${index()}.email` as const }));
+```
+
+## Public Types
+
+The adapter exports `CreateFormReturn<Values, Checks>`, `CreateFieldReturn<Value, Level>`, `CreateArrayFieldReturn<Value, Level>`, `FieldInputProps<Value>`, `FieldProps<Form, Name>`, `ArrayFieldProps<Form, Name>`, `SubscribeProps<Api, Selected>`, and `MaybeAccessor<T>`.
+
+It also re-exports the core contracts exposed by the React package, including form options, store and status types, issues, reset options, path inference, and selector types. Core class constructors are runtime imports from `oxform-core`.

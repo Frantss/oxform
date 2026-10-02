@@ -1,0 +1,170 @@
+---
+title: Validation
+description: Validation events, field scope, issue replacement, blocking levels, and asynchronous results.
+---
+
+# Validation
+
+Oxform accepts Standard Schema validators. The root `schema` determines the form values type and supplies default submit validation. Creation and reset do not validate values. Validator output is used to collect issues; parsed or transformed output does not replace form values.
+
+## Configure Events and Levels
+
+`checks` is keyed by issue level. Each level has an optional `blocking` flag and a `validate` map keyed by `change`, `blur`, `focus`, or `submit`. Each validator is a schema or a function receiving the current `FormStore` and returning a schema.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { Field, createForm } from 'oxform-solid';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email() });
+const warningSchema = z.object({
+  email: z.string().refine(value => value.endsWith('@company.example'), 'Use a company address'),
+});
+const riskSchema = z.object({
+  email: z.string().refine(value => !value.endsWith('@blocked.example'), 'Blocked provider'),
+});
+
+function EmailForm() {
+  const form = createForm({
+    schema,
+    defaultValues: { email: '' },
+    checks: {
+      error: { validate: { change: schema, blur: schema } },
+      warning: { validate: { change: warningSchema } },
+      risk: { blocking: true, validate: { submit: riskSchema } },
+    },
+  });
+
+  return (
+    <Field form={form} name='email'>
+      {field => (
+        <label>
+          Email
+          <input {...field.props} />
+          {Object.values(field.state.issues)
+            .flat()
+            .map(entry => (
+              <span>
+                {entry.level}: {entry.issue.message}
+              </span>
+            ))}
+        </label>
+      )}
+    </Field>
+  );
+}
+```
+
+`error` is always blocking, even if its configuration sets `blocking: false`. Other levels are non-blocking unless `blocking: true`. A level can be configured without validators to control the blocking behavior of manual issues.
+
+A schema builder receives the entire current store, including values, status, and fields:
+
+```ts
+checks: {
+  warning: {
+    validate: {
+      blur: store => store.status.submits > 0 ? strictWarningSchema : warningSchema,
+    },
+  },
+}
+```
+
+## Validator Selection
+
+| Request                           | Error validators                                                       | Custom-level validators                        |
+| --------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------- |
+| `validate()` or no `options.type` | Root `schema` plus every configured `checks.error.validate` event.     | Every configured event for every custom level. |
+| `type: 'submit'`                  | `checks.error.validate.submit` if configured; otherwise root `schema`. | Each level's submit validator.                 |
+| `type: 'change'`                  | Only `checks.error.validate.change`.                                   | Each level's change validator.                 |
+| `type: 'blur'`                    | Only `checks.error.validate.blur`.                                     | Each level's blur validator.                   |
+| `type: 'focus'`                   | Only `checks.error.validate.focus`.                                    | Each level's focus validator.                  |
+
+The root schema is not an automatic fallback for change, blur, or focus. A custom submit error validator replaces the root schema for that event. An untyped validation run can emit multiple issues for the same path because it runs both the root schema and configured validators.
+
+Field `change`, `focus`, and `blur` request their event automatically only when any level has that event configured. `should.validate: false` disables the request; `true` explicitly requests it. These field methods return before async validation completes. Array mutations follow change validation rules except `remove`, which always skips it.
+
+## Field Scope
+
+```ts
+await form.validate();
+await form.validate('profile');
+await form.validate(['email', 'profile'], { type: 'blur' });
+const [valid, emitted] = await form.validate('email', { type: 'change' });
+```
+
+Validators receive the full values object for all of these calls. The targets limit which issues are returned and which field issue buckets are updated; they do not provide a partial values object to the schema.
+
+A target includes its exact path and descendants. Siblings and ancestors are excluded. A root-level issue without a path is included only in whole-form validation. An empty target array updates no paths and returns no emitted issues.
+
+## Return Value and Current Validity
+
+`validate` returns `Promise<[boolean, FormIssuesByLevel<Level>]>`.
+
+The boolean is false when the run emits an error or blocking custom issue within its targets. The grouped issues contain only entries emitted by this run for those targets. Configured levels and `error` have empty arrays when nothing is emitted.
+
+`form.status.valid` instead accounts for all current form issues. A targeted run can return `true` while an untouched sibling or a preserved issue keeps the form invalid. Non-blocking issues can be returned while the boolean and form validity remain true.
+
+## Issue Entries and Replacement
+
+An entry contains `level`, a Standard Schema `issue` with `message` and optional `path`, and optional event `type`. Event validation assigns that event to `type`. Root-schema issues from an untyped run have no event type.
+
+Within the requested field scope:
+
+| Existing issue                                           | What a new run does                                                     |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `error` issue, when this run includes an error validator | Replaces it, regardless of its previous event or whether it was manual. |
+| `error` issue, when this run has no error validator      | Preserves it.                                                           |
+| Custom-level issue matching the requested event          | Replaces it with newly emitted issues for that event.                   |
+| Custom-level issue from another event                    | Preserves it for an event-specific run.                                 |
+| Custom-level issue with no `type`                        | Preserves it.                                                           |
+
+An untyped run refreshes all four custom-level event scopes. A validator that emits no issues clears the issues it replaces. Even a request with no configured validators clears custom issues for its selected event; it preserves error issues and custom issues without a type.
+
+## Read and Write Manual Issues
+
+```ts
+const issues = form.field.issues('email');
+const nestedIssues = form.field.issues('profile', { nested: true });
+
+form.field.setIssues('email', {
+  error: [{ level: 'error', issue: { message: 'Address already registered', path: ['email'] } }],
+});
+form.field.setIssues('email', { error: [] });
+```
+
+Manual issues are written to the named field's buckets. Their payload path does not redirect the write. `replace` replaces all buckets at that field, including omitted levels. `append` adds entries. `keep` keeps all existing buckets if any contains an issue.
+
+Omitting `type` preserves manual custom-level issues through event refreshes. Manual error issues are replaced by a later error validation run. Supplying a `type` opts a custom issue into that event's refresh rules.
+
+`state.issues` and `issues()` include only the bound field by default. Use `{ nested: true }` for descendants. Form validity includes all paths, even when a parent field's own issue buckets are empty.
+
+## Submission
+
+`form.submit(onSuccess, onError)()` runs whole-form submit validation. Success requires the returned boolean and current aggregate validity to pass. Blocking issues from other events and manual issues can prevent success even if submit validators emit nothing.
+
+`onSuccess(values, form)` receives current values. `onError(issues, form)` receives all current issues, including preserved and non-blocking entries. Both callbacks may be async. See [createForm](/docs/solid/api/create-form) for lifecycle and rejection behavior.
+
+## Async Validation
+
+Validators may return a promise. `status.validating` is true while asynchronous validators are pending, and remains true across concurrent pending runs. Synchronous validation does not set it to true.
+
+Changing an overlapping target while a run is pending prevents that run's results from overwriting field issues. Changing an unrelated path does not invalidate a targeted run; any value change invalidates a whole-form run. A newer run with the same target set and event supersedes an older run. Form reset also invalidates pending results.
+
+A discarded run resolves to `[true, emptyIssueBuckets]`; that boolean does not prove the changed values are valid. Await a fresh validation when a decision depends on the latest values.
+
+Thrown or rejected validators reject `validate`; they are not converted into issue entries. The asynchronous pending status clears as validators settle. Callers should handle rejected validation and submit promises.
+
+## Reset
+
+`form.reset()` clears issues by default. `keep.issues: true` preserves all levels; a list preserves selected levels. `keep.fields: true` preserves complete field state, including issues.
+
+```ts
+form.reset({ keep: { issues: ['warning'] } });
+```
+
+Reset itself does not validate. Field reset accepts preservation options in its type, but the current field reset API ignores them.
+
+## Type Inference
+
+Concrete `checks` keys produce a level union such as `'error' | 'warning' | 'risk'`. Without configured keys the inferred level is `'error'`. Broadly typed configuration can widen it to `string`. Reading `issues.warning` returns warning entries whose `level` is typed as `'warning'`.

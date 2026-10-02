@@ -1,0 +1,25 @@
+{
+  "name": "example-oxform-solid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#app": "./src/app.tsx",
+    "#styles.css": "./src/styles.css"
+  },
+  "scripts": {
+    "dev": "vp dev",
+    "build": "vp build",
+    "test": "vp test",
+    "check:types": "vp exec tsc --noEmit"
+  },
+  "dependencies": {
+    "oxform-solid": "workspace:*",
+    "solid-js": "^1.9.15",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite-plugin-solid": "^2.11.14"
+  }
+}

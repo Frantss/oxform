@@ -1,0 +1,93 @@
+---
+title: Reactivity and Lifecycle
+description: Reactive getters, imperative snapshots, dynamic bindings, and owner cleanup.
+---
+
+# Reactivity and Lifecycle
+
+Create primitives inside a Solid component or `createRoot`. Every primitive requires a Solid owner; calling one without an owner throws. The owner releases subscriptions and owned field refs on disposal. Core values and issues remain available after disposal.
+
+## Reactive Reads
+
+The public API, its methods, and its state, status, and input-prop containers keep their identities. Their reactive getters update independently: a sibling field change does not rerun a consumer of another field's value, and status-only updates do not rerun value consumers.
+
+| Read                                                            | Behavior                                      |
+| --------------------------------------------------------------- | --------------------------------------------- |
+| `form.status.valid`, `form.status.submitting`                   | Reactive status properties.                   |
+| `field.id`, `field.value`, `field.state.*`, `field.props.value` | Reactive field properties.                    |
+| `array.state.*`, `array.ids`                                    | Reactive array properties.                    |
+| `form.values`, `field.get()`, `array.get()`, `field.issues()`   | Imperative snapshots.                         |
+| `createFieldApi(...).state`                                     | Imperative field state; subscribe explicitly. |
+
+Read getters in JSX or a tracking scope. Destructuring a reactive property captures its current value. Keeping a reference to the state container preserves its getters:
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createField, createForm, createSubscribe } from 'oxform-solid';
+import { z } from 'zod';
+
+function EmailPreview() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const field = createField({ form, name: 'email' });
+  const state = field.state;
+  const email = createSubscribe(form, current => current.values.email);
+
+  return (
+    <>
+      <input {...field.props} />
+      <output>
+        {state.value} / {email()}
+      </output>
+    </>
+  );
+}
+```
+
+Spread `field.props` directly in JSX. Copying it into a new object outside JSX captures its `value` getter's current result.
+
+## Dynamic Options
+
+Creation options accept a plain object, an object with reactive getters, or an accessor returning an object. `createSubscribe` and `createFormEffect` also accept an API accessor.
+
+Changing a form's options updates configuration without resetting current values. Changed `defaultValues` become the next reset baseline. The form's ID, schema-derived value type, and inferred issue-level type stay fixed for its lifetime.
+
+Changing a field or array's `form` or `name` switches its binding. Retained methods write to the current binding, subscriptions follow its store, and a registered field element moves to the new path.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createField, createForm } from 'oxform-solid';
+import { createSignal } from 'solid-js';
+import { z } from 'zod';
+
+function PathSwitcher() {
+  const form = createForm({
+    schema: z.object({ primary: z.string(), secondary: z.string() }),
+    defaultValues: { primary: '', secondary: '' },
+  });
+  const [name, setName] = createSignal<'primary' | 'secondary'>('primary');
+  const field = createField(() => ({ form, name: name() }));
+
+  return (
+    <>
+      <input aria-label='Selected address' {...field.props} />
+      <button type='button' onClick={() => setName('secondary')}>
+        Edit secondary
+      </button>
+    </>
+  );
+}
+```
+
+Components track their JSX `form` and `name` props using the same binding behavior. For keyed rows, derive the name from Solid's reactive index accessor; see [Array fields](/docs/solid/api/create-array-field).
+
+## Ref Ownership and Reset
+
+Field cleanup clears a ref only if it still matches the element registered by that binding. It preserves an element registered later by another owner. Passing `null` to `register` is a no-op; `unregister()` explicitly clears the current ref.
+
+Core reset clears refs by default. If a retained control should remain registered for later `focus()` and `blur()` calls, use `form.reset({ keep: { refs: true } })`. Reactive values still update when resetting.
+
+## Server Rendering
+
+Server rendering reads initial state without creating store subscriptions or running `createFormEffect` callbacks. Create a form inside each component or request's owner to keep state separate between requests. Client owners subscribe and clean up normally.

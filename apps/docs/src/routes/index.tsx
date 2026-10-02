@@ -15,8 +15,7 @@ function Home() {
           <p className='mb-4 text-sm font-medium text-fd-muted-foreground'>Framework-agnostic forms</p>
           <h1 className='mb-5 text-4xl font-semibold tracking-normal text-fd-foreground sm:text-6xl'>Oxform</h1>
           <p className='mb-8 max-w-2xl text-lg leading-8 text-fd-muted-foreground'>
-            A lean form library with typed fields, validation, array helpers, and React bindings built on a small public
-            surface.
+            A form library with typed fields, validation, array helpers, and bindings for React and Solid.
           </p>
           <div className='flex flex-wrap gap-3'>
             <Link
@@ -24,15 +23,22 @@ function Home() {
               params={{ _splat: 'react' }}
               className='inline-flex items-center gap-2 rounded-md bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground'
             >
-              Read the docs
+              React docs
               <ArrowRight className='size-4' />
+            </Link>
+            <Link
+              to='/docs/$'
+              params={{ _splat: 'solid' }}
+              className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
+            >
+              Solid docs
             </Link>
             <Link
               to='/docs/$'
               params={{ _splat: 'react/api' }}
               className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
             >
-              API reference
+              React API
             </Link>
           </div>
         </section>
@@ -42,7 +48,7 @@ function Home() {
             Infer field names, values, and issue levels from the form model users already define.
           </Feature>
           <Feature title='Small primitives' icon={<Workflow className='size-5' />}>
-            Use core APIs directly or compose React hooks and components around your UI system.
+            Use core APIs directly, React hooks, or Solid primitives and components.
           </Feature>
           <Feature title='Array fields' icon={<Boxes className='size-5' />}>
             Manage ordered, nested collections without losing field status or validation state.

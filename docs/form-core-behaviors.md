@@ -1,7 +1,9 @@
 # Public API Behavior Reference and Reproduction Spec
 
 This document describes caller-visible contracts of `oxform-core` and
-`oxform-react`. The documentation site contains the usage reference, grouped
+`oxform-react`. The [Solid adapter](../packages/solid/readme.md) preserves these
+core behaviors and adds owner-scoped reactive getters and field rebinding.
+The documentation site contains the usage reference, grouped
 by form, field, array field, subscription, status, and effect.
 
 ## Form API

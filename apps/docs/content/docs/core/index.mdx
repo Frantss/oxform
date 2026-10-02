@@ -5,7 +5,7 @@ description: Public form, field, array, options, and effect APIs.
 
 # Oxform Core
 
-`oxform-core` exposes forms independently of a UI framework. Its values, status, validation, reset, and array contracts also apply to React bindings.
+`oxform-core` exposes forms independently of a UI framework. Its values, status, validation, reset, and array contracts also apply to [React](/docs/react) and [Solid](/docs/solid) bindings.
 
 ## Form
 
@@ -47,7 +47,7 @@ tags.append('customer');
 
 ### `formOptions(options)`
 
-Returns the supplied configuration, preserving inferred value and issue-level types. It does not create form state or run validation. It is also a runtime export of `oxform-react`.
+Returns the supplied configuration, preserving inferred value and issue-level types. It does not create form state or run validation. Both `oxform-react` and `oxform-solid` re-export it.
 
 ### Properties and Methods
 
@@ -90,7 +90,7 @@ email.setIssues({ error: [{ level: 'error', issue: { message: 'Already registere
 email.reset();
 ```
 
-The bound API exposes `options`, `id`, `value`, `state`, and `store` properties. Its methods are `get`, `change`, `focus`, `blur`, `register`, `unregister`, `issues`, `setIssues`, and `reset`. It exposes `'~mount'` and `'~update'` for adapters. It does not expose React input props.
+The bound API exposes `options`, `id`, `value`, `state`, and `store` properties. Its methods are `get`, `change`, `focus`, `blur`, `register`, `unregister`, `issues`, `setIssues`, and `reset`. It exposes `'~mount'` and `'~update'` for adapters. It does not expose framework input props.
 
 ### `form.field`
 

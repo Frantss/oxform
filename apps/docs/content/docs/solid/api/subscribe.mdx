@@ -1,0 +1,63 @@
+---
+title: Subscriptions
+description: Observe a selected form, field, or array value through a Solid accessor.
+---
+
+# Subscriptions
+
+## `createSubscribe(api, selector)`
+
+Returns `Accessor<Selected>`. The selector receives the form, field, or array's store state, and its return value determines the accessor's type. Read the accessor in JSX or a tracking scope.
+
+Selections compare with `Object.is`. Unrelated updates that leave the selected value identical do not rerun consumers. A freshly allocated object is a changed selection even when its contents match.
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createForm, createSubscribe } from 'oxform-solid';
+import { z } from 'zod';
+
+function Preview() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  const email = createSubscribe(form, state => state.values.email);
+  return <output>{email()}</output>;
+}
+```
+
+An API accessor such as `createSubscribe(() => currentForm(), selector)` switches subscriptions when its API changes. The owner unsubscribes on disposal. Server rendering reads the initial selection without subscribing.
+
+## `Subscribe`
+
+| Prop       | Contract                                                               |
+| ---------- | ---------------------------------------------------------------------- |
+| `api`      | Form, field, or array API to observe. Dynamic JSX props can switch it. |
+| `selector` | Select a value from current store state.                               |
+| `children` | Render function receiving an **accessor**, called as `selected()`.     |
+
+The component adds no DOM wrapper. Its child receives the accessor, rather than the selected value itself:
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { Subscribe, createForm } from 'oxform-solid';
+import { z } from 'zod';
+
+function SubmitButton() {
+  const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
+  return (
+    <Subscribe api={form} selector={state => state.status.submitting}>
+      {submitting => (
+        <button type='submit' disabled={submitting()}>
+          Submit
+        </button>
+      )}
+    </Subscribe>
+  );
+}
+```
+
+Use [createFormEffect](/docs/solid/api/effects) for callbacks on selected changes and [createFormStatus](/docs/solid/api/status) for aggregate status getters.
+
+## Types
+
+<auto-type-table path='./oxform-solid.ts' name='SubscribeProps' />

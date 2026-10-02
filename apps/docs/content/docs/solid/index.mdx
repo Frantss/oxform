@@ -1,0 +1,101 @@
+---
+title: Solid
+description: Build typed Solid forms with reactive primitives and components.
+---
+
+# Oxform Solid
+
+`oxform-solid` connects the core form API to Solid's reactivity. Create a form inside a component, connect fields to controls, and read reactive getters in JSX.
+
+## Install
+
+Requires Solid `^1.9.0` and a Standard Schema validator, such as Zod.
+
+```bash
+pnpm add oxform-solid solid-js zod
+```
+
+## First Form
+
+```tsx twoslash
+// @jsx: preserve
+// @jsxImportSource: solid-js
+import { createField, createForm } from 'oxform-solid';
+import { For } from 'solid-js';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email() });
+
+export function Signup() {
+  const form = createForm({
+    schema,
+    defaultValues: { email: '' },
+    checks: { error: { validate: { change: schema } } },
+  });
+  const email = createField({ form, name: 'email' });
+  const submit = form.submit(values => {
+    console.info(values.email);
+  });
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <label for='signup-email'>Email</label>
+      <input id='signup-email' type='email' {...email.props} />
+      <For each={email.state.issues.error}>{entry => <p>{entry.issue.message}</p>}</For>
+      <button type='submit' disabled={form.status.submitting}>
+        Sign up
+      </button>
+      <button type='button' onClick={() => form.reset()}>
+        Reset
+      </button>
+    </form>
+  );
+}
+```
+
+The schema infers values and field paths. Input props use `onInput` to write text during typing. Configured change validation updates `email.state.issues`; `form.submit` validates again before calling the success callback.
+
+## Choose an API
+
+| Task                         | API                                 |
+| ---------------------------- | ----------------------------------- |
+| Create a form                | `createForm`                        |
+| Connect a control            | `createField` or `Field`            |
+| Use imperative field methods | `createFieldApi`                    |
+| Manage a dynamic list        | `createArrayField` or `ArrayField`  |
+| Observe a selected value     | `createSubscribe` or `Subscribe`    |
+| Read aggregate form status   | `form.status` or `createFormStatus` |
+| Run a callback on changes    | `createFormEffect`                  |
+
+<Cards>
+  <Card
+    title='Reactivity and lifecycle'
+    href='/docs/solid/guide/reactivity'
+    description='Read getters, switch field paths, and release subscriptions.'
+  />
+  <Card
+    title='Validation'
+    href='/docs/solid/guide/validation'
+    description='Configure errors, warnings, and asynchronous checks.'
+  />
+  <Card
+    title='TypeScript'
+    href='/docs/solid/guide/typescript'
+    description='Infer paths, values, and issue levels from a schema.'
+  />
+  <Card title='API reference' href='/docs/solid/api' description='Browse every Solid primitive and component.' />
+</Cards>
+
+## Runnable Example
+
+The repository's `examples/solid` workspace includes validation feedback, checkbox handling, keyed array rows, subscriptions, effects, submission, and reset.
+
+```bash
+pnpm install
+pnpm --dir examples/solid run dev
+```

@@ -22,8 +22,10 @@
     "lucide-react": "^1.50.0",
     "oxform-core": "workspace:*",
     "oxform-react": "workspace:*",
+    "oxform-solid": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "solid-js": "^1.9.15",
     "zod": "^4.6.5"
   },
   "devDependencies": {
