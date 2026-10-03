@@ -1,0 +1,70 @@
+body {
+  font-family: system-ui, sans-serif;
+  color: #202020;
+  background: #fff;
+  margin: 0;
+}
+main {
+  max-width: 44rem;
+  margin: auto;
+  padding: 1.25rem;
+}
+form,
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+form {
+  gap: 1.25rem;
+}
+input,
+button {
+  font: inherit;
+  box-sizing: border-box;
+}
+input:not([type='checkbox']),
+button {
+  min-height: 2.75rem;
+}
+input:not([type='checkbox']) {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #666;
+}
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+}
+fieldset {
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #666;
+}
+.member {
+  display: grid;
+  gap: 0.5rem;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+:focus-visible {
+  outline: 2px solid #202020;
+  outline-offset: 3px;
+}

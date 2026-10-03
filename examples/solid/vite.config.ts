@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'oxform-core': fileURLToPath(new URL('../../packages/core/export/index.ts', import.meta.url)),
-      'oxform-solid': fileURLToPath(new URL('../../packages/solid/export/index.ts', import.meta.url)),
+      'oxform-solid': fileURLToPath(new URL('../../packages/solid-v1/export/index.ts', import.meta.url)),
     },
   },
 });

@@ -83,6 +83,9 @@ the [examples directory](examples/react/src/examples) for runnable demos
 For Solid, see the [Solid package readme](packages/solid/readme.md) and run
 the [Solid example](examples/solid/readme.md) with
 `pnpm --dir examples/solid run dev`.
+Solid 2 uses `oxform-solid/v2`; run its
+[example](examples/solid-v2/readme.md) with
+`pnpm --dir examples/solid-v2 run dev`.
 
 ## Examples
 

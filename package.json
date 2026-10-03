@@ -14,7 +14,7 @@
     "docs:check": "vp run @oxform/docs#check:types",
     "docs:start": "vp run @oxform/docs#start",
     "postbuild": "vp fmt --write",
-    "test": "vp run oxform-core#test && vp run oxform-react#test && vp run example-oxform-react#test && vp run oxform-solid#test && vp run oxform-solid#test:ssr && vp run example-oxform-solid#test",
+    "test": "vp run oxform-core#test && vp run oxform-react#test && vp run example-oxform-react#test && vp run oxform-solid#test && vp run oxform-solid#test:ssr && vp run example-oxform-solid#test && vp run example-oxform-solid-v2#test",
     "check:package": "vp run oxform-core#check:package && vp run oxform-react#check:package && vp run oxform-solid#check:package",
     "check:types": "vp run -r check:types",
     "check:rules": "vp lint --type-aware",

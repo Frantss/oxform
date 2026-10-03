@@ -13,7 +13,7 @@ export const base = defineConfig({
     },
     overrides: [
       {
-        files: ['packages/solid/**/*.{ts,tsx}', 'examples/solid/**/*.{ts,tsx}'],
+        files: ['packages/solid*/**/*.{ts,tsx}', 'examples/solid*/**/*.{ts,tsx}'],
         rules: { 'react/refs': 'off' },
       },
     ],
@@ -23,7 +23,7 @@ export const base = defineConfig({
     },
   },
   fmt: {
-    ignorePatterns: ['apps/docs/src/routeTree.gen.ts'],
+    ignorePatterns: ['apps/docs/src/routeTree.gen.ts', 'packages/solid-v2/src/tests/fixtures/hydration.html'],
     arrowParens: 'avoid' as const,
     singleQuote: true,
     jsxSingleQuote: true,

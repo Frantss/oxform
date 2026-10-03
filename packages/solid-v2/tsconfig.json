@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
+    "types": ["vite/client", "node"],
+    "paths": {
+      "oxform-solid/v2": ["./export/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "export/**/*.ts"],
+  "exclude": ["dist", "vite.config.ts"]
+}

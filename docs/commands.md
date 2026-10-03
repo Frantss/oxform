@@ -22,6 +22,11 @@
 - `pnpm --dir packages/solid run test:ssr` runs server-rendering tests in Node through `vite.ssr.config.ts`.
   The root test command runs both Solid suites.
 - Run the Solid example with `pnpm --dir examples/solid run dev`.
+- Run the Solid 2 example with `pnpm --dir examples/solid-v2 run dev`.
+- Test either private adapter directly with
+  `pnpm --dir packages/solid-v1 run test` or
+  `pnpm --dir packages/solid-v2 run test`. The published package's test scripts
+  run both adapters; Solid 2 browser tests cover desktop and mobile viewports.
 
 ## Linting & Formatting Commands
 
@@ -40,6 +45,9 @@
 ## Package Validation
 
 - Run `pnpm run check:package` to validate package exports with publint.
+- Run `pnpm --dir packages/solid run check:consumers` after building to verify
+  the packed Solid 1 and Solid 2 entries in isolated applications, including
+  ESM, CJS, and inferred types. This uses the local pnpm dependency cache.
 - Run `pnpm run check:all` to run lint, format, types, and package checks together.
 
 ## Release Commands

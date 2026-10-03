@@ -1,12 +1,60 @@
 # oxform-solid
 
-Solid bindings for [Oxform](../../readme.md). Requires Solid `^1.9.0`.
+Solid bindings for [Oxform](../../readme.md). The default entry requires Solid
+`^1.9.0`; `oxform-solid/v2` supports Solid `2.0.0-rc.13`.
 Validation, issues, submission, reset, and array operations use
 [`oxform-core`](../core/readme.md).
 
 ```bash
 pnpm add oxform-solid solid-js
 ```
+
+## Solid 2
+
+Install the pinned prerelease runtime and web renderer:
+
+```bash
+pnpm add oxform-solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13
+```
+
+Import the same primitives, components, and types from `oxform-solid/v2`:
+
+```tsx
+import { createField, createForm } from 'oxform-solid/v2';
+```
+
+Configure web JSX with `jsxImportSource: '@solidjs/web'` and use the Solid 2
+compiler. The [Solid 2 example](../../examples/solid-v2/readme.md) pins
+`@solidjs/vite-plugin` and exercises the adapter.
+
+Core methods still update values synchronously. Reactive getters, selected
+accessors, DOM output, and reactive option changes follow Solid's flush:
+
+```ts
+import { flush } from 'solid-js';
+
+email.change('ada@example.com');
+email.get(); // Latest core value.
+flush();
+email.value; // Committed reactive value.
+```
+
+The adapter does not flush automatically. Flush before using a retained handler
+if a signal selecting its form or field name must commit first. Read reactive
+properties in JSX, memos, or effect computations.
+
+`createFormEffect` uses Solid 2's effect application phase. It skips the initial
+selection, compares selections deeply, and coalesces writes in a batch into
+the committed selection. Changing the source establishes a new baseline.
+Callbacks run untracked and returned promises are not awaited. Use core's
+`createEffect` when every core transition must be observed.
+
+Validation and submission retain core promises and status flags. They do not
+suspend rendering. Server rendering reads initial values without subscriptions
+or form-effect callbacks; supply matching initial values for hydration.
+
+Choose the entry matching the application's Solid version. Peer dependencies
+describe the package as a whole and cannot enforce this pairing per subpath.
 
 ## Quick start
 
@@ -82,7 +130,7 @@ handlers follow the new binding. Owned refs move to the new path. Cleanup
 clears a ref only if it still belongs to that binding.
 
 `createFieldApi` supplies no reactive field state or input props; subscribe
-explicitly when needed. `createFormEffect` delegates to core, does not await
+explicitly when needed. The Solid 1 `createFormEffect` delegates to core, does not await
 async callbacks, and releases its subscription with the owner. Rebinding an
 effect establishes a new baseline without invoking the callback.
 
