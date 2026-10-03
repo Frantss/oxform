@@ -46,6 +46,8 @@ function EmailPreview() {
 
 Spread `field.props` directly in JSX. Copying it into a new object outside JSX captures its `value` getter's current result.
 
+With `oxform-solid/v2`, core writes remain synchronous, while reactive getters, selected accessors, and DOM output update at Solid's flush. The adapter does not flush automatically. Use imperative reads for the latest core value, or call `flush()` from `solid-js` before requiring committed reactive state. See [Solid 2 timing](/docs/solid/guide/solid-2#reactive-timing).
+
 ## Dynamic Options
 
 Creation options accept a plain object, an object with reactive getters, or an accessor returning an object. `createSubscribe` and `createFormEffect` also accept an API accessor.
@@ -53,6 +55,8 @@ Creation options accept a plain object, an object with reactive getters, or an a
 Changing a form's options updates configuration without resetting current values. Changed `defaultValues` become the next reset baseline. The form's ID, schema-derived value type, and inferred issue-level type stay fixed for its lifetime.
 
 Changing a field or array's `form` or `name` switches its binding. Retained methods write to the current binding, subscriptions follow its store, and a registered field element moves to the new path.
+
+In Solid 2, reactive option changes also wait for a flush. If you change a signal selecting a form or field name and then invoke a retained handler in the same operation, flush first so the handler uses the new binding.
 
 ```tsx twoslash
 // @jsx: preserve
@@ -91,3 +95,5 @@ Core reset clears refs by default. If a retained control should remain registere
 ## Server Rendering
 
 Server rendering reads initial state without creating store subscriptions or running `createFormEffect` callbacks. Create a form inside each component or request's owner to keep state separate between requests. Client owners subscribe and clean up normally.
+
+For Solid 2 hydration, supply matching initial schema options and default values on the server and client. Validation and submission retain core promises and status flags; they do not suspend rendering.

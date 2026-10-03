@@ -7,12 +7,19 @@ description: Build typed Solid forms with reactive primitives and components.
 
 `oxform-solid` connects the core form API to Solid's reactivity. Create a form inside a component, connect fields to controls, and read reactive getters in JSX.
 
+Both adapters ship in one package. Choose the entry matching your application's Solid version:
+
+| Solid version | Import            | Setup                                                  |
+| ------------- | ----------------- | ------------------------------------------------------ |
+| `^1.9.0`      | `oxform-solid`    | Install below.                                         |
+| `2.0.0-rc.13` | `oxform-solid/v2` | Follow the [Solid 2 guide](/docs/solid/guide/solid-2). |
+
 ## Install
 
-Requires Solid `^1.9.0` and a Standard Schema validator, such as Zod.
+For Solid 1, install Solid `^1.9.0` and a Standard Schema validator, such as Zod. The examples on the shared API pages use this entry.
 
 ```bash
-pnpm add oxform-solid solid-js zod
+pnpm add oxform-solid solid-js@^1.9.0 zod
 ```
 
 ## First Form
@@ -74,6 +81,11 @@ The schema infers values and field paths. Input props use `onInput` to write tex
 
 <Cards>
   <Card
+    title='Solid 2'
+    href='/docs/solid/guide/solid-2'
+    description='Install the v2 entry and account for flush timing and effects.'
+  />
+  <Card
     title='Reactivity and lifecycle'
     href='/docs/solid/guide/reactivity'
     description='Read getters, switch field paths, and release subscriptions.'
@@ -99,3 +111,5 @@ The repository's `examples/solid` workspace includes validation feedback, checkb
 pnpm install
 pnpm --dir examples/solid run dev
 ```
+
+For Solid 2, run `pnpm --dir examples/solid-v2 run dev` instead.

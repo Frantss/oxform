@@ -1,0 +1,185 @@
+---
+title: Solid 2
+description: Configure oxform-solid/v2 for Solid 2 and use its reactive timing, effects, and hydration behavior.
+---
+
+# Solid 2
+
+`oxform-solid/v2` provides the same primitives, components, and schema inference as the Solid 1 adapter. It ships inside `oxform-solid` and supports Solid `2.0.0-rc.13`.
+
+## Install
+
+Install the pinned runtime, web renderer, and a Standard Schema validator:
+
+```bash
+pnpm add oxform-solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13 zod
+```
+
+Use `oxform-solid/v2` for every Oxform Solid import, including types. Keep reactive primitives such as `createSignal`, `For`, and `flush` imported from `solid-js`. Web rendering functions such as `render` and `hydrate`, and the `JSX` type, come from `@solidjs/web`.
+
+The package's peer dependencies cover both adapters. They cannot enforce which subpath you import, so pair `oxform-solid` with Solid 1 and `oxform-solid/v2` with Solid 2.
+
+## Compiler and TypeScript
+
+The repository's Solid 2 example uses these compiler versions:
+
+```bash
+pnpm add -D @solidjs/compiler@2.0.0-rc.13 @solidjs/vite-plugin@3.0.0-next.47
+```
+
+Configure the Solid 2 Vite plugin:
+
+```ts title="vite.config.ts"
+import { defineConfig } from 'vite';
+import solid from '@solidjs/vite-plugin';
+
+export default defineConfig({
+  plugins: [solid()],
+});
+```
+
+Set TypeScript's JSX source to the web renderer:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web"
+  }
+}
+```
+
+## First Form
+
+```tsx
+import { createField, createForm } from 'oxform-solid/v2';
+import { For } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email() });
+
+export function Signup(): JSX.Element {
+  const form = createForm({
+    schema,
+    defaultValues: { email: '' },
+    checks: { error: { validate: { change: schema } } },
+  });
+  const email = createField({ form, name: 'email' });
+  const submit = form.submit(values => {
+    console.info(values.email);
+  });
+
+  return (
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
+      <label for='signup-email'>Email</label>
+      <input id='signup-email' type='email' {...email.props} />
+      <For each={email.state.issues.error}>{entry => <p>{entry.issue.message}</p>}</For>
+      <button type='submit' disabled={form.status.submitting}>
+        Sign up
+      </button>
+      <button type='button' onClick={() => form.reset()}>
+        Reset
+      </button>
+    </form>
+  );
+}
+```
+
+Input props still use `onInput` to write text. For checkboxes, numbers, and files, supply explicit handlers as described in [createField](/docs/solid/api/create-field#input-props). Solid 2's web JSX types require string values for `aria-invalid`; use `aria-invalid={email.state.status.valid ? 'false' : 'true'}`.
+
+## Reactive Timing
+
+Core methods update values synchronously. Reactive getters, selected accessors, DOM output, and reactive option changes follow Solid's flush. The adapter does not flush automatically.
+
+This example reads the latest core value immediately and commits a changed field path before calling a retained handler:
+
+```tsx
+import { createField, createForm } from 'oxform-solid/v2';
+import { createSignal, flush } from 'solid-js';
+import { z } from 'zod';
+
+export function AddressEditor() {
+  const form = createForm({
+    schema: z.object({ primary: z.string(), secondary: z.string() }),
+    defaultValues: { primary: '', secondary: '' },
+  });
+  const [name, setName] = createSignal<'primary' | 'secondary'>('primary');
+  const field = createField(() => ({ form, name: name() }));
+  const change = field.change;
+
+  const updateSecondary = () => {
+    setName('secondary');
+    flush();
+    change('ada@example.com');
+    console.info(field.get());
+    flush();
+    console.info(field.value);
+  };
+
+  return (
+    <button type='button' onClick={updateSecondary}>
+      Update secondary address
+    </button>
+  );
+}
+```
+
+Use `form.values`, `field.get()`, and `array.get()` for imperative snapshots. Read reactive getters and `createSubscribe` accessors in JSX, memos, or effect computations. Updating reactive defaults changes the next reset baseline after the option update commits; call `reset()` to apply that baseline to current values.
+
+## Effects
+
+`createFormEffect` skips the initial selection, compares selections deeply, and applies callbacks during Solid 2's effect application phase. Writes within one flush coalesce into the committed selection:
+
+```ts
+import { createForm, createFormEffect } from 'oxform-solid/v2';
+import { createRoot, flush } from 'solid-js';
+import { z } from 'zod';
+
+const dispose = createRoot(dispose => {
+  const form = createForm({
+    schema: z.object({ name: z.string() }),
+    defaultValues: { name: 'Ada' },
+  });
+  createFormEffect(
+    form,
+    state => state.values.name,
+    value => {
+      console.info(value);
+    },
+  );
+
+  form.field.change('name', 'Alan');
+  form.field.change('name', 'Grace');
+  flush();
+  return dispose;
+});
+
+dispose();
+```
+
+The callback receives `'Grace'`. Changing the observed API establishes a new baseline without a callback. Callbacks run untracked in a writable scope, and returned promises are not awaited. Disposal releases the subscription and prevents pending callbacks from running.
+
+Use [core's `createEffect`](/docs/core#effect) when every selected core transition must be observed. See the shared [effect reference](/docs/solid/api/effects) for the callback contract.
+
+## Server Rendering and Hydration
+
+Server rendering reads initial values without creating subscriptions or running form-effect callbacks. Create forms inside each component or request's owner and supply matching initial options and default values on the server and client for hydration.
+
+Validation and submission use the core's promises and status flags. They do not suspend rendering. Use `form.status.validating` and `form.status.submitting` to display pending work.
+
+## Runnable Example
+
+The `examples/solid-v2` workspace covers validation, warnings, checkboxes, subscriptions, effects, keyed array rows, submission, and reset:
+
+```bash
+pnpm install
+pnpm --dir examples/solid-v2 run dev
+```
+
+Use the shared [API reference](/docs/solid/api) for form, field, array, subscription, and status contracts, with imports changed to `oxform-solid/v2`.

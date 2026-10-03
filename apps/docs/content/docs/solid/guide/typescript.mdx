@@ -7,6 +7,8 @@ description: Infer values, field paths, array items, and issue levels.
 
 `createForm` infers values from its Standard Schema validator and checks `defaultValues` against them. Field names select schema-derived paths; field writes and array items must match the selected value type.
 
+Solid 2 preserves this inference. Import Oxform types from `oxform-solid/v2`, import `JSX` from `@solidjs/web`, and set `jsxImportSource` to `@solidjs/web`. Follow the [Solid 2 setup](/docs/solid/guide/solid-2#compiler-and-typescript) before using these examples with that entry.
+
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js

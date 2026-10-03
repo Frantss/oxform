@@ -13,3 +13,9 @@
 - Production verification before committing passed after allowing the local
   preview port required by prerendering. The build compiled the documentation
   and prerendered all 18 pages. The earlier JSX error is resolved.
+
+- Solid 2 documentation verification on 2026-10-02 passed and prerendered
+  36 page and anchor URLs. Vite reported that
+  `apps/docs/dist/client/assets/index-C_8JQxTq.js:1` is 665.10 kB minified
+  (219.91 kB gzip), above its 500 kB chunk warning threshold. This increases
+  the size of the client bundle downloaded by documentation readers.

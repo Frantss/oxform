@@ -9,7 +9,7 @@ description: Run callbacks when selected form, field, or array state changes.
 
 Observes a form, field, or array API. The selector receives its store state; the callback receives the inferred selected value. Returns `void` and unsubscribes when its Solid owner disposes.
 
-It delegates selection comparison to core's deep equality. The callback skips the initial selection and runs only on later changes that are not deeply equal. Unrelated state changes do not invoke it. This differs from `createSubscribe`, which compares selections with `Object.is`.
+Selections compare deeply. The callback skips the initial selection and runs only on later changes that are not deeply equal. Unrelated state changes do not invoke it. This differs from `createSubscribe`, which compares selections with `Object.is`.
 
 ```tsx twoslash
 // @jsx: preserve
@@ -35,4 +35,10 @@ Supply an API accessor to follow changing instances. Switching the API or a fiel
 
 Callbacks run untracked, so reactive reads in the callback do not add Solid dependencies. They may return `Promise<void>`, but the effect does not await completion or cancel previous callbacks. Server rendering runs no form effects.
 
-The core equivalent, `createEffect`, returns a subscription for callers to unsubscribe manually; see [Core](/docs/core#effect).
+## Solid Version and Timing
+
+The Solid 1 entry delegates to core's effect subscription. The Solid 2 entry, `oxform-solid/v2`, applies callbacks during Solid's effect application phase. Writes within one flush coalesce into the committed selection, so intermediate core values may never reach the callback. Switching the observed API establishes a new baseline in both versions.
+
+See the [Solid 2 guide](/docs/solid/guide/solid-2#effects) for a timing example.
+
+Use the core equivalent, `createEffect`, when you need to observe every selected core transition. It returns a subscription for callers to unsubscribe manually; see [Core](/docs/core#effect).
