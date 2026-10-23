@@ -1,6 +1,6 @@
 import { createSubscribe } from '#create-subscribe';
 import type { SubscribeProps } from '#types/subscribe-props';
-import type { AnyFormLikeApi } from 'oxform-core';
+import type { AnyFormLikeApi } from '@oxform/core';
 import { createMemo, type JSX } from 'solid-js';
 
 export const Subscribe = <Api extends AnyFormLikeApi, Selected>(props: SubscribeProps<Api, Selected>): JSX.Element => {

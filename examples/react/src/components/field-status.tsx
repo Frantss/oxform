@@ -1,4 +1,4 @@
-import type { UseFieldReturn } from 'oxform-react';
+import type { UseFieldReturn } from '@oxform/react';
 
 const formatValue = (value: unknown) => {
   if (typeof value === 'string') {

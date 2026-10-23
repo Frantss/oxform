@@ -1,4 +1,4 @@
-import { Field, Subscribe, createForm } from 'oxform-solid/v2';
+import { Field, Subscribe, createForm } from '@oxform/solid/v2';
 import type { JSX } from '@solidjs/web';
 import z from 'zod';
 

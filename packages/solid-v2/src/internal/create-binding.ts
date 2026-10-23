@@ -1,7 +1,7 @@
 import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import type { AnyFormApi } from 'oxform-core';
+import type { AnyFormApi } from '@oxform/core';
 import { createMemo, onCleanup, untrack } from 'solid-js';
 
 type BindingOptions = { form: AnyFormApi; name: string };

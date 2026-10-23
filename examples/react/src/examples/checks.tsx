@@ -1,4 +1,4 @@
-import { ArrayField, Field, Subscribe, formOptions, useForm, type FormIssuesByLevel } from 'oxform-react';
+import { ArrayField, Field, Subscribe, formOptions, useForm, type FormIssuesByLevel } from '@oxform/react';
 import { useState } from 'react';
 import z from 'zod';
 

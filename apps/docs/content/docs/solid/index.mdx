@@ -5,21 +5,21 @@ description: Build typed Solid forms with reactive primitives and components.
 
 # Oxform Solid
 
-`oxform-solid` connects the core form API to Solid's reactivity. Create a form inside a component, connect fields to controls, and read reactive getters in JSX.
+`@oxform/solid` connects the core form API to Solid's reactivity. Create a form inside a component, connect fields to controls, and read reactive getters in JSX.
 
 Both adapters ship in one package. Choose the entry matching your application's Solid version:
 
-| Solid version | Import            | Setup                                                  |
-| ------------- | ----------------- | ------------------------------------------------------ |
-| `^1.9.0`      | `oxform-solid`    | Install below.                                         |
-| `2.0.0-rc.13` | `oxform-solid/v2` | Follow the [Solid 2 guide](/docs/solid/guide/solid-2). |
+| Solid version | Import             | Setup                                                  |
+| ------------- | ------------------ | ------------------------------------------------------ |
+| `^1.9.0`      | `@oxform/solid`    | Install below.                                         |
+| `2.0.0-rc.13` | `@oxform/solid/v2` | Follow the [Solid 2 guide](/docs/solid/guide/solid-2). |
 
 ## Install
 
 For Solid 1, install Solid `^1.9.0` and a Standard Schema validator, such as Zod. The examples on the shared API pages use this entry.
 
 ```bash
-pnpm add oxform-solid solid-js@^1.9.0 zod
+pnpm add @oxform/solid solid-js@^1.9.0 zod
 ```
 
 ## First Form
@@ -27,7 +27,7 @@ pnpm add oxform-solid solid-js@^1.9.0 zod
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createField, createForm } from 'oxform-solid';
+import { createField, createForm } from '@oxform/solid';
 import { For } from 'solid-js';
 import { z } from 'zod';
 

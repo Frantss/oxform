@@ -1,23 +1,23 @@
 ---
 title: Solid 2
-description: Configure oxform-solid/v2 for Solid 2 and use its reactive timing, effects, and hydration behavior.
+description: Configure @oxform/solid/v2 for Solid 2 and use its reactive timing, effects, and hydration behavior.
 ---
 
 # Solid 2
 
-`oxform-solid/v2` provides the same primitives, components, and schema inference as the Solid 1 adapter. It ships inside `oxform-solid` and supports Solid `2.0.0-rc.13`.
+`@oxform/solid/v2` provides the same primitives, components, and schema inference as the Solid 1 adapter. It ships inside `@oxform/solid` and supports Solid `2.0.0-rc.13`.
 
 ## Install
 
 Install the pinned runtime, web renderer, and a Standard Schema validator:
 
 ```bash
-pnpm add oxform-solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13 zod
+pnpm add @oxform/solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13 zod
 ```
 
-Use `oxform-solid/v2` for every Oxform Solid import, including types. Keep reactive primitives such as `createSignal`, `For`, and `flush` imported from `solid-js`. Web rendering functions such as `render` and `hydrate`, and the `JSX` type, come from `@solidjs/web`.
+Use `@oxform/solid/v2` for every Oxform Solid import, including types. Keep reactive primitives such as `createSignal`, `For`, and `flush` imported from `solid-js`. Web rendering functions such as `render` and `hydrate`, and the `JSX` type, come from `@solidjs/web`.
 
-The package's peer dependencies cover both adapters. They cannot enforce which subpath you import, so pair `oxform-solid` with Solid 1 and `oxform-solid/v2` with Solid 2.
+The package's peer dependencies cover both adapters. They cannot enforce which subpath you import, so pair `@oxform/solid` with Solid 1 and `@oxform/solid/v2` with Solid 2.
 
 ## Compiler and TypeScript
 
@@ -52,7 +52,7 @@ Set TypeScript's JSX source to the web renderer:
 ## First Form
 
 ```tsx
-import { createField, createForm } from 'oxform-solid/v2';
+import { createField, createForm } from '@oxform/solid/v2';
 import { For } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 import { z } from 'zod';
@@ -100,7 +100,7 @@ Core methods update values synchronously. Reactive getters, selected accessors, 
 This example reads the latest core value immediately and commits a changed field path before calling a retained handler:
 
 ```tsx
-import { createField, createForm } from 'oxform-solid/v2';
+import { createField, createForm } from '@oxform/solid/v2';
 import { createSignal, flush } from 'solid-js';
 import { z } from 'zod';
 
@@ -137,7 +137,7 @@ Use `form.values`, `field.get()`, and `array.get()` for imperative snapshots. Re
 `createFormEffect` skips the initial selection, compares selections deeply, and applies callbacks during Solid 2's effect application phase. Writes within one flush coalesce into the committed selection:
 
 ```ts
-import { createForm, createFormEffect } from 'oxform-solid/v2';
+import { createForm, createFormEffect } from '@oxform/solid/v2';
 import { createRoot, flush } from 'solid-js';
 import { z } from 'zod';
 
@@ -182,4 +182,4 @@ pnpm install
 pnpm --dir examples/solid-v2 run dev
 ```
 
-Use the shared [API reference](/docs/solid/api) for form, field, array, subscription, and status contracts, with imports changed to `oxform-solid/v2`.
+Use the shared [API reference](/docs/solid/api) for form, field, array, subscription, and status contracts, with imports changed to `@oxform/solid/v2`.

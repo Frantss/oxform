@@ -10,7 +10,7 @@ import {
   type FormArrayFields,
   type FormFieldValue,
   type FormIssueLevels,
-} from 'oxform-core';
+} from '@oxform/core';
 import { createMemo } from 'solid-js';
 
 export const createArrayField = <const Options extends BindingInput>(

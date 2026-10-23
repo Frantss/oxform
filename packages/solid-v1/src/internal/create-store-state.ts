@@ -1,7 +1,7 @@
 import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import type { AnyFormLikeApi } from 'oxform-core';
+import type { AnyFormLikeApi } from '@oxform/core';
 import { batch, createComputed, createSignal, onCleanup, untrack, type Accessor } from 'solid-js';
 import { isServer } from 'solid-js/web';
 

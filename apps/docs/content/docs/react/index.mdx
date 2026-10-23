@@ -5,7 +5,7 @@ description: Build typed React forms with Oxform hooks and components.
 
 # Oxform React
 
-`oxform-react` provides React hooks and render-prop components over `oxform-core`.
+`@oxform/react` provides React hooks and render-prop components over `@oxform/core`.
 
 It is designed around a small set of primitives:
 
@@ -17,17 +17,17 @@ It is designed around a small set of primitives:
 ## Install
 
 ```bash
-bun add oxform-react
+bun add @oxform/react
 ```
 
 ```bash
-npm install oxform-react
+npm install @oxform/react
 ```
 
 ## First form
 
 ```tsx twoslash
-import { Field, Subscribe, useForm } from 'oxform-react';
+import { Field, Subscribe, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({

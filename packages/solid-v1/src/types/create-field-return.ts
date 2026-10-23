@@ -1,4 +1,4 @@
-import type { FieldApi } from 'oxform-core';
+import type { FieldApi } from '@oxform/core';
 import type { JSX } from 'solid-js';
 
 export type FieldInputProps<Value> = {

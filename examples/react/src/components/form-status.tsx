@@ -1,5 +1,5 @@
-import type { AnyFormApi } from 'oxform-react';
-import { Subscribe } from 'oxform-react';
+import type { AnyFormApi } from '@oxform/react';
+import { Subscribe } from '@oxform/react';
 
 export const FormStatus = ({ form }: { form: AnyFormApi }) => {
   return (

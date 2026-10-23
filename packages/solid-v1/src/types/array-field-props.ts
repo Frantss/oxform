@@ -6,7 +6,7 @@ import type {
   FormArrayFields,
   FormFieldValue,
   FormIssueLevels,
-} from 'oxform-core';
+} from '@oxform/core';
 import type { JSX } from 'solid-js';
 
 export type ArrayFieldProps<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = ArrayFieldOptions<

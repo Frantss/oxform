@@ -10,7 +10,7 @@ export {
   useFormEffect,
   useFormStatus,
   useSubscribe,
-} from 'oxform-react';
+} from '@oxform/react';
 
 export type {
   ArrayFieldProps,
@@ -24,4 +24,4 @@ export type {
   UseFormReturn,
   UseFormStatusProps,
   UseFormStatusReturn,
-} from 'oxform-react';
+} from '@oxform/react';

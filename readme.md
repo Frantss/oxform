@@ -1,5 +1,12 @@
 # Oxform
 
+> [!IMPORTANT]
+> `oxform-react` is deprecated. Use [`@oxform/react`](https://www.npmjs.com/package/@oxform/react) instead.
+> Install it with `npm install @oxform/react` and update your imports to `@oxform/react`.
+>
+> `oxform-core` is deprecated. Use [`@oxform/core`](https://www.npmjs.com/package/@oxform/core) instead.
+> Install it with `npm install @oxform/core` and update your imports to `@oxform/core`.
+
 Oxform is a lean and flexible framework-agnostic form library. It provides an
 intuitive API inspired by [react-hook-form](https://react-hook-form.com/),
 allowing you to build forms with ease.
@@ -25,20 +32,20 @@ allowing you to build forms with ease.
 
 ## Packages
 
-| Package                          | Description                                          | Docs                               |
-| -------------------------------- | ---------------------------------------------------- | ---------------------------------- |
-| [`oxform-react`](packages/react) | React bindings — hooks and components. Start here.   | [readme](packages/react/readme.md) |
-| [`oxform-solid`](packages/solid) | Solid bindings — reactive primitives and components. | [readme](packages/solid/readme.md) |
-| [`oxform-core`](packages/core)   | Framework-agnostic form engine                       | [readme](packages/core/readme.md)  |
+| Package                           | Description                                          | Docs                               |
+| --------------------------------- | ---------------------------------------------------- | ---------------------------------- |
+| [`@oxform/react`](packages/react) | React bindings — hooks and components. Start here.   | [readme](packages/react/readme.md) |
+| [`@oxform/solid`](packages/solid) | Solid bindings — reactive primitives and components. | [readme](packages/solid/readme.md) |
+| [`@oxform/core`](packages/core)   | Framework-agnostic form engine                       | [readme](packages/core/readme.md)  |
 
 ## Quick start (React)
 
 ```bash
-npm install oxform-react
+npm install @oxform/react
 ```
 
 ```tsx
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 import z from 'zod';
 
 const schema = z.object({
@@ -83,7 +90,7 @@ the [examples directory](examples/react/src/examples) for runnable demos
 For Solid, see the [Solid package readme](packages/solid/readme.md) and run
 the [Solid example](examples/solid/readme.md) with
 `pnpm --dir examples/solid run dev`.
-Solid 2 uses `oxform-solid/v2`; run its
+Solid 2 uses `@oxform/solid/v2`; run its
 [example](examples/solid-v2/readme.md) with
 `pnpm --dir examples/solid-v2 run dev`.
 

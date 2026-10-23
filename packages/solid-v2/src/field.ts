@@ -1,6 +1,6 @@
 import { createField } from '#create-field';
 import type { FieldProps } from '#types/field-props';
-import type { AnyFormApi, FormFields } from 'oxform-core';
+import type { AnyFormApi, FormFields } from '@oxform/core';
 import { createMemo } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 

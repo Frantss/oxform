@@ -3,7 +3,7 @@ import { createFieldState } from '#internal/create-field-state';
 import type { CreateFieldReturn, FieldInputProps } from '#types/create-field-return';
 import type { MaybeAccessor } from '#types/maybe-accessor';
 import type { BindingInput, FieldBindingOptions } from '#types/binding-options';
-import type { FormFields, FormFieldValue, FormIssueLevels } from 'oxform-core';
+import type { FormFields, FormFieldValue, FormIssueLevels } from '@oxform/core';
 
 export const createField = <const Options extends BindingInput>(
   options: MaybeAccessor<FieldBindingOptions<Options>>,

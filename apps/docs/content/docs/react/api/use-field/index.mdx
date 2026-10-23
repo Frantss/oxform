@@ -8,7 +8,7 @@ description: Field values, state, input props, and imperative operations.
 `useField({ form, name })` returns a reactive field API and controlled-input props. `name` is a schema-derived field path, and the value type follows that path.
 
 ```tsx twoslash
-import { useField, useForm } from 'oxform-react';
+import { useField, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailInput() {
@@ -49,7 +49,7 @@ function EmailInput() {
 These bindings read `value`, not `checked`, and do not convert strings into numbers. Use explicit handlers for checkboxes, numeric inputs, file inputs, and custom controls.
 
 ```tsx twoslash
-import { useField, useForm } from 'oxform-react';
+import { useField, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function Preferences() {
@@ -150,7 +150,7 @@ email.reset({ value: 'ada@example.com' });
 `useFieldApi({ form, name })` returns the imperative `FieldApi` with the same operations and schema-derived types. It does not subscribe the component to field state and does not add `props`. Pair it with `useSubscribe` for selected state.
 
 ```tsx twoslash
-import { useFieldApi, useForm, useSubscribe } from 'oxform-react';
+import { useFieldApi, useForm, useSubscribe } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailFeedback() {
@@ -167,7 +167,7 @@ function EmailFeedback() {
 `Field` accepts `form`, `name`, and `children`. A render function receives the full `useField` return value. Static React children are also accepted. It does not add a DOM wrapper.
 
 ```tsx twoslash
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailInput() {

@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.6.0",
+    "@oxform/react": "workspace:*",
     "nuqs": "^2.10.1",
-    "oxform-react": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"

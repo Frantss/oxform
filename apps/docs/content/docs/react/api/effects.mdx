@@ -12,7 +12,7 @@ Observes a form, field, or array API. The selector receives its store state; the
 The callback runs on subsequent changes that are not deeply equal to the previous selected value. It does not run immediately for the initial value. Unrelated store changes that leave the selection deeply equal do not invoke it.
 
 ```tsx twoslash
-import { useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { useFieldApi, useForm, useFormEffect } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailAudit() {
@@ -38,7 +38,7 @@ Callbacks may return `Promise<void>`, but the effect does not await completion b
 The core equivalent has the same selector and callback contract. It returns a subscription with `unsubscribe()`. Call it to stop future callbacks; it does not cancel a callback already running.
 
 ```ts twoslash
-import { createEffect, createForm } from 'oxform-core';
+import { createEffect, createForm } from '@oxform/core';
 import { z } from 'zod';
 
 const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });

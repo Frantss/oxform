@@ -1,5 +1,5 @@
 import { withRoot } from '#tests/setup';
-import { createForm, createSubscribe } from 'oxform-solid/v2';
+import { createForm, createSubscribe } from '@oxform/solid/v2';
 import { createEffect, flush } from 'solid-js';
 import { expect, it, vi } from 'vite-plus/test';
 import z from 'zod';

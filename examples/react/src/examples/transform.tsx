@@ -1,4 +1,4 @@
-import { Field, Subscribe, useForm } from 'oxform-react';
+import { Field, Subscribe, useForm } from '@oxform/react';
 import z from 'zod';
 import { FieldError } from '../components/field-error';
 import { FormStatus } from '../components/form-status';

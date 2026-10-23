@@ -4,7 +4,7 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "paths": {
-      "oxform-solid": ["./export/index.ts"]
+      "@oxform/solid": ["./export/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "export/**/*.ts"],

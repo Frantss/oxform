@@ -10,7 +10,7 @@ import {
   createFormStatus,
   createSubscribe,
   type FormIssuesByLevel,
-} from 'oxform-solid';
+} from '@oxform/solid';
 import { createSignal } from 'solid-js';
 import { expect, expectTypeOf, it } from 'vite-plus/test';
 import z from 'zod';

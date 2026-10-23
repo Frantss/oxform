@@ -16,7 +16,7 @@ export type { FieldProps } from '#types/field-props';
 export type { ArrayFieldProps } from '#types/array-field-props';
 export type { SubscribeProps } from '#types/subscribe-props';
 
-export { formOptions } from 'oxform-core';
+export { formOptions } from '@oxform/core';
 
 export type {
   AnyFormApi,
@@ -71,4 +71,4 @@ export type {
   StandardSchema,
   ValidateOptions,
   ValidationType,
-} from 'oxform-core';
+} from '@oxform/core';

@@ -5,7 +5,7 @@ description: Public form, field, array, options, and effect APIs.
 
 # Oxform Core
 
-`oxform-core` exposes forms independently of a UI framework. Its values, status, validation, reset, and array contracts also apply to [React](/docs/react) and [Solid](/docs/solid) bindings.
+`@oxform/core` exposes forms independently of a UI framework. Its values, status, validation, reset, and array contracts also apply to [React](/docs/react) and [Solid](/docs/solid) bindings.
 
 ## Form
 
@@ -14,7 +14,7 @@ description: Public form, field, array, options, and effect APIs.
 Create a form from a Standard Schema validator and matching initial values. `createForm` infers issue levels from checks keys; direct class construction permits explicit value and level generics.
 
 ```ts twoslash
-import { createForm, formOptions } from 'oxform-core';
+import { createForm, formOptions } from '@oxform/core';
 import { z } from 'zod';
 
 const options = formOptions({
@@ -30,7 +30,7 @@ form.array.append('tags', 'beta');
 Direct constructors expose the same core APIs. Supply class generics when you need precise value types; the factories infer them from the schema and field path.
 
 ```ts twoslash
-import { ArrayFieldApi, FieldApi, FormApi } from 'oxform-core';
+import { ArrayFieldApi, FieldApi, FormApi } from '@oxform/core';
 import { z } from 'zod';
 
 const schema = z.object({ email: z.string(), tags: z.array(z.string()) });
@@ -47,7 +47,7 @@ tags.append('customer');
 
 ### `formOptions(options)`
 
-Returns the supplied configuration, preserving inferred value and issue-level types. It does not create form state or run validation. Both `oxform-react` and `oxform-solid` re-export it.
+Returns the supplied configuration, preserving inferred value and issue-level types. It does not create form state or run validation. Both `@oxform/react` and `@oxform/solid` re-export it.
 
 ### Properties and Methods
 
@@ -75,7 +75,7 @@ The [form reference](/docs/react/api/use-form) describes each option, reset flag
 Return an API bound to one path. Prefer the factory for path-to-value and issue-level inference.
 
 ```ts twoslash
-import { createField, createForm } from 'oxform-core';
+import { createField, createForm } from '@oxform/core';
 import { z } from 'zod';
 
 const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
@@ -116,7 +116,7 @@ Bound methods have the same behavior with the name argument omitted. For status 
 Return an API bound to an array-valued path. The factory infers its array value, item value, and issue levels.
 
 ```ts twoslash
-import { createArrayField, createForm } from 'oxform-core';
+import { createArrayField, createForm } from '@oxform/core';
 import { z } from 'zod';
 
 const form = createForm({ schema: z.object({ tags: z.array(z.string()) }), defaultValues: { tags: ['alpha'] } });
@@ -145,7 +145,7 @@ Properties are `options`, `store`, `state`, and `ids`. It also exposes `'~mount'
 Observes selected form, field, or array state. It skips the initial value and invokes the callback only when the selection changes by deep equality. Returns a subscription with `unsubscribe()`. Async callbacks may overlap.
 
 ```ts twoslash
-import { createEffect, createForm } from 'oxform-core';
+import { createEffect, createForm } from '@oxform/core';
 import { z } from 'zod';
 
 const form = createForm({ schema: z.object({ email: z.string() }), defaultValues: { email: '' } });
@@ -174,7 +174,7 @@ subscription.unsubscribe();
 | Additional contracts    | `EventLike`, `FieldExtra`, `FieldPlugin`, `FieldPluginsInput`. Plugin types are exported, but current field options do not accept plugins.                                                                                                                                              |
 | Path helpers            | `DeepKeys`, `DeepValue`, `DeepKeysOfType`, `DeepRecord`, `DeepKeysAndValues`, `ArrayDeepKeys`, `FieldsMap`, and additional exported path type helpers.                                                                                                                                  |
 
-See [TypeScript](/docs/react/guide/typescript) for schema-derived paths and values. React re-exports many core types, but the core class constructors and factories are runtime imports from `oxform-core`.
+See [TypeScript](/docs/react/guide/typescript) for schema-derived paths and values. React re-exports many core types, but the core class constructors and factories are runtime imports from `@oxform/core`.
 
 ## Signatures
 

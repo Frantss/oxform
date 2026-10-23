@@ -1,4 +1,12 @@
-import { ArrayField, Field, Subscribe, createField, createForm, createFormEffect, createSubscribe } from 'oxform-solid';
+import {
+  ArrayField,
+  Field,
+  Subscribe,
+  createField,
+  createForm,
+  createFormEffect,
+  createSubscribe,
+} from '@oxform/solid';
 import { For, createSignal, type JSX } from 'solid-js';
 import z from 'zod';
 

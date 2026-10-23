@@ -1,7 +1,7 @@
 import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import { createEffect as createCoreEffect, type AnyFormLikeApi, type ApiSelector } from 'oxform-core';
+import { createEffect as createCoreEffect, type AnyFormLikeApi, type ApiSelector } from '@oxform/core';
 import { createComputed, onCleanup, untrack } from 'solid-js';
 import { isServer } from 'solid-js/web';
 

@@ -12,7 +12,7 @@ Oxform accepts Standard Schema validators. The root `schema` determines the form
 `checks` is keyed by issue level. Each level has an optional `blocking` flag and a `validate` map keyed by `change`, `blur`, `focus`, or `submit`. Each validator is a schema or a function receiving the current `FormStore` and returning a schema.
 
 ```tsx twoslash
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({ email: z.email() });

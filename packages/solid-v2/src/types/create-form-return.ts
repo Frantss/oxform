@@ -1,4 +1,4 @@
-import type { FormChecksMap, createForm } from 'oxform-core';
+import type { FormChecksMap, createForm } from '@oxform/core';
 
 export type CreateFormReturn<
   Values,

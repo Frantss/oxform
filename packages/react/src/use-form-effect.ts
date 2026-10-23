@@ -1,5 +1,5 @@
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
-import { createEffect, type AnyFormLikeApi, type ApiSelector } from 'oxform-core';
+import { createEffect, type AnyFormLikeApi, type ApiSelector } from '@oxform/core';
 import { useRef, useState } from 'react';
 
 export const useFormEffect = <Api extends AnyFormLikeApi, Selected>(

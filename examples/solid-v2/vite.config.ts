@@ -11,8 +11,8 @@ export default defineConfig({
   resolve: {
     dedupe: ['solid-js', '@solidjs/web'],
     alias: {
-      'oxform-core': fileURLToPath(new URL('../../packages/core/export/index.ts', import.meta.url)),
-      'oxform-solid/v2': fileURLToPath(new URL('../../packages/solid-v2/export/index.ts', import.meta.url)),
+      '@oxform/core': fileURLToPath(new URL('../../packages/core/export/index.ts', import.meta.url)),
+      '@oxform/solid/v2': fileURLToPath(new URL('../../packages/solid-v2/export/index.ts', import.meta.url)),
     },
   },
 });

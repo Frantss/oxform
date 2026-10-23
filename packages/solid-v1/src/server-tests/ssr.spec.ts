@@ -1,4 +1,4 @@
-import { ArrayField, Field, Subscribe, createArrayField, createField, createForm, createFormEffect, createSubscribe } from 'oxform-solid';
+import { ArrayField, Field, Subscribe, createArrayField, createField, createForm, createFormEffect, createSubscribe } from '@oxform/solid';
 import { createRoot } from 'solid-js';
 import { renderToString } from 'solid-js/web';
 import { expect, it, vi } from 'vite-plus/test';

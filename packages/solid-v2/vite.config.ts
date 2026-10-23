@@ -5,7 +5,7 @@ import { base } from '../../vite.config';
 export default defineConfig({
   ...base,
   resolve: {
-    alias: { 'oxform-solid/v2': new URL('./export/index.ts', import.meta.url).pathname },
+    alias: { '@oxform/solid/v2': new URL('./export/index.ts', import.meta.url).pathname },
     dedupe: ['solid-js', '@solidjs/web'],
   },
   plugins: [solid({ solid: { hydratable: true } })],
@@ -30,6 +30,6 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     clean: true,
-    deps: { alwaysBundle: [/#.*/], neverBundle: [/^solid-js(?:\/.*)?$/, /^@solidjs\//, 'oxform-core', 'remeda'] },
+    deps: { alwaysBundle: [/#.*/], neverBundle: [/^solid-js(?:\/.*)?$/, /^@solidjs\//, '@oxform/core', 'remeda'] },
   },
 });

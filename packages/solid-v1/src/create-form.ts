@@ -3,7 +3,7 @@ import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
 import type { CreateFormReturn } from '#types/create-form-return';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import { createForm as createCoreForm, type FormChecksMap } from 'oxform-core';
+import { createForm as createCoreForm, type FormChecksMap } from '@oxform/core';
 import { createComputed, onCleanup, untrack } from 'solid-js';
 
 type CreateFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, string> | undefined> = Parameters<

@@ -1,7 +1,7 @@
 # Public API Behavior Reference and Reproduction Spec
 
-This document describes caller-visible contracts of `oxform-core` and
-`oxform-react`. The [Solid adapter](../packages/solid/readme.md) preserves these
+This document describes caller-visible contracts of `@oxform/core` and
+`@oxform/react`. The [Solid adapter](../packages/solid/readme.md) preserves these
 core behaviors and adds owner-scoped reactive getters and field rebinding.
 The documentation site contains the usage reference, grouped
 by form, field, array field, subscription, status, and effect.
@@ -29,7 +29,7 @@ default-value comparisons without replacing current values. Schema output
 transformations do not replace values during validation.
 
 ```ts
-import { createForm, formOptions } from 'oxform-core';
+import { createForm, formOptions } from '@oxform/core';
 import { z } from 'zod';
 
 const schema = z.object({ email: z.string(), tags: z.array(z.string()) });
@@ -174,7 +174,7 @@ and restores configured default status for the subtree. Its signature accepts
 Bound fields expose `'~mount'` and `'~update'` with the same lifecycle contract.
 
 ```ts
-import { createField } from 'oxform-core';
+import { createField } from '@oxform/core';
 
 const email = createField({ form, name: 'email' });
 email.change('ada@example.com');
@@ -199,7 +199,7 @@ Use explicit handlers for checkbox, number, and custom controls.
 the full hook return value. It adds no DOM wrapper.
 
 ```tsx
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 
 function EmailForm() {
   const form = useForm(options);
@@ -240,7 +240,7 @@ describe an item argument, but append/prepend/insert currently pass the whole
 array at runtime. Update passes the current item; replace passes the full array.
 
 ```ts
-import { createArrayField } from 'oxform-core';
+import { createArrayField } from '@oxform/core';
 
 const tags = createArrayField({ form, name: 'tags' });
 tags.append('beta');
@@ -288,7 +288,7 @@ selector and callback stable: changing only these arguments does not reliably
 replace the current subscription.
 
 ```ts
-import { createEffect } from 'oxform-core';
+import { createEffect } from '@oxform/core';
 
 const subscription = createEffect(
   form,

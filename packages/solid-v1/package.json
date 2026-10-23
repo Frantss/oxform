@@ -31,7 +31,7 @@
     "test:ssr": "vp test --config vite.ssr.config.ts"
   },
   "dependencies": {
-    "oxform-core": "workspace:*"
+    "@oxform/core": "workspace:*"
   },
   "devDependencies": {
     "solid-js": "^1.9.15",

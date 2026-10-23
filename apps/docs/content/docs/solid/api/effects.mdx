@@ -14,7 +14,7 @@ Selections compare deeply. The callback skips the initial selection and runs onl
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createField, createForm, createFormEffect } from 'oxform-solid';
+import { createField, createForm, createFormEffect } from '@oxform/solid';
 import { z } from 'zod';
 
 function EmailAudit() {
@@ -37,7 +37,7 @@ Callbacks run untracked, so reactive reads in the callback do not add Solid depe
 
 ## Solid Version and Timing
 
-The Solid 1 entry delegates to core's effect subscription. The Solid 2 entry, `oxform-solid/v2`, applies callbacks during Solid's effect application phase. Writes within one flush coalesce into the committed selection, so intermediate core values may never reach the callback. Switching the observed API establishes a new baseline in both versions.
+The Solid 1 entry delegates to core's effect subscription. The Solid 2 entry, `@oxform/solid/v2`, applies callbacks during Solid's effect application phase. Writes within one flush coalesce into the committed selection, so intermediate core values may never reach the callback. Switching the observed API establishes a new baseline in both versions.
 
 See the [Solid 2 guide](/docs/solid/guide/solid-2#effects) for a timing example.
 

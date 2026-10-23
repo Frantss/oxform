@@ -1,6 +1,10 @@
-# oxform-core
+# @oxform/core
 
-Framework-agnostic form engine that powers [`oxform-react`](../react). It
+> [!IMPORTANT]
+> `oxform-core` is deprecated. Use [`@oxform/core`](https://www.npmjs.com/package/@oxform/core) instead.
+> Install it with `npm install @oxform/core` and update your imports to `@oxform/core`.
+
+Framework-agnostic form engine that powers [`@oxform/react`](../react). It
 handles values, statuses, validation (Standard Schema), nested paths, and
 array operations. Most users want the [React bindings](../react) instead;
 reach for this package when integrating with another UI layer.
@@ -8,16 +12,16 @@ reach for this package when integrating with another UI layer.
 ## Installation
 
 ```bash
-npm install oxform-core
-yarn add oxform-core
-pnpm add oxform-core
-bun add oxform-core
+npm install @oxform/core
+yarn add @oxform/core
+pnpm add @oxform/core
+bun add @oxform/core
 ```
 
 ## Quick example
 
 ```ts
-import { createForm, formOptions } from 'oxform-core';
+import { createForm, formOptions } from '@oxform/core';
 import z from 'zod';
 
 const schema = z.object({

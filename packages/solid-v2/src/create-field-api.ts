@@ -7,7 +7,7 @@ import {
   type FormFields,
   type FormFieldValue,
   type FormIssueLevels,
-} from 'oxform-core';
+} from '@oxform/core';
 import { createEffect, onCleanup, untrack } from 'solid-js';
 import { isServer } from '@solidjs/web';
 

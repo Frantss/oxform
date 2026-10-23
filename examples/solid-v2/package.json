@@ -14,8 +14,8 @@
     "check:types": "vp exec tsc --noEmit"
   },
   "dependencies": {
+    "@oxform/solid": "workspace:*",
     "@solidjs/web": "2.0.0-rc.13",
-    "oxform-solid": "workspace:*",
     "solid-js": "2.0.0-rc.13",
     "zod": "^4.6.5"
   },

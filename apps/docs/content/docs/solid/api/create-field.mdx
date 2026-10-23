@@ -35,7 +35,7 @@ Checkboxes, numbers, files, and custom controls need explicit conversion. For a 
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createField, createForm } from 'oxform-solid';
+import { createField, createForm } from '@oxform/solid';
 import { z } from 'zod';
 
 function Preferences() {
@@ -83,7 +83,7 @@ Field reset accepts a non-nullish `value` override. The current core API accepts
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createFieldApi, createForm, createSubscribe } from 'oxform-solid';
+import { createFieldApi, createForm, createSubscribe } from '@oxform/solid';
 import { z } from 'zod';
 
 function EmailPreview() {
@@ -101,7 +101,7 @@ Accepts `form`, `name`, and a render function receiving the full `createField` r
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { Field, createForm } from 'oxform-solid';
+import { Field, createForm } from '@oxform/solid';
 import { z } from 'zod';
 
 function EmailInput() {

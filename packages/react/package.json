@@ -1,5 +1,5 @@
 {
-  "name": "oxform-react",
+  "name": "@oxform/react",
   "version": "0.5.1",
   "description": "Oxform is a lean and flexible framework-agnostic form library.",
   "license": "MIT",
@@ -26,6 +26,9 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp pack",
     "test": "vp test",
@@ -34,9 +37,9 @@
     "check:package": "publint --strict && attw --pack --no-emoji"
   },
   "dependencies": {
+    "@oxform/core": "workspace:*",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-store": "^0.11.2",
-    "oxform-core": "workspace:*"
+    "@tanstack/react-store": "^0.11.2"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

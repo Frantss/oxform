@@ -1,4 +1,4 @@
-import type { AnyFormLikeApi, ApiSelector } from 'oxform-core';
+import type { AnyFormLikeApi, ApiSelector } from '@oxform/core';
 import type { Accessor } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 

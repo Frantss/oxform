@@ -1,12 +1,12 @@
-# oxform-solid
+# @oxform/solid
 
 Solid bindings for [Oxform](../../readme.md). The default entry requires Solid
-`^1.9.0`; `oxform-solid/v2` supports Solid `2.0.0-rc.13`.
+`^1.9.0`; `@oxform/solid/v2` supports Solid `2.0.0-rc.13`.
 Validation, issues, submission, reset, and array operations use
-[`oxform-core`](../core/readme.md).
+[`@oxform/core`](../core/readme.md).
 
 ```bash
-pnpm add oxform-solid solid-js
+pnpm add @oxform/solid solid-js
 ```
 
 ## Solid 2
@@ -14,13 +14,13 @@ pnpm add oxform-solid solid-js
 Install the pinned prerelease runtime and web renderer:
 
 ```bash
-pnpm add oxform-solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13
+pnpm add @oxform/solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13
 ```
 
-Import the same primitives, components, and types from `oxform-solid/v2`:
+Import the same primitives, components, and types from `@oxform/solid/v2`:
 
 ```tsx
-import { createField, createForm } from 'oxform-solid/v2';
+import { createField, createForm } from '@oxform/solid/v2';
 ```
 
 Configure web JSX with `jsxImportSource: '@solidjs/web'` and use the Solid 2
@@ -59,7 +59,7 @@ describe the package as a whole and cannot enforce this pairing per subpath.
 ## Quick start
 
 ```tsx
-import { createField, createForm } from 'oxform-solid';
+import { createField, createForm } from '@oxform/solid';
 import z from 'zod';
 
 const schema = z.object({ email: z.string().email() });
@@ -166,7 +166,7 @@ the same stable API their corresponding primitives return. Dynamic JSX props
 are tracked without recreating the public API.
 
 ```tsx
-import { ArrayField, Field } from 'oxform-solid';
+import { ArrayField, Field } from '@oxform/solid';
 import { For } from 'solid-js';
 
 <ArrayField form={form} name='contacts'>
@@ -202,7 +202,7 @@ Primitives can use the same pattern with
 ```
 
 The package re-exports `formOptions` and the core public types exposed by
-`oxform-react`. Solid return and prop types include `CreateFormReturn`,
+`@oxform/react`. Solid return and prop types include `CreateFormReturn`,
 `CreateFieldReturn`, `CreateArrayFieldReturn`, `FieldInputProps`, `FieldProps`,
 `ArrayFieldProps`, `SubscribeProps`, and `MaybeAccessor`.
 

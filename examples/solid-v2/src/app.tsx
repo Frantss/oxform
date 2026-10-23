@@ -6,7 +6,7 @@ import {
   createForm,
   createFormEffect,
   createSubscribe,
-} from 'oxform-solid/v2';
+} from '@oxform/solid/v2';
 import { For, createSignal } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 import z from 'zod';

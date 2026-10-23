@@ -2,7 +2,7 @@ import { useArrayField as useBaseArrayField } from '#use-array-field';
 import { useField as useBaseField } from '#use-field';
 import { useFieldApi as useBaseFieldApi } from '#use-field-api';
 import { useForm as useBaseForm } from '#use-form';
-import type { FormApi, FormArrayFields, FormChecksMap, FormFields, InferFormIssueLevels } from 'oxform-core';
+import type { FormApi, FormArrayFields, FormChecksMap, FormFields, InferFormIssueLevels } from '@oxform/core';
 import { useFormContext as useBaseFormContext } from './form-provider';
 
 type DefineFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, string> | undefined> = Parameters<

@@ -1,5 +1,5 @@
 import { useField } from '#use-field';
-import { FormApi } from 'oxform-core';
+import { FormApi } from '@oxform/core';
 import 'react';
 import { expect, it, test } from 'vite-plus/test';
 import { render } from 'vitest-browser-react';

@@ -1,4 +1,4 @@
-import type { AnyFormApi, EventLike, FieldOptions, FormIssueLevels, FormFields, FormFieldValue } from 'oxform-core';
+import type { AnyFormApi, EventLike, FieldOptions, FormIssueLevels, FormFields, FormFieldValue } from '@oxform/core';
 
 import type { UseFieldReturn } from '#types/use-field-return';
 import { useFieldApi } from '#use-field-api';

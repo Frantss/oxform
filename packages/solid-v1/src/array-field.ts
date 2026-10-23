@@ -1,6 +1,6 @@
 import { createArrayField } from '#create-array-field';
 import type { ArrayFieldProps } from '#types/array-field-props';
-import type { AnyFormApi, FormArrayFields } from 'oxform-core';
+import type { AnyFormApi, FormArrayFields } from '@oxform/core';
 import { createMemo, type JSX } from 'solid-js';
 
 export const ArrayField = <Form extends AnyFormApi, const Name extends FormArrayFields<Form>>(

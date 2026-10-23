@@ -5,7 +5,7 @@ import type {
   FormArrayFields,
   FormFieldValue,
   FormIssueLevels,
-} from 'oxform-core';
+} from '@oxform/core';
 import type { UseArrayFieldReturn } from '#types/use-array-field-return';
 
 type ArrayFieldValue<Form extends AnyFormApi, Name extends FormArrayFields<Form>> = Extract<

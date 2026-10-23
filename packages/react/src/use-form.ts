@@ -1,8 +1,8 @@
 import type { UseFormReturn } from '#types/use-form-return';
 import { useFormStatus } from '#use-form-status';
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
-import type { FormChecksMap, InferFormIssueLevels } from 'oxform-core';
-import { createForm } from 'oxform-core';
+import type { FormChecksMap, InferFormIssueLevels } from '@oxform/core';
+import { createForm } from '@oxform/core';
 import { useMemo, useState } from 'react';
 
 type UseFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, string> | undefined> = Parameters<

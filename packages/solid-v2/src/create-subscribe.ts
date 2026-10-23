@@ -1,6 +1,6 @@
 import { createStoreState } from '#internal/create-store-state';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import type { AnyFormLikeApi, ApiSelector } from 'oxform-core';
+import type { AnyFormLikeApi, ApiSelector } from '@oxform/core';
 import { createMemo, type Accessor } from 'solid-js';
 
 export const createSubscribe = <Api extends AnyFormLikeApi, Selected>(

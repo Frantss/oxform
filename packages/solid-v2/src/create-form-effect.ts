@@ -2,7 +2,7 @@ import { createStoreState } from '#internal/create-store-state';
 import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
 import type { MaybeAccessor } from '#types/maybe-accessor';
-import type { AnyFormLikeApi, ApiSelector } from 'oxform-core';
+import type { AnyFormLikeApi, ApiSelector } from '@oxform/core';
 import { isDeepEqual } from 'remeda';
 import { createEffect, createMemo, untrack } from 'solid-js';
 import { isServer } from '@solidjs/web';

@@ -1,6 +1,6 @@
 import { createStoreState } from '#internal/create-store-state';
 import { selectProperties } from '#internal/select-properties';
-import type { FieldApi, FieldStore } from 'oxform-core';
+import type { FieldApi, FieldStore } from '@oxform/core';
 import { createMemo, untrack } from 'solid-js';
 
 export const createFieldState = <Value, Level extends string>(

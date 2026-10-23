@@ -8,7 +8,7 @@ description: Array values, item identifiers, and list operations.
 `useArrayField({ form, name })` returns a reactive `ArrayFieldApi`. The array and item types follow the selected schema path. It manages list values and item field identities; it does not create input props for the items.
 
 ```tsx twoslash
-import { Field, useArrayField, useForm } from 'oxform-react';
+import { Field, useArrayField, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function TagsForm() {
@@ -120,7 +120,7 @@ tags.replace(current => current.filter(value => value !== ''));
 Accepts `form`, an array `name`, and static children or a render function receiving the full `useArrayField` return value. It does not add a DOM wrapper.
 
 ```tsx twoslash
-import { ArrayField, useForm } from 'oxform-react';
+import { ArrayField, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function TagsForm() {

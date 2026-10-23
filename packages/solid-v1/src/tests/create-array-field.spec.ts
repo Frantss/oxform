@@ -1,5 +1,5 @@
 import { withRoot } from '#tests/setup';
-import { createArrayField, createForm } from 'oxform-solid';
+import { createArrayField, createForm } from '@oxform/solid';
 import { createComputed, createSignal } from 'solid-js';
 import { expect, it, vi } from 'vite-plus/test';
 import z from 'zod';

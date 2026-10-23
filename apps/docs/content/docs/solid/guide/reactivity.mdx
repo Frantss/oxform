@@ -24,7 +24,7 @@ Read getters in JSX or a tracking scope. Destructuring a reactive property captu
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createField, createForm, createSubscribe } from 'oxform-solid';
+import { createField, createForm, createSubscribe } from '@oxform/solid';
 import { z } from 'zod';
 
 function EmailPreview() {
@@ -46,7 +46,7 @@ function EmailPreview() {
 
 Spread `field.props` directly in JSX. Copying it into a new object outside JSX captures its `value` getter's current result.
 
-With `oxform-solid/v2`, core writes remain synchronous, while reactive getters, selected accessors, and DOM output update at Solid's flush. The adapter does not flush automatically. Use imperative reads for the latest core value, or call `flush()` from `solid-js` before requiring committed reactive state. See [Solid 2 timing](/docs/solid/guide/solid-2#reactive-timing).
+With `@oxform/solid/v2`, core writes remain synchronous, while reactive getters, selected accessors, and DOM output update at Solid's flush. The adapter does not flush automatically. Use imperative reads for the latest core value, or call `flush()` from `solid-js` before requiring committed reactive state. See [Solid 2 timing](/docs/solid/guide/solid-2#reactive-timing).
 
 ## Dynamic Options
 
@@ -61,7 +61,7 @@ In Solid 2, reactive option changes also wait for a flush. If you change a signa
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createField, createForm } from 'oxform-solid';
+import { createField, createForm } from '@oxform/solid';
 import { createSignal } from 'solid-js';
 import { z } from 'zod';
 

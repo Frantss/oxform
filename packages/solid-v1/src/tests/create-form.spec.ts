@@ -1,6 +1,6 @@
 import { withRoot } from '#tests/setup';
-import { createForm, createFormStatus, createSubscribe } from 'oxform-solid';
-import { createForm as createCoreForm } from 'oxform-core';
+import { createForm, createFormStatus, createSubscribe } from '@oxform/solid';
+import { createForm as createCoreForm } from '@oxform/core';
 import { createComputed, createSignal } from 'solid-js';
 import { expect, it, vi } from 'vite-plus/test';
 import z from 'zod';

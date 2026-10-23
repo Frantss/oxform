@@ -12,7 +12,7 @@ description: Read and render selected form, field, or array state.
 Returns the current selected value and subscribes the component to selected state changes. Form selectors receive `FormStore`; field and array selectors receive their respective stores.
 
 ```tsx twoslash
-import { useFieldApi, useForm, useSubscribe } from 'oxform-react';
+import { useFieldApi, useForm, useSubscribe } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailPreview() {
@@ -36,7 +36,7 @@ function EmailPreview() {
 The component subscribes through `useSubscribe` and adds no DOM wrapper.
 
 ```tsx twoslash
-import { Subscribe, useForm } from 'oxform-react';
+import { Subscribe, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function SubmitButton() {

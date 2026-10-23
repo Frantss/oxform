@@ -7,7 +7,7 @@ import {
   type FormFields,
   type FormFieldValue,
   type FormIssueLevels,
-} from 'oxform-core';
+} from '@oxform/core';
 import { createComputed, onCleanup, untrack } from 'solid-js';
 
 export const createFieldApi = <const Options extends BindingInput>(

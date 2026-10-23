@@ -32,7 +32,7 @@
     "test:ssr": "vp test --config vite.ssr.config.ts"
   },
   "dependencies": {
-    "oxform-core": "workspace:*",
+    "@oxform/core": "workspace:*",
     "remeda": "^2.50.0"
   },
   "devDependencies": {

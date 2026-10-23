@@ -5,7 +5,7 @@ reserved `error` level is used for normal validation errors and is always
 blocking. Other levels can be used for warnings, notices, review prompts, or
 risk checks.
 
-Issues are part of `oxform-core` and are exposed through the React package
+Issues are part of `@oxform/core` and are exposed through the React package
 without changing their shape.
 
 ## Mental Model
@@ -395,7 +395,7 @@ submit success.
 React bindings expose the same grouped issue shape through field state:
 
 ```tsx
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 
 function EmailForm() {
   const form = useForm({

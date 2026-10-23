@@ -8,7 +8,7 @@ description: Form configuration, values, status, validation, submission, and res
 `useForm(options)` returns a `UseFormReturn<Values, Level>` with the core `FormApi` methods. Call it inside a React component or custom hook. Values are inferred from `schema`; `defaultValues` must match that type. Issue levels are inferred from `checks`, with `error` always included.
 
 ```tsx twoslash
-import { useForm } from 'oxform-react';
+import { useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function EmailForm() {
@@ -53,7 +53,7 @@ Updated options are used by later validation and resets. Updating `defaultValues
 `field` and `array` operate on the same state as `useField` and `useArrayField`. Their first argument is the path; the remaining arguments match the corresponding bound API method. `form.field.status(name)` reads status; bound field APIs expose it as `field.state.status`. `form.field.register(name)` returns an element callback.
 
 ```tsx twoslash
-import { useForm } from 'oxform-react';
+import { useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function Actions() {
@@ -93,7 +93,7 @@ await form.validate();
 Returns a zero-argument `() => Promise<void>` handler. It validates the whole form for `submit` and calls one callback, awaiting it. `onSuccess(values, form)` runs only when the validation result and aggregate current validity both pass. `onError(issues, form)` receives all current form issues.
 
 ```tsx twoslash
-import { useForm } from 'oxform-react';
+import { useForm } from '@oxform/react';
 import { z } from 'zod';
 
 function SignupForm() {

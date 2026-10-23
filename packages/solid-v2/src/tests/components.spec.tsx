@@ -1,5 +1,5 @@
 import { mount } from '#tests/setup';
-import { ArrayField, Field, Subscribe, createArrayField, createForm } from 'oxform-solid/v2';
+import { ArrayField, Field, Subscribe, createArrayField, createForm } from '@oxform/solid/v2';
 import { For, flush } from 'solid-js';
 import { page, userEvent } from 'vite-plus/test/browser';
 import { expect, it } from 'vite-plus/test';

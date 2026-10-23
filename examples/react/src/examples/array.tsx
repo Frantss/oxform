@@ -1,4 +1,4 @@
-import { ArrayField, Field, useForm } from 'oxform-react';
+import { ArrayField, Field, useForm } from '@oxform/react';
 import { faker } from '@faker-js/faker';
 import { useEffect } from 'react';
 import { useState } from 'react';

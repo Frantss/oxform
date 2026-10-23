@@ -12,6 +12,9 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
+    "@oxform/core": "workspace:*",
+    "@oxform/react": "workspace:*",
+    "@oxform/solid": "workspace:*",
     "@tanstack/react-router": "1.170.41",
     "@tanstack/react-start": "1.168.60",
     "fumadocs-core": "16.15.18",
@@ -20,9 +23,6 @@
     "fumadocs-typescript": "5.4.1",
     "fumadocs-ui": "16.15.18",
     "lucide-react": "^1.50.0",
-    "oxform-core": "workspace:*",
-    "oxform-react": "workspace:*",
-    "oxform-solid": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "solid-js": "^1.9.15",

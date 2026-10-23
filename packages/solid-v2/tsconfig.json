@@ -5,7 +5,7 @@
     "jsxImportSource": "@solidjs/web",
     "types": ["vite/client", "node"],
     "paths": {
-      "oxform-solid/v2": ["./export/index.ts"]
+      "@oxform/solid/v2": ["./export/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "export/**/*.ts"],

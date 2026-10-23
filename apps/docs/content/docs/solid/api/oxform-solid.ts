@@ -1,1 +1,1 @@
-export * from 'oxform-solid';
+export * from '@oxform/solid';

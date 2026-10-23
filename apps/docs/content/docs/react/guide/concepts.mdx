@@ -12,7 +12,7 @@ Oxform React keeps the form API separate from rendered controls. You create a fo
 The form owns values, field state, validation, and submit lifecycle.
 
 ```tsx twoslash
-import { useForm } from 'oxform-react';
+import { useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -35,7 +35,7 @@ function ResetButton() {
 A field reads and writes one path in the form.
 
 ```tsx twoslash
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -58,7 +58,7 @@ function EmailForm() {
 A subscription reads a selected piece of state. Use it for submit buttons, status badges, counters, and derived UI.
 
 ```tsx twoslash
-import { Subscribe, useForm } from 'oxform-react';
+import { Subscribe, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({

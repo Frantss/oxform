@@ -1,4 +1,4 @@
-import type { AnyFormApi, FormApi, FormOptions } from 'oxform-core';
+import type { AnyFormApi, FormApi, FormOptions } from '@oxform/core';
 import { createContext, createElement, useContext, useMemo } from 'react';
 
 const FormContext = createContext<AnyFormApi[]>([]);

@@ -1,4 +1,4 @@
-import { Field, useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { Field, useFieldApi, useForm, useFormEffect } from '@oxform/react';
 import { useEffect, useRef, useState } from 'react';
 import z from 'zod';
 import { FieldError } from '../components/field-error';

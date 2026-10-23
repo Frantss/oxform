@@ -3,7 +3,7 @@ import solid from '@solidjs/vite-plugin';
 
 export default defineConfig({
   plugins: [solid({ solid: { hydratable: true } })],
-  resolve: { alias: { 'oxform-solid/v2': new URL('./export/index.ts', import.meta.url).pathname } },
+  resolve: { alias: { '@oxform/solid/v2': new URL('./export/index.ts', import.meta.url).pathname } },
   test: {
     environment: 'node',
     browser: { enabled: false },

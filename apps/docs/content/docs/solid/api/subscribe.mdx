@@ -14,7 +14,7 @@ Selections compare with `Object.is`. Unrelated updates that leave the selected v
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { createForm, createSubscribe } from 'oxform-solid';
+import { createForm, createSubscribe } from '@oxform/solid';
 import { z } from 'zod';
 
 function Preview() {
@@ -39,7 +39,7 @@ The component adds no DOM wrapper. Its child receives the accessor, rather than 
 ```tsx twoslash
 // @jsx: preserve
 // @jsxImportSource: solid-js
-import { Subscribe, createForm } from 'oxform-solid';
+import { Subscribe, createForm } from '@oxform/solid';
 import { z } from 'zod';
 
 function SubmitButton() {

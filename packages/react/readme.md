@@ -1,15 +1,19 @@
-# oxform-react
+# @oxform/react
+
+> [!IMPORTANT]
+> `oxform-react` is deprecated. Use [`@oxform/react`](https://www.npmjs.com/package/@oxform/react) instead.
+> Install it with `npm install @oxform/react` and update your imports to `@oxform/react`.
 
 React bindings for [Oxform](https://github.com/frantss/oxform). Provides a
-small set of hooks and render-prop components that wrap `oxform-core`.
+small set of hooks and render-prop components that wrap `@oxform/core`.
 
 ## Installation
 
 ```bash
-npm install oxform-react
-yarn add oxform-react
-pnpm add oxform-react
-bun add oxform-react
+npm install @oxform/react
+yarn add @oxform/react
+pnpm add @oxform/react
+bun add @oxform/react
 ```
 
 Peer dependencies: React `^16.8.0 || ^17 || ^18 || ^19`.
@@ -17,7 +21,7 @@ Peer dependencies: React `^16.8.0 || ^17 || ^18 || ^19`.
 ## Quick start
 
 ```tsx
-import { Field, useForm } from 'oxform-react';
+import { Field, useForm } from '@oxform/react';
 import z from 'zod';
 
 const schema = z.object({
@@ -69,7 +73,7 @@ you need to coerce the value (e.g. `valueAsNumber` for numeric inputs).
 ### Array fields
 
 ```tsx
-import { ArrayField, Field, useForm } from 'oxform-react';
+import { ArrayField, Field, useForm } from '@oxform/react';
 import z from 'zod';
 
 const schema = z.object({ directions: z.string().array() });
@@ -113,12 +117,12 @@ const form = useForm({
 `array.ids` returns one stable id per current item — use it as the React
 `key`. The full list of array operations (`append`, `prepend`, `insert`,
 `swap`, `move`, `update`, `remove`, `replace`) is documented in
-[`oxform-core`](../core/readme.md#arrayfieldapivalue-extends-arraylike).
+[`@oxform/core`](../core/readme.md#arrayfieldapivalue-extends-arraylike).
 
 ### Reactive submit button via `Subscribe`
 
 ```tsx
-import { Subscribe } from 'oxform-react';
+import { Subscribe } from '@oxform/react';
 
 <Subscribe api={form} selector={state => state.status}>
   {status => (
@@ -135,7 +139,7 @@ narrow `selector` to avoid re-rendering on unrelated form state changes.
 ### Side effects with `useFormEffect`
 
 ```tsx
-import { useFieldApi, useForm, useFormEffect } from 'oxform-react';
+import { useFieldApi, useForm, useFormEffect } from '@oxform/react';
 
 const form = useForm({
   schema,
@@ -395,9 +399,9 @@ Render-prop wrapper around `useSubscribe`. Props:
 
 ---
 
-## Re-exports from `oxform-core`
+## Re-exports from `@oxform/core`
 
-For convenience, the following are re-exported from `oxform-core` so you
+For convenience, the following are re-exported from `@oxform/core` so you
 don't need a separate import. See the
 [core readme](../core/readme.md) for full definitions.
 

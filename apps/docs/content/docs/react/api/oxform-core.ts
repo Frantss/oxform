@@ -7,7 +7,7 @@ export {
   createField,
   createForm,
   formOptions,
-} from 'oxform-core';
+} from '@oxform/core';
 
 export type {
   AnyFormApi,
@@ -23,4 +23,4 @@ export type {
   FormSubmitSuccessHandler,
   FormValues,
   ValidateOptions,
-} from 'oxform-core';
+} from '@oxform/core';

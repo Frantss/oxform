@@ -8,7 +8,7 @@ description: Use inferred field names and values with Oxform.
 Oxform infers the form values type from `schema`. `defaultValues` is checked against that type rather than supplying a separate type. Field paths and field values follow the inferred values type.
 
 ```tsx twoslash
-import { useField, useForm } from 'oxform-react';
+import { useField, useForm } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -55,8 +55,8 @@ Field names are checked at compile time. Invalid paths are rejected before they 
 `formOptions` preserves schema-derived value types and issue levels when sharing configuration. It returns the supplied options without creating a form or validating values.
 
 ```tsx twoslash
-import { formOptions, useField, useForm } from 'oxform-react';
-import type { FormFieldValue, FormFields, FormIssueLevels, FormValues } from 'oxform-react';
+import { formOptions, useField, useForm } from '@oxform/react';
+import type { FormFieldValue, FormFields, FormIssueLevels, FormValues } from '@oxform/react';
 import { z } from 'zod';
 
 const schema = z.object({ email: z.string() });

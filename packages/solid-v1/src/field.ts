@@ -1,6 +1,6 @@
 import { createField } from '#create-field';
 import type { FieldProps } from '#types/field-props';
-import type { AnyFormApi, FormFields } from 'oxform-core';
+import type { AnyFormApi, FormFields } from '@oxform/core';
 import { createMemo, type JSX } from 'solid-js';
 
 export const Field = <Form extends AnyFormApi, const Name extends FormFields<Form>>(

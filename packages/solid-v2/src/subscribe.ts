@@ -1,6 +1,6 @@
 import { createSubscribe } from '#create-subscribe';
 import type { SubscribeProps } from '#types/subscribe-props';
-import type { AnyFormLikeApi } from 'oxform-core';
+import type { AnyFormLikeApi } from '@oxform/core';
 import { createMemo } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 

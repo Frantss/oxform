@@ -7,9 +7,9 @@ See [Commands Reference](./commands.md) for navigation commands.
 ```
 /
 ├── packages/
-│   ├── core/          # oxform-core - Framework-agnostic form library
-│   ├── react/         # oxform-react - React hooks and components
-│   ├── solid/         # oxform-solid - Published Solid 1 and /v2 entries
+│   ├── core/          # @oxform/core - Framework-agnostic form library
+│   ├── react/         # @oxform/react - React hooks and components
+│   ├── solid/         # @oxform/solid - Published Solid 1 and /v2 entries
 │   ├── solid-v1/      # Private Solid 1 implementation
 │   └── solid-v2/      # Private Solid 2 implementation
 ├── docs/              # This documentation
@@ -18,17 +18,17 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 ## Package Relationships
 
-- `oxform-core` - Standalone, no internal dependencies
-- `oxform-react` - Depends on `oxform-core` (via `workspace:*`)
-- `oxform-solid` - Depends on `oxform-core` (via `workspace:*`), with a Solid peer dependency
+- `@oxform/core` - Standalone, no internal dependencies
+- `@oxform/react` - Depends on `@oxform/core` (via `workspace:*`)
+- `@oxform/solid` - Depends on `@oxform/core` (via `workspace:*`), with a Solid peer dependency
 - `@oxform/solid-v1` and `@oxform/solid-v2` - Private workspaces with isolated
   Solid runtimes, compilers, types, and tests. Their builds are assembled into
-  the published `oxform-solid` package; consumers resolve no private workspaces.
+  the published `@oxform/solid` package; consumers resolve no private workspaces.
 
 ## Navigating Packages
 
 - Use `cd packages/<name>` to enter a package directory
-- Package names are in each `package.json` (e.g., `oxform-core`, `oxform-react`)
+- Package names are in each `package.json` (e.g., `@oxform/core`, `@oxform/react`)
 - Each package has its own `src/`, `dist/`, `export/` and test files
 
 ## Source Organization

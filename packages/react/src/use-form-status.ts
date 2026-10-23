@@ -1,7 +1,7 @@
 import { useSelector } from '@tanstack/react-store';
 import type { UseFormStatusProps } from '#types/use-form-status-props';
 import type { UseFormStatusReturn } from '#types/use-form-status-return';
-import type { AnyFormApi, FormIssueLevels } from 'oxform-core';
+import type { AnyFormApi, FormIssueLevels } from '@oxform/core';
 import { useMemo } from 'react';
 
 export const useFormStatus = <Form extends AnyFormApi>({

@@ -1,5 +1,5 @@
 {
-  "name": "oxform-solid",
+  "name": "@oxform/solid",
   "version": "0.1.0",
   "description": "Solid bindings for Oxform.",
   "license": "MIT",
@@ -45,6 +45,9 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp run @oxform/solid-v1#build && vp run @oxform/solid-v2#build && node scripts/assemble.ts",
     "test": "vp run @oxform/solid-v1#test && vp run @oxform/solid-v2#test",
@@ -55,7 +58,7 @@
     "check:consumers": "node scripts/check-consumers.ts"
   },
   "dependencies": {
-    "oxform-core": "workspace:*",
+    "@oxform/core": "workspace:*",
     "remeda": "^2.50.0"
   },
   "devDependencies": {

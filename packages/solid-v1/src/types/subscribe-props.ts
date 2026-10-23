@@ -1,4 +1,4 @@
-import type { AnyFormLikeApi, ApiSelector } from 'oxform-core';
+import type { AnyFormLikeApi, ApiSelector } from '@oxform/core';
 import type { Accessor, JSX } from 'solid-js';
 
 export type SubscribeProps<Api extends AnyFormLikeApi, Selected> = {

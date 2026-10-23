@@ -21,10 +21,10 @@ try {
   for (const version of [1, 2]) {
     const directory = join(temporary, `solid-${version}`);
     await mkdir(directory);
-    const entry = version === 1 ? 'oxform-solid' : 'oxform-solid/v2';
+    const entry = version === 1 ? '@oxform/solid' : '@oxform/solid/v2';
     const dependencies = {
-      'oxform-core': `file:${coreArchive}`,
-      'oxform-solid': `file:${solidArchive}`,
+      '@oxform/core': `file:${coreArchive}`,
+      '@oxform/solid': `file:${solidArchive}`,
       'solid-js': version === 1 ? '1.9.15' : '2.0.0-rc.13',
       zod: '4.6.5',
       ...(version === 2 ? { '@solidjs/web': '2.0.0-rc.13' } : {}),
@@ -42,7 +42,7 @@ try {
     );
     await writeFile(
       join(directory, 'pnpm-workspace.yaml'),
-      `packages: []\noverrides:\n  oxform-core: ${JSON.stringify(`file:${coreArchive}`)}\n`,
+      `packages: []\noverrides:\n  '@oxform/core': ${JSON.stringify(`file:${coreArchive}`)}\n`,
     );
     await writeFile(
       join(directory, 'tsconfig.json'),

@@ -59,5 +59,5 @@
 ## Workspace Commands
 
 - Root scripts use `vp run` for workspace tasks; use `pnpm --filter <package_name> run <command>` to target a package.
-- Target a specific package with `pnpm --filter 'oxform-core' run <command>`.
+- Target a specific package with `pnpm --filter '@oxform/core' run <command>`.
 - Add a dependency to a specific package with `pnpm --filter <package_name> add <dependency>`.

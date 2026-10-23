@@ -1,6 +1,6 @@
 import { useSubscribe } from '#use-subscribe';
 import type { SubscribeProps } from '#types/subscribe-props';
-import type { AnyFormLikeApi } from 'oxform-core';
+import type { AnyFormLikeApi } from '@oxform/core';
 import { useMemo } from 'react';
 
 export const Subscribe = <Api extends AnyFormLikeApi, Selected>({
