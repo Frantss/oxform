@@ -21,7 +21,11 @@ export const Route = createRootRoute({
         content: 'Public documentation for Oxform, a lean framework-agnostic form library.',
       },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      { rel: 'icon', href: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml', sizes: 'any' },
+      { rel: 'stylesheet', href: appCss },
+    ],
   }),
   component: RootComponent,
 });
