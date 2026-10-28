@@ -5,14 +5,14 @@ description: Configure @oxform/solid/v2 for Solid 2 and use its reactive timing,
 
 # Solid 2
 
-`@oxform/solid/v2` provides the same primitives, components, and schema inference as the Solid 1 adapter. It ships inside `@oxform/solid` and supports Solid `2.0.0-rc.13`.
+`@oxform/solid/v2` provides the same primitives, components, and schema inference as the Solid 1 adapter. It ships inside `@oxform/solid` and supports Solid `2.0.0-rc.19`.
 
 ## Install
 
 Install the pinned runtime, web renderer, and a Standard Schema validator:
 
 ```bash
-pnpm add @oxform/solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13 zod
+pnpm add @oxform/solid solid-js@2.0.0-rc.19 @solidjs/web@2.0.0-rc.19 zod
 ```
 
 Use `@oxform/solid/v2` for every Oxform Solid import, including types. Keep reactive primitives such as `createSignal`, `For`, and `flush` imported from `solid-js`. Web rendering functions such as `render` and `hydrate`, and the `JSX` type, come from `@solidjs/web`.
@@ -24,7 +24,7 @@ The package's peer dependencies cover both adapters. They cannot enforce which s
 The repository's Solid 2 example uses these compiler versions:
 
 ```bash
-pnpm add -D @solidjs/compiler@2.0.0-rc.13 @solidjs/vite-plugin@3.0.0-next.47
+pnpm add -D @solidjs/compiler@2.0.0-rc.19 @solidjs/vite-plugin@3.0.0-next.51
 ```
 
 Configure the Solid 2 Vite plugin:

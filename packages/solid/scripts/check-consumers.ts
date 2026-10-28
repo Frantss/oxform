@@ -25,9 +25,9 @@ try {
     const dependencies = {
       '@oxform/core': `file:${coreArchive}`,
       '@oxform/solid': `file:${solidArchive}`,
-      'solid-js': version === 1 ? '1.9.15' : '2.0.0-rc.13',
-      zod: '4.6.5',
-      ...(version === 2 ? { '@solidjs/web': '2.0.0-rc.13' } : {}),
+      'solid-js': version === 1 ? '1.9.17' : '2.0.0-rc.19',
+      zod: '4.6.7',
+      ...(version === 2 ? { '@solidjs/web': '2.0.0-rc.19' } : {}),
     };
     await writeFile(
       join(directory, 'package.json'),

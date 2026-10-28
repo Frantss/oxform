@@ -1,7 +1,7 @@
 # @oxform/solid
 
 Solid bindings for [Oxform](../../readme.md). The default entry requires Solid
-`^1.9.0`; `@oxform/solid/v2` supports Solid `2.0.0-rc.13`.
+`^1.9.0`; `@oxform/solid/v2` supports Solid `2.0.0-rc.19`.
 Validation, issues, submission, reset, and array operations use
 [`@oxform/core`](../core/readme.md).
 
@@ -14,7 +14,7 @@ pnpm add @oxform/solid solid-js
 Install the pinned prerelease runtime and web renderer:
 
 ```bash
-pnpm add @oxform/solid solid-js@2.0.0-rc.13 @solidjs/web@2.0.0-rc.13
+pnpm add @oxform/solid solid-js@2.0.0-rc.19 @solidjs/web@2.0.0-rc.19
 ```
 
 Import the same primitives, components, and types from `@oxform/solid/v2`:

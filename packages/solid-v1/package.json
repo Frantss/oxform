@@ -34,9 +34,9 @@
     "@oxform/core": "workspace:*"
   },
   "devDependencies": {
-    "solid-js": "^1.9.15",
+    "solid-js": "^1.9.17",
     "typescript": "^7.0.2",
     "vite-plugin-solid": "^2.11.14",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   }
 }

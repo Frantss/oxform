@@ -59,21 +59,21 @@
   },
   "dependencies": {
     "@oxform/core": "workspace:*",
-    "remeda": "^2.50.0"
+    "remeda": "^2.54.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@oxform/solid-v1": "workspace:*",
     "@oxform/solid-v2": "workspace:*",
-    "@solidjs/web": "2.0.0-rc.13",
-    "@types/node": "26.6.4",
+    "@solidjs/web": "2.0.0-rc.19",
+    "@types/node": "26.6.5",
     "publint": "^0.3.25",
-    "solid-js": "2.0.0-rc.13",
+    "solid-js": "2.0.0-rc.19",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {
-    "@solidjs/web": "2.0.0-rc.13",
-    "solid-js": "^1.9.0 || 2.0.0-rc.13"
+    "@solidjs/web": "2.0.0-rc.19",
+    "solid-js": "^1.9.0 || 2.0.0-rc.19"
   },
   "peerDependenciesMeta": {
     "@solidjs/web": {

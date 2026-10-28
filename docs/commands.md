@@ -3,7 +3,7 @@
 ## Dev Environment
 
 Run commands from the repository root unless noted otherwise. Use the pnpm
-version in `package.json` (`12.8.1`). Node must satisfy
+version in `package.json` (`12.15.0`). Node must satisfy
 `^22.18.0 || ^24.11.0 || >=26.0.0`.
 
 ```bash

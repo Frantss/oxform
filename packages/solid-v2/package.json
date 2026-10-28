@@ -33,15 +33,15 @@
   },
   "dependencies": {
     "@oxform/core": "workspace:*",
-    "remeda": "^2.50.0"
+    "remeda": "^2.54.1"
   },
   "devDependencies": {
-    "@solidjs/compiler": "2.0.0-rc.13",
-    "@solidjs/vite-plugin": "3.0.0-next.47",
-    "@solidjs/web": "2.0.0-rc.13",
-    "@types/node": "26.6.4",
-    "solid-js": "2.0.0-rc.13",
+    "@solidjs/compiler": "2.0.0-rc.19",
+    "@solidjs/vite-plugin": "3.0.0-next.51",
+    "@solidjs/web": "2.0.0-rc.19",
+    "@types/node": "26.6.5",
+    "solid-js": "2.0.0-rc.19",
     "typescript": "^7.0.2",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   }
 }

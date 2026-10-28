@@ -173,6 +173,6 @@ doc most users will land on.
 3. **Snippet sanity** — every code snippet is copied verbatim from
    `examples/react/src/` or from a test in `packages/*/src/tests/`. Spot-check
    one snippet by running the relevant example with `bun --filter
-examples/react dev` to confirm it still compiles.
+   examples/react dev` to confirm it still compiles.
 4. **Format pass** — run `bun run fix:format` to apply the project's markdown
    formatter (oxfmt) to the three changed files.
