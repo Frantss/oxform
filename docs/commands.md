@@ -2,39 +2,67 @@
 
 ## Dev Environment
 
+Run commands from the repository root unless noted otherwise. Use the pnpm
+version in `package.json` (`12.8.1`). Node must satisfy
+`^22.18.0 || ^24.11.0 || >=26.0.0`.
+
+```bash
+pnpm install
+```
+
 - Use `pnpm --filter <package_name> run build` to build a specific package instead of all packages.
 - Use `cd packages/<name>` to navigate to a package and run commands locally.
-- Check the `name` field inside each package's `package.json` to confirm the right name—skip the top-level one.
+- Check the `name` field inside the target workspace's `package.json` to confirm its package name.
 
 ## Build Commands
 
-- Run `pnpm run build` to compile all packages for production.
-- Use `pnpm run build:dev` for watch mode—rebuilds automatically on file changes.
+- Run `pnpm run build` to build workspace libraries, examples, and the docs app.
+- Use `pnpm run build:dev` to pass `--watch` to workspace build tasks.
 - Library packages build through `vp pack`, which uses tsdown under Vite+.
+- The published Solid package builds both private adapters and assembles their output.
+- The root `postbuild` script formats the repository. Inspect its diff and preserve unrelated edits.
+
+## Docs and Examples
+
+```bash
+pnpm run docs:dev                           # Docs at http://localhost:3002
+pnpm run docs:build                         # Production docs build
+pnpm run docs:check                         # Generate MDX metadata and check types
+pnpm --dir examples/react run dev
+pnpm --dir examples/solid run dev
+pnpm --dir examples/solid-v2 run dev
+```
+
+Public documentation lives in `apps/docs/content/docs`; contributor guides
+live in `docs/`.
+See the [docs app readme](../apps/docs/README.md) for the
+content pipeline and the current production-start limitation.
 
 ## Testing Commands
 
-- Run `pnpm run test` to execute tests across all packages.
-- From inside a package directory, run `vp test` to test just that package.
-- Run a single test file with `vp test run src/tests/field/change.spec.ts`.
-- Filter tests by name with `vp test -t "<test name>"`.
-- Tests run in a headless Playwright browser (chromium) via Vite+ test mode.
-- `pnpm --dir packages/solid run test:ssr` runs server-rendering tests in Node through `vite.ssr.config.ts`.
-  The root test command runs both Solid suites.
-- Run the Solid example with `pnpm --dir examples/solid run dev`.
-- Run the Solid 2 example with `pnpm --dir examples/solid-v2 run dev`.
+- Run `pnpm run test` to execute core, React, both Solid adapters, and all three example suites.
+- From inside an implementation package, run `pnpm run test` for its suite.
+- Run one core file with `pnpm --dir packages/core run test run src/tests/form-core-field/change.spec.ts`.
+- Filter core tests by name with `pnpm --dir packages/core run test -t "<test name>"`.
+- Browser tests run in headless Chromium through the Playwright provider.
+- `pnpm --dir packages/solid run test:ssr` runs both adapters' server-rendering
+  suites in Node. Each private adapter owns a `vite.ssr.config.ts`.
 - Test either private adapter directly with
   `pnpm --dir packages/solid-v1 run test` or
   `pnpm --dir packages/solid-v2 run test`. The published package's test scripts
-  run both adapters; Solid 2 browser tests cover desktop and mobile viewports.
+  run both adapters; Solid 2's `test` runs its SSR suite before browser tests.
+  Solid 2 browser tests cover desktop and mobile viewports.
+
+See [Testing Patterns](./testing.md) for file placement, assertions, and type tests.
 
 ## Linting & Formatting Commands
 
-- Run `pnpm run fix:all` before committing—this fixes both lint and format issues automatically.
 - Check lint rules with `pnpm run check:rules` (uses oxlint).
 - Check formatting with `pnpm run check:format` (uses oxfmt).
 - Fix lint issues: `pnpm run fix:rules`.
-- Fix formatting: `pnpm run fix:format`.
+- Format changed files: `pnpm run fix:format docs/commands.md docs/testing.md`.
+- `pnpm run fix:all` applies lint and format fixes across the repository.
+  Use it only when that scope is intended; inspect the diff afterward.
 
 ## Type Checking Commands
 
@@ -44,11 +72,28 @@
 
 ## Package Validation
 
-- Run `pnpm run check:package` to validate package exports with publint.
+- Build before running `pnpm run check:package`; it validates generated
+  package exports with `publint --strict` and `attw --pack --no-emoji`.
+- Core package validation also rejects duplicate test titles and invalid
+  assertion structure. Run these checks independently with
+  `pnpm --dir packages/core run check:test-duplicates` and
+  `pnpm --dir packages/core run check:test-structure`.
 - Run `pnpm --dir packages/solid run check:consumers` after building to verify
   the packed Solid 1 and Solid 2 entries in isolated applications, including
   ESM, CJS, and inferred types. This uses the local pnpm dependency cache.
+- Solid package validation includes the consumer checks.
 - Run `pnpm run check:all` to run lint, format, types, and package checks together.
+
+## Before Finishing
+
+For code or configuration changes, run `pnpm run build`, then
+`pnpm run check:all` and `pnpm run test`. Format only changed files before
+finishing. Browser-facing changes also require desktop/mobile flow checks and
+browser console inspection.
+
+Documentation-only changes need formatting and link checks. Build or run the
+docs app when the change affects MDX compilation, generated signatures, code
+snippets, or rendered behavior. Report blocked or skipped checks explicitly.
 
 ## Release Commands
 

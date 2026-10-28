@@ -6,13 +6,20 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 ```
 /
+├── apps/
+│   └── docs/          # @oxform/docs - Public documentation website
 ├── packages/
 │   ├── core/          # @oxform/core - Framework-agnostic form library
 │   ├── react/         # @oxform/react - React hooks and components
 │   ├── solid/         # @oxform/solid - Published Solid 1 and /v2 entries
 │   ├── solid-v1/      # Private Solid 1 implementation
 │   └── solid-v2/      # Private Solid 2 implementation
-├── docs/              # This documentation
+├── examples/
+│   ├── react/         # React demos and browser tests
+│   ├── solid/         # Solid 1 demo and browser tests
+│   └── solid-v2/      # Solid 2 demo and browser tests
+├── docs/              # Contributor guides
+├── pnpm-workspace.yaml # Workspace globs and shared dependency catalog
 └── package.json       # Root workspace configuration
 ```
 
@@ -29,7 +36,9 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 - Use `cd packages/<name>` to enter a package directory
 - Package names are in each `package.json` (e.g., `@oxform/core`, `@oxform/react`)
-- Each package has its own `src/`, `dist/`, `export/` and test files
+- Core, React, and the private Solid adapters have `src/`, `export/`, and test files.
+  Builds generate `dist/`. The published Solid package assembles the private
+  adapters and has no implementation `src/` directory.
 
 ## Source Organization
 
@@ -58,12 +67,25 @@ See [Commands Reference](./commands.md) for navigation commands.
 Solid 1 output to `dist/` and Solid 2 output to `dist/v2/`.
 `examples/solid` and `examples/solid-v2` provide runnable demos.
 
+**Public docs (`apps/docs/`):**
+
+- `content/docs/` - MDX guides, recipes, and API references for React, Solid, and core
+- `content/docs/**/meta.json` - Sidebar ordering and section metadata
+- `source.config.ts` - Fumadocs collections, Twoslash snippets, and generated type tables
+- `src/routes/` - TanStack Start routes, including documentation and search
+- `src/lib/source.ts` - Documentation source with the `/docs` base URL
+- `src/routeTree.gen.ts` - Generated route tree
+
+See the [docs app readme](../apps/docs/README.md) for editing and validation commands.
+
 ## Import Paths
 
-Each package uses `#*` aliases pointing to `./src/*.ts`:
+Source packages use `#*` aliases pointing to `./src/*.ts`:
 
 - `import { FormApi } from '#form/form-api'` resolves to `src/form/form-api.ts`
 - Use absolute imports with `#` instead of relative paths like `../../`
+- React adds explicit aliases for TSX modules. The published Solid package's
+  `#*` alias points to `export/`; the docs app uses `@/` for `src/`.
 
 ## Dependency Management
 

@@ -5,9 +5,12 @@
 **Always run formatting before finishing a task:**
 
 ```bash
-pnpm run fix:format      # Format only
-pnpm run fix:all         # Format + lint + auto-fix
+pnpm run fix:format docs/commands.md packages/react/readme.md
 ```
+
+Pass only files changed for the task. With no paths, `fix:format` formats the
+whole repository. `fix:all` also runs lint fixes across the repository; inspect
+the diff and preserve unrelated work.
 
 ## Naming Conventions
 
@@ -24,12 +27,12 @@ pnpm run fix:all         # Format + lint + auto-fix
 ## File Organization
 
 ```
+export/
+└── index.ts           # Public exports only
 src/
-├── index.ts           # Public exports only
-├── form-api.ts        # Core classes
-├── field-api.ts
-├── types.ts           # Shared types
+├── form/              # Core classes and factories (core package)
+├── types/             # Shared types
 ├── utils/             # Pure utilities
-│   └── testing/       # Test-only helpers
-└── tests/             # Test files (*.spec.ts)
+│   └── tests/         # Utility tests
+└── tests/             # Test files (*.spec.ts or *.spec.tsx)
 ```

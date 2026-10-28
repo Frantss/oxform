@@ -94,6 +94,19 @@ Solid 2 uses `@oxform/solid/v2`; run its
 [example](examples/solid-v2/readme.md) with
 `pnpm --dir examples/solid-v2 run dev`.
 
+## Documentation
+
+The public documentation app includes React, Solid, and core guides and API
+references:
+
+```bash
+pnpm install
+pnpm run docs:dev
+```
+
+Open [localhost:3002](http://localhost:3002). See the
+[docs app readme](apps/docs/README.md) for content editing and validation.
+
 ## Examples
 
 The [`examples/react`](examples/react) workspace contains runnable demos:
@@ -123,10 +136,10 @@ Common commands:
 
 ```bash
 pnpm install              # install workspace dependencies
-pnpm run build            # build all packages
-pnpm run test             # run all package test suites
+pnpm run build            # build libraries, examples, and docs
+pnpm run test             # run library and example test suites
 pnpm run check:all        # lint + format + types + package check
-pnpm run fix:all          # auto-fix lint and format
+pnpm run fix:format readme.md # format changed files
 ```
 
 ## License
