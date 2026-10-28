@@ -44,6 +44,16 @@ Check documentation links after editing. For changes to rendered behavior,
 also inspect desktop and mobile layouts and check the browser console for
 runtime, SSR, or hydration failures.
 
+## Theme
+
+The site uses `@frantss/fumadocs-theme` for Geist Mono typography, light and
+dark palettes, and documentation layout. `src/styles/app.css` imports its
+stylesheet, followed by the Twoslash styles. Documentation pages and the
+navigation title use the package's component wrappers.
+
+Keep `@frantss/fumadocs-theme` in `ssr.noExternal` in `vite.config.ts` so
+the theme and Fumadocs share provider contexts during server rendering.
+
 ## Production Start Limitation
 
 `pnpm run docs:start` currently targets `.output/server/index.mjs`, while

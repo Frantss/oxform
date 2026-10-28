@@ -5,6 +5,9 @@ import mdx from 'fumadocs-mdx/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  ssr: {
+    noExternal: ['@frantss/fumadocs-theme'],
+  },
   server: {
     port: 3002,
   },

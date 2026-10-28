@@ -1,10 +1,11 @@
+import { DocsBrand } from '@frantss/fumadocs-theme';
 import { BookOpen, Code2, GitFork } from 'lucide-react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 export function baseOptions(framework: 'react' | 'solid' = 'react'): BaseLayoutProps {
   return {
     nav: {
-      title: 'Oxform',
+      title: <DocsBrand>Oxform</DocsBrand>,
     },
     links: [
       {

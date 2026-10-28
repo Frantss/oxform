@@ -22,7 +22,8 @@ peerDependencyRules:
 
 minimumReleaseAgeExclude:
   - '@types/node@26.6.4'
-  - fumadocs-core@16.15.18
+  - '@frantss/fumadocs-theme@0.1.1'
+  - fumadocs-core@16.17.8
   - fumadocs-mdx@15.4.6
-  - fumadocs-ui@16.15.18
+  - fumadocs-ui@16.17.8
   - lucide-react@1.50.0

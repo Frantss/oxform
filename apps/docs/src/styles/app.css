@@ -1,18 +1,3 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
+@import '@frantss/fumadocs-theme/styles.css';
 @import 'fumadocs-twoslash/twoslash.css';
-
-:root {
-  --oxform-accent: #0f766e;
-}
-
-body {
-  font-feature-settings:
-    'rlig' 1,
-    'calt' 1;
-}
-
-a {
-  text-underline-offset: 3px;
-}

@@ -1,9 +1,8 @@
+import { DocsBody, DocsDescription, DocsLayout, DocsPage, DocsTitle } from '@frantss/fumadocs-theme';
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useFumadocsLoader } from 'fumadocs-core/source/client';
 import browserCollections from 'collections/browser';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 import type { ComponentType } from 'react';
 import { baseOptions } from '@/lib/layout.shared';
 import { source } from '@/lib/source';
