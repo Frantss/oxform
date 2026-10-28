@@ -4,10 +4,11 @@
 > `oxform-core` is deprecated. Use [`@oxform/core`](https://www.npmjs.com/package/@oxform/core) instead.
 > Install it with `npm install @oxform/core` and update your imports to `@oxform/core`.
 
-Framework-agnostic form engine that powers [`@oxform/react`](../react). It
-handles values, statuses, validation (Standard Schema), nested paths, and
-array operations. Most users want the [React bindings](../react) instead;
-reach for this package when integrating with another UI layer.
+Framework-agnostic form engine that powers [`@oxform/react`](../react) and
+[`@oxform/solid`](../solid). It handles values, statuses, validation
+(Standard Schema), nested paths, and
+array operations. Use the bindings matching your framework, or use core
+directly when integrating with another UI layer.
 
 ## Installation
 
@@ -17,6 +18,9 @@ yarn add @oxform/core
 pnpm add @oxform/core
 bun add @oxform/core
 ```
+
+The examples use Zod as the Standard Schema implementation. Install it with
+`pnpm add zod`.
 
 ## Quick example
 
@@ -40,7 +44,6 @@ const options = formOptions({
 });
 
 const form = createForm(options);
-const unmount = form['~mount'](); // start subscriptions
 
 form.field.change('name', 'Ada');
 form.field.blur('email');
@@ -49,8 +52,6 @@ await form.submit(
   values => console.log('ok', values),
   issues => console.error('invalid', issues),
 )();
-
-unmount();
 ```
 
 The [form core behaviors spec](../../docs/form-core-behaviors.md) is the
@@ -80,7 +81,7 @@ The top-level form instance returned by `createForm`.
 | ---------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
 | `id`       | `string`                                                       | Form identifier (from `options.id` or auto-generated).       |
 | `options`  | `FormOptions<Values>`                                          | Current options object.                                      |
-| `store`    | `Derived<FormStore<Values>>`                                   | TanStack derived store.                                      |
+| `store`    | `ReadonlyStore<FormStore<Values>>`                             | Read-only observable TanStack store.                         |
 | `status`   | `FormStatus`                                                   | Current form status snapshot.                                |
 | `values`   | `Values`                                                       | Current values snapshot.                                     |
 | `validate` | `(fields?, options?) => Promise<[boolean, FormIssuesByLevel]>` | Bound `FormCore.validate`. See [validate](#validate).        |
@@ -176,26 +177,30 @@ issues.warning; // FormIssueEntry<'warning'>[]
 ```
 
 The returned boolean describes the issues emitted by that validation run:
-it is `false` when the run produced at least one issue whose level is
-configured as blocking.
+it is `false` when the run produced an error issue or an issue at a custom
+level configured as blocking.
 
 Issues use the same target behavior as `validate`: with no `fields`, the
 whole form is checked; otherwise only the listed paths and their descendants
-are updated. Issues are event-scoped. Pass `options.type` to run one
-event, or omit it to run every configured issue event. Running submit
-issues replaces only prior submit issues, so existing change warnings
-and other event issues remain visible. Running all issues refreshes
-event-produced issues for the target subtree. Manual issues written
-with `setIssues` are preserved by event validation.
+are updated.
+
+An error validator replaces all error issues in scope, including manual errors
+and errors from other events. Without an error validator, existing errors stay.
+Custom-level issues are event-scoped: a typed run refreshes that event's entries,
+while an untyped run refreshes all four events. Untyped custom issues, including
+manual entries without `type`, stay visible.
 
 Each issue contains `{ type?, level, issue }`. `type` is the validation
-event that produced the issue. Levels with `{ blocking: true }` make the
-affected field and form invalid and can fail `submit()`. Submit fails if any
+event that produced the issue. Error issues always block validity.
+Custom levels with `{ blocking: true }` also make the affected field and
+form invalid and can fail `submit()`. Submit fails if any
 current issue is blocking after submit validation completes, including
 issues from other events or manual issues.
 
-Async issues are ignored if form values changed before they resolved, so
-slower stale validations cannot overwrite newer field state.
+Async results are discarded after a value change overlapping the validation
+scope, a newer run with the same targets and event, or form reset. Unrelated
+value changes do not invalidate targeted validation. Discarded runs return
+`[true, emptyIssueBuckets]`.
 
 #### `reset`
 
@@ -216,7 +221,7 @@ integration code (e.g. React adapters), not application code.
 
 | Method                                          | Purpose                                                                        |
 | ----------------------------------------------- | ------------------------------------------------------------------------------ |
-| `'~mount'(): () => void`                        | Mounts the underlying derived store. Returns the unmount function.             |
+| `'~mount'(): () => void`                        | Returns an adapter lifecycle cleanup function; currently a no-op.              |
 | `'~update'(options: FormOptions<Values>): void` | Replaces the in-flight options object (e.g. updated schema or default values). |
 
 ---
@@ -251,6 +256,8 @@ Behavior summary (full spec in [form-core-behaviors.md](../../docs/form-core-beh
   paths.
 - `reset` defaults the value to `options.value ?? defaultValue`, clears the
   field's `dirty/touched/blurred/issues`, and does not affect siblings.
+  It also clears refs and resets descendants. The current implementation
+  ignores field reset `status` and `keep` options.
 
 ---
 
@@ -275,6 +282,10 @@ existing items keep stable IDs across moves.
 The `value` argument accepts an `Updater` — either the next value or a
 function `(current) => next`.
 
+Use direct item values for append, prepend, and insert. Their updater
+signatures describe an item, but the current implementation passes the whole
+array to these callbacks. Update passes the current item; replace passes the array.
+
 ---
 
 ## `FieldApi<Value>`
@@ -289,7 +300,7 @@ reference (e.g. to subscribe to its `store`).
 | --------- | ------------------------------------------------- |
 | `id`      | `string`                                          |
 | `options` | `FieldOptions<Form, Name>`                        |
-| `store`   | `Derived<FieldStore<Value>>`                      |
+| `store`   | `ReadonlyStore<FieldStore<Value>>`                |
 | `state`   | `FieldStore<Value>` (current snapshot of `store`) |
 | `value`   | `Value` (alias for `get()`)                       |
 
@@ -309,10 +320,10 @@ reference (e.g. to subscribe to its `store`).
 
 ### Internal / lifecycle
 
-| Method                                               | Purpose                                                       |
-| ---------------------------------------------------- | ------------------------------------------------------------- |
-| `'~mount'(): () => void`                             | Mounts the derived field store. Returns the unmount function. |
-| `'~update'(options: FieldOptions<Form, Name>): void` | Replaces `{ form, name }`.                                    |
+| Method                                               | Purpose                                                  |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| `'~mount'(): () => void`                             | Returns an adapter lifecycle cleanup; currently a no-op. |
+| `'~update'(options: FieldOptions<Form, Name>): void` | Replaces `{ form, name }`.                               |
 
 ---
 
@@ -326,7 +337,7 @@ Per-array-field handle returned by `createArrayField`. Proxies into
 | Getter    | Type                                                                 |
 | --------- | -------------------------------------------------------------------- |
 | `options` | `ArrayFieldOptions<Form, Name>`                                      |
-| `store`   | `Derived<FieldStore<Value>>`                                         |
+| `store`   | `ReadonlyStore<FieldStore<Value>>`                                   |
 | `state`   | `FieldStore<Value>`                                                  |
 | `ids`     | `string[]` — stable IDs for each current item, useful as React keys. |
 
@@ -348,7 +359,7 @@ Per-array-field handle returned by `createArrayField`. Proxies into
 
 | Method                     | Purpose                    |
 | -------------------------- | -------------------------- |
-| `'~mount'(): () => void`   | Mounts the derived store.  |
+| `'~mount'(): () => void`   | Returns lifecycle cleanup. |
 | `'~update'(options): void` | Replaces `{ form, name }`. |
 
 ---
@@ -357,21 +368,23 @@ Per-array-field handle returned by `createArrayField`. Proxies into
 
 ### `FormOptions<Values>`
 
-| Field                 | Type                                                                             | Description                                                  |
-| --------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `id?`                 | `string`                                                                         | Form identifier. Auto-generated when omitted.                |
-| `schema`              | `StandardSchema<Values>`                                                         | Base schema used by `validate` when no `type` is provided.   |
-| `defaultValues`       | `NoInfer<Values>`                                                                | Initial values. Type must match `Values`.                    |
-| `defaultStatus?`      | `Partial<{ submits, submitting, validating, successful, dirty }>`                | Overrides for the initial form status.                       |
-| `defaultFieldStatus?` | `Partial<Record<DeepKeys<Values> \| '*', Partial<{ blurred, touched, dirty }>>>` | Per-path initial field status. `'*'` applies to every field. |
-| `validate?.change`    | `FormValidator<Values>`                                                          | Schema (or `(store) => schema`) used on `change` events.     |
-| `validate?.submit`    | `FormValidator<Values>`                                                          | Schema used during `submit()`.                               |
-| `validate?.blur`      | `FormValidator<Values>`                                                          | Schema used on `blur` events.                                |
-| `validate?.focus`     | `FormValidator<Values>`                                                          | Schema used on `focus` events.                               |
-| `checks?`             | `FormChecksMap<Values>`                                                          | Level-keyed check config with validators and blocking.       |
+| Field                 | Type                                                                             | Description                                                        |
+| --------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `id?`                 | `string`                                                                         | Form identifier. Auto-generated when omitted.                      |
+| `schema`              | `StandardSchema<Values>`                                                         | Base schema for untyped validation and fallback submit validation. |
+| `defaultValues`       | `NoInfer<Values>`                                                                | Initial values. Type must match `Values`.                          |
+| `defaultStatus?`      | `Partial<{ submits, submitting, validating, successful, dirty }>`                | Overrides for the initial form status.                             |
+| `defaultFieldStatus?` | `Partial<Record<DeepKeys<Values> \| '*', Partial<{ blurred, touched, dirty }>>>` | Per-path initial field status. `'*'` applies to every field.       |
+| `checks?`             | `FormChecksMap<Values>`                                                          | Level-keyed check config with validators and blocking.             |
 
-`FormValidator<Values>` is `StandardSchema<PartialDeep<Values>>` or a function
+Configure event validators under `checks.error.validate` or another issue
+level's `validate` map. There is no top-level `validate` option.
+`FormCheckValidator<Values, Level>` accepts a Standard Schema or a function
 that receives the current form store and returns one.
+
+Factory signatures above abbreviate the issue-level generics. `createForm`
+and `formOptions` infer custom levels from `checks`; `error` is always
+included. Field and array factories preserve those inferred levels.
 
 ### `FieldOptions<Form, Name>`
 
@@ -406,12 +419,13 @@ Same shape as `FieldOptions`, but `Name` is constrained to
 ```ts
 {
   values: Values;
-  fields: InternalFields<FormIssue>;
+  fields: InternalFields<Level>;
   status: FormStatus;
 }
 ```
 
-Snapshot read from `form.store.state`. `fields` is the internal per-path
+Here `Level` is the form's issue-level type. This snapshot is read from
+`form.store.state`. `fields` is the internal per-path
 state map (used by adapters); prefer `form.field` / `FieldApi` for per-field
 reads.
 
@@ -438,48 +452,53 @@ Snapshot read from `field.store.state`.
 
 ### `FormStatus`
 
-| Flag         | Type      | Meaning                                        |
-| ------------ | --------- | ---------------------------------------------- |
-| `submits`    | `number`  | Count of submission attempts.                  |
-| `submitting` | `boolean` | Submission in progress.                        |
-| `validating` | `boolean` | Async validation in progress.                  |
-| `successful` | `boolean` | Last submission succeeded.                     |
-| `dirty`      | `boolean` | Form (or any field) has changed from defaults. |
-| `submitted`  | `boolean` | `submits > 0`.                                 |
-| `valid`      | `boolean` | No field has errors or blocking issues.        |
-| `blurred`    | `boolean` | Some field has been blurred.                   |
-| `touched`    | `boolean` | Some field has been touched.                   |
-| `pristine`   | `boolean` | Inverse of `dirty`.                            |
+| Flag         | Type      | Meaning                                                         |
+| ------------ | --------- | --------------------------------------------------------------- |
+| `submits`    | `number`  | Count of submissions whose selected callback resolved normally. |
+| `submitting` | `boolean` | Submission in progress.                                         |
+| `validating` | `boolean` | Async validation in progress.                                   |
+| `successful` | `boolean` | Last submission succeeded.                                      |
+| `dirty`      | `boolean` | A field was marked dirty or submission began.                   |
+| `submitted`  | `boolean` | `submits > 0`.                                                  |
+| `valid`      | `boolean` | No field has errors or blocking issues.                         |
+| `blurred`    | `boolean` | Some field has been blurred.                                    |
+| `touched`    | `boolean` | Some field has been touched.                                    |
+| `pristine`   | `boolean` | No field is dirty; submit alone does not clear it.              |
 
 ### `FieldStatus`
 
-| Flag       | Type      | Meaning                            |
-| ---------- | --------- | ---------------------------------- |
-| `blurred`  | `boolean` | Field has been blurred.            |
-| `touched`  | `boolean` | Field has been focused or changed. |
-| `dirty`    | `boolean` | Value differs from default.        |
-| `default`  | `boolean` | Value deep-equals default.         |
-| `valid`    | `boolean` | No errors or blocking issues.      |
-| `pristine` | `boolean` | Inverse of `dirty`.                |
+| Flag       | Type      | Meaning                                |
+| ---------- | --------- | -------------------------------------- |
+| `blurred`  | `boolean` | Field has been blurred.                |
+| `touched`  | `boolean` | Field has been focused or changed.     |
+| `dirty`    | `boolean` | Field was marked dirty by interaction. |
+| `default`  | `boolean` | Value deep-equals default.             |
+| `valid`    | `boolean` | No errors or blocking issues.          |
+| `pristine` | `boolean` | Inverse of `dirty`.                    |
 
 ### `FieldState`
 
 ```ts
-{ id: string; status: FieldStatus; errors: FormIssue[]; issues: FormIssuesByLevel; ref: HTMLElement | null }
+{
+  id: string;
+  status: FieldStatus;
+  issues: FormIssuesByLevel;
+  ref: HTMLElement | null;
+}
 ```
 
 ---
 
 ## Validation types
 
-| Type                | Definition                                  | Notes                                           |
-| ------------------- | ------------------------------------------- | ----------------------------------------------- |
-| `ValidationType`    | `'change' \| 'submit' \| 'blur' \| 'focus'` | Picks which entry of `options.validate` to use. |
-| `ValidateOptions`   | `{ type?: ValidationType }`                 | Passed to `form.validate(...)`.                 |
-| `FormIssue`         | `StandardSchema.Issue`                      | Re-exported from `@standard-schema/spec`.       |
-| `FormIssue`         | `{ type?: ValidationType; level; issue }`   | Non-error validation feedback.                  |
-| `FormIssuesByLevel` | `{ [Level]: FormIssueEntry<Level>[] }`      | Issues grouped by issue level.                  |
-| `StandardSchema`    | `StandardSchema.V1`                         | Re-exported alias.                              |
+| Type                | Definition                                  | Notes                                             |
+| ------------------- | ------------------------------------------- | ------------------------------------------------- |
+| `ValidationType`    | `'change' \| 'submit' \| 'blur' \| 'focus'` | Selects validators from `checks[level].validate`. |
+| `ValidateOptions`   | `{ type?: ValidationType }`                 | Passed to `form.validate(...)`.                   |
+| `FormIssue`         | `StandardSchema.Issue`                      | Re-exported from `@standard-schema/spec`.         |
+| `FormIssueEntry`    | `{ type?: ValidationType; level; issue }`   | Event and level metadata around a schema issue.   |
+| `FormIssuesByLevel` | `{ [Level]: FormIssueEntry<Level>[] }`      | Issues grouped by issue level.                    |
+| `StandardSchema`    | `StandardSchema.V1`                         | Re-exported alias.                                |
 
 ---
 
@@ -539,6 +558,9 @@ Snapshot read from `field.store.state`.
 { value?: Value; status?: FieldResetStatus; keep?: FieldResetKeepOptions }
 ```
 
+The type accepts `status` and `keep`, but field reset currently ignores
+both. Use form reset when issue or ref preservation is required.
+
 ### `FieldResetStatus`
 
 ```ts
@@ -585,7 +607,7 @@ wired into `createForm`.
 | ---------------------------- | ----------------------------------------------- |
 | `AnyFormApi`                 | `FormApi<any>` — untyped form slot in generics. |
 | `AnyFormLikeApi`             | Object with a `store` property (form or field). |
-| `FormLikeStore<State>`       | `Store<State> \| Derived<State>`.               |
+| `FormLikeStore<State>`       | `Store<State> \| ReadonlyStore<State>`.         |
 | `ApiSelector<Api, Selected>` | `(state: Api['store']['state']) => Selected`.   |
 | `FormValues<Form>`           | Extracts `Values` from `FormApi<Values>`.       |
 | `FormFields<Form>`           | All deep keys of the form's values.             |

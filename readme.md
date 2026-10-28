@@ -41,7 +41,7 @@ allowing you to build forms with ease.
 ## Quick start (React)
 
 ```bash
-npm install @oxform/react
+npm install @oxform/react zod
 ```
 
 ```tsx
@@ -90,7 +90,7 @@ the [examples directory](examples/react/src/examples) for runnable demos
 For Solid, see the [Solid package readme](packages/solid/readme.md) and run
 the [Solid example](examples/solid/readme.md) with
 `pnpm --dir examples/solid run dev`.
-Solid 2 uses `@oxform/solid/v2`; run its
+Solid 2 (`2.0.0-rc.13`) uses `@oxform/solid/v2`; run its
 [example](examples/solid-v2/readme.md) with
 `pnpm --dir examples/solid-v2 run dev`.
 

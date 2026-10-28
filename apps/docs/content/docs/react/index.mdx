@@ -17,11 +17,11 @@ It is designed around a small set of primitives:
 ## Install
 
 ```bash
-bun add @oxform/react
+pnpm add @oxform/react zod
 ```
 
 ```bash
-npm install @oxform/react
+npm install @oxform/react zod
 ```
 
 ## First form
@@ -50,7 +50,7 @@ export function LoginForm() {
         event.preventDefault();
         void form.submit(values => {
           console.info(values.email);
-        });
+        })();
       }}
     >
       <Field form={form} name='email'>
@@ -68,6 +68,10 @@ export function LoginForm() {
   );
 }
 ```
+
+`form.submit(onSuccess, onError?)` returns an async function. Invoke that
+function after preventing the browser's default submit behavior. Submit
+validation uses the root schema unless an error-level submit check is configured.
 
 ## Next steps
 

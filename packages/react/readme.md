@@ -18,6 +18,9 @@ bun add @oxform/react
 
 Peer dependencies: React `^16.8.0 || ^17 || ^18 || ^19`.
 
+The examples use Zod as the Standard Schema implementation. Install it with
+`pnpm add zod`.
+
 ## Quick start
 
 ```tsx
@@ -169,9 +172,9 @@ useFormEffect(
 );
 ```
 
-The selector and callback refs are updated on every render; the underlying
-effect is recreated only when `api` changes. The first run is skipped — only
-subsequent changes invoke the callback.
+The first selection is skipped. Later deeply unequal selections invoke the
+callback. Keep the selector and callback stable for a given API: changing
+only those functions does not reliably replace the current subscription.
 
 ### Reading error issues
 
@@ -199,9 +202,10 @@ function FieldError({
 useForm<Values>(options: FormOptions<Values>): UseFormReturn<Values>
 ```
 
-Creates a form on first render and keeps it stable for the component's
-lifetime. The returned object is the `FormApi` with a reactive `status`
-property that re-renders the component when any form-status flag changes.
+Creates one underlying form on first render. The returned object exposes
+the `FormApi` with a reactive `status` property that re-renders the component
+when form status changes. The returned wrapper can change with status;
+the underlying form and its current values persist.
 
 Options come from [`FormOptions`](../core/readme.md#formoptionsvalues).
 
@@ -224,9 +228,9 @@ form.submit(
 form.reset();
 ```
 
-> Note: passing a different `id` after the first render does not currently
-> recreate the form (`useForm` snapshots options on mount). Keep options
-> stable per form instance.
+Options update after each render without resetting current values. Changed
+defaults become the next reset baseline. Passing a different `id` does not
+recreate the form or change its original ID.
 
 ### `useField`
 
@@ -313,9 +317,10 @@ useFormEffect<Api, Selected>(
 ): void
 ```
 
-Runs `fn` whenever the selected slice changes (deep-equal comparison). The
-first render is skipped. Selector and callback refs are refreshed each
-render; the underlying TanStack effect is recreated only when `api` changes.
+Runs `fn` whenever the selected slice changes by deep comparison. The initial
+selection is skipped. The subscription is recreated when `api` changes and
+cleaned up on unmount. Keep the selector and callback stable while observing
+the same API. Returned promises are not awaited; callbacks can overlap.
 
 `Api` can be any object exposing a `.store` — a `FormApi`, `FieldApi`, or
 `ArrayFieldApi` returned by `useForm` / `useFieldApi` / `useArrayField`.
@@ -412,9 +417,9 @@ don't need a separate import. See the
   `FieldFocusOptions`, `FieldOptions`, `FieldPlugin`, `FieldPluginsInput`,
   `FieldResetKeepOptions`, `FieldResetStatus`, `FieldSetIssuesMode`,
   `FieldState`, `FieldStatus`, `FieldStore`, `FormApi`, `FormArrayFields`,
-  `FormIssue`, `FormIssueLevel`, `FormIssuesByLevel`,
-  `FormIssuesByLevelInput`, `FormChecksMap`, `FormIssuesOptions`,
-  `FormErrorIssueLevel`, `FormFields`, `FormFieldValue`, `FormIssue`,
+  `FormIssue`, `FormIssueEntry`, `FormIssueLevel`, `FormIssueLevels`, `FormIssuesByLevel`,
+  `FormIssuesByLevelInput`, `FormChecksMap`, `FormCheckValidator`, `FormIssuesOptions`,
+  `FormErrorIssueLevel`, `FormFields`, `FormFieldValue`, `InferFormIssueLevels`,
   `FormLikeStore`, `FormOptions`, `FormResetFieldOptions`,
   `FormResetKeepOptions`, `FormResetOptions`, `FormSetIssuesOptions`,
   `FormStatus`, `FormStore`, `FormSubmitErrorHandler`,
