@@ -53,7 +53,8 @@ files, a demo console, reset, and links that retain the framework and example.
 Each example workspace builds a separate `playground.html` entry using its
 own compiler and runtime. The docs app serves these builds in iframes and
 includes them in production output. Source viewing reads the original
-example files through Vite's raw imports.
+example files through Vite's raw imports. Fumadocs highlights the TSX source
+with Shiki using the docs' GitHub light and dark palettes.
 
 The playground renders on the client. Its query variants share one static
 HTML path, so prerendering includes only the base `/playground` page.

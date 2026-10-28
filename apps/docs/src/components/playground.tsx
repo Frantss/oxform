@@ -1,9 +1,27 @@
-import { useEffect, useRef, useState } from 'react';
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { PlaygroundExample, PlaygroundFramework } from '@/lib/playground';
 import { sourceFiles } from '@/lib/playground';
 import appCss from '@/styles/app.css?url';
 
 type PlaygroundProps = { framework: PlaygroundFramework; example: PlaygroundExample };
+
+const SourceCode = memo(function SourceCode({ name, code }: { name: string; code: string }) {
+  return (
+    <DynamicCodeBlock
+      lang='tsx'
+      code={code}
+      codeblock={{
+        allowCopy: false,
+        className: 'playground-code',
+        viewportProps: {
+          'aria-label': name + ' source',
+          className: 'playground-code-viewport',
+        },
+      }}
+    />
+  );
+});
 
 export function Playground({ framework, example }: PlaygroundProps) {
   const files = sourceFiles(framework, example.id);
@@ -130,9 +148,7 @@ export function Playground({ framework, example }: PlaygroundProps) {
               ))}
             </select>
           </label>
-          <pre tabIndex={0} aria-label={file.name + ' source'}>
-            <code>{file.code}</code>
-          </pre>
+          <SourceCode name={file.name} code={file.code} />
         </section>
       </div>
       <section className='playground-console' aria-labelledby='console-title'>

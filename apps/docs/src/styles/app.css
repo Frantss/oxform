@@ -98,13 +98,23 @@
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-fd-border);
 }
-.playground-source > pre {
-  height: 34rem;
+.playground-code {
   margin: 0;
-  padding: 1rem;
-  overflow: auto;
+  border: 0;
+  box-shadow: none;
+}
+.playground-code-viewport {
+  height: 34rem;
+  max-height: none;
+  padding: 1rem 0;
   font-size: 0.75rem;
   line-height: 1.7;
+}
+.playground-code pre {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
   tab-size: 2;
 }
 .playground-console {
