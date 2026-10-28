@@ -13,7 +13,7 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
-    "@frantss/fumadocs-theme": "0.1.1",
+    "@frantss/fumadocs-theme": "0.2.0",
     "@oxform/core": "workspace:*",
     "@oxform/react": "workspace:*",
     "@oxform/solid": "workspace:*",
