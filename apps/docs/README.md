@@ -77,9 +77,18 @@ navigation title use the package's component wrappers.
 Keep `@frantss/fumadocs-theme` in `ssr.noExternal` in `vite.config.ts` so
 the theme and Fumadocs share provider contexts during server rendering.
 
-## Production Start Limitation
+## Production
 
-`pnpm run docs:start` currently targets `.output/server/index.mjs`, while
-the observed build output is `dist/server/server.js`. The configured target
-is missing after a build, so this command fails with `MODULE_NOT_FOUND`.
-The target is configured in this workspace's [package.json](./package.json).
+After building, run `pnpm run docs:start` from the repository root. The srvx
+server loads `dist/server/server.js`, serves static files from `dist/client`,
+and listens on `0.0.0.0` using `PORT` (default `3000`).
+
+On Railway, keep the repository root as the build context and set:
+
+- Build command: `pnpm exec vp run --filter '@oxform/docs...' build`
+- Start command: `pnpm --dir apps/docs run start`
+- Health check: `/docs/react`
+- Environment: `RAILPACK_NODE_VERSION=24`, `NODE_ENV=production`, `PORT=8080`
+
+The build includes the docs workspace and its dependencies, including all
+three playground previews.

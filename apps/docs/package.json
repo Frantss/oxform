@@ -8,7 +8,7 @@
     "dev": "pnpm run playground:build && vp dev",
     "build": "pnpm run playground:build && vp build",
     "playground:build": "vp run example-oxform-react#build && vp run example-oxform-solid#build && vp run example-oxform-solid-v2#build",
-    "start": "node .output/server/index.mjs",
+    "start": "srvx --prod --dir . --entry dist/server/server.js --static dist/client --host 0.0.0.0",
     "check:types": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
   },
@@ -28,6 +28,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "solid-js": "^1.9.17",
+    "srvx": "1.0.7",
     "zod": "^4.6.7"
   },
   "devDependencies": {

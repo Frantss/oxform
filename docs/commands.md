@@ -37,7 +37,7 @@ pnpm --dir examples/solid-v2 run dev
 Public documentation lives in `apps/docs/content/docs`; contributor guides
 live in `docs/`. The docs server provides the playground at `/playground`.
 See the [docs app readme](../apps/docs/README.md) for the
-content pipeline and the current production-start limitation.
+content pipeline and production server configuration.
 
 ## Testing Commands
 
