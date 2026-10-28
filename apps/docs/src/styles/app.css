@@ -44,6 +44,27 @@
 .playground button {
   cursor: pointer;
 }
+.playground-select {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.playground-select > select {
+  display: block;
+  width: 100%;
+  appearance: none;
+  padding-inline-end: 2.5rem;
+}
+.playground-select > svg {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  color: var(--color-fd-muted-foreground);
+  pointer-events: none;
+}
 .playground button:hover:not(:disabled) {
   background: var(--color-fd-muted);
 }

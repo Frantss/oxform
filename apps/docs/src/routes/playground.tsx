@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { Playground } from '@/components/playground';
+import { PlaygroundSelect } from '@/components/playground-select';
 import { baseOptions } from '@/lib/layout.shared';
 import { examplesFor, frameworks, playgroundSearch } from '@/lib/playground';
 
@@ -32,7 +33,7 @@ function PlaygroundPage() {
         <div className='playground-selectors'>
           <label>
             Framework
-            <select
+            <PlaygroundSelect
               value={framework}
               onChange={event => {
                 const search = playgroundSearch({ framework: event.target.value });
@@ -44,11 +45,11 @@ function PlaygroundPage() {
                   {entry.label}
                 </option>
               ))}
-            </select>
+            </PlaygroundSelect>
           </label>
           <label>
             Example
-            <select
+            <PlaygroundSelect
               value={selected.id}
               onChange={event => {
                 void navigate({ search: { framework, example: event.target.value }, resetScroll: false });
@@ -59,7 +60,7 @@ function PlaygroundPage() {
                   {entry.label}
                 </option>
               ))}
-            </select>
+            </PlaygroundSelect>
           </label>
         </div>
         <p className='playground-description'>{selected.description}</p>

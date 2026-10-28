@@ -1,5 +1,6 @@
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { memo, useEffect, useRef, useState } from 'react';
+import { PlaygroundSelect } from '@/components/playground-select';
 import type { PlaygroundExample, PlaygroundFramework } from '@/lib/playground';
 import { sourceFiles } from '@/lib/playground';
 import appCss from '@/styles/app.css?url';
@@ -140,13 +141,13 @@ export function Playground({ framework, example }: PlaygroundProps) {
           </div>
           <label className='playground-file'>
             File
-            <select value={file.name} onChange={event => setFilename(event.target.value)}>
+            <PlaygroundSelect value={file.name} onChange={event => setFilename(event.target.value)}>
               {files.map(entry => (
                 <option key={entry.name} value={entry.name}>
                   {entry.name}
                 </option>
               ))}
-            </select>
+            </PlaygroundSelect>
           </label>
           <SourceCode name={file.name} code={file.code} />
         </section>
