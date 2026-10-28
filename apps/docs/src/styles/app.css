@@ -82,6 +82,12 @@
 .playground-actions [role='status'] {
   font-size: 0.875rem;
 }
+.playground button.playground-scan[aria-pressed='true'],
+.playground button.playground-scan[aria-pressed='true']:hover:not(:disabled) {
+  border-color: var(--color-fd-primary);
+  background: var(--color-fd-primary);
+  color: var(--color-fd-primary-foreground);
+}
 .playground-panels {
   display: grid;
   gap: 1rem;

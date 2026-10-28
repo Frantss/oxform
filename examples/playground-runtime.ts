@@ -2,7 +2,9 @@ export function connectPlayground(): void {
   const send = (type: string, message?: string) => {
     window.parent.postMessage({ type, message }, location.origin);
   };
-  window.addEventListener('load', () => requestAnimationFrame(() => send('oxform-playground-ready')));
+  const ready = () => requestAnimationFrame(() => send('oxform-playground-ready'));
+  if (document.readyState === 'complete') ready();
+  else window.addEventListener('load', ready);
   const format = (value: unknown): string => {
     if (typeof value === 'string') return value;
     try {

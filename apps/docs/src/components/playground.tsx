@@ -33,6 +33,8 @@ export function Playground({ framework, example }: PlaygroundProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
+  const [isScanEnabled, setIsScanEnabled] = useState(false);
+  const [scanError, setScanError] = useState('');
   const preview = useRef<HTMLIFrameElement>(null);
 
   const syncTheme = () => {
@@ -59,6 +61,10 @@ export function Playground({ framework, example }: PlaygroundProps) {
         syncTheme();
         setLoading(false);
       }
+      if (data.type === 'oxform-playground-scan-error') {
+        setIsScanEnabled(false);
+        setScanError('React Scan could not load. Toggle it on to try again.');
+      }
       if (!('message' in data) || typeof data.message !== 'string') return;
       if (data.type === 'oxform-playground-log') {
         const message = data.message.slice(0, 20000);
@@ -75,6 +81,14 @@ export function Playground({ framework, example }: PlaygroundProps) {
       window.removeEventListener('message', receive);
     };
   }, []);
+
+  useEffect(() => {
+    if (framework !== 'react' || loading) return;
+    preview.current?.contentWindow?.postMessage(
+      { type: 'oxform-playground-scan', enabled: isScanEnabled },
+      location.origin,
+    );
+  }, [framework, isScanEnabled, loading]);
 
   useEffect(() => {
     if (!loading) return;
@@ -102,6 +116,7 @@ export function Playground({ framework, example }: PlaygroundProps) {
           onClick={() => {
             setLoading(true);
             setError('');
+            setScanError('');
             setLogs([]);
             setReset(current => current + 1);
           }}
@@ -111,8 +126,29 @@ export function Playground({ framework, example }: PlaygroundProps) {
         <button type='button' onClick={() => void copy(location.href, 'Playground link copied.')}>
           Copy link
         </button>
+        {framework === 'react' && (
+          <button
+            type='button'
+            className='playground-scan'
+            title='Highlight React component renders in the preview'
+            aria-label='React Scan'
+            aria-pressed={isScanEnabled}
+            disabled={loading}
+            onClick={() => {
+              setIsScanEnabled(current => !current);
+              setScanError('');
+            }}
+          >
+            React Scan: {isScanEnabled ? 'on' : 'off'}
+          </button>
+        )}
         <span role='status'>{copyMessage}</span>
       </div>
+      {scanError && (
+        <p className='playground-error' role='alert'>
+          {scanError}
+        </p>
+      )}
       <div className='playground-panels'>
         <section className='playground-preview' aria-labelledby='preview-title' aria-busy={loading}>
           <div className='playground-panel-heading'>

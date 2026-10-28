@@ -49,6 +49,8 @@ runtime, SSR, or hydration failures.
 Open [the playground](http://localhost:3002/playground) to try all seven React
 examples or the Solid 1 and Solid 2 account forms. The page includes source
 files, a demo console, reset, and links that retain the framework and example.
+React previews also have a React Scan toggle button to highlight component renders.
+Scanning starts off, loads on demand, and can be toggled without resetting the form.
 
 Each example workspace builds a separate `playground.html` entry using its
 own compiler and runtime. The docs app serves these builds in iframes and
