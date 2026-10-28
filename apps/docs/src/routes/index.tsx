@@ -19,6 +19,13 @@ function Home() {
           </p>
           <div className='flex flex-wrap gap-3'>
             <Link
+              to='/playground'
+              search={{ framework: 'react', example: 'basic' }}
+              className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
+            >
+              Playground
+            </Link>
+            <Link
               to='/docs/$'
               params={{ _splat: 'react' }}
               className='inline-flex items-center gap-2 rounded-md bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground'

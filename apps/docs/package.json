@@ -5,8 +5,9 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "dev": "vp dev",
-    "build": "vp build",
+    "dev": "pnpm run playground:build && vp dev",
+    "build": "pnpm run playground:build && vp build",
+    "playground:build": "vp run example-oxform-react#build && vp run example-oxform-solid#build && vp run example-oxform-solid-v2#build",
     "start": "node .output/server/index.mjs",
     "check:types": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
@@ -36,6 +37,9 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "example-oxform-react": "workspace:*",
+    "example-oxform-solid": "workspace:*",
+    "example-oxform-solid-v2": "workspace:*",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.0.0"

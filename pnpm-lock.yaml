@@ -264,6 +264,15 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.1
         version: 6.1.1(@voidzero-dev/vite-plus-core@1.0.0(@arethetypeswrong/core@0.18.5)(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.25)(typescript@7.0.2)(yaml@2.9.1))
+      example-oxform-react:
+        specifier: workspace:*
+        version: link:../../examples/react
+      example-oxform-solid:
+        specifier: workspace:*
+        version: link:../../examples/solid
+      example-oxform-solid-v2:
+        specifier: workspace:*
+        version: link:../../examples/solid-v2
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3

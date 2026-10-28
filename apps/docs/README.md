@@ -44,6 +44,28 @@ Check documentation links after editing. For changes to rendered behavior,
 also inspect desktop and mobile layouts and check the browser console for
 runtime, SSR, or hydration failures.
 
+## Playground
+
+Open [the playground](http://localhost:3002/playground) to try all seven React
+examples or the Solid 1 and Solid 2 account forms. The page includes source
+files, a demo console, reset, and links that retain the framework and example.
+
+Each example workspace builds a separate `playground.html` entry using its
+own compiler and runtime. The docs app serves these builds in iframes and
+includes them in production output. Source viewing reads the original
+example files through Vite's raw imports.
+
+The playground renders on the client. Its query variants share one static
+HTML path, so prerendering includes only the base `/playground` page.
+
+`docs:dev` and `docs:build` build the previews automatically. After editing
+an example while the docs server is running, rebuild the previews and press
+Reset demo:
+
+```bash
+pnpm --dir apps/docs run playground:build
+```
+
 ## Theme
 
 The site uses `@frantss/fumadocs-theme` for Geist Mono typography, light and

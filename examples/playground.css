@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+  background: var(--color-fd-background, #fafafa);
+  color: var(--color-fd-foreground, #171717);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+}
+
+main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.25rem;
+}
+
+main > h1 {
+  font-size: 1rem;
+}
+main > p {
+  margin-block: 0.75rem 1.25rem;
+}
+input,
+button,
+select,
+textarea {
+  font: inherit;
+}
+input:not([type='checkbox']),
+select,
+textarea,
+.input {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--color-fd-muted-foreground, #4d4d4d);
+  border-radius: 0;
+  background: var(--color-fd-card, #fff);
+  color: var(--color-fd-foreground, #171717);
+}
+button,
+.btn {
+  min-height: 2.75rem;
+  border: 1px solid var(--color-fd-muted-foreground, #4d4d4d);
+  border-radius: 0;
+  background: var(--color-fd-secondary, #fff);
+  color: var(--color-fd-foreground, #171717);
+}
+button:hover:not(:disabled),
+.btn:hover:not(:disabled) {
+  background: var(--color-fd-muted, #f0f0f0);
+  color: var(--color-fd-foreground, #171717);
+}
+.btn-primary {
+  background: var(--color-fd-primary, #6d28d9);
+  color: var(--color-fd-primary-foreground, #fff);
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--color-fd-foreground, #171717);
+  background: var(--color-fd-foreground, #171717);
+  color: var(--color-fd-background, #fafafa);
+}
+.field-label,
+.field-hint,
+.status-title,
+.logs-header {
+  color: var(--color-fd-muted-foreground, #4d4d4d);
+}
+.field-error {
+  color: #b91c1c;
+}
+input::placeholder,
+textarea::placeholder,
+.logs-list:empty::after {
+  color: var(--color-fd-muted-foreground, #4d4d4d);
+}
+.dark .field-error {
+  color: #fca5a5;
+}
+.status,
+.status-tag,
+.logs,
+.logs-header,
+.logs-item,
+.stat,
+.transform-json {
+  border-radius: 0;
+  background: var(--color-fd-muted, #f0f0f0);
+  border-color: var(--color-fd-border, #e8e8e8);
+  color: var(--color-fd-muted-foreground, #4d4d4d);
+}
+.stat-value {
+  color: var(--color-fd-foreground, #171717);
+}
+.status-tag[data-on='true'] {
+  background: var(--color-fd-card, #fff);
+  border-color: var(--frantss-docs-line-strong, #767676);
+  color: var(--color-fd-foreground, #171717);
+}
+fieldset {
+  border-color: var(--frantss-docs-line-strong, #767676);
+}
+.array-row-main .input {
+  min-width: min(220px, 100%);
+}
+.array-actions {
+  flex-wrap: wrap;
+}
+:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--color-fd-ring, #6d28d9);
+  outline-offset: 2px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

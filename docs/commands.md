@@ -28,13 +28,14 @@ pnpm install
 pnpm run docs:dev                           # Docs at http://localhost:3002
 pnpm run docs:build                         # Production docs build
 pnpm run docs:check                         # Generate MDX metadata and check types
+pnpm --dir apps/docs run playground:build    # Rebuild embedded previews after editing examples
 pnpm --dir examples/react run dev
 pnpm --dir examples/solid run dev
 pnpm --dir examples/solid-v2 run dev
 ```
 
 Public documentation lives in `apps/docs/content/docs`; contributor guides
-live in `docs/`.
+live in `docs/`. The docs server provides the playground at `/playground`.
 See the [docs app readme](../apps/docs/README.md) for the
 content pipeline and the current production-start limitation.
 

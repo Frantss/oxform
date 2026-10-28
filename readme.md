@@ -109,6 +109,11 @@ Open [localhost:3002](http://localhost:3002). See the
 
 ## Examples
 
+The docs [playground](http://localhost:3002/playground) includes interactive
+React, Solid 1, and Solid 2 demos with source viewing. Run `pnpm run docs:dev`
+to use it locally. Select an example, edit its form fields, and inspect its
+state or console output. Reset demo starts a fresh instance.
+
 The [`examples/react`](examples/react) workspace contains runnable demos:
 
 ```bash

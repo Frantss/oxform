@@ -1,3 +1,146 @@
 @import 'tailwindcss';
 @import '@frantss/fumadocs-theme/styles.css';
 @import 'fumadocs-twoslash/twoslash.css';
+
+.playground {
+  width: min(100%, 88rem);
+  margin-inline: auto;
+  padding: 1.5rem 1rem 3rem;
+}
+.playground-heading h1 {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.playground-heading p,
+.playground-description {
+  color: var(--color-fd-muted-foreground);
+}
+.playground-selectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1.5rem 0.75rem;
+}
+.playground-selectors label,
+.playground-file {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.playground-selectors label {
+  flex: 1 1 12rem;
+  max-width: 22rem;
+}
+.playground :is(select, button) {
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-fd-muted-foreground);
+  background: var(--color-fd-card);
+  color: var(--color-fd-foreground);
+  font: inherit;
+}
+.playground button {
+  cursor: pointer;
+}
+.playground button:hover:not(:disabled) {
+  background: var(--color-fd-muted);
+}
+.playground button:disabled {
+  cursor: default;
+  color: var(--color-fd-muted-foreground);
+}
+.playground-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+.playground-actions [role='status'] {
+  font-size: 0.875rem;
+}
+.playground-panels {
+  display: grid;
+  gap: 1rem;
+}
+.playground-preview,
+.playground-source,
+.playground-console {
+  min-width: 0;
+  border: 1px solid var(--color-fd-border);
+}
+.playground-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-fd-border);
+}
+.playground-panel-heading h2 {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.playground-panel-heading span {
+  color: var(--color-fd-muted-foreground);
+  font-size: 0.875rem;
+}
+.playground-preview iframe {
+  display: block;
+  width: 100%;
+  height: 42rem;
+  border: 0;
+}
+.playground-file {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-fd-border);
+}
+.playground-source > pre {
+  height: 34rem;
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  font-size: 0.75rem;
+  line-height: 1.7;
+  tab-size: 2;
+}
+.playground-console {
+  margin-top: 1rem;
+}
+.playground-console > p,
+.playground-console li {
+  padding: 1rem;
+}
+.playground-console > p {
+  color: var(--color-fd-muted-foreground);
+}
+.playground-console ol {
+  max-height: 20rem;
+  overflow: auto;
+}
+.playground-console li + li {
+  border-top: 1px solid var(--color-fd-border);
+}
+.playground-console pre,
+.playground-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.playground-error {
+  padding: 1rem;
+  color: #b91c1c;
+}
+.dark .playground-error {
+  color: #fca5a5;
+}
+@media (min-width: 70rem) {
+  .playground {
+    padding: 2rem 1.5rem 3rem;
+  }
+  .playground-panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

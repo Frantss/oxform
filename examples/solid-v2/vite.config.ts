@@ -5,6 +5,15 @@ import { base } from '../../vite.config';
 
 export default defineConfig({
   ...base,
+  base: './',
+  build: {
+    rolldownOptions: {
+      input: {
+        index: fileURLToPath(new URL('./index.html', import.meta.url)),
+        playground: fileURLToPath(new URL('./playground.html', import.meta.url)),
+      },
+    },
+  },
   plugins: [solid()],
   optimizeDeps: { include: ['solid-js', '@solidjs/web', 'vite-plus/test/browser'] },
   test: { ...base.test, environment: 'node' },

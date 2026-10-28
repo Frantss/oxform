@@ -21,6 +21,12 @@ export function baseOptions(framework: 'react' | 'solid' = 'react'): BaseLayoutP
         active: 'nested-url',
       },
       {
+        text: 'Playground',
+        url: '/playground',
+        icon: <Code2 />,
+        active: 'nested-url',
+      },
+      {
         text: 'GitHub',
         url: 'https://github.com/frantss/oxform',
         icon: <GitFork />,
