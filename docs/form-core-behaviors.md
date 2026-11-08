@@ -93,16 +93,21 @@ See [Checks and Issues](./checks-and-issues.md) for the full validation contract
 
 ### `submit(onSuccess, onError?)`
 
-Returns `() => Promise<void>`. Calling it sets dirty and submitting, runs
-whole-form submit validation, and awaits the selected callback. Success
-requires both run validity and current aggregate validity.
-`onSuccess(values, form)` receives current values; `onError(issues, form)`
-receives all current issues.
+Returns `() => Promise<void>`. Calling it synchronously sets dirty and
+submitting, runs whole-form submit validation, and awaits the selected callback.
+Concurrent calls on one form share the active attempt and its first callbacks.
+Success requires both run validity and current aggregate validity.
+`onSuccess(values, form)` receives the same raw values snapshot used by the
+validators; `onError(issues, form)` receives all current issues.
 
-After a normally resolved callback, submits increments, submitting clears, and
-successful records the validation result. Validator or callback rejection
-rejects the handler and may leave completion status unchanged. Browser default
-submission and concurrent calls are not suppressed.
+A value change, superseding validation, or reset before the callback aborts
+submission without either callback or an automatic retry. Settled attempts,
+including stale and rejected attempts, increment submits and clear submitting.
+A reset's replacement status is not overwritten by the old attempt.
+
+Validator or callback rejection rejects the handler and leaves successful
+false. Successful means the valid branch's callback resolved, not that a server
+accepted a write. Browser default submission still requires `preventDefault()`.
 
 ```ts
 await form.submit(

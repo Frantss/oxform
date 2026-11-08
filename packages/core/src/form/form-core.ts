@@ -35,6 +35,7 @@ export class FormCore<Values, Level extends string = string> {
   public store!: ReadonlyStore<FormStore<Values, Level>>;
   private activeValidations = 0;
   private validationLanes = new Map<string, { sequence: number; targets?: string[] }>();
+  public resetRevision = 0;
 
   constructor(options: FormOptions<Values, Level>) {
     this.options = options;
@@ -242,6 +243,33 @@ export class FormCore<Values, Level extends string = string> {
     fields?: Name | Name[],
     options?: ValidateOptions,
   ): Promise<[boolean, FormIssuesByLevel<Level>]> => {
+    return this.startValidationRun(fields, options).result;
+  };
+
+  public startValidationRun = <const Name extends DeepKeys<Values>>(
+    fields?: Name | Name[],
+    options?: ValidateOptions,
+  ) => {
+    const targets = fields
+      ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_pathWithRoot(field))
+      : undefined;
+    const values = this.store.state.values;
+    const isCurrentLane = this.beginValidationLane('issues', targets, options?.type);
+    const isCurrent = () => isCurrentLane() && (targets !== undefined || this.store.state.values === values);
+
+    return {
+      values,
+      isCurrent,
+      result: this.runValidation(targets, options, values, isCurrent),
+    };
+  };
+
+  private runValidation = async (
+    targets: string[] | undefined,
+    options: ValidateOptions | undefined,
+    values: Values,
+    isCurrentValidation: () => boolean,
+  ): Promise<[boolean, FormIssuesByLevel<Level>]> => {
     const validationType = options?.type;
     const {
       entries: validationEntries,
@@ -249,10 +277,6 @@ export class FormCore<Values, Level extends string = string> {
       replacementTypes,
     } = checksEngine_validationPlan(this.options, validationType);
     const issueLevels = checksEngine_issueLevels(this.options);
-    const targets = fields
-      ? (Array.isArray(fields) ? fields : [fields]).map(field => fields_pathWithRoot(field))
-      : undefined;
-    const isCurrentValidation = this.beginValidationLane('issues', targets, validationType);
     const hasErrorValidation = errorValidationEntries.length > 0;
 
     if (validationEntries.length === 0) {
@@ -298,7 +322,7 @@ export class FormCore<Values, Level extends string = string> {
           validate: (input: Values) => { issues?: FormIssue[] } | Promise<{ issues?: FormIssue[] }>;
         };
       };
-      const result = schema['~standard'].validate(this.store.state.values);
+      const result = schema['~standard'].validate(values);
 
       if (result instanceof Promise) {
         this.beginValidation();
@@ -387,6 +411,7 @@ export class FormCore<Values, Level extends string = string> {
 
   public reset = (options?: FormResetOptions<Values, Level>) => {
     this.invalidateValidationLanes();
+    this.resetRevision += 1;
     this.persisted.setState(current => {
       const values = options?.values ?? this.options.defaultValues;
       const issueLevels = this.issueLevels();
