@@ -39,18 +39,19 @@ const form = createForm(options);
 
 ### Properties
 
-| Property  | Public behavior                                                  |
-| --------- | ---------------------------------------------------------------- |
-| `id`      | Form identifier.                                                 |
-| `options` | Current configuration.                                           |
-| `values`  | Current typed values snapshot.                                   |
-| `status`  | Aggregate interaction, validation, and submission status.        |
-| `store`   | Read-only observable state with values, field state, and status. |
-| `field`   | Path-based field operations.                                     |
-| `array`   | Path-based array mutations.                                      |
+| Property  | Public behavior                                               |
+| --------- | ------------------------------------------------------------- |
+| `id`      | Form identifier.                                              |
+| `options` | Current configuration.                                        |
+| `values`  | Current typed values snapshot.                                |
+| `status`  | Aggregate interaction, validation, and submission status.     |
+| `state`   | Current store snapshot, including root-only issues.           |
+| `store`   | Read-only observable values, fields, root issues, and status. |
+| `field`   | Path-based field operations.                                  |
+| `array`   | Path-based array mutations.                                   |
 
 Reads alone do not subscribe React components to values. `useForm` subscribes
-to status; `useSubscribe` selects values or other state.
+to status and root issues; `useSubscribe` selects values or other state.
 
 ### `validate(fields?, options?)`
 

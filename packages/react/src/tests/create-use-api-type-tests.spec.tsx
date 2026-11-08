@@ -120,6 +120,16 @@ it('covers direct React hook schema inference contracts', () => {
     );
 
     expectTypeOf(form.values).toEqualTypeOf<Values>();
+    expectTypeOf(form.state.values).toEqualTypeOf<Values>();
+    expectTypeOf(form.state.issues).toEqualTypeOf<FormIssuesByLevel<IssueLevels>>();
+    expectTypeOf(form.issues()).toEqualTypeOf<FormIssuesByLevel<IssueLevels>>();
+    const riskIssues = form.issues({ nested: true }).risk;
+    expectTypeOf<(typeof riskIssues)[number]['level']>().toEqualTypeOf<'risk'>();
+    form.setIssues({ warning: [{ level: 'warning', issue: { message: 'Review this form' } }] });
+    // @ts-expect-error root writes must use configured issue levels.
+    form.setIssues({ notice: [] });
+    // @ts-expect-error root entries must match their bucket level.
+    form.setIssues({ warning: [{ level: 'risk', issue: { message: 'Wrong level' } }] });
     expectTypeOf(form.field.get('contacts.0.phones.0.number')).toEqualTypeOf<string | undefined>();
     expectTypeOf(name.state.value).toEqualTypeOf<string>();
     expectTypeOf(name.state.defaultValue).toEqualTypeOf<string>();

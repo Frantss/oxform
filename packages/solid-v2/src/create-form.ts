@@ -1,6 +1,8 @@
-import { createFormStatus } from '#create-form-status';
+import { createStoreState } from '#internal/create-store-state';
 import { requireOwner } from '#internal/require-owner';
 import { resolve } from '#internal/resolve';
+import { selectFormStatus } from '#internal/select-form-status';
+import { selectProperties } from '#internal/select-properties';
 import type { CreateFormReturn } from '#types/create-form-return';
 import type { MaybeAccessor } from '#types/maybe-accessor';
 import { createForm as createCoreForm, type FormChecksMap } from '@oxform/core';
@@ -25,6 +27,11 @@ export const createForm = <Values, const Checks extends FormChecksMap<NoInfer<Va
       { transparent: true },
     );
 
-  const status = createFormStatus({ form: api });
-  return Object.create(api, { status: { enumerable: true, get: () => status } }) as CreateFormReturn<Values, Checks>;
+  const source = createStoreState(api);
+  const status = selectFormStatus(() => source().status);
+  const state = Object.assign(selectProperties(source, ['values', 'fields', 'issues']), { status });
+  return Object.create(api, {
+    status: { enumerable: true, get: () => status },
+    state: { enumerable: true, get: () => state },
+  }) as CreateFormReturn<Values, Checks>;
 };

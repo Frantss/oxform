@@ -35,6 +35,10 @@ export class FormApi<Values, Level extends string = string> {
     return this.core.store;
   }
 
+  public get state() {
+    return this.core.store.state;
+  }
+
   public get status() {
     return this.core.store.state.status;
   }
@@ -49,6 +53,14 @@ export class FormApi<Values, Level extends string = string> {
 
   public get reset() {
     return this.core.reset;
+  }
+
+  public get issues() {
+    return this.core.issues;
+  }
+
+  public get setIssues() {
+    return this.core.setIssues;
   }
 
   public '~mount' = () => {

@@ -6,6 +6,8 @@ import type {
 } from '#types/api/form-issue-entry';
 import { DEFAULT_FORM_STATUS } from '#constants';
 import type { FormIssue } from '#types/api/form-issue';
+import type { FormIssuesOptions } from '#types/api/form-issues-options';
+import type { FormSetIssuesOptions } from '#types/api/form-set-issues-options';
 import type { FormOptions } from '#types/api/form-options';
 import type { FormResetOptions } from '#types/api/form-reset-options';
 import type { FormStore } from '#types/api/form-store';
@@ -18,6 +20,7 @@ import {
   ERROR_ISSUE_LEVEL,
   issues_empty,
   issues_filter,
+  issues_hasAny,
   issues_hasBlocking,
   issues_merge,
   issues_normalize,
@@ -79,6 +82,7 @@ export class FormCore<Values, Level extends string = string> {
 
       return {
         values: persisted.values,
+        issues: root.issues as FormIssuesByLevel<Level>,
         fields,
         status: {
           ...persisted.status,
@@ -114,6 +118,39 @@ export class FormCore<Values, Level extends string = string> {
     );
 
     return issues;
+  };
+
+  public issues = (options?: FormIssuesOptions): FormIssuesByLevel<Level> => {
+    return options?.nested ? this.currentIssues() : this.store.state.issues;
+  };
+
+  public setIssues = (issues: FormIssuesByLevelInput<Level>, options?: FormSetIssuesOptions) => {
+    this.setIssuesAtPath(fields_root, issues, options);
+  };
+
+  public setIssuesAtPath = (path: string, issues: FormIssuesByLevelInput<Level>, options?: FormSetIssuesOptions) => {
+    const issueLevels = this.issueLevels();
+    this.persisted.setState(state => {
+      const field = state.fields[path];
+      let updated = issues;
+
+      switch (options?.mode) {
+        case 'append':
+          updated = issues_merge([field.issues, issues], issueLevels);
+          break;
+        case 'keep':
+          if (issues_hasAny(field.issues)) return state;
+          break;
+      }
+
+      return {
+        ...state,
+        fields: {
+          ...state.fields,
+          [path]: { ...field, issues: issues_normalize(updated, issueLevels) },
+        },
+      };
+    });
   };
 
   public updateOptions = (options: FormOptions<Values, Level>) => {

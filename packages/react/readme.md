@@ -139,6 +139,10 @@ import { Subscribe } from '@oxform/react';
 `Subscribe` re-renders only when the selected slice changes. Pair it with a
 narrow `selector` to avoid re-rendering on unrelated form state changes.
 
+`useForm` already rerenders for status and root-issue changes. Read
+`form.state.issues` for a root error summary without an additional subscription;
+use `useSubscribe` for values or other selected state.
+
 ### Side effects with `useFormEffect`
 
 ```tsx

@@ -261,6 +261,11 @@ Non-blocking issues do not fail submit.
 
 ## Reading Issues
 
+`form.state.issues` and `form.issues()` contain only form-root issues.
+`form.issues({ nested: true })` aggregates root and field issues. Core reads are
+snapshots; Solid exposes reactive `form.state` getters, and React `useForm`
+rerenders when root issues change.
+
 Read field issues through `form.field.issues`:
 
 ```ts
@@ -308,6 +313,19 @@ form.field.setIssues('email', {
 });
 ```
 
+Write request-wide failures to the form root instead of a synthetic field or
+separate error signal:
+
+```ts
+form.setIssues({
+  error: [{ level: 'error', issue: { message: 'The request could not be saved.' } }],
+});
+```
+
+The root setter uses the same write modes as the field setter below. A
+whole-form run with an error validator replaces root errors, allowing a retry.
+Targeted field validation leaves root issues unchanged.
+
 Manual issues support replace, append, and keep write modes:
 
 ```ts
@@ -321,13 +339,13 @@ refreshes issues. Manual error issues are replaced when the run includes an
 error validator. Giving a manual custom issue a `type` makes it subject to that
 event's refresh rules.
 
-`replace` replaces all buckets for the named field, including omitted levels.
-`append` adds to existing buckets. `keep` preserves all existing buckets if any
-bucket is nonempty; it does not decide separately for each level. The payload's
-issue path does not redirect the write to another field.
+`replace` replaces all buckets at the target field or form root, including
+omitted levels. `append` adds to existing buckets. `keep` preserves all existing
+buckets if any bucket is nonempty; it does not decide separately for each
+level. The payload's issue path does not redirect the write.
 
-If a manual issue uses a blocking level, it affects field and form
-validity and can fail submit.
+A blocking manual issue affects form validity. It affects a field's own
+validity only when written at that field.
 
 ## Clearing Issues
 
@@ -348,6 +366,7 @@ To clear manual issues, replace them manually:
 form.field.setIssues('email', {
   warning: [],
 });
+form.setIssues({}); // Clear all root buckets without changing field issues.
 ```
 
 To clear all issues during reset, use the default reset behavior:

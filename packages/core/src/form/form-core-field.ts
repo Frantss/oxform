@@ -9,7 +9,7 @@ import type { FormResetFieldOptions } from '#types/api/form-reset-field-options'
 import type { FormSetIssuesOptions } from '#types/api/form-set-issues-options';
 import type { DeepKeys, DeepValue } from '#types/deep';
 import { checksEngine_hasValidator, checksEngine_issueLevels } from '#utils/checks-issues-engine';
-import { issues_hasAny, issues_merge, issues_normalize } from '#utils/issues';
+import { issues_merge } from '#utils/issues';
 import { fields_pathWithRoot } from '#utils/fields';
 import { get } from '#utils/get';
 import type { Updater } from '#utils/update/updater-';
@@ -118,26 +118,7 @@ export class FormCoreField<Values, Level extends string = string> {
     issues: FormIssuesByLevelInput<Level>,
     options?: FormSetIssuesOptions,
   ) => {
-    const path = fields_pathWithRoot(name);
-    const existing = this.core.persisted.state.fields[path].issues;
-    let updated: FormIssuesByLevelInput<Level>;
-
-    switch (options?.mode) {
-      case 'append':
-        updated = issues_merge([existing, issues], checksEngine_issueLevels(this.core.options));
-        break;
-      case 'keep':
-        updated = issues_hasAny(existing) ? existing : issues;
-        break;
-      case 'replace':
-      default:
-        updated = issues;
-        break;
-    }
-
-    this.fields.set(name, {
-      issues: issues_normalize(updated, checksEngine_issueLevels(this.core.options)),
-    });
+    this.core.setIssuesAtPath(fields_pathWithRoot(name), issues, options);
   };
 
   public reset = <const Name extends DeepKeys<Values>>(

@@ -97,7 +97,7 @@ state without creating subscriptions or running form effects.
 
 | Primitive                                   | Result                                                                              |
 | ------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `createForm(options)`                       | Core form API with reactive `status` getters.                                       |
+| `createForm(options)`                       | Core form API with stable reactive `state` and `status` getters.                    |
 | `createField(options)`                      | Core field API with reactive `id`, `value`, `state`, and input `props`.             |
 | `createFieldApi(options)`                   | Imperative field API with owned lifecycle and ref cleanup.                          |
 | `createArrayField(options)`                 | Core array API with reactive `state` and `ids`.                                     |
@@ -114,8 +114,10 @@ field paths, array item values, and configured issue levels retain their types.
 Read reactive properties in JSX or another tracking scope. Destructuring a
 value such as `const { value } = field.state` captures a snapshot. The state and
 status containers themselves stay stable and can be passed to child components.
+`form.state.values`, `form.state.fields`, and root-only `form.state.issues` are
+reactive; `form.state.status` is the same container as `form.status`.
 `form.values`, `field.get()`, and method-returned issues are imperative snapshots.
-Use a selector to observe form values:
+Use a narrow selector when unrelated value changes should not rerun a consumer:
 
 ```tsx
 const email = createSubscribe(form, state => state.values.email);
