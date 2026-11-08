@@ -1,6 +1,6 @@
 {
   "name": "@oxform/core",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Oxform is a lean and flexible framework-agnostic form library.",
   "license": "MIT",
   "author": "Frantss <frantss.bongiovanni@gmail.com>",
