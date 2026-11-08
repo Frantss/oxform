@@ -328,8 +328,13 @@ export class FormCore<Values, Level extends string = string> {
 
     for (const result of issues) {
       for (const issue of result.issues) {
-        const issuePath =
-          !issue.path || issue.path.length === 0 ? fields_root : `${fields_root}.${issue.path.join('.')}`;
+        let issuePath = fields_root;
+        if (issue.path) {
+          for (const segment of issue.path) {
+            const key = typeof segment === 'object' ? segment.key : segment;
+            issuePath += `.${String(key)}`;
+          }
+        }
 
         const shouldInclude =
           !targets || targets.some(target => issuePath === target || issuePath.startsWith(`${target}.`));
