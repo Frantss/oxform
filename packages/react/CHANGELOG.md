@@ -1,5 +1,12 @@
 # oxform-react
 
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [93a61ac]
+  - @oxform/core@0.5.1
+
 ## 0.5.1
 
 ### Patch Changes
