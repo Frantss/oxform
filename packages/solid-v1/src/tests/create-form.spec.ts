@@ -106,3 +106,25 @@ it('should release form status subscriptions on owner disposal', () => {
 it('should reject creation without a Solid owner', () => {
   expect(() => createForm({ schema, defaultValues })).toThrow('require a Solid owner');
 });
+
+it('should keep retained root issue state stable and release its owner without affecting another form', () => {
+  const { form, other, state, selected, dispose } = withRoot(dispose => {
+    const form = createForm({ schema, defaultValues });
+    const other = createForm({ schema, defaultValues });
+    const state = form.state;
+    const selected = vi.fn();
+    createComputed(() => selected(state.issues.error.map(entry => entry.issue.message)));
+    return { form, other, state, selected, dispose };
+  });
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'First failure' } }] });
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'Second failure' } }] });
+  expect(form.state).toBe(state);
+  expect(state.status).toBe(form.status);
+  expect(state.status.valid).toBe(false);
+  expect(other.state.issues.error).toEqual([]);
+  expect(selected.mock.calls).toEqual([[[]], [['First failure']], [['Second failure']]]);
+  dispose();
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'After disposal' } }] });
+  expect(selected.mock.calls).toEqual([[[]], [['First failure']], [['Second failure']]]);
+  expect(form.issues().error.map(entry => entry.issue.message)).toEqual(['After disposal']);
+});

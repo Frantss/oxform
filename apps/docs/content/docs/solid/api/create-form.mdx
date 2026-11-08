@@ -55,12 +55,15 @@ Reactive updates change configuration for later operations. Updating defaults do
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `id`, `options` | Identifier and current configuration.                                                                                |
 | `values`        | Imperative current-values snapshot; use [createSubscribe](/docs/solid/api/subscribe) to observe it.                  |
+| `state`         | Stable reactive getters for `values`, `fields`, root-only `issues`, and `status`; `state.status === form.status`.    |
 | `status`        | Stable container with reactive [status getters](/docs/solid/api/status).                                             |
-| `store`         | Observable store containing values, fields, and status.                                                              |
+| `store`         | Observable store containing values, fields, root-only issues, and status.                                            |
 | `field`         | Path-based `get`, `status`, `change`, `focus`, `blur`, `register`, `unregister`, `issues`, `setIssues`, and `reset`. |
 | `array`         | Path-based `insert`, `append`, `prepend`, `swap`, `move`, `update`, `remove`, and `replace`.                         |
 
 Path-based operations use the same contracts as [bound fields](/docs/solid/api/create-field) and [bound arrays](/docs/solid/api/create-array-field), with the path as their first argument. `form.field.register(name)` returns an element callback.
+
+`form.issues()` reads root issues as a snapshot; `{ nested: true }` includes all field issues. `form.setIssues(issues, options?)` writes only root issues, using the same replace, append, and keep modes as field writes. Use `form.state.issues` to render request-wide failures reactively; a whole-form error validation clears previous root errors, while targeted field validation leaves them unchanged.
 
 ## `validate(fields?, options?)`
 

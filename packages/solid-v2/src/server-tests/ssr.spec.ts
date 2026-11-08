@@ -39,3 +39,19 @@ it('should avoid subscriptions, validation and effect callbacks during server re
     expect(form.status.submits).toBe(0);
     dispose();
   }));
+
+it('should render request-local root summaries without including field errors', () => {
+  const renderSummary = (message?: string) =>
+    renderToString(() => {
+      const form = createForm({ schema, defaultValues: { name: 'Ada', tags: [] } });
+      form.field.setIssues('name', { error: [{ level: 'error', issue: { message: 'Field-only failure' } }] });
+      if (message) form.setIssues({ error: [{ level: 'error', issue: { message } }] });
+      return form
+        .issues()
+        .error.map(entry => entry.issue.message)
+        .join(', ');
+    });
+  expect(renderSummary('First request')).toContain('First request');
+  expect(renderSummary('Second request')).toContain('Second request');
+  expect(renderSummary()).not.toMatch(/First request|Second request|Field-only failure/);
+});

@@ -33,6 +33,16 @@ it('should preserve schema, nested path, optional array and issue-level inferenc
     const array = createArrayField({ form, name: 'contacts' });
     const tags = createArrayField({ form, name: 'tags' });
     expectTypeOf(form.values).toEqualTypeOf<z.infer<typeof schema>>();
+    expectTypeOf(form.state.values).toEqualTypeOf<z.infer<typeof schema>>();
+    expectTypeOf(form.state.issues).toEqualTypeOf<FormIssuesByLevel<'error' | 'warning' | 'risk'>>();
+    expectTypeOf(form.issues()).toEqualTypeOf<FormIssuesByLevel<'error' | 'warning' | 'risk'>>();
+    const riskIssues = form.issues({ nested: true }).risk;
+    expectTypeOf<(typeof riskIssues)[number]['level']>().toEqualTypeOf<'risk'>();
+    form.setIssues({ warning: [{ level: 'warning', issue: { message: 'Review this form' } }] });
+    // @ts-expect-error root writes must use configured issue levels.
+    form.setIssues({ notice: [] });
+    // @ts-expect-error root entries must match their bucket level.
+    form.setIssues({ warning: [{ level: 'risk', issue: { message: 'Wrong level' } }] });
     expectTypeOf(field.value).toEqualTypeOf<string>();
     expectTypeOf(field.props.value).toEqualTypeOf<string>();
     expectTypeOf(city.get()).toEqualTypeOf<string>();

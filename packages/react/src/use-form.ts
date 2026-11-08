@@ -3,6 +3,7 @@ import { useFormStatus } from '#use-form-status';
 import { useIsomorphicLayoutEffect } from '#use-isomorphic-layout-effect';
 import type { FormChecksMap, InferFormIssueLevels } from '@oxform/core';
 import { createForm } from '@oxform/core';
+import { useSelector } from '@tanstack/react-store';
 import { useMemo, useState } from 'react';
 
 type UseFormOptions<Values, Checks extends FormChecksMap<NoInfer<Values>, string> | undefined> = Parameters<
@@ -17,6 +18,7 @@ export const useForm = <Values, const Checks extends FormChecksMap<NoInfer<Value
   });
 
   const status = useFormStatus({ form: api });
+  const issues = useSelector(api.store, state => state.issues);
 
   useIsomorphicLayoutEffect(api['~mount'], [api]);
   useIsomorphicLayoutEffect(() => {
@@ -25,6 +27,7 @@ export const useForm = <Values, const Checks extends FormChecksMap<NoInfer<Value
 
   // todo: re-create api if id changes
 
+  // Root issue identity also invalidates memoized consumers when status is unchanged.
   return useMemo(() => {
     return Object.create(api, {
       status: {
@@ -32,5 +35,5 @@ export const useForm = <Values, const Checks extends FormChecksMap<NoInfer<Value
         get: () => status,
       },
     });
-  }, [api, status]) as UseFormReturn<Values, InferFormIssueLevels<{ checks: Checks }>>;
+  }, [api, status, issues]) as UseFormReturn<Values, InferFormIssueLevels<{ checks: Checks }>>;
 };

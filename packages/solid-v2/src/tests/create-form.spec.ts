@@ -96,3 +96,30 @@ it('should subscribe to core forms and release subscriptions on source change an
 it('should reject creation without a Solid owner', () => {
   expect(() => createForm({ schema, defaultValues })).toThrow('require a Solid owner');
 });
+
+it('should commit retained root issue state and release its owner without affecting another form', () => {
+  const { form, other, state, selected, dispose } = withRoot(dispose => {
+    const form = createForm({ schema, defaultValues });
+    const other = createForm({ schema, defaultValues });
+    const state = form.state;
+    const selected = vi.fn();
+    createEffect(() => state.issues.error.map(entry => entry.issue.message), selected);
+    return { form, other, state, selected, dispose };
+  });
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'First failure' } }] });
+  expect(state.issues.error).toEqual([]);
+  flush();
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'Second failure' } }] });
+  expect(state.issues.error.map(entry => entry.issue.message)).toEqual(['First failure']);
+  flush();
+  expect(form.state).toBe(state);
+  expect(state.status).toBe(form.status);
+  expect(state.status.valid).toBe(false);
+  expect(other.state.issues.error).toEqual([]);
+  expect(selected.mock.calls.map(([messages]) => messages)).toEqual([[], ['First failure'], ['Second failure']]);
+  dispose();
+  form.setIssues({ error: [{ level: 'error', issue: { message: 'After disposal' } }] });
+  flush();
+  expect(selected.mock.calls.map(([messages]) => messages)).toEqual([[], ['First failure'], ['Second failure']]);
+  expect(form.issues().error.map(entry => entry.issue.message)).toEqual(['After disposal']);
+});

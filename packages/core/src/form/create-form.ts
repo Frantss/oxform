@@ -16,11 +16,31 @@ type CreateFormOptionsInput<
 
 type InferredFormApi<Values, Level extends string> = Omit<
   FormApi<Values, string>,
-  'field' | 'array' | 'options' | 'store' | 'status' | 'submit' | 'validate' | '~update'
+  | 'field'
+  | 'array'
+  | 'options'
+  | 'store'
+  | 'state'
+  | 'issues'
+  | 'setIssues'
+  | 'status'
+  | 'submit'
+  | 'validate'
+  | '~update'
 > &
   Pick<
     FormApi<Values, Level>,
-    'field' | 'array' | 'options' | 'store' | 'status' | 'submit' | 'validate' | '~update'
+    | 'field'
+    | 'array'
+    | 'options'
+    | 'store'
+    | 'state'
+    | 'issues'
+    | 'setIssues'
+    | 'status'
+    | 'submit'
+    | 'validate'
+    | '~update'
   > & {
     readonly '~issueLevels': Level;
     field: FormCoreField<Values, Level>;

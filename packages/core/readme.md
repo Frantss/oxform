@@ -77,17 +77,20 @@ The top-level form instance returned by `createForm`.
 
 ### Getters
 
-| Getter     | Type                                                           | Description                                                  |
-| ---------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
-| `id`       | `string`                                                       | Form identifier (from `options.id` or auto-generated).       |
-| `options`  | `FormOptions<Values>`                                          | Current options object.                                      |
-| `store`    | `ReadonlyStore<FormStore<Values>>`                             | Read-only observable TanStack store.                         |
-| `status`   | `FormStatus`                                                   | Current form status snapshot.                                |
-| `values`   | `Values`                                                       | Current values snapshot.                                     |
-| `validate` | `(fields?, options?) => Promise<[boolean, FormIssuesByLevel]>` | Bound `FormCore.validate`. See [validate](#validate).        |
-| `reset`    | `(options?: FormResetOptions<Values>) => void`                 | Bound `FormCore.reset`. See [reset](#reset).                 |
-| `field`    | `FormCoreField<Values>`                                        | Per-field operations — see [`form.field`](#formfield).       |
-| `array`    | `FormCoreArray<Values>`                                        | Per-array-field operations — see [`form.array`](#formarray). |
+| Getter      | Type                                                           | Description                                                  |
+| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| `id`        | `string`                                                       | Form identifier (from `options.id` or auto-generated).       |
+| `options`   | `FormOptions<Values>`                                          | Current options object.                                      |
+| `store`     | `ReadonlyStore<FormStore<Values>>`                             | Read-only observable TanStack store.                         |
+| `state`     | `FormStore<Values>`                                            | Current store snapshot, including root-only `issues`.        |
+| `status`    | `FormStatus`                                                   | Current form status snapshot.                                |
+| `values`    | `Values`                                                       | Current values snapshot.                                     |
+| `issues`    | `(options?: FormIssuesOptions) => FormIssuesByLevel`           | Root issues; `{ nested: true }` also includes field issues.  |
+| `setIssues` | `(issues, options?: FormSetIssuesOptions) => void`             | Write root issues with the same modes as field issues.       |
+| `validate`  | `(fields?, options?) => Promise<[boolean, FormIssuesByLevel]>` | Bound `FormCore.validate`. See [validate](#validate).        |
+| `reset`     | `(options?: FormResetOptions<Values>) => void`                 | Bound `FormCore.reset`. See [reset](#reset).                 |
+| `field`     | `FormCoreField<Values>`                                        | Per-field operations — see [`form.field`](#formfield).       |
+| `array`     | `FormCoreArray<Values>`                                        | Per-array-field operations — see [`form.array`](#formarray). |
 
 ### Methods
 
