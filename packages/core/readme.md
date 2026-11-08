@@ -100,13 +100,23 @@ submit(
 ): () => Promise<void>
 ```
 
-Returns an async submit handler. When invoked it sets `status.submitting`
-and `status.dirty` to `true`, runs `validate(undefined, { type: 'submit' })`,
-then evaluates the current form validity. It calls `onSuccess(values, form)`
-only when submit validation passes and the form has no current blocking
-issues. Otherwise it calls `onError(issues, form)` with the current
-form issues, increments `status.submits`, and finally clears `submitting` and writes
-`status.successful`.
+Returns a zero-argument submit handler. Invocation synchronously marks the form
+dirty and submitting. Concurrent calls on the same form await the existing
+attempt; only the first call's callbacks run.
+
+Whole-form submit validation and `onSuccess(values, form)` use the values
+captured when validation starts. Success requires both run validity and no
+current blocking issues. Otherwise `onError(issues, form)` receives all current
+issues. If values change, validation is superseded, or the form resets before
+the callback, the attempt stops without either callback or an automatic retry.
+
+Settlement clears `submitting` and increments `submits`, including rejected and
+stale attempts. A reset keeps its replacement status. Validator and callback
+errors reject the handler; rejected or stale attempts are unsuccessful.
+`successful` records a valid branch whose callback resolved, not server
+acceptance. Schema transforms do not replace the submitted values.
+
+The handler does not receive a DOM event; prevent browser submission yourself.
 
 #### `validate`
 

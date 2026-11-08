@@ -75,9 +75,11 @@ await form.validate();
 
 ## `submit(onSuccess, onError?)`
 
-Returns a zero-argument `() => Promise<void>` handler. Invoke that handler to submit. It runs whole-form submit validation, then awaits `onSuccess(values, form)` if both the run and aggregate current validity pass, or `onError(issues, form)` otherwise.
+Returns a zero-argument `() => Promise<void>` handler. It runs whole-form submit validation, then awaits `onSuccess(values, form)` if both the run and current aggregate validity pass, or `onError(issues, form)` otherwise. Validators and the success callback receive the same captured raw values, not schema-transformed output.
 
-The handler marks the form dirty and submitting before validation. Normal completion increments `submits`, clears `submitting`, and records `successful`. A rejected validator or callback rejects the handler; these completion updates are not guaranteed after rejection. It does not prevent browser submission or suppress concurrent calls.
+Invocation synchronously marks the form dirty and submitting. Concurrent calls on one form share the active attempt and the first call's callbacks. A value change, superseding validation, or reset before the callback aborts without calling either callback or retrying automatically.
+
+Every settled attempt clears `submitting` and increments `submits`, including stale and rejected attempts; a reset's replacement status is preserved. Validator or callback rejection rejects the handler and leaves `successful` false. A resolved valid callback sets `successful` true; that is not proof of server acceptance. Prevent browser submission in your DOM handler.
 
 ## `reset(options?)`
 

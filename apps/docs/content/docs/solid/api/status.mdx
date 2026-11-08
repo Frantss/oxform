@@ -32,10 +32,10 @@ function StatusLabel() {
 | `touched`, `blurred` | Aggregate interaction status propagated from fields.                                          |
 | `valid`              | No current error or blocking custom-level issues. Does not prove values have been validated.  |
 | `validating`         | Asynchronous validators are pending; concurrent runs keep it true until all settle.           |
-| `submitting`         | A submit handler started and has not completed normally.                                      |
-| `submits`            | Normally completed attempts, including invalid ones; starts at zero by default.               |
+| `submitting`         | One shared submit attempt is pending, including validation and its callback.                  |
+| `submits`            | Settled attempts, including invalid, stale, and rejected ones; reset replaces the count.      |
 | `submitted`          | Whether `submits` is greater than zero.                                                       |
-| `successful`         | Whether the most recently completed attempt passed validation.                                |
+| `successful`         | The last attempt passed validation and its callback resolved; not proof of server acceptance. |
 
 With default options, interaction and submit flags begin false, `submits` is zero, and `valid` and `pristine` are true. Creation does not validate defaults; reset restores configured initial status.
 

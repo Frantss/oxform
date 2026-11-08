@@ -9,6 +9,7 @@ import { generateId } from '#utils/generate-id';
 
 export class FormApi<Values, Level extends string = string> {
   private core!: FormCore<Values, Level>;
+  private submission: Promise<void> | undefined;
   public id: string;
   public field: FormCoreField<Values, Level>;
   public array: FormCoreArray<Values, Level>;
@@ -62,7 +63,29 @@ export class FormApi<Values, Level extends string = string> {
     onSuccess: FormSubmitSuccessHandler<Values, Level>,
     onError?: FormSubmitErrorHandler<Values, Level>,
   ): (() => Promise<void>) => {
-    return async () => {
+    return () => {
+      if (this.submission) return this.submission;
+
+      let resolveAttempt!: () => void;
+      let rejectAttempt!: (reason: unknown) => void;
+      const attempt = new Promise<void>((resolve, reject) => {
+        resolveAttempt = resolve;
+        rejectAttempt = reject;
+      });
+      this.submission = attempt;
+      void this.runSubmission(onSuccess, onError).then(resolveAttempt, rejectAttempt);
+      return attempt;
+    };
+  };
+
+  private runSubmission = async (
+    onSuccess: FormSubmitSuccessHandler<Values, Level>,
+    onError?: FormSubmitErrorHandler<Values, Level>,
+  ): Promise<void> => {
+    const resetRevision = this.core.resetRevision;
+    let successful = false;
+
+    try {
       this.core.persisted.setState(state => {
         return {
           ...state,
@@ -73,27 +96,32 @@ export class FormApi<Values, Level extends string = string> {
           },
         };
       });
+      if (this.core.resetRevision !== resetRevision) return;
 
-      const [valid] = await this.core.validate(undefined, {
-        type: 'submit',
-      });
-      const successful = valid && this.core.valid();
-      const currentIssues = this.core.currentIssues();
+      const validation = this.core.startValidationRun(undefined, { type: 'submit' });
+      const [valid] = await validation.result;
+      if (!validation.isCurrent() || this.core.resetRevision !== resetRevision) return;
 
-      if (successful) await onSuccess(this.core.store.state.values, this);
-      else await onError?.(currentIssues, this);
+      const validationPassed = valid && this.core.valid();
+      if (validationPassed) await onSuccess(validation.values, this);
+      else await onError?.(this.core.currentIssues(), this);
 
-      this.core.persisted.setState(state => {
-        return {
-          ...state,
-          status: {
-            ...state.status,
-            submits: state.status.submits + 1,
-            submitting: false,
-            successful,
-          },
-        };
-      });
-    };
+      successful = validationPassed;
+    } finally {
+      this.submission = undefined;
+      if (this.core.resetRevision === resetRevision) {
+        this.core.persisted.setState(state => {
+          return {
+            ...state,
+            status: {
+              ...state.status,
+              submits: state.status.submits + 1,
+              submitting: false,
+              successful,
+            },
+          };
+        });
+      }
+    }
   };
 }
