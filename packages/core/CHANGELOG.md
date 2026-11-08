@@ -1,5 +1,15 @@
 # oxform-core
 
+## 0.6.0
+
+### Minor Changes
+
+- ebb6f82: Expose typed form-root issue readers and setters, observable root issue buckets, and stable reactive Solid form state. React form consumers rerender when root messages change even if validity stays false.
+
+### Patch Changes
+
+- 135512a: Make submissions single-flight and exception-safe. Validators and submit callbacks share a captured values snapshot; stale validation aborts without invoking either callback. Rejected attempts clear submitting, remain retryable, and count as settled attempts.
+
 ## 0.5.1
 
 ### Patch Changes
