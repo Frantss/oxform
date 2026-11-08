@@ -1,5 +1,11 @@
 # oxform-core
 
+## 0.5.1
+
+### Patch Changes
+
+- 93a61ac: Fix validation issue paths containing Standard Schema `{ key }` segments, such as Valibot paths, so field errors, validity, targeted validation, and submit error callbacks retain the issues.
+
 ## 0.5.0
 
 ### Minor Changes
