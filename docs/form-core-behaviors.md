@@ -63,6 +63,9 @@ descendants but excludes ancestors and siblings. Validators always receive
 full values. An empty array targets nothing. Pathless issues apply only to
 whole-form validation.
 
+Issue paths accept property keys and Standard Schema `{ key }` segments,
+including numeric array indices. Both resolve to the same dotted field paths.
+
 | Event selection     | Validators                                                                              |
 | ------------------- | --------------------------------------------------------------------------------------- |
 | No type             | Root schema and all configured events at all levels.                                    |
