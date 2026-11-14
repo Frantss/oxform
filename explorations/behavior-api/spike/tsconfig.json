@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": [],
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "#*": ["../../../packages/core/src/*"],
+      "@standard-schema/spec": ["../../../packages/core/node_modules/@standard-schema/spec"],
+      "@tanstack/store": ["../../../packages/core/node_modules/@tanstack/store"],
+      "react": ["../../../packages/react/node_modules/@types/react"]
+    }
+  },
+  "include": ["./src/**/*.ts", "../api.ts"]
+}
