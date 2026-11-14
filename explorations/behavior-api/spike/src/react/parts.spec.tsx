@@ -138,7 +138,7 @@ it('names the React prop of each DOM event', () => {
   expect(reactEventProp('input')).toBe('onChange');
   expect(reactEventProp('focus')).toBe('onFocus');
   expect(reactEventProp('keydown')).toBe('onKeyDown');
-  expect(reactEventProp('dblclick')).toBe('onDblClick');
+  expect(reactEventProp('dblclick')).toBe('onDoubleClick');
   expect(reactEventProp('pointerenter')).toBe('onPointerEnter');
   expect(reactEventProp('beforeinput')).toBe('onBeforeInput');
 });

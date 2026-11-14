@@ -33,51 +33,32 @@ type SlotDefinition = {
 };
 type PartProps = Record<string, any> & { children?: ReactNode | ((state: any) => ReactNode) };
 
-/** React names the DOM `input` event `onChange`: it is the prop that makes a field with `value` controlled. */
-const MULTIWORD_EVENTS = [
-  'keydown',
-  'keyup',
-  'keypress',
-  'dblclick',
-  'contextmenu',
-  'mousedown',
-  'mouseup',
-  'mousemove',
-  'mouseenter',
-  'mouseleave',
-  'mouseover',
-  'mouseout',
-  'pointerdown',
-  'pointerup',
-  'pointermove',
-  'pointerenter',
-  'pointerleave',
-  'pointerover',
-  'pointerout',
-  'pointercancel',
-  'touchstart',
-  'touchend',
-  'touchmove',
-  'touchcancel',
-  'dragstart',
-  'dragend',
-  'dragenter',
-  'dragleave',
-  'dragover',
-  'beforeinput',
-  'compositionstart',
-  'compositionend',
-  'compositionupdate',
-];
-const EVENT_PROPS: Record<string, string> = {
+/**
+ * React's prop for a DOM event. Single-word events follow the rule `on` + the name (`click` to `onClick`). These
+ * do not: `input` is the event behind React's `onChange`, and React spells the rest in camel case, not always
+ * as the event is spelled (`dblclick` is `onDoubleClick`).
+ */
+const EVENT_PROPS: Readonly<Record<string, string>> = {
   input: 'onChange',
-  ...Object.fromEntries(
-    MULTIWORD_EVENTS.map(event => {
-      const [, first, second] = /^(key|mouse|pointer|touch|drag|composition|before|context|dbl)(.+)$/.exec(event)!;
-      const cap = (word: string) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
-      return [event, `on${cap(first!)}${cap(second!)}`];
-    }),
-  ),
+  beforeinput: 'onBeforeInput',
+  keydown: 'onKeyDown',
+  keyup: 'onKeyUp',
+  dblclick: 'onDoubleClick',
+  contextmenu: 'onContextMenu',
+  mousedown: 'onMouseDown',
+  mouseup: 'onMouseUp',
+  mousemove: 'onMouseMove',
+  mouseenter: 'onMouseEnter',
+  mouseleave: 'onMouseLeave',
+  pointerdown: 'onPointerDown',
+  pointerup: 'onPointerUp',
+  pointermove: 'onPointerMove',
+  pointerenter: 'onPointerEnter',
+  pointerleave: 'onPointerLeave',
+  pointercancel: 'onPointerCancel',
+  touchstart: 'onTouchStart',
+  touchend: 'onTouchEnd',
+  touchmove: 'onTouchMove',
 };
 export const reactEventProp = (event: string) =>
   EVENT_PROPS[event] ?? `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
