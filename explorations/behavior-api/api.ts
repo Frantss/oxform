@@ -16,7 +16,15 @@
 
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
-import type { ComponentPropsWithoutRef, ComponentPropsWithRef, JSX, ReactNode } from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  ComponentPropsWithRef,
+  HTMLAttributes,
+  JSX,
+  ReactElement,
+  ReactNode,
+  Ref,
+} from 'react';
 import type { DeepKeys, DeepKeysOfType, DeepValue } from '../../packages/core/src/types/deep';
 
 // ---------------------------------------------------------------------------------------------------------
@@ -861,12 +869,23 @@ export declare const standardForm: FormDefinition<StandardKind>;
 export type ElementTag = keyof JSX.IntrinsicElements;
 export type PartElements<Parts> = { readonly [Name in keyof Parts]?: ElementTag };
 
+/**
+ * A part renders in the element of its tag. `render` renders it in another element instead, or in whatever the
+ * function returns. The element or the function gets the part's props, its `ref` included.
+ */
+export type PartRender<State> =
+  | ReactElement
+  | ((props: HTMLAttributes<any> & { ref?: Ref<any> }, state: State) => ReactNode);
+
 /** Props go to the element. Children may be a function of the part's state. */
 export type PartProps<Tag extends ElementTag, Props = {}, State = {}> = Omit<
   ComponentPropsWithRef<Tag>,
   'children' | keyof Props
 > &
-  Props & { readonly children?: ReactNode | ((state: State) => ReactNode) };
+  Props & {
+    readonly children?: ReactNode | ((state: State) => ReactNode);
+    readonly render?: PartRender<State>;
+  };
 
 export type PartComponents<Parts, Elements> = {
   readonly [
@@ -901,8 +920,11 @@ export type RootComponent<Kind extends FormKind, Values, Elements> = Elements ex
 export interface FormHooks<Kind extends FormKind, Values> {
   /** The instance from context. */
   readonly useForm: () => FormInstance<Kind, Values>;
-  /** Re-renders when the selected state changes. Returns the initial state on the server. */
-  readonly useSelector: <Selected>(selector: (state: StateOf<Kind, Values>) => Selected) => Selected;
+  /** Re-renders when the selected state changes, by `===` or by `compare`. Returns the initial state on the server. */
+  readonly useSelector: <Selected>(
+    selector: (state: StateOf<Kind, Values>) => Selected,
+    options?: { readonly compare?: (a: Selected, b: Selected) => boolean },
+  ) => Selected;
   /** Same signature as `form.field`, and re-renders on that field's state. */
   readonly useField: ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never;
   /** Same signature as `form.array`, and re-renders on that array's state. */

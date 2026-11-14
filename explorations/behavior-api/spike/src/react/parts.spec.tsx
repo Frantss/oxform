@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { Profiler, StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
@@ -6,7 +6,7 @@ import { render } from 'vitest-browser-react';
 import { configureForm } from '../form';
 import { standardForm } from '../standard';
 import { defaultProfile, failing, schemaOf, type Profile } from '../test-helpers';
-import { createParts, reactEventProp } from './create-parts';
+import { createParts } from './create-parts';
 
 const profile = (options: Record<string, unknown> = {}) =>
   configureForm(standardForm, { schema: schemaOf<Profile>(), defaultValues: defaultProfile, ...options } as never);
@@ -134,15 +134,6 @@ it('renders on the server with the state at creation and starts nothing', () => 
   expect(html).not.toContain('role="alert"');
 });
 
-it('names the React prop of each DOM event', () => {
-  expect(reactEventProp('input')).toBe('onChange');
-  expect(reactEventProp('focus')).toBe('onFocus');
-  expect(reactEventProp('keydown')).toBe('onKeyDown');
-  expect(reactEventProp('dblclick')).toBe('onDoubleClick');
-  expect(reactEventProp('pointerenter')).toBe('onPointerEnter');
-  expect(reactEventProp('beforeinput')).toBe('onBeforeInput');
-});
-
 it('keeps the form wiring when the author passes the same props, and merges the author ref', async () => {
   const configured = profile();
   const form = configured();
@@ -175,26 +166,26 @@ it('registers the element with the form and lets go of it when the part unmounts
   expect(form.field('name').state.ref).toBeNull();
 });
 
-it('runs the author handler first and lets it cancel the form handler', async () => {
-  const { Root, Field } = createParts(profile(), elements);
-  const calls: string[] = [];
-  const screen = await render(
-    <Root>
-      <Field name='name' aria-label='name' onChange={() => calls.push('author')} />
-    </Root>,
-  );
-  await userEvent.type(screen.getByLabelText('name'), 'a');
-  expect(calls).toEqual(['author']);
-  await expect.element(screen.getByLabelText('name')).toHaveValue('a');
+it('runs the author handler too, and warns about nothing', async () => {
+  const errors: unknown[][] = [];
+  const original = console.error;
+  console.error = (...args: unknown[]) => void errors.push(args);
+  try {
+    const { Root, Field } = createParts(profile(), elements);
+    const calls: string[] = [];
+    const screen = await render(
+      <Root>
+        <Field name='name' aria-label='name' onChange={() => calls.push('author')} />
+      </Root>,
+    );
+    await userEvent.type(screen.getByLabelText('name'), 'a');
 
-  const { Root: CancelRoot, Field: CancelField } = createParts(profile(), elements);
-  const cancelled = await render(
-    <CancelRoot>
-      <CancelField name='name' aria-label='cancelled' onChange={event => event.preventDefault()} />
-    </CancelRoot>,
-  );
-  await userEvent.type(cancelled.getByLabelText('cancelled'), 'a');
-  await expect.element(cancelled.getByLabelText('cancelled')).toHaveValue('');
+    expect(calls).toEqual(['author']);
+    await expect.element(screen.getByLabelText('name')).toHaveValue('a');
+    expect(errors).toEqual([]);
+  } finally {
+    console.error = original;
+  }
 });
 
 it('tells the React event when a slot prevented the native one', async () => {
@@ -210,4 +201,61 @@ it('tells the React event when a slot prevented the native one', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Send' }));
   await expect.poll(() => seen).toBe(true);
+});
+
+it('applies the options the props carry on each render', async () => {
+  const calls: string[] = [];
+  const { Root, Submit } = createParts(profile(), elements);
+  const App = ({ label }: { label: string }) => (
+    <Root onSubmit={() => void calls.push(label)}>
+      <Submit>Send</Submit>
+    </Root>
+  );
+  const screen = await render(<App label='first' />);
+
+  await screen.rerender(<App label='second' />);
+  await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+  await expect.poll(() => calls).toEqual(['second']);
+});
+
+it('renders a part as another element through render, as an element or a function', async () => {
+  const { Root, Submit, Field } = createParts(profile(), elements);
+  const screen = await render(
+    <Root>
+      <Field name='name' aria-label='name' render={<textarea />} />
+      <Submit render={(props, state) => <a {...props}>{`submits:${state.submits}`}</a>} />
+    </Root>,
+  );
+
+  expect(screen.getByLabelText('name').element().tagName).toBe('TEXTAREA');
+  await userEvent.type(screen.getByLabelText('name'), 'Ada');
+  await expect.element(screen.getByLabelText('name')).toHaveValue('Ada');
+  await expect.element(screen.getByText('submits:0')).toBeInTheDocument();
+  expect(screen.getByText('submits:0').element().tagName).toBe('A');
+});
+
+it('re-renders a part only when what it shows changes', async () => {
+  const configured = profile();
+  const form = configured();
+  const { Root, Field } = createParts(configured, elements);
+  const commits: Record<string, number> = { name: 0, tag: 0 };
+  const count = (id: string) => () => void (commits[id] = (commits[id] ?? 0) + 1);
+  const screen = await render(
+    <Root form={form as never}>
+      <Profiler id='name' onRender={count('name')}>
+        <Field name='name' aria-label='name' />
+      </Profiler>
+      <Profiler id='tag' onRender={count('tag')}>
+        <Field name='tags.0' aria-label='tag' />
+      </Profiler>
+    </Root>,
+  );
+  const before = { ...commits };
+
+  form.field('tags.0').change('z');
+
+  await expect.element(screen.getByLabelText('tag')).toHaveValue('z');
+  expect(commits.tag).toBeGreaterThan(before.tag!);
+  expect(commits.name).toBe(before.name);
 });

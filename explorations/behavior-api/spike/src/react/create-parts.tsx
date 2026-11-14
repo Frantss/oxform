@@ -3,23 +3,26 @@
 import { shallow, useSelector } from '@tanstack/react-store';
 import type { ReadonlyStore } from '@tanstack/store';
 import {
+  cloneElement,
   createContext,
   createElement,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type ReactElement,
   type ReactNode,
-  type SyntheticEvent,
 } from 'react';
 import type * as Api from '../../../api';
-import { slotsOf } from '../form';
-import { getAt } from '../paths';
+import { adapterControlsOf, slotsOf } from '../form';
+import { getAt, isDeepEqual } from '../paths';
 
-type Instance = { readonly id: string; readonly store: ReadonlyStore<any>; destroy(): void } & Record<string, any>;
+type Instance = { readonly id: string; readonly store: ReadonlyStore<any> } & Record<string, any>;
 type Configured = ((options?: Record<string, unknown>) => Instance) & {
   readonly definition: { readonly options: Readonly<Record<string, string>> };
 };
@@ -31,51 +34,44 @@ type SlotDefinition = {
   readonly on?: Readonly<Record<string, (event: Event, context: any) => void>>;
   readonly bind?: (element: HTMLElement, part: any) => void | (() => void);
 };
-type PartProps = Record<string, any> & { children?: ReactNode | ((state: any) => ReactNode) };
-
-/**
- * React's prop for a DOM event. Single-word events follow the rule `on` + the name (`click` to `onClick`). These
- * do not: `input` is the event behind React's `onChange`, and React spells the rest in camel case, not always
- * as the event is spelled (`dblclick` is `onDoubleClick`).
- */
-const EVENT_PROPS: Readonly<Record<string, string>> = {
-  input: 'onChange',
-  beforeinput: 'onBeforeInput',
-  keydown: 'onKeyDown',
-  keyup: 'onKeyUp',
-  dblclick: 'onDoubleClick',
-  contextmenu: 'onContextMenu',
-  mousedown: 'onMouseDown',
-  mouseup: 'onMouseUp',
-  mousemove: 'onMouseMove',
-  mouseenter: 'onMouseEnter',
-  mouseleave: 'onMouseLeave',
-  pointerdown: 'onPointerDown',
-  pointerup: 'onPointerUp',
-  pointermove: 'onPointerMove',
-  pointerenter: 'onPointerEnter',
-  pointerleave: 'onPointerLeave',
-  pointercancel: 'onPointerCancel',
-  touchstart: 'onTouchStart',
-  touchend: 'onTouchEnd',
-  touchmove: 'onTouchMove',
-};
-export const reactEventProp = (event: string) =>
-  EVENT_PROPS[event] ?? `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
-
 type RefLike = ((element: HTMLElement | null) => unknown) | { current: unknown } | null | undefined;
+type Render = ReactElement | ((props: Record<string, unknown>, state: any) => ReactNode);
+type PartProps = Record<string, any> & {
+  children?: ReactNode | ((state: any) => ReactNode);
+  render?: Render;
+};
+
 const setRef = (ref: RefLike, element: HTMLElement | null) => {
   if (typeof ref === 'function') return ref(element);
   if (ref) ref.current = element;
 };
 
-const useSelectorOn = <Selected,>(
-  instance: Instance,
-  selector: (state: any) => Selected,
-  compare?: (a: Selected, b: Selected) => boolean,
-) => useSelector(instance.store, selector, { compare });
+/** The ref the author put on the element given to `render`. */
+const elementRef = (render: unknown): RefLike =>
+  isValidElement(render) ? (render.props as { ref?: RefLike }).ref : undefined;
 
-/** The adapter's whole job for a part: pure slot functions to props, DOM events to handlers, `bind` to a ref. */
+/** Both refs get the element, and both are let go together. */
+const mergeRefs =
+  (...refs: RefLike[]) =>
+  (element: HTMLElement | null) => {
+    const cleanups = refs.map(ref => setRef(ref, element));
+    return () =>
+      refs.forEach((ref, index) => {
+        const cleanup = cleanups[index];
+        if (typeof cleanup === 'function') cleanup();
+        else setRef(ref, null);
+      });
+  };
+
+/**
+ * What a part shows is a function of the store's state alone: `null` while the part is absent. The selector returns
+ * a small object, and the part re-renders only when that object changes by value.
+ */
+const sameView = (previous: any, next: any) =>
+  previous === next ||
+  (!!previous && !!next && shallow(previous.attrs, next.attrs) && isDeepEqual(previous.state, next.state));
+
+/** The adapter's job for a part: slot functions to props, DOM events to listeners, `bind` to the element's ref. */
 function PartView({
   instance,
   slot,
@@ -87,8 +83,7 @@ function PartView({
   tag: string;
   props: PartProps;
 }) {
-  const state = useSelectorOn(instance, current => current);
-  const { children, ...rest } = props;
+  const { children, render, ref: authorRef, ...rest } = props;
   const declared = slot.props ?? {};
 
   const partProps: Record<string, unknown> = {};
@@ -96,51 +91,56 @@ function PartView({
   for (const [name, value] of Object.entries(rest)) (name in declared ? partProps : domProps)[name] = value;
 
   const keyProp = Object.keys(declared).find(name => declared[name] === 'key');
-  const part = { id: instance.id, key: keyProp ? String(partProps[keyProp]) : '', props: partProps, api: instance };
+  const key = keyProp ? String(partProps[keyProp]) : '';
 
-  // `bind` runs when the element attaches, and again only if the key or the instance changes.
-  const { bind } = slot;
-  const { key } = part;
-  const authorRef: RefLike = domProps.ref;
-  const ref = useCallback(
+  const view = useSelector(
+    instance.store,
+    state => {
+      const part = { id: instance.id, key, props: partProps, api: instance };
+      if (slot.present && !slot.present(state, part)) return null;
+      return { state: slot.state?.(state, part) ?? {}, attrs: slot.attrs?.(state, part) ?? {} };
+    },
+    { compare: sameView },
+  );
+
+  // Listeners and `bind` attach to the element once. They read the part's props from here, as of the last commit.
+  const latestProps = useRef(partProps);
+  useLayoutEffect(() => {
+    latestProps.current = partProps;
+  });
+
+  const attach = useCallback(
     (element: HTMLElement | null) => {
-      const unbind =
-        element && bind ? bind(element, { id: instance.id, key, props: partProps, api: instance }) : undefined;
-      const authorCleanup = setRef(authorRef, element);
+      if (!element) return;
+      const part = () => ({ id: instance.id, key, props: latestProps.current, api: instance });
 
-      // Always a cleanup, so the author's ref and `bind` are undone together on any React version that supports one.
+      const removers = Object.entries(slot.on ?? {}).map(([event, handler]) => {
+        const listener = (domEvent: Event) => handler(domEvent, { ...part(), el: element });
+        element.addEventListener(event, listener);
+        return () => element.removeEventListener(event, listener);
+      });
+      const unbind = slot.bind?.(element, part());
+
       return () => {
         unbind?.();
-        if (typeof authorCleanup === 'function') authorCleanup();
-        else setRef(authorRef, null);
+        removers.forEach(remove => remove());
       };
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `partProps` only feeds `bind`, which reads the key
-    [bind, instance, key, authorRef],
+    [slot, instance, key],
   );
 
-  if (slot.present && !slot.present(state, part)) return null;
+  const own = elementRef(render);
+  // oxlint-disable-next-line react/refs -- this builds a ref callback from ref callbacks, and reads no `current`
+  const ref = useMemo(() => mergeRefs(attach, authorRef, own), [attach, authorRef, own]);
 
-  const handlers: Record<string, unknown> = {};
-  for (const [event, handler] of Object.entries(slot.on ?? {})) {
-    const prop = reactEventProp(event);
-    handlers[prop] = (reactEvent: SyntheticEvent<HTMLElement>) => {
-      // The author's handler runs first, and `preventDefault()` there skips the form's.
-      domProps[prop]?.(reactEvent);
-      if (reactEvent.isDefaultPrevented()) return;
+  if (!view) return null;
 
-      handler(reactEvent.nativeEvent, { ...part, el: reactEvent.currentTarget });
-      // A slot prevents the native event. React's event must say so too, for a router link or a parent handler.
-      if (reactEvent.nativeEvent.defaultPrevented) reactEvent.preventDefault();
-    };
-  }
+  const content = typeof children === 'function' ? children(view.state) : children;
+  const elementProps = { ...domProps, ...view.attrs, ref };
 
-  const slotState = slot.state?.(state, part) ?? {};
-  return createElement(
-    tag,
-    { ...domProps, ...slot.attrs?.(state, part), ...handlers, ref },
-    typeof children === 'function' ? children(slotState) : children,
-  );
+  if (typeof render === 'function') return render({ ...elementProps, children: content }, view.state);
+  if (isValidElement(render)) return cloneElement(render, elementProps, content ?? (render.props as any).children);
+  return createElement(tag, elementProps, content);
 }
 
 /**
@@ -177,15 +177,10 @@ export const createParts = ((configured: Configured, elements: Record<string, st
 
       const [instance] = useState(() => provided ?? configured(options));
 
-      // Strict mode runs the cleanup and the setup again at once, so destroy only if nothing set the instance up again.
-      const mounted = useRef(false);
-      useEffect(() => {
-        mounted.current = true;
-        return () => {
-          mounted.current = false;
-          if (!provided) queueMicrotask(() => mounted.current || instance.destroy());
-        };
-      }, [instance, provided]);
+      // The options of an instance we made follow the props. An instance we were given keeps its owner's.
+      const controls = provided ? undefined : adapterControlsOf(instance);
+      useLayoutEffect(() => controls?.setOptions(options));
+      useEffect(() => () => controls?.unmount(), [controls]);
 
       return createElement(
         FormContext.Provider,
@@ -195,18 +190,17 @@ export const createParts = ((configured: Configured, elements: Record<string, st
     };
   }
 
-  // Same signatures as the form's `field`, `array` and `scope`, and they re-render on the state they read.
+  // Same signatures as the form's `field`, `array` and `scope`. Each re-renders on the state it reads, and no more.
   const useField = (path: string) => {
     const form = useForm();
     const handle = useMemo(() => form.field(path), [form, path]);
-    // The handle's `state` is a new object on each read, so compare its fields.
-    useSelectorOn(form, () => handle.state, shallow);
+    useSelector(form.store, state => [getAt(state.values, path), state.status.fields[path]], { compare: shallow });
     return handle;
   };
 
   const useArrayField = (path: string) => {
     const form = useForm();
-    useSelectorOn(form, state => getAt(state.values, path));
+    useSelector(form.store, state => getAt(state.values, path));
     return useMemo(() => form.array(path), [form, path]);
   };
 
@@ -215,7 +209,8 @@ export const createParts = ((configured: Configured, elements: Record<string, st
     return useMemo(() => form.scope(prefix), [form, prefix]);
   };
 
-  const useSelector = (selector: (state: any) => unknown) => useSelectorOn(useForm(), selector);
+  const useFormSelector = (selector: (state: any) => unknown, options?: { compare?: (a: any, b: any) => boolean }) =>
+    useSelector(useForm().store, selector, options);
 
-  return { ...components, useForm, useSelector, useField, useArrayField, useScope };
+  return { ...components, useForm, useSelector: useFormSelector, useField, useArrayField, useScope };
 }) as unknown as typeof Api.createParts;

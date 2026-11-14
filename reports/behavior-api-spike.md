@@ -251,52 +251,46 @@ Built in `explorations/behavior-api/spike/src/`. 146 tests (145 pass, 1 document
   part runs the form's slot (`present`, `state`, `attrs`), turns `on` into React props, and runs `bind` in a ref.
   Tests are `spike/src/react/parts.spec.tsx` and run in Chromium with `vite.react.config.ts`: typing and `data-dirty`,
   submit and field issues (`aria-invalid`, `role="alert"`), `onSubmit`, hooks, an existing instance, strict mode, and
-  a server render. All 7 pass.
+  a server render.
 - **Core bug found: unstable store state** (`spike/src/context.ts`, `spike/src/status.ts`). After the last
   subscriber leaves, the derived store computes again on the next read and returned a new state object and a new
   `status` wrapper. React strict mode subscribes, unsubscribes and subscribes again, so `useSyncExternalStore` saw a
   changed snapshot after every commit and failed with "Maximum update depth exceeded". Fixed: an unchanged result keeps
   its reference. Regression test in `derived-status.spec.ts`. This is what any adapter needs from the store: a
   snapshot that is stable until something changes.
-- **`input` maps to `onChange`.** A slot says `on: { input }`. React warns on a field with `value` and no `onChange`,
-  and its `onChange` is the DOM input event, so the adapter maps `input` to `onChange`. A user's `onChange` prop runs
-  first. The adapter owns this table. Solid will need its own.
-- **Gaps.** Changed option props on `Root` do not reach the instance (the instance has no public `setOptions`). A
-  user `ref` prop on a part is not merged with `bind`. `useSelector` re-renders on every store change and a part
-  re-renders on any state change, since each part reads the whole state. `usePart` and parts inside a scope are not built.
+- **Gaps** are listed in the next section: `usePart` and parts inside a scope are not built.
 - **`FormHooks` in `api.ts`** now uses function properties, so the hooks can be destructured without an
   unbound-method lint warning.
 
 ## React adapter against vercel-labs/ui
 
 Compared `spike/src/react/create-parts.tsx` with `vercel-labs/ui` (`packages/react/src/use-primitive.tsx`,
-`render-element.ts`, `.agents/experts/react/*`). Fixed now, with tests in `spike/src/react/parts.spec.tsx`:
+`render-element.ts`, `.agents/experts/react/*`). Fixed, with tests in `spike/src/react/parts.spec.tsx` (14, in Chromium) and `spike/src/adapter-controls.spec.ts`:
 
-- **Store reads** use `useSelector` and `shallow` from `@tanstack/react-store`, not a hand-written
-  `useSyncExternalStore`.
-- **Prop precedence.** The form's attrs win over the author's props (`value`, `type`, `aria-describedby`), so the
-  wiring cannot be broken by accident.
-- **Refs.** The author's `ref` is merged with `bind`. The field's `bind` now returns a cleanup that calls
-  `unregister`, so the events' element map no longer leaks. `PartProps` and `RootProps` in `api.ts` use
-  `ComponentPropsWithRef` so `ref` is typed.
-- **Events.** A table names multiword events (`keydown` to `onKeyDown`). The author's handler runs first and
-  `preventDefault()` skips the form's. A slot's native `preventDefault()` is copied to React's event, so a parent
-  handler or router link sees it.
-- **`'use client'`** on the adapter module.
+- **Events are native listeners.** The adapter attaches the slot's `on` events to the element in its ref callback,
+  so there is no table of React prop names (React spells them inconsistently, such as `dblclick` and
+  `onDoubleClick`), and any DOM event a slot names works. The slot runs before React's own handlers. So
+  `preventDefault()` in a slot already shows on React's event, for a router link or a parent handler. The author's
+  React handlers (`onChange`) still run, after the slot's. Authors cannot cancel a slot's handler. A controlled
+  `<input value>` raises no React warning (tested).
+- **Store reads follow TanStack's `useSelector`.** Each part selects what it shows (`present`, `state`, `attrs`) from
+  the store state, and re-renders only when that changes by value. `useField` selects the value and the status of its
+  path with `shallow`. A part does not re-render for another field's change (tested with `Profiler`).
+- **Options follow the props.** `Root` hands its options to the instance in a layout effect on each render, like
+  today's `~update`. This needs `adapterControlsOf(instance)` in `form.ts`, a module-private channel like the other
+  internals, with `setOptions` (merged with the configured options and fragments) and `unmount`.
+- **Lifecycle.** Unmounting runs the cleanups of work in progress and leaves the instance usable, so strict mode,
+  Suspense and Activity need no rebuild, and a discarded instance holds nothing. `destroy` is for good and the
+  adapter does not call it.
+- **Prop precedence and refs.** The form's attrs win over the author's props. A user `id` on a part is therefore
+  ignored, and the field's `aria-describedby` cannot dangle. The author's `ref` is merged with `bind`, and the
+  field's `bind` returns a cleanup that calls `unregister`. `ref` is typed through `ComponentPropsWithRef`.
+- **`render`.** A part takes `render` as an element or a function of `(props, state)`, the only way to render
+  another element. The element's own ref is merged.
+- **`'use client'`** on the adapter module. **`useSelector`** takes an optional `compare`.
 
-Not copied on purpose: their preview and `handOver` machinery, effect-based subscriptions (no
-`useSyncExternalStore`), the `FinalizationRegistry` sweeper, and Proxy read tracking. Parts read through
-`useSyncExternalStore`, so an update cannot join a transition. A controlled `<input value>` must update in the same
-event, so this is accepted for now. Today's `packages/react` has the same limit.
+Not copied from vercel-labs/ui on purpose: preview and commit-time machinery, effect-based subscriptions, the
+`FinalizationRegistry` sweeper and Proxy read tracking. Parts read through `useSyncExternalStore`, so an update
+cannot join a transition, as in today's `packages/react`.
 
-Open, still to decide (ranked):
-
-1. **Option updates.** A changed `onSubmit`, `schema` or `error` prop on `Root` is ignored. The instance has no
-   public `setOptions` (only the context controls have it). Needs a core change and a commit-time handover.
-2. **Instance lifecycle.** A discarded strict-mode or Suspense instance is never destroyed. After a hide and show
-   (Activity, Suspense), the instance was destroyed by the unmount microtask yet is still used.
-3. **Author ids.** A user `id` on a `FieldError` leaves the field's `aria-describedby` pointing at the old id.
-4. **`render` prop**, and `className` and `style` as functions of state (they only have `children` today).
-5. **Re-renders.** Each part selects the whole state. A per-part selector over the slot outputs, compared
-   shallowly, would limit them.
-6. **`bind` and fresh props**, and a `provided` form that changes after mount.
+Open: a `provided` form that changes after mount, and parts inside a scope.

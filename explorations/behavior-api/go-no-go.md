@@ -51,8 +51,8 @@ Kernel behaviors with runtime: context, change pipeline, values, validation, che
 status, events, reset, arrays, submit, handles, `defineForm`, `configureForm`, `extendForm`, `defineExtension`,
 `defineSlots` with the slot groups (`fieldSlots`, `fieldErrorSlots`, `submitSlots`, `resetSlots`), fragments
 (`defineFragment` and mounting in `configureForm`), `createEffect`, derived status in the store, field extras,
-and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 174 Vitest tests pass in
-Node, 7 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
+and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 178 Vitest tests pass in
+Node, 14 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
 
 Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Not built: `usePart`, parts inside a scope, and the Solid 1 and Solid 2 adapters.
 
