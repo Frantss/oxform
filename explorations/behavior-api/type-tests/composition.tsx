@@ -38,7 +38,11 @@ interface MaskKind extends FormKind {
   readonly parts: {};
   readonly fieldExtras: MaskExtras<this['values'], this['path']>;
 }
-const masked = defineExtension<{}, MaskKind>({ name: 'masked', api: () => ({}) });
+const masked = defineExtension<{ field: (path: any) => { get(): unknown } }, MaskKind>({
+  name: 'masked',
+  api: () => ({}),
+  fieldExtras: (_path, field) => ({ mask: pattern => `${pattern}${String(field.get())}` }),
+});
 const maskedForm = configureForm(masked(standardForm), { schema: accountSchema, defaultValues: accountDefaults })();
 maskedForm.field('name').mask('#');
 maskedForm.field('name').change('x'); // base handle is kept
@@ -69,6 +73,29 @@ checkout.field('billing.nope');
 checkout.scope('billing').field('zip').change('1');
 // @ts-expect-error scoped paths are typed
 checkout.scope('billing').field('nope');
+
+// Scoped handles carry the extras of an extension, typed by the sub-object's own values at every depth of `scope`
+const maskedCheckout = configureForm(masked(standardForm), {
+  schema: accountSchema,
+  defaultValues: accountDefaults,
+  fragments: { billing: address },
+})();
+maskedCheckout.scope('billing').field('zip').mask('#####');
+maskedCheckout.scope('billing').field('zip').change('1'); // the base handle is kept
+maskedCheckout.scope('billing').field('zip').error(); // and the check sugar
+// @ts-expect-error scoped paths are typed
+maskedCheckout.scope('billing').field('nope');
+type Deep = { a: { b: { c: { text: string; count: number } } } };
+declare const deepSchema: StandardSchemaV1<Deep>;
+const deep = configureForm(masked(standardForm), {
+  schema: deepSchema,
+  defaultValues: { a: { b: { c: { text: '', count: 0 } } } },
+})();
+deep.scope('a').scope('b').scope('c').field('text').mask('#'); // three levels deep
+deep.scope('a').scope('b').scope('c').field('text').change('x'); // the base handle is kept
+// @ts-expect-error `count` is not a string
+deep.scope('a').scope('b').scope('c').field('count').mask('#');
+addressFields(maskedCheckout.scope('billing')); // still assignable to a function written for `HandlesApi`
 
 // A component written once for the fragment works at any mount point
 function addressFields(scope: HandlesApi<Address, 'error'>) {

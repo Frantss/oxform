@@ -76,7 +76,17 @@ interface MaskKind extends FormKind {
   readonly fieldExtras: MaskExtras<this['values'], this['path']>;
 }
 
-export const withMask = defineExtension<{}, MaskKind>({ name: 'mask', api: () => ({}) });
+// `Needs` states a `field(path)` api, because the extras go on the handles it returns. `fieldExtras` implements them
+// for every `form.field(path)` handle. `field` is the base handle, so it reads the live value and keeps its members.
+// The types narrow `mask` to string fields. At runtime the extension decides what it returns, so it mirrors that.
+// Scoped handles get the extras too: `form.scope('billing').field('zip').mask(...)`. The path given to `fieldExtras`
+// is relative to the scope.
+export const withMask = defineExtension<{ field: (path: any) => { get(): unknown } }, MaskKind>({
+  name: 'mask',
+  api: () => ({}),
+  fieldExtras: (_path, field) =>
+    typeof field.get() === 'string' ? { mask: pattern => applyMask(pattern, field.get() as string) } : {},
+});
 
 // 3. Apply extensions in any order. Each one is checked against the form it is applied to.
 export const profile = configureForm(withMask(withAutosave(standardForm)), {

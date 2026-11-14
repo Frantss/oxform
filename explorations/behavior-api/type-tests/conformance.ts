@@ -29,12 +29,16 @@ export const standardApi = <Values>(
   const values = createValues(ctx, { change });
   const validation = createValidation<Values, 'error'>(ctx, { values });
   const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
-  const status = createFieldStatus(ctx, { validation });
+  const status = createFieldStatus(ctx, { values, validation });
   const events = createFieldEvents(ctx, { values, status, validation });
   const arrays = createArray(ctx, { values, status, validation });
-  const reset = createReset(ctx, { values, status, validation });
-  const submit = createSubmit<Values, 'error', FormInstance<StandardKind, Values>>(ctx, { validation, status });
-  const { field, array, scope } = createHandles(ctx, { events, reset, arrays, checks: { error } });
+  const reset = createReset(ctx, { values, status, validation, events });
+  const submit = createSubmit<Values, 'error', FormInstance<StandardKind, Values>>(ctx, {
+    values,
+    validation,
+    status,
+  });
+  const { field, array, scope } = createHandles(ctx, { values, status, events, reset, arrays, checks: { error } });
 
   return { values, error, status, validation, events, arrays, reset, submit, field, array, scope };
 };
@@ -66,12 +70,12 @@ export const preset = defineForm<StandardKind>({
     const values = createValues(ctx, { change });
     const validation = createValidation<any, 'error'>(ctx, { values });
     const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
-    const status = createFieldStatus(ctx, { validation });
+    const status = createFieldStatus(ctx, { values, validation });
     const events = createFieldEvents(ctx, { values, status, validation });
     const arrays = createArray(ctx, { values, status, validation });
-    const reset = createReset(ctx, { values, status, validation });
-    const submit = createSubmit<any, 'error', FormInstance<StandardKind, any>>(ctx, { validation, status });
-    const { field, array, scope } = createHandles(ctx, { events, reset, arrays, checks: { error } });
+    const reset = createReset(ctx, { values, status, validation, events });
+    const submit = createSubmit<any, 'error', FormInstance<StandardKind, any>>(ctx, { values, validation, status });
+    const { field, array, scope } = createHandles(ctx, { values, status, events, reset, arrays, checks: { error } });
 
     return { values, error, status, validation, events, arrays, reset, submit, field, array, scope };
   },

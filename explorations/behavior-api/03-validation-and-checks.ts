@@ -48,7 +48,7 @@ const checkout = configureForm(standardForm, {
   defaultValues: { email: '', password: '', card: { number: '', cvc: '' } },
   error: {
     change: schema, // refreshes errors for the changed path
-    submit: schema, // optional: the root schema is the submit fallback
+    submit: schema, // the root `schema` only sets the data shape. Pass it here to validate on submit.
     blur: store => passwordRulesSchema(store.values), // a function receives the store and returns a schema
   },
 });
@@ -59,7 +59,7 @@ const form = checkout();
 // Results are grouped by check name, so `issues.error` is the same list the old API returned.
 const [valid, issues] = await form.validation.run('card', { type: 'blur' }); // descendants included
 await form.validation.run(['email', 'password']);
-await form.validation.run(); // root schema and every event
+await form.validation.run(); // every event of every check
 
 // Async validators set `status.form.validating`. A value change, a newer run for the same scope and
 // event, or a reset discards stale results. The discarded run resolves [true, {}].
@@ -151,9 +151,9 @@ export const loginForm = defineForm<LoginKind>({
     const values = createValues(ctx, { change });
     const validation = createValidation(ctx, { values });
     const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
-    const status = createFieldStatus(ctx, { validation });
+    const status = createFieldStatus(ctx, { values, validation });
     const events = createFieldEvents(ctx, { values, status, validation });
-    const submit = createSubmit(ctx, { validation, status });
+    const submit = createSubmit(ctx, { values, validation, status });
 
     return { values, error, validation, status, events, submit };
   },

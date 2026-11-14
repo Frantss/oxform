@@ -64,7 +64,12 @@ export interface FormKind {
   readonly handle: unknown;
   /** Extra members on every field handle, typed by `values` and `path`. Leave `unknown` for none. */
   readonly fieldExtras: unknown;
+  /** The check names of the form, a string union such as `'error' | 'warning'`. Scoped handles carry their sugar. Leave `unknown` for none. */
+  readonly checks: unknown;
 }
+
+/** The check names a kind states, or `never`. */
+export type ChecksOf<Kind extends FormKind> = Kind['checks'] extends string ? Kind['checks'] : never;
 
 type Apply<Kind extends FormKind, Values> = Kind & { readonly values: Values };
 export type OptionsOf<Kind extends FormKind, Values> = Apply<Kind, Values>['options'];
@@ -89,6 +94,7 @@ export interface ExtendedKind<Base extends FormKind, Extension extends FormKind>
   readonly handle: FieldHandleOf<Base, this['values'], this['path']>;
   readonly fieldExtras: FieldExtrasOf<Base, this['values'], this['path']> &
     FieldExtrasOf<Extension, this['values'], this['path']>;
+  readonly checks: ChecksOf<Base> | ChecksOf<Extension>;
 }
 
 /** An extension that does not depend on `Values`: only an api. */
@@ -114,14 +120,35 @@ export interface ConfiguredForm<Kind extends FormKind, Values> {
   readonly definition: FormDefinition<Kind>;
 }
 
-/** `form.field(path)` returns the base handle plus the extras that extensions declare in `fieldExtras`. */
+/**
+ * Handles for a sub-object, with the extras that extensions declare in `fieldExtras`. The extras are typed from the
+ * sub-object's own values at every depth of `scope`, and `path` is relative to the scope. It is `HandlesApi` with the
+ * form's kind, so a function written for one fragment still accepts it.
+ *
+ * The type must be one recursive interface. A recursive alias, a depth counter, written-out levels, or a second
+ * interface that is related to `HandlesApi` structurally each make TypeScript fail with "Type instantiation is
+ * excessively deep" (found by testing `type-tests/` and the spike).
+ */
+export type ScopedHandles<Kind extends FormKind, Values, Checks extends string = never> = HandlesApi<
+  Values,
+  Checks,
+  Kind
+>;
+
+/** `form.field(path)` and `form.scope(prefix).field(path)` return the base handle plus the extras of `fieldExtras`. */
 type WithFieldExtras<Kind extends FormKind, Values> =
   ApiOf<Kind, Values> extends { readonly field: (path: any) => any }
-    ? Omit<ApiOf<Kind, Values>, 'field'> & {
+    ? Omit<ApiOf<Kind, Values>, 'field' | 'scope'> & {
         readonly field: <P extends Path<Values>>(
           path: P,
         ) => FieldHandleOf<Kind, Values, P> & FieldExtrasOf<Kind, Values, P>;
-      }
+      } & (ApiOf<Kind, Values> extends { readonly scope: (prefix: any) => any }
+          ? {
+              readonly scope: <P extends ObjectPath<Values>>(
+                prefix: P,
+              ) => NoInfer<ScopedHandles<Kind, NonNullable<PathValue<Values, P>>, ChecksOf<Kind>>>;
+            }
+          : {})
     : ApiOf<Kind, Values>;
 
 export type FormInstance<Kind extends FormKind, Values> = WithFieldExtras<Kind, Values> & {
@@ -255,6 +282,8 @@ export interface ExtendFormInput<Base extends FormKind, Extension extends FormKi
     slot: SlotFactory<ApiOf<ExtendedKind<Base, Extension>, any>, StateOf<ExtendedKind<Base, Extension>, any>>,
     base: SlotMap<PartsOf<Base, any>>,
   ): SlotMap<PartsOf<Extension, any>>;
+  /** Members for every `form.field(path)` handle, typed by the extension kind's `fieldExtras`. See `ExtensionInput`. */
+  fieldExtras?(path: string, field: FieldHandle<any, any, any>): FieldExtrasOf<Extension, any, any>;
 }
 
 /**
@@ -284,6 +313,13 @@ export interface ExtensionInput<Needs, Kind extends FormKind> {
   /** `base` has only what `Needs` states, so the extension works on any form that provides it. */
   api(ctx: FormContext<OptionsOf<Kind, any>, StateOf<Kind, any>>, base: Needs): ApiOf<Kind, any>;
   slots?(slot: SlotFactory<Needs & ApiOf<Kind, any>, StateOf<Kind, any>>): SlotMap<PartsOf<Kind, any>>;
+  /**
+   * Members for every `form.field(path)` handle, typed by the kind's `fieldExtras`. `field` is the base handle, so
+   * the extras can read its live `state` and call its methods. The extension must state a `field` in `Needs`, since
+   * the form needs a `field(path)` api to extend. Scoped handles (`form.scope(prefix).field(path)`) get the extras
+   * too, with `path` relative to the scope, typed at every depth of `scope` (see `ScopedHandles`).
+   */
+  fieldExtras?(path: string, field: FieldHandle<any, any, any>): FieldExtrasOf<Kind, any, any>;
 }
 
 export type Extension<Needs, Kind extends FormKind> = <Base extends FormKind>(
@@ -409,8 +445,15 @@ export type ChangeInterceptor<Values = unknown> = (
 export type ChangeListener<Values = unknown> = (change: Change<Values>, details: ChangeDetails) => void;
 
 export interface ChangeApi<Values = unknown> {
-  /** Returns false when canceled or unchanged. */
-  apply(change: Change<Values>, details?: Partial<Pick<ChangeDetails, 'reason' | 'source' | 'event'>>): boolean;
+  /**
+   * Runs interceptors, then `write`, then listeners. Called by the behavior that owns the value
+   * (`createValues`). Returns false when canceled or when `write` reports no change.
+   */
+  run(
+    change: Change<Values>,
+    write: (change: Change<Values>) => boolean,
+    details?: Partial<Pick<ChangeDetails, 'reason' | 'source' | 'event'>>,
+  ): boolean;
   intercept(interceptor: ChangeInterceptor<Values>): Unsubscribe;
   onChange(listener: ChangeListener<Values>): Unsubscribe;
 }
@@ -462,6 +505,12 @@ export interface ValidationApi<Values, Checks extends string = string> {
   ): Promise<readonly [valid: boolean, issues: IssuesByCheck<Checks>]>;
   /** Observes every completed run, including those started by events and by submit. */
   onRun(listener: (run: ValidationRun<Checks>) => void): Unsubscribe;
+  /** Current entries of every registered check, grouped by name, at a path and below. Reads state, never validates. */
+  issues(path?: Path<Values>): IssuesByCheck<Checks>;
+  /** The registered checks, in registration order. Behaviors that need issues read them here. */
+  readonly checks: readonly CheckApi<Values, Checks>[];
+  /** True while a run is pending. A snapshot: use `useSelector` for a subscription. */
+  readonly validating: boolean;
 }
 
 export interface ValidationRun<Checks extends string> {
@@ -484,6 +533,10 @@ export interface CheckApi<Values, Name extends string = string> {
   readonly blocking: boolean;
   at(path: Path<Values>, options?: { readonly nested?: boolean }): readonly CheckEntry[];
   set(path: Path<Values>, entries: readonly CheckEntry[], options?: { readonly mode?: SetEntriesMode }): void;
+  /** Removes the entries at a path and below, or every entry without a path. */
+  clear(path?: Path<Values>): void;
+  /** True when the check has a validator for the event, so a caller can skip a run that would do nothing. */
+  validates(event: ValidationEvent): boolean;
 }
 
 /** Sugar on a field handle for each check given to `createHandles`: `error()` and `setError(...)`. */
@@ -616,12 +669,18 @@ export type ArrayHandle<Values, P extends ArrayPath<Values>> = ArrayOperations<
   readonly ids: readonly string[];
 };
 
-/** Function-typed properties, not methods, so a scope of the wrong shape is rejected. */
-export interface HandlesApi<Values, Checks extends string = never> {
-  readonly field: <P extends Path<Values>>(path: P) => FieldHandle<Values, P, Checks>;
+/**
+ * Function-typed properties, not methods, so a scope of the wrong shape is rejected. `Kind` adds the field extras of
+ * the form's extensions at every depth of `scope`. The default kind adds none, so a function written for
+ * `HandlesApi<Address, 'error'>` accepts the scoped handles of any form.
+ */
+export interface HandlesApi<Values, Checks extends string = never, Kind extends FormKind = FormKind> {
+  readonly field: <P extends Path<Values>>(path: P) => FieldHandle<Values, P, Checks> & FieldExtrasOf<Kind, Values, P>;
   readonly array: <P extends ArrayPath<Values>>(path: P) => ArrayHandle<Values, P>;
   /** Handles for a sub-object, so a component written for one fragment works at any mount point. */
-  readonly scope: <P extends ObjectPath<Values>>(prefix: P) => HandlesApi<NonNullable<PathValue<Values, P>>, Checks>;
+  readonly scope: <P extends ObjectPath<Values>>(
+    prefix: P,
+  ) => HandlesApi<NonNullable<PathValue<Values, P>>, Checks, Kind>;
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -638,8 +697,9 @@ export declare function createValues<Values>(
   deps: { readonly change: ChangeApi<Values> },
 ): ValuesApi<Values>;
 
+/** Validation needs no `schema` option: the schema only gives the form its data shape. Checks hold the validators. */
 export declare function createValidation<Values, Checks extends string = string>(
-  ctx: FormContext<{ readonly schema: StandardSchemaV1<Values> }>,
+  ctx: FormContext,
   deps: { readonly values: ValuesApi<Values> },
 ): ValidationApi<Values, Checks>;
 
@@ -657,7 +717,8 @@ export declare function createFieldStatus<Values>(
       }
     | {}
   >,
-  deps: { readonly validation?: ValidationApi<Values> },
+  /** `values` feeds the field `default` flag. `validation` feeds `valid` and `validating`. */
+  deps: { readonly values?: ValuesApi<Values>; readonly validation?: ValidationApi<Values> },
 ): StatusApi<Values>;
 
 export declare function createFieldEvents<Values>(
@@ -684,6 +745,8 @@ export declare function createReset<Values>(
     readonly values: ValuesApi<Values>;
     readonly status: StatusApi<Values>;
     readonly validation?: ValidationApi<Values>;
+    /** Needed to clear refs. Without it, `keep.refs` has no effect. */
+    readonly events?: EventsApi<Values>;
   },
 ): ResetApi<Values>;
 
@@ -695,12 +758,18 @@ export declare function createSubmit<Values, Checks extends string = string, Ins
       }
     | {}
   >,
-  deps: { readonly validation?: ValidationApi<Values, Checks>; readonly status: StatusApi<Values> },
+  deps: {
+    readonly values: ValuesApi<Values>;
+    readonly validation?: ValidationApi<Values, Checks>;
+    readonly status: StatusApi<Values>;
+  },
 ): SubmitApi<Values, Checks>;
 
 export declare function createHandles<Values, Checks extends Readonly<Record<string, CheckApi<Values>>>>(
   ctx: FormContext,
   deps: {
+    readonly values: ValuesApi<Values>;
+    readonly status: StatusApi<Values>;
     readonly events: EventsApi<Values>;
     readonly reset: ResetApi<Values>;
     readonly arrays: ArraysApi<Values>;
@@ -727,7 +796,7 @@ export interface StandardOptions<Values> {
   readonly id?: string;
   readonly schema: StandardSchemaV1<Values>;
   readonly defaultValues: NoInfer<Values>;
-  /** Validators of the `error` check, per event. The root `schema` is the submit fallback. */
+  /** Validators of the `error` check, per event. The root `schema` does not validate: it only sets the data shape. */
   readonly error?: EventValidators<NoInfer<Values>>;
   readonly defaultStatus?: FormStatusDefaults;
   readonly defaultFieldStatus?: Partial<Record<Path<Values> | '*', FieldStatusDefaults>>;
@@ -778,6 +847,7 @@ export interface StandardKind extends FormKind {
   readonly api: StandardApi<this['values']>;
   readonly parts: StandardParts<this['values']>;
   readonly handle: StandardHandle<this['values'], this['path']>;
+  readonly checks: 'error';
 }
 
 export type StandardHandle<Values, P> = P extends Path<Values> ? FieldHandle<Values, P, 'error'> : never;

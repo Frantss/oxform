@@ -131,12 +131,12 @@ export const standardForm = defineForm<StandardKind>({
     // A check is a named set of issues by path, filled by event validators. `error` is one check, nothing special:
     // it blocks, and its validator replaces every issue in scope (`exclusive`). Add more levels with more calls (03).
     const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
-    const status = createFieldStatus(ctx, { validation }); // field and form status; `valid` derives from blocking checks
+    const status = createFieldStatus(ctx, { values, validation }); // field and form status; `valid` reads the validation's blocking checks
     const events = createFieldEvents(ctx, { values, status, validation }); // change, focus, blur, register
     const arrays = createArray(ctx, { values, status, validation }); // append, move, swap, ...
-    const reset = createReset(ctx, { values, status, validation });
-    const submit = createSubmit(ctx, { validation, status });
-    const { field, array, scope } = createHandles(ctx, { events, reset, arrays, checks: { error } });
+    const reset = createReset(ctx, { values, status, validation, events }); // `events` lets it clear refs
+    const submit = createSubmit(ctx, { values, validation, status });
+    const { field, array, scope } = createHandles(ctx, { values, status, events, reset, arrays, checks: { error } });
 
     return { values, error, status, validation, events, arrays, reset, submit, field, array, scope };
   },
