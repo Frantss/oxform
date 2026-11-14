@@ -16,7 +16,7 @@
 
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
-import type { ComponentPropsWithoutRef, JSX, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ComponentPropsWithRef, JSX, ReactNode } from 'react';
 import type { DeepKeys, DeepKeysOfType, DeepValue } from '../../packages/core/src/types/deep';
 
 // ---------------------------------------------------------------------------------------------------------
@@ -863,7 +863,7 @@ export type PartElements<Parts> = { readonly [Name in keyof Parts]?: ElementTag 
 
 /** Props go to the element. Children may be a function of the part's state. */
 export type PartProps<Tag extends ElementTag, Props = {}, State = {}> = Omit<
-  ComponentPropsWithoutRef<Tag>,
+  ComponentPropsWithRef<Tag>,
   'children' | keyof Props
 > &
   Props & { readonly children?: ReactNode | ((state: State) => ReactNode) };
@@ -883,7 +883,7 @@ export type PartComponents<Parts, Elements> = {
  * of the same name: `onSubmit` is the option (`(values) => ...`), not the form's DOM event handler.
  */
 export type RootProps<Kind extends FormKind, Values, Tag extends ElementTag> = Omit<
-  ComponentPropsWithoutRef<Tag>,
+  ComponentPropsWithRef<Tag>,
   'children' | keyof OptionsOf<Kind, Values>
 > &
   Partial<OptionsOf<Kind, Values>> & {

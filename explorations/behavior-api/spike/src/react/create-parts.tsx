@@ -1,3 +1,5 @@
+'use client';
+
 import { shallow, useSelector } from '@tanstack/react-store';
 import type { ReadonlyStore } from '@tanstack/store';
 import {
@@ -11,6 +13,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type SyntheticEvent,
 } from 'react';
 import type * as Api from '../../../api';
 import { slotsOf } from '../form';
@@ -31,8 +34,59 @@ type SlotDefinition = {
 type PartProps = Record<string, any> & { children?: ReactNode | ((state: any) => ReactNode) };
 
 /** React names the DOM `input` event `onChange`: it is the prop that makes a field with `value` controlled. */
-const reactEventProp = (event: string) =>
-  event === 'input' ? 'onChange' : `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
+const MULTIWORD_EVENTS = [
+  'keydown',
+  'keyup',
+  'keypress',
+  'dblclick',
+  'contextmenu',
+  'mousedown',
+  'mouseup',
+  'mousemove',
+  'mouseenter',
+  'mouseleave',
+  'mouseover',
+  'mouseout',
+  'pointerdown',
+  'pointerup',
+  'pointermove',
+  'pointerenter',
+  'pointerleave',
+  'pointerover',
+  'pointerout',
+  'pointercancel',
+  'touchstart',
+  'touchend',
+  'touchmove',
+  'touchcancel',
+  'dragstart',
+  'dragend',
+  'dragenter',
+  'dragleave',
+  'dragover',
+  'beforeinput',
+  'compositionstart',
+  'compositionend',
+  'compositionupdate',
+];
+const EVENT_PROPS: Record<string, string> = {
+  input: 'onChange',
+  ...Object.fromEntries(
+    MULTIWORD_EVENTS.map(event => {
+      const [, first, second] = /^(key|mouse|pointer|touch|drag|composition|before|context|dbl)(.+)$/.exec(event)!;
+      const cap = (word: string) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
+      return [event, `on${cap(first!)}${cap(second!)}`];
+    }),
+  ),
+};
+export const reactEventProp = (event: string) =>
+  EVENT_PROPS[event] ?? `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
+
+type RefLike = ((element: HTMLElement | null) => unknown) | { current: unknown } | null | undefined;
+const setRef = (ref: RefLike, element: HTMLElement | null) => {
+  if (typeof ref === 'function') return ref(element);
+  if (ref) ref.current = element;
+};
 
 const useSelectorOn = <Selected,>(
   instance: Instance,
@@ -66,11 +120,22 @@ function PartView({
   // `bind` runs when the element attaches, and again only if the key or the instance changes.
   const { bind } = slot;
   const { key } = part;
+  const authorRef: RefLike = domProps.ref;
   const ref = useCallback(
-    (element: HTMLElement | null) =>
-      element && bind ? bind(element, { id: instance.id, key, props: partProps, api: instance }) : undefined,
+    (element: HTMLElement | null) => {
+      const unbind =
+        element && bind ? bind(element, { id: instance.id, key, props: partProps, api: instance }) : undefined;
+      const authorCleanup = setRef(authorRef, element);
+
+      // Always a cleanup, so the author's ref and `bind` are undone together on any React version that supports one.
+      return () => {
+        unbind?.();
+        if (typeof authorCleanup === 'function') authorCleanup();
+        else setRef(authorRef, null);
+      };
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `partProps` only feeds `bind`, which reads the key
-    [bind, instance, key],
+    [bind, instance, key, authorRef],
   );
 
   if (slot.present && !slot.present(state, part)) return null;
@@ -78,16 +143,21 @@ function PartView({
   const handlers: Record<string, unknown> = {};
   for (const [event, handler] of Object.entries(slot.on ?? {})) {
     const prop = reactEventProp(event);
-    handlers[prop] = (reactEvent: { nativeEvent: Event; currentTarget: HTMLElement }) => {
+    handlers[prop] = (reactEvent: SyntheticEvent<HTMLElement>) => {
+      // The author's handler runs first, and `preventDefault()` there skips the form's.
       domProps[prop]?.(reactEvent);
+      if (reactEvent.isDefaultPrevented()) return;
+
       handler(reactEvent.nativeEvent, { ...part, el: reactEvent.currentTarget });
+      // A slot prevents the native event. React's event must say so too, for a router link or a parent handler.
+      if (reactEvent.nativeEvent.defaultPrevented) reactEvent.preventDefault();
     };
   }
 
   const slotState = slot.state?.(state, part) ?? {};
   return createElement(
     tag,
-    { ...slot.attrs?.(state, part), ...domProps, ...handlers, ref },
+    { ...domProps, ...slot.attrs?.(state, part), ...handlers, ref },
     typeof children === 'function' ? children(slotState) : children,
   );
 }

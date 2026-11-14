@@ -6,7 +6,7 @@ import { render } from 'vitest-browser-react';
 import { configureForm } from '../form';
 import { standardForm } from '../standard';
 import { defaultProfile, failing, schemaOf, type Profile } from '../test-helpers';
-import { createParts } from './create-parts';
+import { createParts, reactEventProp } from './create-parts';
 
 const profile = (options: Record<string, unknown> = {}) =>
   configureForm(standardForm, { schema: schemaOf<Profile>(), defaultValues: defaultProfile, ...options } as never);
@@ -132,4 +132,82 @@ it('renders on the server with the state at creation and starts nothing', () => 
 
   expect(html).toContain('value="Ada"');
   expect(html).not.toContain('role="alert"');
+});
+
+it('names the React prop of each DOM event', () => {
+  expect(reactEventProp('input')).toBe('onChange');
+  expect(reactEventProp('focus')).toBe('onFocus');
+  expect(reactEventProp('keydown')).toBe('onKeyDown');
+  expect(reactEventProp('dblclick')).toBe('onDblClick');
+  expect(reactEventProp('pointerenter')).toBe('onPointerEnter');
+  expect(reactEventProp('beforeinput')).toBe('onBeforeInput');
+});
+
+it('keeps the form wiring when the author passes the same props, and merges the author ref', async () => {
+  const configured = profile();
+  const form = configured();
+  form.field('name').change('Ada');
+  const { Root, Field } = createParts(configured, elements);
+  let authorElement: HTMLElement | null = null;
+  const screen = await render(
+    <Root form={form as never}>
+      <Field name='name' aria-label='name' value='author' ref={element => void (authorElement = element)} />
+    </Root>,
+  );
+
+  await expect.element(screen.getByLabelText('name')).toHaveValue('Ada');
+  expect(authorElement).toBe(screen.getByLabelText('name').element());
+  expect(form.field('name').state.ref).toBe(authorElement);
+});
+
+it('registers the element with the form and lets go of it when the part unmounts', async () => {
+  const configured = profile();
+  const form = configured();
+  const { Root, Field } = createParts(configured, elements);
+  const screen = await render(
+    <Root form={form as never}>
+      <Field name='name' aria-label='name' />
+    </Root>,
+  );
+  expect(form.field('name').state.ref).not.toBeNull();
+
+  await screen.rerender(<Root form={form as never} />);
+  expect(form.field('name').state.ref).toBeNull();
+});
+
+it('runs the author handler first and lets it cancel the form handler', async () => {
+  const { Root, Field } = createParts(profile(), elements);
+  const calls: string[] = [];
+  const screen = await render(
+    <Root>
+      <Field name='name' aria-label='name' onChange={() => calls.push('author')} />
+    </Root>,
+  );
+  await userEvent.type(screen.getByLabelText('name'), 'a');
+  expect(calls).toEqual(['author']);
+  await expect.element(screen.getByLabelText('name')).toHaveValue('a');
+
+  const { Root: CancelRoot, Field: CancelField } = createParts(profile(), elements);
+  const cancelled = await render(
+    <CancelRoot>
+      <CancelField name='name' aria-label='cancelled' onChange={event => event.preventDefault()} />
+    </CancelRoot>,
+  );
+  await userEvent.type(cancelled.getByLabelText('cancelled'), 'a');
+  await expect.element(cancelled.getByLabelText('cancelled')).toHaveValue('');
+});
+
+it('tells the React event when a slot prevented the native one', async () => {
+  const { Root, Submit } = createParts(profile(), elements);
+  let seen: boolean | null = null;
+  const screen = await render(
+    <div onSubmit={event => void (seen = event.isDefaultPrevented())}>
+      <Root>
+        <Submit>Send</Submit>
+      </Root>
+    </div>,
+  );
+
+  await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+  await expect.poll(() => seen).toBe(true);
 });

@@ -31,6 +31,7 @@ export const fieldSlots = defineSlots(
       },
       bind: (element, part) => {
         part.api.events.register(part.key)(element);
+        return () => part.api.events.unregister(part.key);
       },
     }),
   }),

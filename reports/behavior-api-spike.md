@@ -266,3 +266,37 @@ Built in `explorations/behavior-api/spike/src/`. 146 tests (145 pass, 1 document
   re-renders on any state change, since each part reads the whole state. `usePart` and parts inside a scope are not built.
 - **`FormHooks` in `api.ts`** now uses function properties, so the hooks can be destructured without an
   unbound-method lint warning.
+
+## React adapter against vercel-labs/ui
+
+Compared `spike/src/react/create-parts.tsx` with `vercel-labs/ui` (`packages/react/src/use-primitive.tsx`,
+`render-element.ts`, `.agents/experts/react/*`). Fixed now, with tests in `spike/src/react/parts.spec.tsx`:
+
+- **Store reads** use `useSelector` and `shallow` from `@tanstack/react-store`, not a hand-written
+  `useSyncExternalStore`.
+- **Prop precedence.** The form's attrs win over the author's props (`value`, `type`, `aria-describedby`), so the
+  wiring cannot be broken by accident.
+- **Refs.** The author's `ref` is merged with `bind`. The field's `bind` now returns a cleanup that calls
+  `unregister`, so the events' element map no longer leaks. `PartProps` and `RootProps` in `api.ts` use
+  `ComponentPropsWithRef` so `ref` is typed.
+- **Events.** A table names multiword events (`keydown` to `onKeyDown`). The author's handler runs first and
+  `preventDefault()` skips the form's. A slot's native `preventDefault()` is copied to React's event, so a parent
+  handler or router link sees it.
+- **`'use client'`** on the adapter module.
+
+Not copied on purpose: their preview and `handOver` machinery, effect-based subscriptions (no
+`useSyncExternalStore`), the `FinalizationRegistry` sweeper, and Proxy read tracking. Parts read through
+`useSyncExternalStore`, so an update cannot join a transition. A controlled `<input value>` must update in the same
+event, so this is accepted for now. Today's `packages/react` has the same limit.
+
+Open, still to decide (ranked):
+
+1. **Option updates.** A changed `onSubmit`, `schema` or `error` prop on `Root` is ignored. The instance has no
+   public `setOptions` (only the context controls have it). Needs a core change and a commit-time handover.
+2. **Instance lifecycle.** A discarded strict-mode or Suspense instance is never destroyed. After a hide and show
+   (Activity, Suspense), the instance was destroyed by the unmount microtask yet is still used.
+3. **Author ids.** A user `id` on a `FieldError` leaves the field's `aria-describedby` pointing at the old id.
+4. **`render` prop**, and `className` and `style` as functions of state (they only have `children` today).
+5. **Re-renders.** Each part selects the whole state. A per-part selector over the slot outputs, compared
+   shallowly, would limit them.
+6. **`bind` and fresh props**, and a `provided` form that changes after mount.
