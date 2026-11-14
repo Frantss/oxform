@@ -20,7 +20,8 @@ import {
 } from 'react';
 import type * as Api from '../../../api';
 import { adapterControlsOf, slotsOf } from '../form';
-import { getAt, isDeepEqual } from '../paths';
+import { prefixOf } from '../handles';
+import { getAt, isDeepEqual, joinPath } from '../paths';
 
 type Instance = { readonly id: string; readonly store: ReadonlyStore<any> } & Record<string, any>;
 type Configured = ((options?: Record<string, unknown>) => Instance) & {
@@ -39,6 +40,7 @@ type Render = ReactElement | ((props: Record<string, unknown>, state: any) => Re
 type PartProps = Record<string, any> & {
   children?: ReactNode | ((state: any) => ReactNode);
   render?: Render;
+  scope?: object;
 };
 
 const setRef = (ref: RefLike, element: HTMLElement | null) => {
@@ -83,7 +85,7 @@ function PartView({
   tag: string;
   props: PartProps;
 }) {
-  const { children, render, ref: authorRef, ...rest } = props;
+  const { children, render, scope, ref: authorRef, ...rest } = props;
   const declared = slot.props ?? {};
 
   const partProps: Record<string, unknown> = {};
@@ -91,7 +93,8 @@ function PartView({
   for (const [name, value] of Object.entries(rest)) (name in declared ? partProps : domProps)[name] = value;
 
   const keyProp = Object.keys(declared).find(name => declared[name] === 'key');
-  const key = keyProp ? String(partProps[keyProp]) : '';
+  // A part given a `scope` names its field relative to it.
+  const key = keyProp ? joinPath(prefixOf(scope), String(partProps[keyProp])) : '';
 
   const view = useSelector(
     instance.store,

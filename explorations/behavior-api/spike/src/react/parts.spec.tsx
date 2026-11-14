@@ -259,3 +259,91 @@ it('re-renders a part only when what it shows changes', async () => {
   expect(commits.tag).toBeGreaterThan(before.tag!);
   expect(commits.name).toBe(before.name);
 });
+
+const orders = (defaultValues: unknown, options: Record<string, unknown> = {}) =>
+  configureForm(standardForm, { schema: schemaOf<any>(), defaultValues, ...options } as never);
+
+it('names a part relative to the scope it is given, and shows the issues of that field', async () => {
+  const configured = orders(
+    { billing: { street: '' }, shipping: { street: '' } },
+    { error: { submit: failing({ message: 'Required', path: ['shipping', 'street'] }) } },
+  );
+  const { Root, Field, FieldError, Submit, useScope } = createParts(configured, elements) as any;
+  const Block = ({ scope, label }: { scope: object; label: string }) => (
+    <>
+      <Field scope={scope} name='street' aria-label={label} />
+      <FieldError scope={scope} name='street'>
+        {({ messages }: { messages: string[] }) => `${label}:${messages[0]}`}
+      </FieldError>
+    </>
+  );
+  const Blocks = () => (
+    <>
+      <Block scope={useScope('billing')} label='billing' />
+      <Block scope={useScope('shipping')} label='shipping' />
+    </>
+  );
+  const App = () => (
+    <Root>
+      <Blocks />
+      <Submit>Send</Submit>
+    </Root>
+  );
+  const screen = await render(<App />);
+
+  await userEvent.type(screen.getByLabelText('shipping'), 'Main');
+  await userEvent.clear(screen.getByLabelText('shipping'));
+  await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+  await expect.element(screen.getByRole('alert')).toHaveTextContent('shipping:Required');
+  await expect.element(screen.getByLabelText('billing')).not.toHaveAttribute('aria-invalid', 'true');
+  await expect.element(screen.getByLabelText('shipping')).toHaveAttribute('aria-invalid', 'true');
+  const described = screen.getByLabelText('shipping').element().getAttribute('aria-describedby');
+  expect(described).toContain('shipping-street');
+});
+
+it('resolves nested scopes and full names side by side', async () => {
+  const configured = orders({ a: { b: { c: '' } }, top: '' });
+  const { Root, Field, useScope, useSelector } = createParts(configured, elements) as any;
+  const Values = () => <output>{JSON.stringify(useSelector((state: any) => state.values))}</output>;
+  const Deep = () => <Field scope={useScope('a').scope('b')} name='c' aria-label='deep' />;
+  const App = () => (
+    <Root>
+      <Deep />
+      <Field name='top' aria-label='top' />
+      <Values />
+    </Root>
+  );
+  const screen = await render(<App />);
+
+  await userEvent.type(screen.getByLabelText('deep'), 'x');
+  await userEvent.type(screen.getByLabelText('top'), 'y');
+
+  await expect.element(screen.getByRole('status')).toHaveTextContent('{"a":{"b":{"c":"x"}},"top":"y"}');
+});
+
+it('keeps the input and its focus when array items swap, since only the scope prop changes', async () => {
+  const configured = orders({ members: [{ name: 'a' }, { name: 'b' }] });
+  const form = configured();
+  const { Root, Field } = createParts(configured, elements) as any;
+  const members = form.array('members');
+  const App = () => (
+    <Root form={form}>
+      {members.ids.map((id: string, index: number) => (
+        <Field key={id} scope={form.scope(`members.${index}`)} name='name' aria-label={id} />
+      ))}
+    </Root>
+  );
+  const screen = await render(<App />);
+  const [first, second] = members.ids as string[];
+  const input = screen.getByLabelText(first!).element() as HTMLInputElement;
+  input.focus();
+
+  members.swap(0, 1);
+  await screen.rerender(<App />);
+
+  expect(screen.getByLabelText(first!).element()).toBe(input);
+  expect(document.activeElement).toBe(input);
+  expect(input.value).toBe('a');
+  expect((screen.getByLabelText(second!).element() as HTMLInputElement).value).toBe('b');
+});

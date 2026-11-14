@@ -63,4 +63,24 @@ export function BillingSummary() {
   return <p>{addressComplete(billing) ? 'Complete' : 'Incomplete'}</p>;
 }
 
-// Open: rendering parts inside a scope, `<Field scope={billing} name='zip' />`, is not designed yet.
+// Parts take a `scope`: the names are relative to it and typed by its values. The block is written once.
+// It sits next to `createParts` because `Field` is the form's own component.
+function AddressFields({ scope }: { scope: HandlesApi<{ street: string; zip: string }, 'error'> }) {
+  return (
+    <>
+      <Field scope={scope} name='street' />
+      <Field scope={scope} name='zip' />
+    </>
+  );
+}
+
+export function CheckoutAddresses() {
+  const billing = useScope('billing');
+  const shipping = useScope('shipping');
+  return (
+    <Root>
+      <AddressFields scope={billing} /> {/* writes billing.street and billing.zip */}
+      <AddressFields scope={shipping} />
+    </Root>
+  );
+}

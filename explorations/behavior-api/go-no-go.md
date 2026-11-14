@@ -44,6 +44,11 @@ are in [reports/behavior-api-spike.md](../../reports/behavior-api-spike.md), and
    (`scope(a).scope(b).scope(c).field(...)` is typed). A scoped handle set is still assignable to a function written for `HandlesApi`. The
    kind states its check names (`checks: 'error'` on `StandardKind`, merged by `ExtendedKind`) so the scoped
    handles carry the check sugar.
+10. **Parts take a `scope`.** `<Field scope={billing} name='zip' />` names the field relative to the scope
+    (`billing` from `useScope('billing')` or `form.scope('billing')`), and the names are typed from the scope's
+    values. The adapter joins the scope's prefix with each `'key'` prop, so slots are unchanged. Reordering array
+    items keeps the element and its focus, since only the prop changes. Without a `scope`, names are paths of the
+    form. A block written once is passed its scope, and reaches `Field` through the form's `createParts`.
 
 ## What the spike built
 
@@ -54,7 +59,7 @@ status, events, reset, arrays, submit, handles, `defineForm`, `configureForm`, `
 and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 178 Vitest tests pass in
 Node, 14 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
 
-Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Not built: `usePart`, parts inside a scope, and the Solid 1 and Solid 2 adapters.
+Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Parts take a `scope` (decision 10). Not built: `usePart`, hooks relative to a scope, and the Solid 1 and Solid 2 adapters.
 
 ## Acceptance checklist
 
@@ -65,7 +70,7 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 | 1c  | Slots compose per form                                                      | Met (types and runtime)                | `type-tests/composition.tsx`, and `spike/src/slots.spec.ts` (a form keeps only the groups it spreads).                                                                                                                                                                              |
 | 2a  | Extension applies where its needs are met                                   | Met (types and runtime)                | `spike/src/extension.spec.ts`: `withAutosave` applies to the preset, and `@ts-expect-error` rejects it on a form without `validation`.                                                                                                                                              |
 | 2b  | Slot group reusable                                                         | Met (types and runtime)                | `spike/src/slots.spec.ts`: the same group spreads into two forms.                                                                                                                                                                                                                   |
-| 2c  | Fragment reusable                                                           | Met (types and runtime)                | `spike/src/fragments.spec.ts`: one fragment mounted twice, and in another form. Parts inside a scope are not designed.                                                                                                                                                              |
+| 2c  | Fragment reusable                                                           | Met (types and runtime)                | `spike/src/fragments.spec.ts`: one fragment mounted twice, and in another form. A part given a `scope` names its field relative to it (`spike/src/react/parts.spec.tsx`, `type-tests/composition.tsx`).                                                                             |
 | 3a  | Add options, state, api, parts                                              | Met (types and runtime), parts as data | `spike/src/extension.spec.ts`: option, state slice, api and a slot. Parts do not render, since adapters are skipped.                                                                                                                                                                |
 | 3b  | Add members to every field handle                                           | Met (types and runtime)                | `spike/src/field-extras.spec.ts`: `mask` on string fields, typed by value, with the base handle and its live `state` kept. `type-tests/composition.tsx` checks the `fieldExtras` signature and the scoped extras (typed and working at three levels of scope).                      |
 | 3c  | Hook into change, validation, submit                                        | **Met at runtime**                     | `values.intercept` with `cancel()`, `values.onChange`, `validation.onRun`, `submit.intercept`, `submit.onResult` (`extension-hooks.spec.ts`, `submit.spec.ts`).                                                                                                                     |
@@ -132,7 +137,7 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 - Fixed (decision 7): derived status lives in the store, and the preset's `field` slot is correct on the real
   store (`spike/src/slots.spec.ts`, `spike/src/derived-status.spec.ts`).
 - Fixed (decision 8): `fieldExtras(path, field)` gives extensions a runtime for field extras.
-- Open, by design: parts inside a scope are not designed (open question 5).
+- Fixed (decision 10): parts take a `scope`. Open: hooks relative to a scope, and a `scope` forgotten on a part whose name also exists on the form.
 - Fixed (decision 9): scoped handles carry field extras at any depth, at runtime and in the types.
 - Open: the derived status recomputes every path on each change. See open question 5 above.
 
@@ -141,13 +146,12 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 **Conditional go, core only.** The kernel composes, the typing model holds against a real runtime, hooks work,
 extensions (with field extras), slots and fragments run, the preset's slots read a correct derived status, and
 the bundle tiers show opt-in savings against today's core. The core has no open design question left that
-blocks adapters, apart from the open points above. What remains before adapters:
+blocks adapters, apart from the open points above. What remains:
 
 1. Decide whether the linear cost of derived status is acceptable, by measuring a form of the expected size
    (the spike measured 0.19 ms per change at 200 fields).
-2. Design parts inside a scope (open question 5), which the parts runtime needs.
 
-Adapters (React, Solid 1, Solid 2), the parts runtime and the migration wait for your decision.
+The React adapter is in the spike. Solid 1 and Solid 2 are skipped for now, and the migration waits for your decision.
 
 Reasons to stop instead: if the hand-written kinds are too costly for extension authors. The spike has no
 evidence on that point.

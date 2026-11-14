@@ -293,4 +293,20 @@ Not copied from vercel-labs/ui on purpose: preview and commit-time machinery, ef
 `FinalizationRegistry` sweeper and Proxy read tracking. Parts read through `useSyncExternalStore`, so an update
 cannot join a transition, as in today's `packages/react`.
 
-Open: a `provided` form that changes after mount, and parts inside a scope.
+Open: a `provided` form that changes after mount.
+
+## Parts inside a scope
+
+- **Design.** A part takes an optional `scope` (handles from `useScope` or `form.scope`). The scoped handles carry
+  their prefix under a symbol (`spike/src/handles.ts`, `prefixOf`), which survives the spread that field extras
+  do. The adapter joins it with each `'key'` prop (`create-parts.tsx`), so slots, ids, errors and status all keep
+  working on full keys.
+- **Types** (`api.ts`, `PartComponent`). Two signatures on one interface: the form's own values without a
+  `scope`, and `<Scoped>` inferred from `scope` with names typed by `PartsOf<Kind, Scoped>`. `type-tests/composition.tsx`
+  checks relative names, a wrong name, a full path inside a scope, and a scope of the wrong shape. No TS2589 here.
+- **Runtime.** Chromium tests: two scopes in one form with issues for the second only and unique ids, nested
+  scopes beside a full name, and array items swapped with `key={id}` keeping the same element, its focus and its
+  value.
+- **Open.** Hooks relative to a scope (`useField('zip', { scope })`). A `scope` forgotten on a part whose name also
+  exists on the form compiles and writes to the form's field. A reusable block for several forms must be passed
+  `Field` and `FieldError`, since they belong to one form's `createParts`.

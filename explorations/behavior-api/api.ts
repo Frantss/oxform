@@ -887,14 +887,43 @@ export type PartProps<Tag extends ElementTag, Props = {}, State = {}> = Omit<
     readonly render?: PartRender<State>;
   };
 
-export type PartComponents<Parts, Elements> = {
-  readonly [
-    Name in Exclude<keyof Parts & keyof Elements & string, 'root'> as Capitalize<Name>
-  ]: Elements[Name] extends ElementTag
-    ? Parts[Name] extends PartSpec<infer Props, infer State>
-      ? (props: PartProps<Elements[Name], Props, State>) => JSX.Element
+type PartPropsOf<Kind extends FormKind, Values, Name extends string> =
+  PartsOf<Kind, Values> extends infer Parts
+    ? Name extends keyof Parts
+      ? Parts[Name] extends PartSpec<infer Props, any>
+        ? Props
+        : never
       : never
     : never;
+type PartStateOf<Kind extends FormKind, Values, Name extends string> =
+  PartsOf<Kind, Values> extends infer Parts
+    ? Name extends keyof Parts
+      ? Parts[Name] extends PartSpec<any, infer State>
+        ? State
+        : never
+      : never
+    : never;
+
+/**
+ * A part's component. Given a `scope` (from `useScope` or `form.scope`), the names it takes are paths of the
+ * scope's values and name fields inside it, so a block written once for a fragment works at any mount point.
+ * Without one, names are paths of the form, as the form's own parts. The two signatures are plain generic
+ * signatures on one interface: a mapped type with the scope's values inferred per part runs into "Type
+ * instantiation is excessively deep".
+ */
+export interface PartComponent<Kind extends FormKind, Values, Name extends string, Tag extends ElementTag> {
+  (props: PartProps<Tag, PartPropsOf<Kind, Values, Name>, PartStateOf<Kind, Values, Name>>): JSX.Element;
+  <Scoped>(
+    props: PartProps<Tag, PartPropsOf<Kind, Scoped, Name>, PartStateOf<Kind, Scoped, Name>> & {
+      readonly scope: HandlesApi<Scoped, any, any>;
+    },
+  ): JSX.Element;
+}
+
+export type PartComponents<Kind extends FormKind, Values, Elements> = {
+  readonly [
+    Name in Exclude<keyof PartsOf<Kind, Values> & keyof Elements & string, 'root'> as Capitalize<Name>
+  ]: Elements[Name] extends ElementTag ? PartComponent<Kind, Values, Name, Elements[Name]> : never;
 };
 
 /**
@@ -940,7 +969,7 @@ export declare function createParts<
 >(
   form: ConfiguredForm<Kind, Values>,
   elements: Elements,
-): PartComponents<PartsOf<Kind, Values>, Elements> & RootComponent<Kind, Values, Elements> & FormHooks<Kind, Values>;
+): PartComponents<Kind, Values, Elements> & RootComponent<Kind, Values, Elements> & FormHooks<Kind, Values>;
 
 /** A part with another element, or with data-driven content. */
 export declare function usePart<

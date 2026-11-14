@@ -106,6 +106,43 @@ addressFields(checkout.scope('shipping'));
 // @ts-expect-error a scope of the wrong shape is rejected
 addressFields(checkout.scope('name'));
 
+// Parts given a `scope`: names are paths of the scope's values, so a block written once fits any mount point
+const checkoutForm = configureForm(standardForm, {
+  schema: accountSchema,
+  defaultValues: accountDefaults,
+  fragments: { billing: address, shipping: address },
+});
+const checkoutParts = createParts(checkoutForm, { root: 'form', field: 'input', fieldError: 'p' });
+function AddressBlock({ scope }: { scope: HandlesApi<Address, 'error'> }) {
+  return (
+    <>
+      <checkoutParts.Field scope={scope} name='street' />
+      <checkoutParts.FieldError scope={scope} name='zip'>
+        {({ messages }) => messages[0]}
+      </checkoutParts.FieldError>
+      {/* @ts-expect-error not a path of Address */}
+      <checkoutParts.Field scope={scope} name='nope' />
+      {/* @ts-expect-error a path of the form, not of Address */}
+      <checkoutParts.Field scope={scope} name='billing.street' />
+    </>
+  );
+}
+export function CheckoutView() {
+  const billing = checkoutParts.useScope('billing');
+  return (
+    <checkoutParts.Root>
+      <checkoutParts.Field name='billing.street' />
+      <checkoutParts.Field scope={billing} name='street' />
+      {/* @ts-expect-error without a scope, names are paths of the form */}
+      <checkoutParts.Field name='street' />
+      <AddressBlock scope={billing} />
+      <AddressBlock scope={checkoutForm().scope('shipping')} />
+      {/* @ts-expect-error a scope of the wrong shape */}
+      <checkoutParts.Field scope={checkoutForm().scope('name')} name='street' />
+    </checkoutParts.Root>
+  );
+}
+
 // A form without fragments is unchanged
 configureForm(standardForm, { schema: accountSchema, defaultValues: accountDefaults })().field('name');
 

@@ -12,6 +12,14 @@ import { arraysInternals } from './arrays';
 import { eventsInternals } from './events';
 import { getAt, joinPath } from './paths';
 
+/**
+ * The prefix a handle set is scoped to, under a symbol so spreading a handle set keeps it. It is not on `HandlesApi`:
+ * an adapter reads it to resolve a part's names against the scope it was given.
+ */
+const scopePrefix = Symbol.for('oxform.scope.prefix');
+export const prefixOf = (handles: object | undefined): string =>
+  (handles as { [scopePrefix]?: string } | undefined)?.[scopePrefix] ?? '';
+
 /** Builds `field`, `array` and `scope`. The ref and the item ids come from the behaviors' internals. */
 export function createHandles<Values, Checks extends Readonly<Record<string, CheckApi<Values>>>>(
   ctx: FormContext<{ readonly id?: string; readonly defaultValues?: unknown }>,
@@ -80,7 +88,12 @@ export function createHandles<Values, Checks extends Readonly<Record<string, Che
       };
     };
 
-    return { field, array, scope: (nested: string) => handlesAt(full(nested)) } as unknown as HandlesApi<any, any>;
+    return {
+      field,
+      array,
+      scope: (nested: string) => handlesAt(full(nested)),
+      [scopePrefix]: prefix,
+    } as unknown as HandlesApi<any, any>;
   }
 
   return handlesAt('') as unknown as HandlesApi<Values, Extract<keyof Checks, string>>;

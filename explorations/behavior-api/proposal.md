@@ -31,7 +31,7 @@ in `type-tests/`, checked with `tsc` (TypeScript 7.0.2).
 | 1c  | Slots compose per form, and a form has only the slots its behaviors support                                               | Type test `composition.tsx` (slot groups, positive and negative)                                             | Met (types)                                                                 |
 | 2a  | A behavior packaged as an extension applies to any form that provides what it needs, and is rejected by one that does not | Type tests `reuse.ts`, `composition.tsx`                                                                     | Met (types)                                                                 |
 | 2b  | A group of slots is reusable across forms                                                                                 | Type test `composition.tsx`                                                                                  | Met (types)                                                                 |
-| 2c  | A piece of form structure (a fragment) is reusable and mountable more than once                                           | Type test `composition.tsx`, sketch `08`                                                                     | Met (types). Parts inside a scope are not designed.                         |
+| 2c  | A piece of form structure (a fragment) is reusable and mountable more than once                                           | Type test `composition.tsx`, sketch `08`                                                                     | Met (types and runtime). Parts take a `scope`.                              |
 | 3a  | A user adds options, state, api and parts without an engine change                                                        | Type tests `consumer.tsx`, `composition.tsx`                                                                 | Met (types)                                                                 |
 | 3b  | A user adds members to every field handle                                                                                 | Type test `composition.tsx` (field extras)                                                                   | Met (types)                                                                 |
 | 3c  | A user hooks into value changes, validation runs and submit                                                               | `values.intercept`, `values.onChange`, `validation.onRun`, `submit.intercept`, `submit.onResult` in `api.ts` | Met (signatures). No runtime.                                               |
@@ -392,8 +392,9 @@ would add a dependency that Oxform must track.
 4. **Check names in types.** The kind states the check names. Decide whether a
    conformance test per kind is enough, or whether names should derive from the
    `createCheck` calls.
-5. **Parts inside a scope.** `<Field scope={billing} name='zip' />` is not
-   designed. Today a part takes a full path.
+5. **Parts inside a scope.** Designed: `<Field scope={billing} name='zip' />` names the field relative to the
+   scope, typed by the scope's values. Open: hooks relative to a scope, and a forgotten `scope` on a part whose
+   name also exists on the form.
 6. **Migration.** Users of levels need a codemod from `checks` to one option
    per check, and from `useForm(options)` to `configureForm`.
 7. **Controlled values.** Deferred. Nothing here needs them.
