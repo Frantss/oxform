@@ -140,6 +140,18 @@ export const view = (
   </Root>
 );
 
+// The element's own props, a typed `ref`, and `render` with the state of the part
+export const rendered = (
+  <Root>
+    <Field name='name' ref={(element: HTMLInputElement | null) => element?.focus()} render={<textarea />} />
+    <FieldError name='email' render={(props, { messages }) => <span {...props}>{messages[0]}</span>} />
+    {/* @ts-expect-error the ref is the part's element: an input */}
+    <Field name='name' ref={(element: HTMLButtonElement | null) => element?.focus()} />
+    {/* @ts-expect-error the state of a part is typed */}
+    <FieldError name='email' render={(_props, state) => state.nope} />
+  </Root>
+);
+
 // A part omitted from the element map has no component
 const partial = createParts(signup, { root: 'form', field: 'input' });
 partial.Field;
