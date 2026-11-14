@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@tanstack/store': modules('core', '@tanstack/store'),
+      '@tanstack/react-store': modules('react', '@tanstack/react-store'),
       react: modules('react', 'react'),
       'react-dom': modules('react', 'react-dom'),
       'vitest-browser-react': modules('react', 'vitest-browser-react'),

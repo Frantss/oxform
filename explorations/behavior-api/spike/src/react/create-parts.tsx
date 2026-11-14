@@ -1,3 +1,4 @@
+import { shallow, useSelector } from '@tanstack/react-store';
 import type { ReadonlyStore } from '@tanstack/store';
 import {
   createContext,
@@ -9,7 +10,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import type * as Api from '../../../api';
@@ -34,15 +34,11 @@ type PartProps = Record<string, any> & { children?: ReactNode | ((state: any) =>
 const reactEventProp = (event: string) =>
   event === 'input' ? 'onChange' : `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
 
-const subscribeTo = (instance: Instance) => (notify: () => void) => {
-  const subscription = instance.store.subscribe(notify);
-  return () => subscription.unsubscribe();
-};
-
-function useSelectorOn<Selected>(instance: Instance, selector: (state: any) => Selected) {
-  const read = () => selector(instance.store.state);
-  return useSyncExternalStore(subscribeTo(instance), read, read);
-}
+const useSelectorOn = <Selected,>(
+  instance: Instance,
+  selector: (state: any) => Selected,
+  compare?: (a: Selected, b: Selected) => boolean,
+) => useSelector(instance.store, selector, { compare });
 
 /** The adapter's whole job for a part: pure slot functions to props, DOM events to handlers, `bind` to a ref. */
 function PartView({
@@ -152,14 +148,8 @@ export const createParts = ((configured: Configured, elements: Record<string, st
   const useField = (path: string) => {
     const form = useForm();
     const handle = useMemo(() => form.field(path), [form, path]);
-    const previous = useRef<any>(null);
-    const read = () => {
-      const next = handle.state;
-      const last = previous.current;
-      const same = last && Object.keys(next).every(key => Object.is(next[key], last[key]));
-      return same ? last : (previous.current = next);
-    };
-    useSyncExternalStore(subscribeTo(form), read, read);
+    // The handle's `state` is a new object on each read, so compare its fields.
+    useSelectorOn(form, () => handle.state, shallow);
     return handle;
   };
 
