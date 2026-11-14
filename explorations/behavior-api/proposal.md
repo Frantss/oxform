@@ -24,25 +24,25 @@ Every design decision in this proposal is checked against these five principles.
 A criterion is met when its evidence exists and passes. "Type test" means a file
 in `type-tests/`, checked with `tsc` (TypeScript 7.0.2).
 
-| #   | Criterion                                                                                                                 | Evidence                                                                                                     | Status                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| 1a  | A form with no schema, validation, checks, arrays or reset can be composed                                                | Type test `composition.tsx` (minimal form), sketch `03` part 4                                               | Met (types)                                                   |
-| 1b  | Behaviors depend on each other only through plain arguments, except check registration                                    | `api.ts` signatures                                                                                          | Met, with one exception                                       |
-| 1c  | Slots compose per form, and a form has only the slots its behaviors support                                               | Type test `composition.tsx` (slot groups, positive and negative)                                             | Met (types)                                                   |
-| 2a  | A behavior packaged as an extension applies to any form that provides what it needs, and is rejected by one that does not | Type tests `reuse.ts`, `composition.tsx`                                                                     | Met (types)                                                   |
-| 2b  | A group of slots is reusable across forms                                                                                 | Type test `composition.tsx`                                                                                  | Met (types)                                                   |
-| 2c  | A piece of form structure (a fragment) is reusable and mountable more than once                                           | Type test `composition.tsx`, sketch `08`                                                                     | Met (types). Parts inside a scope are not designed.           |
-| 3a  | A user adds options, state, api and parts without an engine change                                                        | Type tests `consumer.tsx`, `composition.tsx`                                                                 | Met (types)                                                   |
-| 3b  | A user adds members to every field handle                                                                                 | Type test `composition.tsx` (field extras)                                                                   | Met (types)                                                   |
-| 3c  | A user hooks into value changes, validation runs and submit                                                               | `values.intercept`, `values.onChange`, `validation.onRun`, `submit.intercept`, `submit.onResult` in `api.ts` | Met (signatures). No runtime.                                 |
-| 3d  | A user replaces or wraps a base slot                                                                                      | None                                                                                                         | Not met. An extension can add slots or replace one by key.    |
-| 4a  | `Values` comes from the schema, and every option, callback, path, issue key and part is typed from it                     | Type tests `consumer.tsx`, `composition.tsx` (24 negative cases, plus the positive calls beside them)        | Met                                                           |
-| 4b  | Extensions change the types: api, state, parts, options, field handles                                                    | Type tests `composition.tsx`, `reuse.ts`                                                                     | Met                                                           |
-| 4c  | A form's kind cannot drift from its implementation                                                                        | Type test `conformance.ts` (generic `Values`, with a negative case)                                          | Met for the preset. Each kind author must repeat the pattern. |
-| 4d  | Check names in results come from the registered checks                                                                    | None                                                                                                         | Not met. The kind states them.                                |
-| 5a  | Each behavior is a separate export with no import-time side effects                                                       | `api.ts` signatures                                                                                          | Not yet shown. Needs a bundle measurement.                    |
-| 5b  | Using only values, status and events does not bundle validation, arrays, reset or the preset                              | Type test `composition.tsx` (types only)                                                                     | Not yet shown. Needs a bundle measurement.                    |
-| 5c  | A size budget exists for three tiers (see Plan)                                                                           | None                                                                                                         | Not met                                                       |
+| #   | Criterion                                                                                                                 | Evidence                                                                                                     | Status                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| 1a  | A form with no schema, validation, checks, arrays or reset can be composed                                                | Type test `composition.tsx` (minimal form), sketch `03` part 4                                               | Met (types)                                                                 |
+| 1b  | Behaviors depend on each other only through plain arguments, except check registration                                    | `api.ts` signatures                                                                                          | Met, with one exception                                                     |
+| 1c  | Slots compose per form, and a form has only the slots its behaviors support                                               | Type test `composition.tsx` (slot groups, positive and negative)                                             | Met (types)                                                                 |
+| 2a  | A behavior packaged as an extension applies to any form that provides what it needs, and is rejected by one that does not | Type tests `reuse.ts`, `composition.tsx`                                                                     | Met (types)                                                                 |
+| 2b  | A group of slots is reusable across forms                                                                                 | Type test `composition.tsx`                                                                                  | Met (types)                                                                 |
+| 2c  | A piece of form structure (a fragment) is reusable and mountable more than once                                           | Type test `composition.tsx`, sketch `08`                                                                     | Met (types). Parts inside a scope are not designed.                         |
+| 3a  | A user adds options, state, api and parts without an engine change                                                        | Type tests `consumer.tsx`, `composition.tsx`                                                                 | Met (types)                                                                 |
+| 3b  | A user adds members to every field handle                                                                                 | Type test `composition.tsx` (field extras)                                                                   | Met (types)                                                                 |
+| 3c  | A user hooks into value changes, validation runs and submit                                                               | `values.intercept`, `values.onChange`, `validation.onRun`, `submit.intercept`, `submit.onResult` in `api.ts` | Met (signatures). No runtime.                                               |
+| 3d  | A user wraps a base slot                                                                                                  | None                                                                                                         | Out of scope (decision). An extension can add a slot or replace one by key. |
+| 4a  | `Values` comes from the schema, and every option, callback, path, issue key and part is typed from it                     | Type tests `consumer.tsx`, `composition.tsx` (24 negative cases, plus the positive calls beside them)        | Met                                                                         |
+| 4b  | Extensions change the types: api, state, parts, options, field handles                                                    | Type tests `composition.tsx`, `reuse.ts`                                                                     | Met                                                                         |
+| 4c  | A form's kind cannot drift from its implementation                                                                        | Type test `conformance.ts` (generic `Values`, with a negative case)                                          | Met for the preset. Each kind author must repeat the pattern.               |
+| 4d  | Check names in results come from the registered checks                                                                    | None                                                                                                         | Not met. The kind states them.                                              |
+| 5a  | Each behavior is a separate export with no import-time side effects                                                       | `api.ts` signatures                                                                                          | Not yet shown. Needs a bundle measurement.                                  |
+| 5b  | Using only values, status and events does not bundle validation, arrays, reset or the preset                              | Type test `composition.tsx` (types only)                                                                     | Not yet shown. Needs a bundle measurement.                                  |
+| 5c  | A size budget exists for three tiers (see Plan)                                                                           | None                                                                                                         | Not met                                                                     |
 
 ## Problem
 
@@ -150,6 +150,9 @@ to a form. `Needs` states what the extension requires from a form, for example
 form that lacks that api is a type error. The api returns only the additions,
 and the result is merged with the base. `extendForm(def, input)` is the
 one-off form of the same operation. See `06-custom-behaviors.ts`.
+
+An extension can add a slot, or replace a base slot by key. It cannot wrap a base
+slot. That is a decision, not a gap.
 
 Extensions reach every part of a form through the kernel's hooks, not through
 private access:
@@ -343,6 +346,11 @@ Risks:
 | A   | **Behaviors composed in `api` (this proposal).** New core beside the old one.        | Translate the existing core specs to the new API. Type tests for inference. Lane and race specs. Examples in React and both Solid versions. Bundle budget. | Largest change. The type model needs hand-written kinds. Spike types and the pipeline first. |
 | B   | **Extract behaviors inside `FormApi`.** Keep the public API. Open `extendForm` last. | Existing specs stay green after each commit.                                                                                                               | Can stall halfway and leave two models. Does not give opt-in bundles.                        |
 
+Rejected: composing a form as a list of extensions (`buildForm(withValues, withCheck('error'), ...)`).
+It removes hand-written kinds and derives check names, but it moves the main
+composition surface from one `api(context)` to a list. The `api(context)` model
+stays, with hand-written kinds for `Values`-dependent types.
+
 Rejected: building on UI SDK itself. It targets UI components, is in beta, and
 would add a dependency that Oxform must track.
 
@@ -384,19 +392,17 @@ would add a dependency that Oxform must track.
 4. **Check names in types.** The kind states the check names. Decide whether a
    conformance test per kind is enough, or whether names should derive from the
    `createCheck` calls.
-5. **Wrapping a base slot.** An extension can add slots or replace one by key. It
-   cannot wrap one. Decide whether it needs to (criterion 3d).
-6. **Parts inside a scope.** `<Field scope={billing} name='zip' />` is not
+5. **Parts inside a scope.** `<Field scope={billing} name='zip' />` is not
    designed. Today a part takes a full path.
-7. **Migration.** Users of levels need a codemod from `checks` to one option
+6. **Migration.** Users of levels need a codemod from `checks` to one option
    per check, and from `useForm(options)` to `configureForm`.
-8. **Controlled values.** Deferred. Nothing here needs them.
-9. **Performance.** Benchmark the memoized derived state before and after.
-10. **Option sources.** `defaultValues` can come from `configureForm`,
-    `configured(options)` or `Root` props. Proposed rule: later wins (`Root` over
-    instance over `configureForm`), and `configureForm` fixes the types. A
-    definition without defaults requires them at the instance.
-11. **Not yet sketched.** Form `id` generation per adapter, `unregister` on
+7. **Controlled values.** Deferred. Nothing here needs them.
+8. **Performance.** Benchmark the memoized derived state before and after.
+9. **Option sources.** `defaultValues` can come from `configureForm`,
+   `configured(options)` or `Root` props. Proposed rule: later wins (`Root` over
+   instance over `configureForm`), and `configureForm` fixes the types. A
+   definition without defaults requires them at the instance.
+10. **Not yet sketched.** Form `id` generation per adapter, `unregister` on
     unmount, `useFormEffect`, and non-React adapters' `createParts`.
 
 ## Plan
