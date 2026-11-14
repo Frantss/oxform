@@ -3,10 +3,13 @@ import type { FormContext, StateSlice, Unsubscribe } from '../../api';
 
 type OptionsListener<Options> = (options: Options, previous: Options) => void;
 
-/** The adapter-facing half of a context: it sets options, binds the instance and destroys. */
+/** The adapter-facing half of a context: it sets options, binds the instance, and stops or ends its work. */
 export interface ContextControls<Options> {
   setOptions(next: Options): void;
   bindInstance(instance: unknown): void;
+  /** Runs the cleanups of the work in progress (timers, requests). The instance stays usable, so it can mount again. */
+  unmount(): void;
+  /** Unmounts for good: the cleanups are dropped and nothing listens any more. */
   destroy(): void;
 }
 
@@ -87,8 +90,12 @@ export function createContext<Options>(initialOptions: Options): [FormContext<Op
     bindInstance(next) {
       instance = next;
     },
+    unmount() {
+      for (const cleanup of cleanups) cleanup();
+    },
     destroy() {
-      for (const cleanup of cleanups.splice(0)) cleanup();
+      controls.unmount();
+      cleanups.length = 0;
       optionListeners.clear();
     },
   };

@@ -117,7 +117,27 @@ export const defineExtension = ((input: ExtensionInput) => (definition: object) 
 const MOUNT = Symbol.for('oxform.fragment.mount');
 type Mountable = Record<symbol, (options: Record<string, unknown>, mountPath: string) => Record<string, unknown>>;
 
-function createInstance(definition: object, options: Record<string, unknown>) {
+/**
+ * What an adapter needs from an instance, and not part of its public api: new options on each render, and a way to
+ * stop the work in progress when the component leaves. Neither ends the instance, so hiding and showing it again
+ * (Suspense, Activity, strict mode) needs no rebuild.
+ */
+export interface AdapterControls {
+  setOptions(options: Record<string, unknown>): void;
+  unmount(): void;
+}
+const adapterControls = new WeakMap<object, AdapterControls>();
+export const adapterControlsOf = (instance: object): AdapterControls => {
+  const found = adapterControls.get(instance);
+  if (!found) throw new Error('This is not an instance made by a configured form.');
+  return found;
+};
+
+function createInstance(
+  definition: object,
+  options: Record<string, unknown>,
+  merge: (options: Record<string, unknown>) => Record<string, unknown>,
+) {
   const [ctx, controls] = createContext(options);
   const instance = {
     ...inputOf(definition).api(ctx),
@@ -126,6 +146,10 @@ function createInstance(definition: object, options: Record<string, unknown>) {
     destroy: () => controls.destroy(),
   };
   controls.bindInstance(instance);
+  adapterControls.set(instance, {
+    setOptions: next => controls.setOptions(merge(next)),
+    unmount: () => controls.unmount(),
+  });
   return instance;
 }
 
@@ -135,11 +159,12 @@ function createInstance(definition: object, options: Record<string, unknown>) {
  */
 export const configureForm = ((definition: object, configured: Record<string, unknown>) => {
   const { fragments = {}, ...rest } = configured;
-  const create = (options: Record<string, unknown> = {}) => {
+  const merge = (options: Record<string, unknown>) => {
     let merged: Record<string, unknown> = { ...rest, ...options };
     for (const [mountPath, fragment] of Object.entries(fragments as Record<string, Mountable>))
       merged = fragment[MOUNT]!(merged, mountPath);
-    return createInstance(definition, merged);
+    return merged;
   };
+  const create = (options: Record<string, unknown> = {}) => createInstance(definition, merge(options), merge);
   return Object.assign(create, { definition });
 }) as unknown as typeof Api.configureForm;
