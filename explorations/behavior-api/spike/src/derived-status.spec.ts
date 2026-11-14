@@ -159,4 +159,14 @@ describe('memoization per path', () => {
     expect(form.store.state.status).toEqual(before);
     expect(form.store.state.status.fields.name).toBe(before.fields.name);
   });
+
+  it('keeps the same state object across subscribe cycles, as an adapter does in strict mode', () => {
+    const form = createProfileForm();
+    form.events.change('name', 'x');
+    const subscription = form.store.subscribe(() => {});
+    const whileSubscribed = form.store.state;
+    subscription.unsubscribe();
+
+    expect(form.store.state).toBe(whileSubscribed);
+  });
 });

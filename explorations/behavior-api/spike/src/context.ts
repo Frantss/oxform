@@ -30,13 +30,21 @@ export function createContext<Options>(initialOptions: Options): [FormContext<Op
   /** Slices are written here. The context's `store` is derived from it. */
   const base = createStore<Record<string, unknown>>({});
   const derivations = new Map<string, () => unknown>();
+  // A store with no subscriber derives again on every read, and a new object would make a snapshot look changed to
+  // an adapter that subscribes and unsubscribes (strict mode). So an unchanged result keeps its reference.
+  let previousDerived: Record<string, unknown> | undefined;
   const store = createStore<Record<string, unknown>>(() => {
     const state = base.state;
     if (derivations.size === 0) return state;
 
     const derived = { ...state };
     for (const [name, compute] of derivations) derived[name] = compute();
-    return derived;
+
+    const unchanged =
+      previousDerived !== undefined &&
+      Object.keys(derived).length === Object.keys(previousDerived).length &&
+      Object.entries(derived).every(([name, value]) => previousDerived![name] === value);
+    return unchanged ? previousDerived! : (previousDerived = derived);
   });
   const optionListeners = new Set<OptionsListener<Options>>();
   const cleanups: (() => void)[] = [];

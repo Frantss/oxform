@@ -900,15 +900,15 @@ export type RootComponent<Kind extends FormKind, Values, Elements> = Elements ex
 
 export interface FormHooks<Kind extends FormKind, Values> {
   /** The instance from context. */
-  useForm(): FormInstance<Kind, Values>;
+  readonly useForm: () => FormInstance<Kind, Values>;
   /** Re-renders when the selected state changes. Returns the initial state on the server. */
-  useSelector<Selected>(selector: (state: StateOf<Kind, Values>) => Selected): Selected;
+  readonly useSelector: <Selected>(selector: (state: StateOf<Kind, Values>) => Selected) => Selected;
   /** Same signature as `form.field`, and re-renders on that field's state. */
-  useField: ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never;
+  readonly useField: ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never;
   /** Same signature as `form.array`, and re-renders on that array's state. */
-  useArrayField: ApiOf<Kind, Values> extends { readonly array: infer ArrayField } ? ArrayField : never;
+  readonly useArrayField: ApiOf<Kind, Values> extends { readonly array: infer ArrayField } ? ArrayField : never;
   /** Same signature as `form.scope`. Handles for a sub-object, for components written once per fragment. */
-  useScope: ApiOf<Kind, Values> extends { readonly scope: infer Scope } ? Scope : never;
+  readonly useScope: ApiOf<Kind, Values> extends { readonly scope: infer Scope } ? Scope : never;
 }
 
 export declare function createParts<

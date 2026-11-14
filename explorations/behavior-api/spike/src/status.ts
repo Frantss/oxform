@@ -96,6 +96,7 @@ export function createFieldStatus<Values>(
   const fieldCache = new Map<string, FieldStatus>();
   let previousFields: Record<string, FieldStatus> = {};
   let previousForm: FormStatus | undefined;
+  let previousStatus: StatusState | undefined;
 
   const sameFields = (a: FieldStatus, b: FieldStatus) =>
     a.dirty === b.dirty &&
@@ -160,8 +161,10 @@ export function createFieldStatus<Values>(
       Object.entries(nextForm).every(([key, value]) => previousForm![key as keyof FormStatus] === value);
     if (!stableFields) previousFields = fields;
     if (!stableForm) previousForm = nextForm;
+    if (!stableFields || !stableForm || !previousStatus)
+      previousStatus = { form: previousForm!, fields: previousFields };
 
-    return { form: previousForm!, fields: previousFields };
+    return previousStatus;
   };
 
   contextInternals(ctx).derive('status', compute);

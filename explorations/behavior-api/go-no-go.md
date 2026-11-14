@@ -17,7 +17,7 @@ are in [reports/behavior-api-spike.md](../../reports/behavior-api-spike.md), and
    behaviors reach them through module-private channels (`statusInternals`, `eventsInternals`,
    `arraysInternals`). Other signature gaps were fixed in `api.ts`: `values` for status, submit and handles,
    `status` for handles, and `events` for reset.
-4. **No adapters until the core is settled.** Plan step 6 is deferred.
+4. **Adapters were deferred until the core settled.** The React adapter is now in the spike (see "React adapter" in the report). Solid 1 and Solid 2 are still deferred.
 5. **The root `schema` only sets the data shape.** It validates nothing. To validate on submit, pass a validator
    to the check (`error: { submit: schema }`). `createValidation` no longer requires a `schema` option, and the
    sketch comments that called the schema a submit fallback were corrected. This differs from today's library,
@@ -51,10 +51,10 @@ Kernel behaviors with runtime: context, change pipeline, values, validation, che
 status, events, reset, arrays, submit, handles, `defineForm`, `configureForm`, `extendForm`, `defineExtension`,
 `defineSlots` with the slot groups (`fieldSlots`, `fieldErrorSlots`, `submitSlots`, `resetSlots`), fragments
 (`defineFragment` and mounting in `configureForm`), `createEffect`, derived status in the store, field extras,
-and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 173 Vitest tests pass in
-Node, and `tsc` passes on the spike and on `type-tests/`.
+and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 174 Vitest tests pass in
+Node, 7 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
 
-Not built: parts at runtime (`createParts`, `usePart`) and every adapter (React, Solid 1, Solid 2).
+Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Not built: `usePart`, parts inside a scope, and the Solid 1 and Solid 2 adapters.
 
 ## Acceptance checklist
 

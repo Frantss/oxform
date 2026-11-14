@@ -243,3 +243,26 @@ Built in `explorations/behavior-api/spike/src/`. 146 tests (145 pass, 1 document
   model, and the names are still written by hand (decision 2).
 - **Assignable to `HandlesApi`.** `addressFields(form.scope('billing'))` still compiles for a form with an
   extension, so a function written once for a fragment works at any mount point.
+
+## React adapter
+
+- **What exists** (`spike/src/react/create-parts.tsx`). `createParts(form, elements)` returns `Root`, one component per
+  part, and the hooks `useForm`, `useSelector`, `useField`, `useArrayField` and `useScope`. It knows no behavior: a
+  part runs the form's slot (`present`, `state`, `attrs`), turns `on` into React props, and runs `bind` in a ref.
+  Tests are `spike/src/react/parts.spec.tsx` and run in Chromium with `vite.react.config.ts`: typing and `data-dirty`,
+  submit and field issues (`aria-invalid`, `role="alert"`), `onSubmit`, hooks, an existing instance, strict mode, and
+  a server render. All 7 pass.
+- **Core bug found: unstable store state** (`spike/src/context.ts`, `spike/src/status.ts`). After the last
+  subscriber leaves, the derived store computes again on the next read and returned a new state object and a new
+  `status` wrapper. React strict mode subscribes, unsubscribes and subscribes again, so `useSyncExternalStore` saw a
+  changed snapshot after every commit and failed with "Maximum update depth exceeded". Fixed: an unchanged result keeps
+  its reference. Regression test in `derived-status.spec.ts`. This is what any adapter needs from the store: a
+  snapshot that is stable until something changes.
+- **`input` maps to `onChange`.** A slot says `on: { input }`. React warns on a field with `value` and no `onChange`,
+  and its `onChange` is the DOM input event, so the adapter maps `input` to `onChange`. A user's `onChange` prop runs
+  first. The adapter owns this table. Solid will need its own.
+- **Gaps.** Changed option props on `Root` do not reach the instance (the instance has no public `setOptions`). A
+  user `ref` prop on a part is not merged with `bind`. `useSelector` re-renders on every store change and a part
+  re-renders on any state change, since each part reads the whole state. `usePart` and parts inside a scope are not built.
+- **`FormHooks` in `api.ts`** now uses function properties, so the hooks can be destructured without an
+  unbound-method lint warning.
