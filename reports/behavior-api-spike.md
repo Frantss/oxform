@@ -312,3 +312,46 @@ Open: a `provided` form that changes after mount.
 - **Open.** A `scope` forgotten on a part whose name also
   exists on the form compiles and writes to the form's field. A reusable block for several forms must be passed
   `Field` and `FieldError`, since they belong to one form's `createParts`.
+
+## Playground: representative forms
+
+Six forms in `explorations/behavior-api/playground/` (signup, login, profile, arrays, checkout with fragments, async
+validation), written as an app would write them. A Playwright pass drove each one in Chromium: submit, errors, reset, array mutations, scopes, the async
+check. Every flow worked. What the forms showed:
+
+- **React warns on every field.** The `field` slot sets `value` and listens through `addEventListener`, so React sees a
+  controlled input with no `onChange` and logs "You provided a `value` prop to a form field without an `onChange`
+  handler" (`spike/src/slots.ts:22`, `spike/src/react/create-parts.tsx`, `attach`). Typing still works. The warning
+  needs `onChange` or `readOnly` on the element, or a `defaultValue` design.
+- **The `field` slot reads `.value` only.** A checkbox cannot use `Field`: `slots.ts` writes `value` and the `input`
+  listener reads `target.value`. The profile form binds its checkbox by hand through `useField('newsletter')`.
+  A `select` works through `render={<select />}`.
+- **A server error blocked the next submit (fixed).** The login form's `onSubmit` writes one with
+  `form.field('password').setError([...])`. A validation run replaces only entries that carry its event type and keeps
+  untyped ones (`validation.ts`, `check.refresh`), so the hand-set entry stayed a blocking `error` and a retry never
+  reached `onSubmit`. The field handle's `setError` sugar now removes the entries it set when the field or an
+  ancestor next changes (`handles.ts`, `setUntilChange`; three tests in `standard-form.spec.ts`). `check.set` is
+  unchanged: its entries stay until something clears them. Open: a reset does not remove them.
+- **`validating` is reactive** in the async form: `status.form.validating` is true during the blur check, and the
+  entry arrives typed `blur`.
+
+## Playground: customized forms
+
+Three more forms use a customized definition (`playground/src/kit/` holds the definitions, the pages are plain app
+code): `withMasks` (option, change interceptor, field extra), `withAutosave` and `withWarnings` stacked (options,
+state slices, api, two parts, a second check) and a lean form composed from seven behaviors. All three worked in
+Chromium. What they showed:
+
+- **`useField` lacked the field extras in its type (fixed).** `form.field(path)` carried an extension's extras, but
+  the hook's non-scoped signature used the base `field` (`api.ts`, `FormHooks.useField`), so `useField('number').unmasked()`
+  did not compile although the runtime already worked. It now uses the same extras-aware `field` type as the instance.
+  `type-tests/composition.tsx` checks it.
+- **The `form` argument of `onSubmit` and `onInvalid` has no extras.** It is typed `FormInstance<StandardKind, Values>`
+  in `StandardOptions`, so an extension's api and field extras are missing there (`form.field('number').unmasked()`
+  fails to compile inside `onSubmit`). Not fixed: the options belong to the base kind, which cannot name its extensions.
+  An app reads the extras through hooks inside `Root` instead.
+- **Authoring cost.** Each extension is 30 to 60 lines, about half of it type aliases for the kind. Nested object types
+  cannot use `this['values']` (TS2526), so every kind needs a named alias per member. The lean form needs a hand-written
+  `as LeanApi<any>` on its api, because the generic `Values` cannot flow through `defineForm`'s callback.
+- **Autosave keeps the last saved time** after the values turn invalid. That follows from the extension's rule (save
+  only when valid), but a status part may need to say "unsaved changes".
