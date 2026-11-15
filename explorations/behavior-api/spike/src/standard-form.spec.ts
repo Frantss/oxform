@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { statusInternals } from './status';
 import { createProfileForm, defaultProfile, failing, fakeElement } from './test-helpers';
 
@@ -201,6 +201,50 @@ describe('handles', () => {
 
     expect(name.error()).toEqual([{ message: 'Taken' }]);
     expect(form.error.at('name')).toEqual([{ message: 'Taken' }]);
+  });
+
+  describe('setError (an error from outside validation, such as a server)', () => {
+    it('is removed when the field next changes, so it cannot block the retry', async () => {
+      const onSubmit = vi.fn();
+      const form = createProfileForm({ onSubmit });
+      form.field('name').setError([{ message: 'Taken' }]);
+
+      await form.submit.run();
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      form.field('name').change('Ada');
+      expect(form.field('name').error()).toEqual([]);
+
+      await form.submit.run();
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
+
+    it('stays while another field changes, and is removed when an ancestor changes', () => {
+      const form = createProfileForm();
+      form.field('address.city').setError([{ message: 'Unknown city' }]);
+
+      form.field('name').change('Ada');
+      form.field('address.city').get();
+      expect(form.field('address.city').error()).toHaveLength(1);
+
+      form.values.set('address', { city: 'Paris' });
+      expect(form.field('address.city').error()).toEqual([]);
+    });
+
+    it('removes only what it set, and keeps what a validation run added to the same field', async () => {
+      const form = createProfileForm({ error: { blur: failing({ message: 'Required', path: ['name'] }) } });
+      await form.validation.run('name', { type: 'blur' });
+      form.field('name').setError([{ message: 'Taken' }], { mode: 'append' });
+
+      form.field('name').change('Ada', { should: { validate: false } });
+
+      expect(
+        form
+          .field('name')
+          .error()
+          .map(entry => entry.message),
+      ).toEqual(['Required']);
+    });
   });
 
   it('scopes handles to a sub-object, at any depth', () => {

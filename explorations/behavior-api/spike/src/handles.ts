@@ -1,6 +1,7 @@
 import type {
   ArraysApi,
   CheckApi,
+  CheckEntry,
   EventsApi,
   FormContext,
   HandlesApi,
@@ -10,7 +11,7 @@ import type {
 } from '../../api';
 import { arraysInternals } from './arrays';
 import { eventsInternals } from './events';
-import { getAt, joinPath } from './paths';
+import { getAt, isWithin, joinPath } from './paths';
 
 /**
  * The prefix a handle set is scoped to, under a symbol so spreading a handle set keeps it. It is not on `HandlesApi`:
@@ -36,6 +37,20 @@ export function createHandles<Values, Checks extends Readonly<Record<string, Che
   const ids = arraysInternals(deps.arrays);
   const capitalize = (name: string) => `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 
+  /**
+   * The sugar's `setError` is for errors from outside validation, such as a server's. No validation run refreshes an
+   * entry without an event, so it would block submit for good. It goes when the field, or an ancestor, next changes.
+   */
+  function setUntilChange(check: CheckApi<Values>, target: string, entries: readonly CheckEntry[], options?: never) {
+    check.set(target as never, entries, options);
+    const stop = deps.values.onChange(change => {
+      if (!isWithin(target, change.path)) return;
+      stop();
+      const remaining = check.at(target as never).filter(entry => !entries.includes(entry));
+      check.set(target as never, remaining);
+    });
+  }
+
   function handlesAt(prefix: string): HandlesApi<any, any> {
     const full = (path: string) => joinPath(prefix, path);
 
@@ -44,7 +59,10 @@ export function createHandles<Values, Checks extends Readonly<Record<string, Che
       const sugar = Object.fromEntries(
         Object.entries(deps.checks).flatMap(([name, check]) => [
           [name, (options?: { nested?: boolean }) => check.at(target as never, options)],
-          [`set${capitalize(name)}`, (entries: never, options?: never) => check.set(target as never, entries, options)],
+          [
+            `set${capitalize(name)}`,
+            (entries: readonly CheckEntry[], options?: never) => setUntilChange(check, target, entries, options),
+          ],
         ]),
       );
 

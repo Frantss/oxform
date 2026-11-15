@@ -547,7 +547,11 @@ export interface CheckApi<Values, Name extends string = string> {
   validates(event: ValidationEvent): boolean;
 }
 
-/** Sugar on a field handle for each check given to `createHandles`: `error()` and `setError(...)`. */
+/**
+ * Sugar on a field handle for each check given to `createHandles`: `error()` and `setError(...)`. The entries a
+ * `setError` call adds are for errors from outside validation, such as a server's, and go when the field or an
+ * ancestor next changes. `check.set` keeps its entries until something clears them.
+ */
 export type CheckSugar<Checks extends string> = {
   readonly [Check in Checks]: (options?: { readonly nested?: boolean }) => readonly CheckEntry[];
 } & {
