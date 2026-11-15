@@ -355,3 +355,40 @@ Chromium. What they showed:
   `as LeanApi<any>` on its api, because the generic `Values` cannot flow through `defineForm`'s callback.
 - **Autosave keeps the last saved time** after the values turn invalid. That follows from the extension's rule (save
   only when valid), but a status part may need to say "unsaved changes".
+
+## Playground review follow-up
+
+Review items from the playground, handled in the spike. All checks pass: spike `tsc`, 187 node tests, 33 browser
+tests, type-tests, playground `tsc` and build.
+
+- **Default elements.** A slot declares its element (`element: 'input'`) and the kind's `PartSpec` states it as a
+  third type argument. `createParts(form)` needs no element map. The second argument only overrides, and the types
+  follow (`createParts(form, { field: 'textarea' })` types `Field`'s ref as a textarea). Every part of the form is now a
+  component, so `Reset` exists without being listed. A slot that omits `element` renders in a `div`.
+  Files: `api.ts`, `spike/src/slots.ts`, `standard.ts`, `react/create-parts.tsx`. The nine examples dropped the map.
+- **Default text.** A slot may declare `text(state)`, the text the part shows when it has no children. `fieldError` and
+  `fieldWarning` show the first message. Children still override. About 20 repeated render functions are gone.
+- **Scope cannot be forgotten.** `parts.within(scope)` returns the parts bound to a scope: no `scope` prop, names typed
+  by the scope's values. The components are cached per scope, so identity holds and nothing remounts. A reusable block
+  takes the bound parts as a prop, so it imports nothing from the form (`checkout.tsx`, `AddressFields`).
+  `type-tests/part-scope.tsx` checks it. Limit: an unbound part used with a name that is also a path of the form still
+  compiles without `scope` (the earlier known gap). `within` avoids it, it does not close it.
+- **Types.** `Attributes` accepts `readonly string[]`. `PartHandle.props` declares optional `type` and `value`
+  (`PartDomProps`), so `slots.ts` lost its casts.
+- **Reset and `setError`.** Already worked: a reset clears every check, so the "Open" note above was stale. A test now
+  states it (`standard-form.spec.ts`).
+- **Reset and file inputs.** A file input cannot be controlled. The `field` slot's `bind` now listens to value changes
+  and empties a file input on a `reset` change. `fieldSlots` now needs the `values` api as well as `events`.
+- **Lean form composer: skipped.** The hand wiring is seven short lines. A composer needs one adapter per behavior
+  to name its dependencies, and a hand-written result type, so it would be longer than what it replaces. Revisit when
+  more compositions exist.
+- **Autosave.** The slice has `dirty`: true after any change, false when a save starts, true again if values change
+  during a save. The draft editor shows "Unsaved changes" while dirty, also when the values are invalid (`kit.spec.ts`).
+- **Submit intents.** The API could not express it cleanly: the submit handler had no way to know which button was
+  pressed, and a ref set in `onClick` lives outside the form. Smallest support: `submit.run(intent?)`, and the preset
+  root passes the pressed button's `value` (`event.submitter`). `onSubmit` and `onInvalid` get it as the third argument.
+  The draft editor has "Save draft" (`value='draft'`) and "Publish". Limit: the lean form's root does not pass it.
+- **Third-party controls.** A new example and two browser tests. A control that reports changes through a callback
+  works through `useField` (`state.value`, `change`, `blur`; errors and status follow). A component that forwards its
+  props works through a `render` function. Gap: `Field`'s `render` gets the DOM props but no `change` callback, so a
+  callback-only control cannot use `Field`, and the author copies the `aria-*` and `data-*` attributes by hand.
