@@ -392,3 +392,24 @@ tests, type-tests, playground `tsc` and build.
   works through `useField` (`state.value`, `change`, `blur`; errors and status follow). A component that forwards its
   props works through a `render` function. Gap: `Field`'s `render` gets the DOM props but no `change` callback, so a
   callback-only control cannot use `Field`, and the author copies the `aria-*` and `data-*` attributes by hand.
+
+## Scopes (extension-api spike)
+
+- **The form-level `schema` only types the values.** `explorations/extension-api/spike/src/api.ts` declares it as
+  `schema: StandardSchemaV1<Values>` on both `defineForm` overloads (around line 475), and `spike/src/form.ts:24` lists it
+  as an option kind. Nothing else reads it: `spike/src/validation.ts:105-106` validates with the validators of the check
+  options (`error: { blur: schema }`), and `check.ts`, `values.ts` and `standard.ts` do not mention `schema`. A scope's
+  `schema` is the same: `scopes.ts` only reads its `defaultValues` and `checks`. Why it matters: `defineForm({ schema })`
+  reads as if it validated, and a form with a strict schema and no `error` validator accepts anything. The spec
+  `scopes.spec.ts` ("rule 6") pins the current behavior. Not changed.
+- **A scope of the wrong shape is accepted.** `type-tests/scopes.tsx:62` (comment): `isFilled(plain.scope('other'))`
+  compiles although `other` is a `Checkout` and `isFilled` takes `Scope<Address, 'error'>`. The `field` and `array`
+  members are generic functions, and their parameter constraints are not compared by shape. The old `HandlesApi` behaved the
+  same. Why it matters: "one function works at every scope" is only checked for the field names it uses, not for the
+  shape it is handed. Not changed.
+- **An instance is not assignable to `Scope<Values>`**, even when the values match exactly: the generic `field` return types
+  differ and `scope` is missing in the conditional of `Instance`. Why it matters: the root handles and `Scope<V>` are the same
+  recursive interface in the declaration, but a function written for `Scope<Checkout>` cannot take the whole form.
+- **Partial scope defaults need a cast.** The deep merge of scope defaults (`scopes.ts`, `deepMerge`) accepts a partial
+  `billing` from `create` or `configure`, but the type of `defaultValues` is the full `Values`, so the call needs `as never`.
+  Typing it as a deep partial for scope keys needs the scope keys in the `Form` type.
