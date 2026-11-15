@@ -1,6 +1,7 @@
-# Go or no-go: behavior-based API spike
+# Behavior-based API spike: results
 
-Status: evidence for the decision. The decision is the maintainer's. Spike code is in `spike/`, findings
+Status: the design is adopted and the next step is the migration. This records what the spike showed, the
+decisions made along the way, and what is still open. Spike code is in `spike/`, findings
 are in [reports/behavior-api-spike.md](../../reports/behavior-api-spike.md), and the tickets are in
 [tickets/](./tickets/readme.md).
 
@@ -142,17 +143,19 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 - Fixed (decision 9): scoped handles carry field extras at any depth, at runtime and in the types.
 - Open: the derived status recomputes every path on each change. See open question 5 above.
 
-## Recommendation
+## What remains for the migration
 
-**Conditional go, core only.** The kernel composes, the typing model holds against a real runtime, hooks work,
-extensions (with field extras), slots and fragments run, the preset's slots read a correct derived status, and
-the bundle tiers show opt-in savings against today's core. The core has no open design question left that
-blocks adapters, apart from the open points above. What remains:
+The spike showed that the kernel composes, the typing model holds against a real runtime, extension points work,
+and the React adapter renders slots, scopes and arrays. Open items, none of which blocks the migration:
 
-1. Decide whether the linear cost of derived status is acceptable, by measuring a form of the expected size
-   (the spike measured 0.19 ms per change at 200 fields).
-
-The React adapter is in the spike. Solid 1 and Solid 2 are skipped for now, and the migration waits for your decision.
-
-Reasons to stop instead: if the hand-written kinds are too costly for extension authors. The spike has no
-evidence on that point.
+1. **Derived status cost.** It is linear in the number of fields (0.19 ms per change at 200 fields). Forms stay
+   under 100 fields, so it stays as is. Revisit if a measured form needs it.
+2. **Kind authoring cost.** Every extension that touches `Values` writes about 15 lines of kind types. The spike
+   has no evidence from an extension author's side.
+3. **Check names** are hand-written (decision 2), so a declared name that no `createCheck` registers is typed but
+   missing at runtime. Documentation must say so.
+4. **Migration work.** A codemod for the root `schema` change (decision 5), for `checks` to one option per check,
+   and for `useForm(options)` to `configureForm`.
+5. **Not built:** `usePart`, Solid 1 and Solid 2.
+6. **Quirks.** A `scope` forgotten on a part whose name also exists on the form compiles and writes to the
+   form's field.

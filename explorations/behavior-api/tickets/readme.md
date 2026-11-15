@@ -1,7 +1,7 @@
 # Tickets: first iteration of the behavior API
 
 Scope: Plan steps 2 to 5 of [proposal.md](../proposal.md). Build a throwaway spike, measure
-bundle size, add a conformance test, and decide go or no-go. Plan step 6 waits for the decision.
+bundle size, add a conformance test, and record the results. Plan step 6 is the migration.
 
 | ID                                      | Outcome                                                      | Depends on                             |
 | --------------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
@@ -16,7 +16,7 @@ bundle size, add a conformance test, and decide go or no-go. Plan step 6 waits f
 | [TK-009](./tk-009-inert-api.md)         | Inert `api(ctx)` for server rendering                        | TK-005                                 |
 | [TK-010](./tk-010-bundle-budget.md)     | Bundle budget in tiers                                       | TK-005, TK-006                         |
 | [TK-011](./tk-011-kind-conformance.md)  | Conformance test for each kind that ships                    | TK-005                                 |
-| [TK-012](./tk-012-go-no-go.md)          | Go/no-go decision record                                     | TK-007, TK-008, TK-009, TK-010, TK-011 |
+| [TK-012](./tk-012-spike-results.md)     | Spike results record                                         | TK-007, TK-008, TK-009, TK-010, TK-011 |
 
 TK-005 and TK-006 can run in parallel after TK-004. TK-007, TK-008, TK-010 and TK-011 can run in
 parallel after that.

@@ -107,8 +107,8 @@ built `@oxform/core` 0.6.0 with `@tanstack/store` and `remeda` bundled.
 
 ## Remaining behaviors: status, events, reset, arrays, submit, handles, preset
 
-Built in `explorations/behavior-api/spike/src/` (103 tests). The go or no-go evidence is in
-`explorations/behavior-api/go-no-go.md`. Findings:
+Built in `explorations/behavior-api/spike/src/` (103 tests). The results are in
+`explorations/behavior-api/spike-results.md`. Findings:
 
 - **Hidden coupling is wider than check registration.** `status.ts`, `events.ts`, `reset.ts` and `submit.ts`
   read check state through helpers in `spike/src/validation.ts` that use a module-level `WeakMap` keyed on the

@@ -421,6 +421,6 @@ would add a dependency that Oxform must track.
    Checklist items 5a to 5c depend on this.
 4. Add a conformance test for each kind that ships (`type-tests/conformance.ts`
    is the pattern).
-5. Decide go or no-go from the spike result and the checklist.
+5. Migrate. The spike results and the checklist are in `spike-results.md`.
 6. If go: build the remaining behaviors, then the React adapter, then both
    Solid adapters, then migrate examples and docs.
