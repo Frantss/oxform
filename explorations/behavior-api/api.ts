@@ -954,12 +954,34 @@ export interface FormHooks<Kind extends FormKind, Values> {
     selector: (state: StateOf<Kind, Values>) => Selected,
     options?: { readonly compare?: (a: Selected, b: Selected) => boolean },
   ) => Selected;
-  /** Same signature as `form.field`, and re-renders on that field's state. */
-  readonly useField: ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never;
-  /** Same signature as `form.array`, and re-renders on that array's state. */
-  readonly useArrayField: ApiOf<Kind, Values> extends { readonly array: infer ArrayField } ? ArrayField : never;
-  /** Same signature as `form.scope`. Handles for a sub-object, for components written once per fragment. */
-  readonly useScope: ApiOf<Kind, Values> extends { readonly scope: infer Scope } ? Scope : never;
+  /**
+   * Same signature as `form.field`, and re-renders on that field's state. With `{ scope }` (from `useScope`), the
+   * path is relative to the scope and typed by its values.
+   */
+  readonly useField: (ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never) &
+    (<Scoped, Checks extends string, const P extends Path<Scoped>>(
+      path: P,
+      options: { readonly scope: HandlesApi<Scoped, Checks, Kind> },
+    ) => FieldHandle<Scoped, P, Checks> & FieldExtrasOf<Kind, Scoped, P>);
+  /** Same signature as `form.array`, and re-renders on that array's state. Takes `{ scope }` like `useField`. */
+  readonly useArrayField: (ApiOf<Kind, Values> extends { readonly array: infer ArrayField } ? ArrayField : never) &
+    (<Scoped, const P extends ArrayPath<Scoped>>(
+      path: P,
+      options: { readonly scope: HandlesApi<Scoped, any, Kind> },
+    ) => ArrayHandle<Scoped, P>);
+  /**
+   * Same signature as `form.scope`. Handles for a sub-object, for components written once per fragment. With
+   * `{ scope }` the prefix is relative to the scope, so a block can open a scope of its own.
+   */
+  readonly useScope: ApiOf<Kind, Values> extends { readonly scope: (prefix: any) => any }
+    ? (<const P extends ObjectPath<Values>>(
+        prefix: P,
+      ) => ScopedHandles<Kind, NonNullable<PathValue<Values, P>>, ChecksOf<Kind>>) &
+        (<Scoped, Checks extends string, const P extends ObjectPath<Scoped>>(
+          prefix: P,
+          options: { readonly scope: HandlesApi<Scoped, Checks, Kind> },
+        ) => ScopedHandles<Kind, NonNullable<PathValue<Scoped, P>>, Checks>)
+    : never;
 }
 
 export declare function createParts<

@@ -393,7 +393,7 @@ would add a dependency that Oxform must track.
    conformance test per kind is enough, or whether names should derive from the
    `createCheck` calls.
 5. **Parts inside a scope.** Designed: `<Field scope={billing} name='zip' />` names the field relative to the
-   scope, typed by the scope's values. Open: hooks relative to a scope, and a forgotten `scope` on a part whose
+   scope, typed by the scope's values. The hooks take `{ scope }` too. Open: a forgotten `scope` on a part whose
    name also exists on the form.
 6. **Migration.** Users of levels need a codemod from `checks` to one option
    per check, and from `useForm(options)` to `configureForm`.

@@ -127,8 +127,23 @@ function AddressBlock({ scope }: { scope: HandlesApi<Address, 'error'> }) {
     </>
   );
 }
+function AddressHooks({ scope }: { scope: HandlesApi<Address, 'error'> }) {
+  const street = checkoutParts.useField('street', { scope });
+  street.change('x');
+  street.error(); // the check sugar of the scope
+  // @ts-expect-error not an array path of Address
+  checkoutParts.useArrayField('nope', { scope });
+  // @ts-expect-error not a path of Address
+  checkoutParts.useField('nope', { scope });
+  // @ts-expect-error a path of the form, not of Address
+  checkoutParts.useField('billing.street', { scope });
+  return null;
+}
 export function CheckoutView() {
   const billing = checkoutParts.useScope('billing');
+  checkoutParts.useField('street', { scope: billing }).get().toUpperCase();
+  // `useScope` opens a scope inside a scope
+  checkoutParts.useScope('billing').field('zip').get().toUpperCase();
   return (
     <checkoutParts.Root>
       <checkoutParts.Field name='billing.street' />

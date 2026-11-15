@@ -193,23 +193,33 @@ export const createParts = ((configured: Configured, elements: Record<string, st
     };
   }
 
-  // Same signatures as the form's `field`, `array` and `scope`. Each re-renders on the state it reads, and no more.
-  const useField = (path: string) => {
+  // Same signatures as the form's `field`, `array` and `scope`, and each takes `{ scope }` to read relative to one.
+  // Each re-renders on the state it reads, and no more.
+  type Scoped = { readonly scope?: object };
+  const handlesOf = (form: Instance, options?: Scoped) => (options?.scope ?? form) as Instance;
+  const fullPath = (path: string, options?: Scoped) => joinPath(prefixOf(options?.scope), path);
+
+  const useField = (path: string, options?: Scoped) => {
     const form = useForm();
-    const handle = useMemo(() => form.field(path), [form, path]);
-    useSelector(form.store, state => [getAt(state.values, path), state.status.fields[path]], { compare: shallow });
+    const scope = options?.scope;
+    const handle = useMemo(() => handlesOf(form, { scope }).field(path), [form, scope, path]);
+    const full = fullPath(path, { scope });
+    useSelector(form.store, state => [getAt(state.values, full), state.status.fields[full]], { compare: shallow });
     return handle;
   };
 
-  const useArrayField = (path: string) => {
+  const useArrayField = (path: string, options?: Scoped) => {
     const form = useForm();
-    useSelector(form.store, state => getAt(state.values, path));
-    return useMemo(() => form.array(path), [form, path]);
+    const scope = options?.scope;
+    const full = fullPath(path, { scope });
+    useSelector(form.store, state => getAt(state.values, full));
+    return useMemo(() => handlesOf(form, { scope }).array(path), [form, scope, path]);
   };
 
-  const useScope = (prefix: string) => {
+  const useScope = (prefix: string, options?: Scoped) => {
     const form = useForm();
-    return useMemo(() => form.scope(prefix), [form, prefix]);
+    const scope = options?.scope;
+    return useMemo(() => handlesOf(form, { scope }).scope(prefix), [form, scope, prefix]);
   };
 
   const useFormSelector = (selector: (state: any) => unknown, options?: { compare?: (a: any, b: any) => boolean }) =>

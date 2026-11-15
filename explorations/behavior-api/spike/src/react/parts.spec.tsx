@@ -347,3 +347,43 @@ it('keeps the input and its focus when array items swap, since only the scope pr
   expect(input.value).toBe('a');
   expect((screen.getByLabelText(second!).element() as HTMLInputElement).value).toBe('b');
 });
+
+it('reads relative to a scope through the hooks, nested too, and re-renders on that field only', async () => {
+  const configured = orders({
+    billing: { street: '', tags: ['x'], geo: { label: 'g' } },
+    shipping: { street: 'S', tags: [] },
+  });
+  const { Root, Field, useField, useArrayField, useScope } = createParts(configured, elements) as any;
+  const Summary = ({ scope, id }: { scope: object; id: string }) => {
+    const street = useField('street', { scope });
+    const tags = useArrayField('tags', { scope });
+    return <output aria-label={id}>{`${street.state.value}|${tags.get().length}`}</output>;
+  };
+  const Label = ({ scope }: { scope: object }) => {
+    const geo = useScope('geo', { scope });
+    return <output aria-label='label'>{useField('label', { scope: geo }).get()}</output>;
+  };
+  const Inner = () => {
+    const billing = useScope('billing');
+    const shipping = useScope('shipping');
+    return (
+      <>
+        <Field scope={billing} name='street' aria-label='input' />
+        <Summary scope={billing} id='billing' />
+        <Summary scope={shipping} id='shipping' />
+        <Label scope={billing} />
+      </>
+    );
+  };
+  const screen = await render(
+    <Root>
+      <Inner />
+    </Root>,
+  );
+
+  await userEvent.type(screen.getByLabelText('input'), 'Ada');
+
+  await expect.element(screen.getByLabelText('billing')).toHaveTextContent('Ada|1');
+  await expect.element(screen.getByLabelText('shipping')).toHaveTextContent('S|0');
+  await expect.element(screen.getByLabelText('label')).toHaveTextContent('g');
+});

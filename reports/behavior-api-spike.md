@@ -307,6 +307,8 @@ Open: a `provided` form that changes after mount.
 - **Runtime.** Chromium tests: two scopes in one form with issues for the second only and unique ids, nested
   scopes beside a full name, and array items swapped with `key={id}` keeping the same element, its focus and its
   value.
-- **Open.** Hooks relative to a scope (`useField('zip', { scope })`). A `scope` forgotten on a part whose name also
+- **Hooks.** `useField(path, { scope })`, `useArrayField` and `useScope` take a scope, typed by its values, and read and
+  subscribe to the full path (`create-parts.tsx`). `useScope` with a scope opens a scope inside it.
+- **Open.** A `scope` forgotten on a part whose name also
   exists on the form compiles and writes to the form's field. A reusable block for several forms must be passed
   `Field` and `FieldError`, since they belong to one form's `createParts`.

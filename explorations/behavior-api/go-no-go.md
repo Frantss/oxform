@@ -48,7 +48,8 @@ are in [reports/behavior-api-spike.md](../../reports/behavior-api-spike.md), and
     (`billing` from `useScope('billing')` or `form.scope('billing')`), and the names are typed from the scope's
     values. The adapter joins the scope's prefix with each `'key'` prop, so slots are unchanged. Reordering array
     items keeps the element and its focus, since only the prop changes. Without a `scope`, names are paths of the
-    form. A block written once is passed its scope, and reaches `Field` through the form's `createParts`.
+    form. The hooks take it too: `useField(path, { scope })`, `useArrayField` and `useScope` (which opens a scope
+    inside a scope). A block written once is passed its scope, and reaches `Field` through the form's `createParts`.
 
 ## What the spike built
 
@@ -59,7 +60,7 @@ status, events, reset, arrays, submit, handles, `defineForm`, `configureForm`, `
 and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 178 Vitest tests pass in
 Node, 14 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
 
-Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Parts take a `scope` (decision 10). Not built: `usePart`, hooks relative to a scope, and the Solid 1 and Solid 2 adapters.
+Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Parts and hooks take a `scope` (decision 10). Not built: `usePart` and the Solid 1 and Solid 2 adapters.
 
 ## Acceptance checklist
 
@@ -137,7 +138,7 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 - Fixed (decision 7): derived status lives in the store, and the preset's `field` slot is correct on the real
   store (`spike/src/slots.spec.ts`, `spike/src/derived-status.spec.ts`).
 - Fixed (decision 8): `fieldExtras(path, field)` gives extensions a runtime for field extras.
-- Fixed (decision 10): parts take a `scope`. Open: hooks relative to a scope, and a `scope` forgotten on a part whose name also exists on the form.
+- Fixed (decision 10): parts and hooks take a `scope`. Open: a `scope` forgotten on a part whose name also exists on the form.
 - Fixed (decision 9): scoped handles carry field extras at any depth, at runtime and in the types.
 - Open: the derived status recomputes every path on each change. See open question 5 above.
 
