@@ -21,12 +21,7 @@ const payment = configureForm(withMasks(standardForm), {
   error: { blur: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, useField, useSelector } = createParts(payment, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, useField, useSelector } = createParts(payment);
 
 /** `unmasked()` is the extension's addition to the field handle. */
 function CardSummary() {
@@ -43,22 +38,22 @@ export function Payment() {
         <label>
           Name on card
           <Field name='holder' autoComplete='cc-name' />
-          <FieldError name='holder'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='holder' />
         </label>
         <label>
           Card number
           <Field name='number' inputMode='numeric' autoComplete='cc-number' placeholder='4242 4242 4242 4242' />
-          <FieldError name='number'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='number' />
         </label>
         <label>
           Expiry
           <Field name='expiry' inputMode='numeric' autoComplete='cc-exp' placeholder='MM/YY' />
-          <FieldError name='expiry'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='expiry' />
         </label>
         <label>
           CVC
           <Field name='cvc' inputMode='numeric' autoComplete='cc-csc' placeholder='123' />
-          <FieldError name='cvc'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='cvc' />
         </label>
         <CardSummary />
         <div className='actions'>

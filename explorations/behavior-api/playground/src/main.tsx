@@ -9,6 +9,7 @@ import { Newsletter } from './examples/newsletter';
 import { Payment } from './examples/payment';
 import { Profile } from './examples/profile';
 import { Signup } from './examples/signup';
+import { ThirdParty } from './examples/third-party';
 import './styles.css';
 
 type Example = { id: string; group: string; title: string; summary: string; Component: ComponentType };
@@ -78,6 +79,14 @@ const examples: Example[] = [
     title: 'Newsletter (lean form)',
     summary: 'A form composed from only the behaviors it needs: no reset, arrays or field handles.',
     Component: Newsletter,
+  },
+  {
+    id: 'third-party',
+    group: 'The preset',
+    title: 'Third-party controls',
+    summary:
+      'A star rating and a slider that report changes through callbacks, bound with useField, and a styled input bound with a render function.',
+    Component: ThirdParty,
   },
 ];
 

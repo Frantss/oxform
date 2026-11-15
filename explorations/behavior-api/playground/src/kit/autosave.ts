@@ -2,13 +2,14 @@ import type { FormKind, PartSpec, ValidationApi, ValuesApi } from '../../../api'
 import { defineExtension } from '../../../spike/src/form';
 
 type AutosaveOptions<Values> = { readonly saveDraft?: (draft: Values) => unknown; readonly autosaveDelay?: number };
-type AutosaveState = { readonly saving: boolean; readonly savedAt: Date | null };
+/** `dirty`: the values changed since the last save started, whether or not they are valid. */
+type AutosaveState = { readonly saving: boolean; readonly savedAt: Date | null; readonly dirty: boolean };
 
 interface AutosaveKind extends FormKind {
   readonly options: AutosaveOptions<this['values']>;
   readonly state: { readonly autosave: AutosaveState };
   readonly api: { readonly autosave: { flush(): unknown } };
-  readonly parts: { readonly autosaveStatus: PartSpec<{}, AutosaveState> };
+  readonly parts: { readonly autosaveStatus: PartSpec<{}, AutosaveState, 'p'> };
 }
 
 /**
@@ -19,17 +20,18 @@ export const withAutosave = defineExtension<{ values: ValuesApi<any>; validation
   name: 'autosave',
   options: { saveDraft: 'action', autosaveDelay: 'number' },
   api: (ctx, { values, validation }) => {
-    const slice = ctx.slice<AutosaveState>('autosave', { saving: false, savedAt: null });
+    const slice = ctx.slice<AutosaveState>('autosave', { saving: false, savedAt: null, dirty: false });
     let timer: ReturnType<typeof setTimeout> | undefined;
     ctx.onDestroy(() => clearTimeout(timer));
 
     const save = async () => {
-      slice.set({ saving: true, savedAt: null });
+      slice.set({ saving: true, savedAt: null, dirty: false });
       await ctx.options().saveDraft?.(values.get());
-      slice.set({ saving: false, savedAt: new Date() });
+      slice.set(current => ({ ...current, saving: false, savedAt: new Date() }));
     };
 
     values.onChange(() => {
+      slice.set(current => ({ ...current, dirty: true }));
       clearTimeout(timer);
       timer = setTimeout(async () => {
         const [valid] = await validation.run();
@@ -40,6 +42,10 @@ export const withAutosave = defineExtension<{ values: ValuesApi<any>; validation
     return { autosave: { flush: save } };
   },
   slots: slot => ({
-    autosaveStatus: slot({ state: state => state.autosave, attrs: () => ({ role: 'status', className: 'hint' }) }),
+    autosaveStatus: slot({
+      element: 'p',
+      state: state => state.autosave,
+      attrs: () => ({ role: 'status', className: 'hint' }),
+    }),
   }),
 });

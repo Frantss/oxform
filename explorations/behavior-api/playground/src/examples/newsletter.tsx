@@ -14,12 +14,7 @@ const newsletter = configureForm(leanForm, {
   error: { blur: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, useSelector } = createParts(newsletter, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, useSelector } = createParts(newsletter);
 
 export function Newsletter() {
   const [subscribed, setSubscribed] = useState<string>();
@@ -30,7 +25,7 @@ export function Newsletter() {
         <label>
           Email
           <Field name='email' type='email' autoComplete='email' />
-          <FieldError name='email'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='email' />
         </label>
         <div className='actions'>
           <Submit>Subscribe</Submit>

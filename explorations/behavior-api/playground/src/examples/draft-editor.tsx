@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import z from 'zod';
 import { configureForm } from '../../../spike/src/form';
 import { createParts } from '../../../spike/src/react/create-parts';
@@ -25,48 +26,53 @@ const post = configureForm(withAutosave(withWarnings(standardForm)), {
   saveDraft: () => wait(400),
 });
 
-const { Root, Field, FieldError, FieldWarning, AutosaveStatus, Submit, useForm, useSelector } = createParts(post, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  fieldWarning: 'p',
-  autosaveStatus: 'p',
-  submit: 'button',
-});
-
-function SaveNow() {
-  const form = useForm();
-  return (
-    <button type='button' onClick={() => form.autosave.flush()}>
-      Save draft now
-    </button>
-  );
-}
+const { Root, Field, FieldError, FieldWarning, AutosaveStatus, Submit, useSelector } = createParts(post);
 
 export function DraftEditor() {
+  const [published, setPublished] = useState(false);
+
+  // Each submit button names its action through its `value`, and `onSubmit` receives it as the intent.
   return (
-    <Root className='layout' onSubmit={() => wait(500)}>
+    <Root
+      className='layout'
+      onSubmit={async (_values, form, intent) => {
+        if (intent === 'draft') return form.autosave.flush();
+        await wait(500);
+        setPublished(true);
+      }}
+    >
       <div className='card'>
         <p className='hint'>A draft saves 0.8 seconds after you stop typing, once the title is valid.</p>
         <label>
           Title
           <Field name='title' />
-          <FieldError name='title'>{({ messages }) => messages[0]}</FieldError>
-          <FieldWarning name='title'>{({ messages }) => messages[0]}</FieldWarning>
+          <FieldError name='title' />
+          <FieldWarning name='title' />
         </label>
         <label>
           Body
           <Field name='body' render={<textarea rows={6} />} />
         </label>
         <AutosaveStatus>
-          {({ saving, savedAt }) =>
-            saving ? 'Saving draft…' : savedAt ? `Draft saved at ${savedAt.toLocaleTimeString()}` : 'No draft yet'
+          {({ saving, dirty, savedAt }) =>
+            saving
+              ? 'Saving draft…'
+              : dirty
+                ? 'Unsaved changes'
+                : savedAt
+                  ? `Draft saved at ${savedAt.toLocaleTimeString()}`
+                  : 'No draft yet'
           }
         </AutosaveStatus>
         <div className='actions'>
-          <Submit>{({ submitting }) => (submitting ? 'Publishing…' : 'Publish')}</Submit>
-          <SaveNow />
+          <Submit value='draft'>Save draft</Submit>
+          <Submit>Publish</Submit>
         </div>
+        {published && (
+          <p className='result' role='status'>
+            Published.
+          </p>
+        )}
       </div>
       <Inspector useSelector={useSelector} />
     </Root>

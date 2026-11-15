@@ -18,13 +18,7 @@ const signup = configureForm(standardForm, {
   error: { change: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, Reset, useSelector } = createParts(signup, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-  reset: 'button',
-});
+const { Root, Field, FieldError, Submit, Reset, useSelector } = createParts(signup);
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -44,17 +38,17 @@ export function Signup() {
         <label>
           Name
           <Field name='name' autoComplete='name' />
-          <FieldError name='name'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='name' />
         </label>
         <label>
           Email
           <Field name='email' type='email' autoComplete='email' />
-          <FieldError name='email'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='email' />
         </label>
         <label>
           Password
           <Field name='password' type='password' autoComplete='new-password' />
-          <FieldError name='password'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='password' />
         </label>
         <div className='actions'>
           <Submit>{({ submitting }) => (submitting ? 'Creating account…' : 'Create account')}</Submit>

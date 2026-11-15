@@ -13,12 +13,7 @@ const login = configureForm(standardForm, {
   error: { blur: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, useSelector } = createParts(login, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, useSelector } = createParts(login);
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -45,12 +40,12 @@ export function Login() {
         <label>
           Email
           <Field name='email' type='email' autoComplete='username' />
-          <FieldError name='email'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='email' />
         </label>
         <label>
           Password
           <Field name='password' type='password' autoComplete='current-password' />
-          <FieldError name='password'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='password' />
         </label>
         <div className='actions'>
           <Submit>{({ submitting }) => (submitting ? 'Signing in…' : 'Sign in')}</Submit>

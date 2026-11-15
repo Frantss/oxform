@@ -27,12 +27,7 @@ const account = configureForm(standardForm, {
   error: { change: schema, blur: availability, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, useSelector } = createParts(account, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, useSelector } = createParts(account);
 
 function Checking() {
   const validating = useSelector(state => state.status.form.validating);
@@ -50,13 +45,13 @@ export function AsyncValidation() {
         <label>
           Username
           <Field name='username' autoComplete='off' />
-          <FieldError name='username'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='username' />
           <Checking />
         </label>
         <label>
           Password
           <Field name='password' type='password' autoComplete='new-password' />
-          <FieldError name='password'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='password' />
         </label>
         <div className='actions'>
           <Submit>Create account</Submit>

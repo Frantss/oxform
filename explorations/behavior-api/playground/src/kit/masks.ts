@@ -7,9 +7,6 @@ type MaskExtras<Values, P> =
 
 interface MaskKind extends FormKind {
   readonly options: MaskOptions<this['values']>;
-  readonly state: {};
-  readonly api: {};
-  readonly parts: {};
   readonly fieldExtras: MaskExtras<this['values'], this['path']>;
 }
 
@@ -32,15 +29,12 @@ const applyMask = (mask: string, text: string) => {
  * Formats a field as the user types, from the `masks` option (a pattern per path). Adds `field.unmasked()` to
  * string fields, which returns the digits only.
  */
-export const withMasks = defineExtension<
-  { values: ValuesApi<any>; field: (path: any) => { get(): unknown } },
-  MaskKind
->({
+export const withMasks = defineExtension<{ values: ValuesApi<any>; field: (path: never) => unknown }, MaskKind>({
   name: 'masks',
   options: { masks: 'value' },
   api: (ctx, { values }) => {
     values.intercept(change => {
-      const mask = (ctx.options().masks as Record<string, string> | undefined)?.[change.path as string];
+      const mask = ctx.options().masks?.[change.path];
       if (mask === undefined || typeof change.value !== 'string') return;
       return { ...change, value: applyMask(mask, change.value) };
     });

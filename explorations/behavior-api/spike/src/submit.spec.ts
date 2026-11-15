@@ -14,8 +14,21 @@ describe('submit', () => {
     expect(form.status.form).toMatchObject({ submitting: true, dirty: true, pristine: true });
     await run;
 
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ada' }), form);
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ada' }), form, undefined);
     expect(form.status.form).toMatchObject({ submitting: false, submits: 1, submitted: true, successful: true });
+  });
+
+  it('passes the intent of the run to onSubmit and onInvalid', async () => {
+    const onSubmit = vi.fn();
+    const onInvalid = vi.fn();
+    const form = createProfileForm({ onSubmit, onInvalid });
+
+    await form.submit.run('publish');
+    expect(onSubmit).toHaveBeenCalledWith(expect.anything(), form, 'publish');
+
+    const failingForm = createProfileForm({ error: { submit: nameRequired }, onInvalid });
+    await failingForm.submit.run('draft');
+    expect(onInvalid).toHaveBeenCalledWith(expect.anything(), failingForm, 'draft');
   });
 
   it('calls onInvalid with every current issue when validation fails', async () => {
@@ -26,7 +39,7 @@ describe('submit', () => {
     await form.submit.run();
 
     expect(onSubmit).not.toHaveBeenCalled();
-    expect(onInvalid).toHaveBeenCalledWith({ error: [expect.objectContaining({ message: 'Required' })] }, form);
+    expect(onInvalid).toHaveBeenCalledWith({ error: [expect.objectContaining({ message: 'Required' })] }, form, undefined);
     expect(form.status.form).toMatchObject({ submits: 1, successful: false });
   });
 

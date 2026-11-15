@@ -14,7 +14,7 @@ import { defineExtension } from '../../../spike/src/form';
 type WarningOptions<Values> = { readonly warning?: EventValidators<Values> };
 type WarningApi<Values> = { readonly warning: CheckApi<Values, 'warning'> };
 type WarningParts<Values> = {
-  readonly fieldWarning: PartSpec<{ readonly name: Path<Values> }, { readonly messages: readonly string[] }>;
+  readonly fieldWarning: PartSpec<{ readonly name: Path<Values> }, { readonly messages: readonly string[] }, 'p'>;
 };
 
 interface WarningKind extends FormKind {
@@ -35,7 +35,9 @@ export const withWarnings = defineExtension<{ values: ValuesApi<any>; validation
   api: (ctx, { values, validation }) => ({ warning: createCheck(ctx, { values, validation }, { name: 'warning' }) }),
   slots: slot => ({
     fieldWarning: slot({
+      element: 'p',
       props: { name: 'key' },
+      text: ({ messages }) => messages[0],
       present: (state, part) => (state.warning[part.key] ?? []).length > 0,
       state: (state, part) => ({ messages: (state.warning[part.key] ?? []).map(entry => entry.message) }),
       attrs: () => ({ role: 'status', className: 'warning' }),

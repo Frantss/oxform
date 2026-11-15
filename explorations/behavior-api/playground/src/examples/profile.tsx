@@ -17,34 +17,9 @@ const profile = configureForm(standardForm, {
   error: { change: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, Reset, useForm, useField, useSelector } = createParts(profile, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-  reset: 'button',
-});
+const { Root, Field, FieldError, Submit, Reset, useForm, useField, useSelector } = createParts(profile);
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
-
-/** The field slot reads `value`, so a checkbox is bound by hand through the field handle. */
-function NewsletterToggle() {
-  const newsletter = useField('newsletter');
-  return (
-    <label>
-      <span>
-        <input
-          type='checkbox'
-          checked={newsletter.state.value}
-          onChange={event => newsletter.change(event.target.checked)}
-          onFocus={() => newsletter.focus()}
-          onBlur={() => newsletter.blur()}
-        />{' '}
-        Send me the newsletter
-      </span>
-    </label>
-  );
-}
 
 /** A field's status, as the handle reports it. */
 function StatusChips({ name }: { name: 'name' | 'bio' | 'role' | 'newsletter' }) {
@@ -84,12 +59,12 @@ export function Profile() {
         <label>
           Name
           <Field name='name' />
-          <FieldError name='name'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='name' />
         </label>
         <label>
           Bio
           <Field name='bio' />
-          <FieldError name='bio'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='bio' />
         </label>
         <label>
           Role
@@ -105,7 +80,9 @@ export function Profile() {
             }
           />
         </label>
-        <NewsletterToggle />
+        <label>
+          <Field name='newsletter' type='checkbox' /> Send me the newsletter
+        </label>
         <fieldset>
           <legend>Field status</legend>
           <StatusChips name='name' />

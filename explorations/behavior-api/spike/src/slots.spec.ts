@@ -22,15 +22,25 @@ const plainState = {
   },
   error: { name: [{ message: 'Taken' }] },
 };
-const part = { key: 'name', id: 'f1' };
+const part = { key: 'name', id: 'f1', props: {} };
 
 describe('slot groups', () => {
   it('resolve the preset slots, one key per part', () => {
     expect(Object.keys(slotsOf(standardForm)).sort()).toEqual(['field', 'fieldError', 'reset', 'root', 'submit']);
   });
 
+  it('declare the default element of each part, and fieldError the text it shows without children', () => {
+    const elements = Object.fromEntries(
+      Object.entries(slotsOf(standardForm) as Record<string, { element?: string }>).map(([name, { element }]) => [name, element]),
+    );
+
+    expect(elements).toEqual({ root: 'form', field: 'input', fieldError: 'p', submit: 'button', reset: 'button' });
+    expect((slot(standardForm, 'fieldError') as { text(state: unknown): string }).text({ messages: ['A', 'B'] })).toBe('A');
+  });
+
   it('field reads plain state into attributes', () => {
     expect(slot(standardForm, 'field').attrs!(plainState, part)).toEqual({
+      name: 'name',
       value: 'Ada',
       'aria-invalid': true,
       'aria-describedby': 'f1-name-error',
@@ -42,10 +52,11 @@ describe('slot groups', () => {
 
   it('field drives the events api from the element events, and registers the element', () => {
     const events = { change: vi.fn(), focus: vi.fn(), blur: vi.fn(), register: vi.fn(() => vi.fn()) };
-    const context = { api: { events }, ...part };
+    const values = { onChange: vi.fn(() => vi.fn()) };
+    const context = { api: { events, values }, ...part, el: { type: 'text', value: 'x' } };
     const field = slot(standardForm, 'field');
 
-    field.on!.input!({ target: { value: 'x' } }, context);
+    field.on!.input!({}, context);
     field.on!.focus!({}, context);
     field.on!.blur!({}, context);
     field.bind!({}, context);
@@ -119,7 +130,7 @@ describe('reusing and extending slots', () => {
 
   it('field reads the real store state: valid until the check holds an issue for it', () => {
     const form = createProfileForm();
-    const attrs = () => slot(standardForm, 'field').attrs!(form.store.state, { key: 'name', id: 'f1' });
+    const attrs = () => slot(standardForm, 'field').attrs!(form.store.state, { key: 'name', id: 'f1', props: {} });
     form.events.change('name', 'Ada');
 
     expect(attrs()).toMatchObject({ value: 'Ada', 'aria-invalid': undefined, 'data-dirty': '' });

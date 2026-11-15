@@ -231,6 +231,19 @@ describe('handles', () => {
       expect(form.field('address.city').error()).toEqual([]);
     });
 
+    it('is removed by a reset of the form or of the field', () => {
+      const form = createProfileForm();
+      form.field('name').setError([{ message: 'Taken' }]);
+      form.field('address.city').setError([{ message: 'Unknown city' }]);
+
+      form.reset.at('name');
+      expect(form.field('name').error()).toEqual([]);
+      expect(form.field('address.city').error()).toHaveLength(1);
+
+      form.reset.all();
+      expect(form.field('address.city').error()).toEqual([]);
+    });
+
     it('removes only what it set, and keeps what a validation run added to the same field', async () => {
       const form = createProfileForm({ error: { blur: failing({ message: 'Required', path: ['name'] }) } });
       await form.validation.run('name', { type: 'blur' });

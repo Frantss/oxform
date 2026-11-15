@@ -4,6 +4,7 @@ import type {
   CheckState,
   EventValidators,
   EventsApi,
+  FormContext,
   FormKind,
   PartSpec,
   StatusApi,
@@ -40,10 +41,22 @@ type LeanApi<Values> = {
   readonly submit: SubmitApi<Values, 'error'>;
 };
 type LeanParts = {
-  readonly root: PartSpec;
-  readonly field: PartSpec<{ readonly name: string }>;
-  readonly fieldError: PartSpec<{ readonly name: string }, { readonly messages: readonly string[] }>;
-  readonly submit: PartSpec<{}, SubmitPartState>;
+  readonly root: PartSpec<{}, {}, 'form'>;
+  readonly field: PartSpec<{ readonly name: string }, {}, 'input'>;
+  readonly fieldError: PartSpec<{ readonly name: string }, { readonly messages: readonly string[] }, 'p'>;
+  readonly submit: PartSpec<{}, SubmitPartState, 'button'>;
+};
+
+const leanApi = <Values>(ctx: FormContext<LeanOptions<Values>, LeanState<Values>>): LeanApi<Values> => {
+  const change = createChange<Values>(ctx);
+  const values = createValues(ctx, { change });
+  const validation = createValidation<Values, 'error'>(ctx, { values });
+  const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
+  const status = createFieldStatus(ctx, { values, validation });
+  const events = createFieldEvents(ctx, { values, status, validation });
+  const submit = createSubmit(ctx, { values, validation, status });
+
+  return { values, error, validation, status, events, submit };
 };
 
 interface LeanKind extends FormKind {
@@ -57,19 +70,10 @@ interface LeanKind extends FormKind {
 export const leanForm = defineForm<LeanKind>({
   name: 'lean',
   options: { id: 'id', schema: 'value', defaultValues: 'value', error: 'value', onSubmit: 'action' },
-  api: ctx => {
-    const change = createChange(ctx);
-    const values = createValues(ctx, { change });
-    const validation = createValidation<any, 'error'>(ctx, { values });
-    const error = createCheck(ctx, { values, validation }, { name: 'error', blocking: true, exclusive: true });
-    const status = createFieldStatus(ctx, { values, validation });
-    const events = createFieldEvents(ctx, { values, status, validation });
-    const submit = createSubmit(ctx, { values, validation, status });
-
-    return { values, error, validation, status, events, submit } as LeanApi<any>;
-  },
+  api: ctx => leanApi(ctx),
   slots: slot => ({
     root: slot({
+      element: 'form',
       on: {
         submit: (event, { api }) => {
           event.preventDefault();

@@ -28,6 +28,8 @@ type Configured = ((options?: Record<string, unknown>) => Instance) & {
   readonly definition: { readonly options: Readonly<Record<string, string>> };
 };
 type SlotDefinition = {
+  readonly element?: string;
+  readonly text?: (state: any) => string | undefined;
   readonly props?: Readonly<Record<string, string>>;
   readonly present?: (state: any, part: any) => boolean;
   readonly state?: (state: any, part: any) => unknown;
@@ -42,6 +44,8 @@ type PartProps = Record<string, any> & {
   render?: Render;
   scope?: object;
 };
+
+const ignoreChange = () => {};
 
 const setRef = (ref: RefLike, element: HTMLElement | null) => {
   if (typeof ref === 'function') return ref(element);
@@ -91,6 +95,8 @@ function PartView({
   const partProps: Record<string, unknown> = {};
   const domProps: Record<string, any> = {};
   for (const [name, value] of Object.entries(rest)) (name in declared ? partProps : domProps)[name] = value;
+  // Slots read every prop, declared or not: a field's `type` is a DOM prop its `attrs` need.
+  const allProps = { ...domProps, ...partProps };
 
   const keyProp = Object.keys(declared).find(name => declared[name] === 'key');
   // A part given a `scope` names its field relative to it.
@@ -99,7 +105,7 @@ function PartView({
   const view = useSelector(
     instance.store,
     state => {
-      const part = { id: instance.id, key, props: partProps, api: instance };
+      const part = { id: instance.id, key, props: allProps, api: instance };
       if (slot.present && !slot.present(state, part)) return null;
       return { state: slot.state?.(state, part) ?? {}, attrs: slot.attrs?.(state, part) ?? {} };
     },
@@ -107,9 +113,9 @@ function PartView({
   );
 
   // Listeners and `bind` attach to the element once. They read the part's props from here, as of the last commit.
-  const latestProps = useRef(partProps);
+  const latestProps = useRef(allProps);
   useLayoutEffect(() => {
-    latestProps.current = partProps;
+    latestProps.current = allProps;
   });
 
   const attach = useCallback(
@@ -138,8 +144,10 @@ function PartView({
 
   if (!view) return null;
 
-  const content = typeof children === 'function' ? children(view.state) : children;
-  const elementProps = { ...domProps, ...view.attrs, ref };
+  const content = typeof children === 'function' ? children(view.state) : (children ?? slot.text?.(view.state));
+  // The slot's listeners write the value, so React's `onChange` has nothing to do. The author's own stays.
+  const controlled = view.attrs.value !== undefined || view.attrs.checked !== undefined;
+  const elementProps = { ...(controlled && { onChange: ignoreChange }), ...domProps, ...view.attrs, ref };
 
   if (typeof render === 'function') return render({ ...elementProps, children: content }, view.state);
   if (isValidElement(render)) return cloneElement(render, elementProps, content ?? (render.props as any).children);
@@ -150,7 +158,7 @@ function PartView({
  * React adapter. The form's slots become components, in the elements the caller chooses, and the form's api
  * becomes hooks. It has no knowledge of any behavior: everything a part does comes from the form's slots.
  */
-export const createParts = ((configured: Configured, elements: Record<string, string>) => {
+export const createParts = ((configured: Configured, overrides: Record<string, string> = {}) => {
   const slots = slotsOf(configured.definition) as Record<string, SlotDefinition>;
   const FormContext = createContext<Instance | null>(null);
 
@@ -160,17 +168,35 @@ export const createParts = ((configured: Configured, elements: Record<string, st
     return instance;
   };
 
-  const components: Record<string, unknown> = {};
-  for (const [name, tag] of Object.entries(elements)) {
-    const slot = slots[name];
-    if (!slot) throw new Error(`oxform: the form has no part "${name}"`);
+  for (const name of Object.keys(overrides))
+    if (!slots[name]) throw new Error(`oxform: the form has no part "${name}"`);
+  const elementOf = (name: string) => overrides[name] ?? slots[name]!.element ?? 'div';
+
+  const components: Record<string, any> = {};
+  for (const [name, slot] of Object.entries(slots)) {
     if (name === 'root') continue;
 
     components[`${name.charAt(0).toUpperCase()}${name.slice(1)}`] = (props: PartProps) =>
-      createElement(PartView, { instance: useForm(), slot, tag, props });
+      createElement(PartView, { instance: useForm(), slot, tag: elementOf(name), props });
   }
 
-  if (elements.root) {
+  // Each scope gets its components once, so their identity holds across renders and nothing remounts.
+  const bound = new WeakMap<object, Record<string, unknown>>();
+  const within = (scope: object) => {
+    if (!bound.has(scope))
+      bound.set(
+        scope,
+        Object.fromEntries(
+          Object.entries(components).map(([name, Part]) => [
+            name,
+            (props: PartProps) => createElement(Part, { ...props, scope }),
+          ]),
+        ),
+      );
+    return bound.get(scope)!;
+  };
+
+  if (slots.root) {
     const optionNames = Object.keys(configured.definition.options);
     components.Root = ({ form: provided, children, ...rest }: PartProps & { form?: Instance }) => {
       const id = useId();
@@ -188,7 +214,12 @@ export const createParts = ((configured: Configured, elements: Record<string, st
       return createElement(
         FormContext.Provider,
         { value: instance },
-        createElement(PartView, { instance, slot: slots.root!, tag: elements.root!, props: { ...domProps, children } }),
+        createElement(PartView, {
+          instance,
+          slot: slots.root!,
+          tag: elementOf('root'),
+          props: { ...domProps, children },
+        }),
       );
     };
   }
@@ -225,5 +256,5 @@ export const createParts = ((configured: Configured, elements: Record<string, st
   const useFormSelector = (selector: (state: any) => unknown, options?: { compare?: (a: any, b: any) => boolean }) =>
     useSelector(useForm().store, selector, options);
 
-  return { ...components, useForm, useSelector: useFormSelector, useField, useArrayField, useScope };
+  return { ...components, within, useForm, useSelector: useFormSelector, useField, useArrayField, useScope };
 }) as unknown as typeof Api.createParts;

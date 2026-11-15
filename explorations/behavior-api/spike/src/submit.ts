@@ -13,8 +13,8 @@ import { statusInternals } from './status';
 import { isDiscarded } from './validation';
 
 type SubmitOptions<Values, Checks extends string, Instance> = {
-  readonly onSubmit?: (values: Values, form: Instance) => MaybePromise<unknown>;
-  readonly onInvalid?: (issues: IssuesByCheck<Checks>, form: Instance) => MaybePromise<unknown>;
+  readonly onSubmit?: (values: Values, form: Instance, intent?: string) => MaybePromise<unknown>;
+  readonly onInvalid?: (issues: IssuesByCheck<Checks>, form: Instance, intent?: string) => MaybePromise<unknown>;
 };
 
 export function createSubmit<Values, Checks extends string = string, Instance = unknown>(
@@ -30,7 +30,7 @@ export function createSubmit<Values, Checks extends string = string, Instance = 
   const listeners = new Set<(result: SubmitResult<Checks>) => void>();
   let active: Promise<void> | undefined;
 
-  async function attempt() {
+  async function attempt(intent?: string) {
     const generation = status.generation();
     const options = ctx.options() as SubmitOptions<Values, Checks, Instance>;
     const form = ctx.instance<Instance>();
@@ -64,10 +64,10 @@ export function createSubmit<Values, Checks extends string = string, Instance = 
       if (!aborted) {
         const issues = (deps.validation?.issues() ?? {}) as IssuesByCheck<Checks>;
         if (outcome[0] && deps.status.form.valid) {
-          await options.onSubmit?.(snapshot, form);
+          await options.onSubmit?.(snapshot, form, intent);
           successful = true;
         } else {
-          await options.onInvalid?.(issues, form);
+          await options.onInvalid?.(issues, form, intent);
           successful = false;
         }
         for (const listener of listeners) listener({ successful, issues });
@@ -88,11 +88,11 @@ export function createSubmit<Values, Checks extends string = string, Instance = 
   }
 
   return {
-    run() {
+    run(intent) {
       if (active) return active;
 
       status.setForm({ dirty: true, submitting: true });
-      active = attempt().finally(() => {
+      active = attempt(intent).finally(() => {
         active = undefined;
       });
       return active;

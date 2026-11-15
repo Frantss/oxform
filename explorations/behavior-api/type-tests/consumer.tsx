@@ -152,11 +152,20 @@ export const rendered = (
   </Root>
 );
 
-// A part omitted from the element map has no component
-const partial = createParts(signup, { root: 'form', field: 'input' });
-partial.Field;
-// @ts-expect-error submit was not mapped
-partial.Submit;
+// Each part renders in the element its slot declares. The element map only overrides.
+const defaults = createParts(signup);
+export const defaulted = (
+  <defaults.Root>
+    <defaults.Field name='name' ref={(element: HTMLInputElement | null) => element?.focus()} />
+    <defaults.FieldError name='email'>{({ messages }) => messages[0]}</defaults.FieldError>
+    {/* @ts-expect-error the default element of a field is an input */}
+    <defaults.Field name='name' ref={(element: HTMLButtonElement | null) => element?.focus()} />
+  </defaults.Root>
+);
+const overridden = createParts(signup, { field: 'textarea' });
+export const textarea = (
+  <overridden.Field name='name' ref={(element: HTMLTextAreaElement | null) => element?.focus()} />
+);
 
 export function Inner() {
   const hooked = useForm();

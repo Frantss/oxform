@@ -52,10 +52,11 @@ export const standardForm = defineForm<StandardKind>({
   slots: slot => ({
     // The preset owns only `root`, which connects submit and reset. Browser default submission needs preventDefault.
     root: slot({
+      element: 'form',
       on: {
         submit: (event, { api }) => {
           event.preventDefault();
-          void api.submit.run();
+          void api.submit.run((event.submitter as HTMLButtonElement | null)?.value || undefined);
         },
         reset: (event, { api }) => {
           event.preventDefault();

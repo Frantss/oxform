@@ -1,6 +1,6 @@
 import { Profiler, StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
-import { expect, it } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
 import { render } from 'vitest-browser-react';
 import { configureForm } from '../form';
@@ -386,4 +386,315 @@ it('reads relative to a scope through the hooks, nested too, and re-renders on t
   await expect.element(screen.getByLabelText('billing')).toHaveTextContent('Ada|1');
   await expect.element(screen.getByLabelText('shipping')).toHaveTextContent('S|0');
   await expect.element(screen.getByLabelText('label')).toHaveTextContent('g');
+});
+
+type Controls = { agree: boolean; age: number | undefined; plan: string; colors: string[]; size: string };
+
+const controls = () => {
+  const parts = createParts(
+    configureForm(standardForm, {
+      schema: schemaOf<Controls>(),
+      defaultValues: { agree: false, age: 30, plan: 'free', colors: [], size: 'm' },
+    } as never),
+    elements,
+  );
+  const Values = () => <output aria-label='values'>{JSON.stringify(parts.useSelector(state => state.values))}</output>;
+  return { ...parts, Values };
+};
+
+const valuesOf = (screen: { getByLabelText(text: string): { element(): Element } }) =>
+  JSON.parse(screen.getByLabelText('values').element().textContent ?? '{}') as Partial<Controls>;
+
+describe('field inputs of every type', () => {
+  let consoleError: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    consoleError.mockRestore();
+  });
+
+  it('binds a checkbox to a boolean', async () => {
+    const { Root, Field, Values } = controls();
+    const screen = await render(
+      <StrictMode>
+        <Root>
+          <Field name='agree' type='checkbox' aria-label='agree' />
+          <Values />
+        </Root>
+      </StrictMode>,
+    );
+
+    await userEvent.click(screen.getByLabelText('agree'));
+
+    await expect.element(screen.getByLabelText('agree')).toBeChecked();
+    await expect.poll(() => valuesOf(screen)).toMatchObject({ agree: true });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('binds a radio group to the checked radio value', async () => {
+    const { Root, Field, Values } = controls();
+    const screen = await render(
+      <Root>
+        <Field name='plan' type='radio' value='free' aria-label='free' />
+        <Field name='plan' type='radio' value='pro' aria-label='pro' />
+        <Values />
+      </Root>,
+    );
+
+    await expect.element(screen.getByLabelText('free')).toBeChecked();
+    await userEvent.click(screen.getByLabelText('pro'));
+
+    await expect.element(screen.getByLabelText('pro')).toBeChecked();
+    await expect.element(screen.getByLabelText('free')).not.toBeChecked();
+    await expect.poll(() => valuesOf(screen)).toMatchObject({ plan: 'pro' });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('binds a select to its option value', async () => {
+    const { Root, Field, Values } = controls();
+    const screen = await render(
+      <Root>
+        <Field
+          name='size'
+          aria-label='size'
+          render={
+            <select>
+              <option value='s'>S</option>
+              <option value='m'>M</option>
+              <option value='l'>L</option>
+            </select>
+          }
+        />
+        <Values />
+      </Root>,
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText('size'), 'l');
+
+    await expect.element(screen.getByLabelText('size')).toHaveValue('l');
+    await expect.poll(() => valuesOf(screen)).toMatchObject({ size: 'l' });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('binds a multiple select to a list of option values', async () => {
+    const { Root, Field, Values } = controls();
+    const screen = await render(
+      <Root>
+        <Field
+          name='colors'
+          aria-label='colors'
+          render={
+            <select multiple>
+              <option value='red'>Red</option>
+              <option value='green'>Green</option>
+              <option value='blue'>Blue</option>
+            </select>
+          }
+        />
+        <Values />
+      </Root>,
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText('colors'), ['red', 'blue']);
+
+    await expect.poll(() => valuesOf(screen)).toMatchObject({ colors: ['red', 'blue'] });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('binds a number input to a number', async () => {
+    const { Root, Field, Values } = controls();
+    const screen = await render(
+      <Root>
+        <Field name='age' type='number' aria-label='age' />
+        <Values />
+      </Root>,
+    );
+
+    await userEvent.clear(screen.getByLabelText('age'));
+    await userEvent.type(screen.getByLabelText('age'), '42');
+
+    await expect.poll(() => valuesOf(screen)).toMatchObject({ age: 42 });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('writes the chosen file of a file input', async () => {
+    const { Root, Field, useSelector } = controls();
+    const Chosen = () => <output aria-label='chosen'>{useSelector(state => String(state.values.size))}</output>;
+    const screen = await render(
+      <Root>
+        <Field name='size' type='file' aria-label='file' />
+        <Chosen />
+      </Root>,
+    );
+
+    await userEvent.upload(screen.getByLabelText('file'), new File(['x'], 'a.txt'));
+
+    await expect.element(screen.getByLabelText('chosen')).toHaveTextContent('[object File]');
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('empties a file input when the form resets', async () => {
+    const { Root, Field, Reset } = controls();
+    const screen = await render(
+      <Root>
+        <Field name='size' type='file' aria-label='file' />
+        <Reset>Reset</Reset>
+      </Root>,
+    );
+    const input = screen.getByLabelText('file').element() as HTMLInputElement;
+
+    await userEvent.upload(screen.getByLabelText('file'), new File(['x'], 'a.txt'));
+    expect(input.files).toHaveLength(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Reset' }));
+
+    await expect.poll(() => input.files?.length).toBe(0);
+  });
+
+  it('shows no controlled-input warning for a text field', async () => {
+    const { Root, Field } = controls();
+    await render(
+      <StrictMode>
+        <Root>
+          <Field name='plan' aria-label='plan' />
+        </Root>
+      </StrictMode>,
+    );
+
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+});
+
+describe('third-party controls', () => {
+  it('binds a callback control through useField, with status and errors', async () => {
+    const parts = createParts(profile({ error: { change: failing({ message: 'Too short', path: ['name'] }) } }));
+    const Library = ({ value, onValueChange }: { value: string; onValueChange: (value: string) => void }) => (
+      <button type='button' onClick={() => onValueChange(`${value}!`)}>{`library:${value}`}</button>
+    );
+    const Bound = () => {
+      const name = parts.useField('name');
+      return <Library value={name.state.value} onValueChange={value => name.change(value)} />;
+    };
+    const screen = await render(
+      <parts.Root>
+        <Bound />
+        <parts.FieldError name='name' />
+      </parts.Root>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'library:' }));
+
+    await expect.element(screen.getByRole('button', { name: 'library:!' })).toBeVisible();
+    await expect.element(screen.getByRole('alert')).toHaveTextContent('Too short');
+  });
+
+  it('binds a component that forwards its props, through a render function', async () => {
+    const parts = createParts(profile());
+    const TextBox = (props: React.ComponentPropsWithRef<'input'>) => (
+      <span>
+        <input {...props} />
+      </span>
+    );
+    const screen = await render(
+      <parts.Root>
+        <parts.Field name='name' aria-label='name' render={props => <TextBox {...props} />} />
+      </parts.Root>,
+    );
+
+    await userEvent.type(screen.getByLabelText('name'), 'Ada');
+
+    await expect.element(screen.getByLabelText('name')).toHaveValue('Ada');
+    await expect.element(screen.getByLabelText('name')).toHaveAttribute('data-dirty');
+  });
+});
+
+describe('defaults and bound parts', () => {
+  const failingName = failing({ message: 'First', path: ['name'] }, { message: 'Second', path: ['name'] });
+
+  it('renders each part in the element its slot declares, and lets the caller override one', async () => {
+    const { Root, Field, FieldError, Submit } = createParts(profile({ error: { submit: failingName } }), {
+      field: 'textarea',
+    });
+    const screen = await render(
+      <Root aria-label='form'>
+        <Field name='name' aria-label='name' />
+        <FieldError name='name' aria-label='error' />
+        <Submit>Send</Submit>
+      </Root>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(screen.getByLabelText('form').element().tagName).toBe('FORM');
+    expect(screen.getByLabelText('name').element().tagName).toBe('TEXTAREA');
+    await expect.element(screen.getByLabelText('error')).toHaveProperty('tagName', 'P');
+  });
+
+  it('shows the first message of a field error when it is given no children', async () => {
+    const { Root, FieldError, Submit } = createParts(profile({ error: { submit: failingName } }));
+    const screen = await render(
+      <Root>
+        <FieldError name='name' />
+        <Submit>Send</Submit>
+      </Root>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await expect.element(screen.getByRole('alert')).toHaveTextContent('First');
+    await expect.element(screen.getByRole('alert')).not.toHaveTextContent('Second');
+  });
+
+  it('tells onSubmit which submit button was pressed', async () => {
+    const intents: (string | undefined)[] = [];
+    const { Root, Submit } = createParts(profile({ onSubmit: (_values: unknown, _form: unknown, intent?: string) => void intents.push(intent) }));
+    const screen = await render(
+      <Root>
+        <Submit value='draft'>Save draft</Submit>
+        <Submit>Publish</Submit>
+      </Root>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    await expect.poll(() => intents).toEqual(['draft']);
+    await userEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    await expect.poll(() => intents).toEqual(['draft', undefined]);
+  });
+
+  it('names fields relative to the scope the parts are bound to, with no scope prop', async () => {
+    const parts = createParts(profile());
+    const Address = () => {
+      const { Field } = parts.within(parts.useScope('address'));
+      return <Field name='city' aria-label='city' />;
+    };
+    const screen = await render(
+      <parts.Root>
+        <Address />
+      </parts.Root>,
+    );
+
+    await userEvent.type(screen.getByLabelText('city'), 'Paris');
+
+    await expect.element(screen.getByLabelText('city')).toHaveValue('Paris');
+  });
+
+  it('gives the same components for the same scope, so nothing remounts', async () => {
+    const parts = createParts(profile());
+    const seen: object[] = [];
+    const Address = () => {
+      seen.push(parts.within(parts.useScope('address')).Field);
+      return null;
+    };
+    const screen = await render(
+      <parts.Root>
+        <Address />
+      </parts.Root>,
+    );
+    await screen.rerender(
+      <parts.Root>
+        <Address />
+      </parts.Root>,
+    );
+
+    expect(seen.length).toBeGreaterThan(1);
+    expect(new Set(seen).size).toBe(1);
+  });
 });

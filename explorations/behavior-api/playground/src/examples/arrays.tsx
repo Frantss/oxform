@@ -21,12 +21,7 @@ const team = configureForm(standardForm, {
   error: { change: schema, submit: schema },
 });
 
-const { Root, Field, FieldError, Submit, useArrayField, useSelector } = createParts(team, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, useArrayField, useSelector } = createParts(team);
 
 function Tags() {
   const tags = useArrayField('tags');
@@ -43,7 +38,7 @@ function Tags() {
               ×
             </button>
           </div>
-          <FieldError name={`tags.${index}`}>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name={`tags.${index}`} />
         </div>
       ))}
       <div className='actions'>
@@ -95,7 +90,7 @@ function Members() {
               ×
             </button>
           </div>
-          <FieldError name={`members.${index}.name`}>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name={`members.${index}.name`} />
         </div>
       ))}
       <div className='actions'>

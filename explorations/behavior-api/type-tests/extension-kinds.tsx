@@ -4,7 +4,9 @@ import {
   type FormKind,
   type PartSpec,
   type StandardKind,
+  configureForm,
   createCheck,
+  defineExtension,
   extendForm,
   standardForm,
 } from '../api';
@@ -46,3 +48,14 @@ extendForm<StandardKind, PartsKind>(standardForm, {
   api: () => ({}),
   slots: slot => ({ warningText: slot({ props: { name: 'key' }, state: () => ({ messages: ['x'] }) }) }),
 });
+
+// D: a kind states only what it adds. Members left out are `unknown`, which an intersection ignores.
+interface OnlyOptionsKind extends FormKind {
+  readonly options: { readonly note?: string };
+}
+const withNote = defineExtension<{}, OnlyOptionsKind>({ name: 'note', options: { note: 'string' }, api: () => ({}) });
+const noteSchema = {} as StandardSchemaV1<{ a: string }>;
+const noted = configureForm(withNote(standardForm), { schema: noteSchema, defaultValues: { a: '' }, note: 'x' });
+noted().values.get().a satisfies string;
+// @ts-expect-error `note` is a string
+configureForm(withNote(standardForm), { schema: noteSchema, defaultValues: { a: '' }, note: 1 });

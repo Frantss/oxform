@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import z from 'zod';
-import type { HandlesApi } from '../../../api';
 import { configureForm } from '../../../spike/src/form';
 import { defineFragment } from '../../../spike/src/fragments';
 import { createParts } from '../../../spike/src/react/create-parts';
@@ -30,44 +29,38 @@ const checkout = configureForm(standardForm, {
   error: { change: orderSchema, submit: orderSchema },
 });
 
-const { Root, Field, FieldError, Submit, useForm, useScope, useSelector } = createParts(checkout, {
-  root: 'form',
-  field: 'input',
-  fieldError: 'p',
-  submit: 'button',
-});
+const { Root, Field, FieldError, Submit, within, useForm, useScope, useSelector } = createParts(checkout);
 
-// Written once. The names are relative to the scope, so it works at any mount point.
-function AddressFields({ scope, label }: { scope: HandlesApi<Address, 'error'>; label: string }) {
+type AddressParts = Pick<ReturnType<typeof within<Address>>, 'Field' | 'FieldError'>;
+
+// Written once. It gets the parts already bound to a scope: it imports nothing from the form, and no part can forget
+// its scope.
+function AddressFields({ parts: { Field, FieldError }, label }: { parts: AddressParts; label: string }) {
   return (
     <fieldset>
       <legend>{label}</legend>
       <label>
         Street
-        <Field scope={scope} name='street' />
-        <FieldError scope={scope} name='street'>
-          {({ messages }) => messages[0]}
-        </FieldError>
+        <Field name='street' />
+        <FieldError name='street' />
       </label>
       <label>
         Zip
-        <Field scope={scope} name='zip' inputMode='numeric' />
-        <FieldError scope={scope} name='zip'>
-          {({ messages }) => messages[0]}
-        </FieldError>
+        <Field name='zip' inputMode='numeric' />
+        <FieldError name='zip' />
       </label>
     </fieldset>
   );
 }
 
 function Addresses() {
-  const billing = useScope('billing');
-  const shipping = useScope('shipping');
+  const billing = within(useScope('billing'));
+  const shipping = within(useScope('shipping'));
 
   return (
     <>
-      <AddressFields scope={billing} label='Billing address' />
-      <AddressFields scope={shipping} label='Shipping address' />
+      <AddressFields parts={billing} label='Billing address' />
+      <AddressFields parts={shipping} label='Shipping address' />
     </>
   );
 }
@@ -95,7 +88,7 @@ export function Checkout() {
         <label>
           Name
           <Field name='name' />
-          <FieldError name='name'>{({ messages }) => messages[0]}</FieldError>
+          <FieldError name='name' />
         </label>
         <Addresses />
         <div className='actions'>

@@ -62,6 +62,8 @@ export type OptionKinds<Options> = { readonly [Name in keyof Options]-?: OptionK
  */
 export interface FormKind {
   readonly values: unknown;
+  /** The instance of the configured form, extensions included. Set by `FormInstance`: an option reads it as `this['form']`. */
+  readonly form: unknown;
   readonly options: unknown;
   readonly state: unknown;
   readonly api: unknown;
@@ -80,7 +82,10 @@ export interface FormKind {
 export type ChecksOf<Kind extends FormKind> = Kind['checks'] extends string ? Kind['checks'] : never;
 
 type Apply<Kind extends FormKind, Values> = Kind & { readonly values: Values };
-export type OptionsOf<Kind extends FormKind, Values> = Apply<Kind, Values>['options'];
+export type OptionsOf<Kind extends FormKind, Values, Form = FormInstance<Kind, Values>> = (Kind & {
+  readonly values: Values;
+  readonly form: Form;
+})['options'];
 export type StateOf<Kind extends FormKind, Values> = Apply<Kind, Values>['state'];
 export type ApiOf<Kind extends FormKind, Values> = Apply<Kind, Values>['api'];
 export type PartsOf<Kind extends FormKind, Values> = Apply<Kind, Values>['parts'];
@@ -95,7 +100,7 @@ export type FieldExtrasOf<Kind extends FormKind, Values, P> = (Kind & {
 
 /** Merges an extension kind into a base kind. Options, state, api and parts are intersected. */
 export interface ExtendedKind<Base extends FormKind, Extension extends FormKind> extends FormKind {
-  readonly options: OptionsOf<Base, this['values']> & OptionsOf<Extension, this['values']>;
+  readonly options: OptionsOf<Base, this['values'], this['form']> & OptionsOf<Extension, this['values'], this['form']>;
   readonly state: StateOf<Base, this['values']> & StateOf<Extension, this['values']>;
   readonly api: ApiOf<Base, this['values']> & ApiOf<Extension, this['values']>;
   readonly parts: PartsOf<Base, this['values']> & PartsOf<Extension, this['values']>;
@@ -186,16 +191,23 @@ export type PropsOf<Spec> = {
   readonly [Name in keyof Spec]: Spec[Name] extends PropKind ? PropType<Spec[Name]> : never;
 };
 
-/** What a part declares for a kind: its props and the state its children can read. */
-export interface PartSpec<Props = {}, State = {}> {
+/** What a part declares for a kind: its props, the state its children can read, and the element it renders in. */
+export interface PartSpec<Props = {}, State = {}, Tag extends ElementTag = 'div'> {
   readonly props: Props;
   readonly state: State;
+  readonly element: Tag;
+}
+
+/** DOM props that a slot may read from the part although it does not declare them. */
+export interface PartDomProps {
+  readonly type?: string;
+  readonly value?: string | number | readonly string[];
 }
 
 export interface PartHandle<Props, Api> {
   readonly id: string;
   readonly key: string;
-  readonly props: Props;
+  readonly props: Props & PartDomProps;
   readonly api: Api;
 }
 
@@ -203,11 +215,15 @@ export interface PartEventContext<Props, Api> extends PartHandle<Props, Api> {
   readonly el: HTMLElement | null;
 }
 
-export type Attributes = Readonly<Record<string, string | number | boolean | undefined>>;
+export type Attributes = Readonly<Record<string, string | number | boolean | readonly string[] | undefined>>;
 
 /** `attrs`, `state` and `present` are pure: they run on the server. DOM work goes in `bind`. */
-export interface SlotDefinition<Spec, SlotState, Api, State> {
+export interface SlotDefinition<Spec, SlotState, Api, State, Tag extends ElementTag = 'div'> {
+  /** The element the part renders in, unless the caller chooses another. */
+  readonly element?: Tag;
   readonly props?: Spec;
+  /** What the part shows when it is given no children. */
+  text?(state: SlotState): string | undefined;
   present?(state: State, part: PartHandle<PropsOf<Spec>, Api>): boolean;
   state?(state: State, part: PartHandle<PropsOf<Spec>, Api>): SlotState;
   attrs?(state: State, part: PartHandle<PropsOf<Spec>, Api>): Attributes;
@@ -221,22 +237,26 @@ export interface SlotDefinition<Spec, SlotState, Api, State> {
 }
 
 declare const slotBrand: unique symbol;
-export interface Slot<Props = {}, SlotState = {}> {
-  readonly [slotBrand]: PartSpec<Props, SlotState>;
+export interface Slot<Props = {}, SlotState = {}, Tag extends ElementTag = 'div'> {
+  readonly [slotBrand]: PartSpec<Props, SlotState, Tag>;
 }
 
 /** No explicit generics: `Spec` comes from `props`, and `SlotState` from the `state` function. */
-export type SlotFactory<Api, State> = <const Spec extends Readonly<Record<string, PropKind>> = {}, SlotState = {}>(
-  definition: SlotDefinition<Spec, SlotState, Api, State>,
-) => Slot<PropsOf<Spec>, SlotState>;
+export type SlotFactory<Api, State> = <
+  const Spec extends Readonly<Record<string, PropKind>> = {},
+  SlotState = {},
+  const Tag extends ElementTag = 'div',
+>(
+  definition: SlotDefinition<Spec, SlotState, Api, State, Tag>,
+) => Slot<PropsOf<Spec>, SlotState, Tag>;
 
 export type SlotMap<Parts> = {
-  readonly [Name in keyof Parts]: Parts[Name] extends PartSpec<infer Props, infer SlotState>
-    ? Slot<Props, SlotState>
+  readonly [Name in keyof Parts]: Parts[Name] extends PartSpec<infer Props, infer SlotState, infer Tag>
+    ? Slot<Props, SlotState, Tag>
     : never;
 };
 
-export type SlotRecord = Readonly<Record<string, Slot<any, any>>>;
+export type SlotRecord = Readonly<Record<string, Slot<any, any, any>>>;
 
 /**
  * A reusable group of slots. Annotate the `slot` parameter with what the slots need (`SlotFactory<Api, State>`).
@@ -646,8 +666,11 @@ export interface SubmitResult<Checks extends string> {
 }
 
 export interface SubmitApi<Values = unknown, Checks extends string = string> {
-  /** Calls the `onSubmit` or `onInvalid` option. Resolves after the callback and the status update. */
-  run(): Promise<void>;
+  /**
+   * Calls the `onSubmit` or `onInvalid` option. Resolves after the callback and the status update. The `intent` reaches
+   * both: the root passes the `value` of the button that submitted, so two buttons can ask for two actions.
+   */
+  run(intent?: string): Promise<void>;
   /** Runs before validation. `attempt.cancel()` stops the submit, for example for a confirmation step. */
   intercept(interceptor: (attempt: SubmitAttempt<Values>) => MaybePromise<void>): Unsubscribe;
   onResult(listener: (result: SubmitResult<Checks>) => void): Unsubscribe;
@@ -765,8 +788,8 @@ export declare function createReset<Values>(
 export declare function createSubmit<Values, Checks extends string = string, Instance = unknown>(
   ctx: FormContext<
     | {
-        readonly onSubmit?: (values: Values, form: Instance) => MaybePromise<unknown>;
-        readonly onInvalid?: (issues: IssuesByCheck<Checks>, form: Instance) => MaybePromise<unknown>;
+        readonly onSubmit?: (values: Values, form: Instance, intent?: string) => MaybePromise<unknown>;
+        readonly onInvalid?: (issues: IssuesByCheck<Checks>, form: Instance, intent?: string) => MaybePromise<unknown>;
       }
     | {}
   >,
@@ -804,7 +827,7 @@ export declare function idPart(key: string): string;
 // @oxform/core/standard: the suggested preset
 // ---------------------------------------------------------------------------------------------------------
 
-export interface StandardOptions<Values> {
+export interface StandardOptions<Values, Form = FormInstance<StandardKind, Values>> {
   readonly id?: string;
   readonly schema: StandardSchemaV1<Values>;
   readonly defaultValues: NoInfer<Values>;
@@ -812,11 +835,8 @@ export interface StandardOptions<Values> {
   readonly error?: EventValidators<NoInfer<Values>>;
   readonly defaultStatus?: FormStatusDefaults;
   readonly defaultFieldStatus?: Partial<Record<Path<Values> | '*', FieldStatusDefaults>>;
-  readonly onSubmit?: (values: Values, form: FormInstance<StandardKind, Values>) => MaybePromise<unknown>;
-  readonly onInvalid?: (
-    issues: IssuesByCheck<'error'>,
-    form: FormInstance<StandardKind, Values>,
-  ) => MaybePromise<unknown>;
+  readonly onSubmit?: (values: Values, form: Form, intent?: string) => MaybePromise<unknown>;
+  readonly onInvalid?: (issues: IssuesByCheck<'error'>, form: Form, intent?: string) => MaybePromise<unknown>;
 }
 
 export interface StandardState<Values> {
@@ -846,15 +866,15 @@ export interface SubmitPartState {
 }
 
 export interface StandardParts<Values> {
-  readonly root: PartSpec;
-  readonly field: PartSpec<{ readonly name: Path<Values> }>;
-  readonly fieldError: PartSpec<{ readonly name: Path<Values> }, { readonly messages: readonly string[] }>;
-  readonly submit: PartSpec<{}, SubmitPartState>;
-  readonly reset: PartSpec;
+  readonly root: PartSpec<{}, {}, 'form'>;
+  readonly field: PartSpec<{ readonly name: Path<Values> }, {}, 'input'>;
+  readonly fieldError: PartSpec<{ readonly name: Path<Values> }, { readonly messages: readonly string[] }, 'p'>;
+  readonly submit: PartSpec<{}, SubmitPartState, 'button'>;
+  readonly reset: PartSpec<{}, {}, 'button'>;
 }
 
 export interface StandardKind extends FormKind {
-  readonly options: StandardOptions<this['values']>;
+  readonly options: StandardOptions<this['values'], this['form']>;
   readonly state: StandardState<this['values']>;
   readonly api: StandardApi<this['values']>;
   readonly parts: StandardParts<this['values']>;
@@ -871,6 +891,7 @@ export declare const standardForm: FormDefinition<StandardKind>;
 // ---------------------------------------------------------------------------------------------------------
 
 export type ElementTag = keyof JSX.IntrinsicElements;
+/** Overrides of the elements the form's slots declare. */
 export type PartElements<Parts> = { readonly [Name in keyof Parts]?: ElementTag };
 
 /**
@@ -891,10 +912,26 @@ export type PartProps<Tag extends ElementTag, Props = {}, State = {}> = Omit<
     readonly render?: PartRender<State>;
   };
 
+type DefaultElementOf<Kind extends FormKind, Values, Name extends string> =
+  PartsOf<Kind, Values> extends infer Parts
+    ? Name extends keyof Parts
+      ? Parts[Name] extends PartSpec<any, any, infer Tag>
+        ? Tag
+        : never
+      : never
+    : never;
+/** The element a part renders in: the one the caller chose, else the one its slot declares. */
+type ElementOf<Kind extends FormKind, Values, Name extends string, Elements> = Name extends keyof Elements
+  ? Elements[Name] extends ElementTag
+    ? Elements[Name]
+    : DefaultElementOf<Kind, Values, Name>
+  : DefaultElementOf<Kind, Values, Name>;
+type PartNames<Kind extends FormKind, Values> = Exclude<keyof PartsOf<Kind, Values> & string, 'root'>;
+
 type PartPropsOf<Kind extends FormKind, Values, Name extends string> =
   PartsOf<Kind, Values> extends infer Parts
     ? Name extends keyof Parts
-      ? Parts[Name] extends PartSpec<infer Props, any>
+      ? Parts[Name] extends PartSpec<infer Props, any, any>
         ? Props
         : never
       : never
@@ -902,7 +939,7 @@ type PartPropsOf<Kind extends FormKind, Values, Name extends string> =
 type PartStateOf<Kind extends FormKind, Values, Name extends string> =
   PartsOf<Kind, Values> extends infer Parts
     ? Name extends keyof Parts
-      ? Parts[Name] extends PartSpec<any, infer State>
+      ? Parts[Name] extends PartSpec<any, infer State, any>
         ? State
         : never
       : never
@@ -925,9 +962,26 @@ export interface PartComponent<Kind extends FormKind, Values, Name extends strin
 }
 
 export type PartComponents<Kind extends FormKind, Values, Elements> = {
-  readonly [
-    Name in Exclude<keyof PartsOf<Kind, Values> & keyof Elements & string, 'root'> as Capitalize<Name>
-  ]: Elements[Name] extends ElementTag ? PartComponent<Kind, Values, Name, Elements[Name]> : never;
+  readonly [Name in PartNames<Kind, Values> as Capitalize<Name>]: ElementOf<
+    Kind,
+    Values,
+    Name,
+    Elements
+  > extends infer Tag extends ElementTag
+    ? PartComponent<Kind, Values, Name, Tag>
+    : never;
+};
+
+/** The parts of a scope: its names are paths of the scope's values, and no part takes a `scope` prop. */
+export type BoundParts<Kind extends FormKind, Scoped, Elements> = {
+  readonly [Name in PartNames<Kind, Scoped> as Capitalize<Name>]: ElementOf<
+    Kind,
+    Scoped,
+    Name,
+    Elements
+  > extends infer Tag extends ElementTag
+    ? (props: PartProps<Tag, PartPropsOf<Kind, Scoped, Name>, PartStateOf<Kind, Scoped, Name>>) => JSX.Element
+    : never;
 };
 
 /**
@@ -944,13 +998,18 @@ export type RootProps<Kind extends FormKind, Values, Tag extends ElementTag> = O
     readonly children?: ReactNode;
   };
 
-export type RootComponent<Kind extends FormKind, Values, Elements> = Elements extends {
-  readonly root: infer Tag extends ElementTag;
-}
-  ? { readonly Root: (props: RootProps<Kind, Values, Tag>) => JSX.Element }
+export type RootComponent<Kind extends FormKind, Values, Elements> = 'root' extends keyof PartsOf<Kind, Values>
+  ? ElementOf<Kind, Values, 'root', Elements> extends infer Tag extends ElementTag
+    ? { readonly Root: (props: RootProps<Kind, Values, Tag>) => JSX.Element }
+    : {}
   : {};
 
-export interface FormHooks<Kind extends FormKind, Values> {
+export interface FormHooks<Kind extends FormKind, Values, Elements = {}> {
+  /**
+   * The parts bound to a scope (from `useScope` or `form.scope`): `Field` and the rest need no `scope` prop, so a
+   * block written once for a fragment takes the bound parts and works at any mount point and in any form.
+   */
+  readonly within: <Scoped>(scope: HandlesApi<Scoped, any, any>) => BoundParts<Kind, Scoped, Elements>;
   /** The instance from context. */
   readonly useForm: () => FormInstance<Kind, Values>;
   /** Re-renders when the selected state changes, by `===` or by `compare`. Returns the initial state on the server. */
@@ -991,11 +1050,11 @@ export interface FormHooks<Kind extends FormKind, Values> {
 export declare function createParts<
   Kind extends FormKind,
   Values,
-  const Elements extends PartElements<PartsOf<Kind, Values>>,
+  const Elements extends PartElements<PartsOf<Kind, Values>> = {},
 >(
   form: ConfiguredForm<Kind, Values>,
-  elements: Elements,
-): PartComponents<Kind, Values, Elements> & RootComponent<Kind, Values, Elements> & FormHooks<Kind, Values>;
+  elements?: Elements,
+): PartComponents<Kind, Values, Elements> & RootComponent<Kind, Values, Elements> & FormHooks<Kind, Values, Elements>;
 
 /** A part with another element, or with data-driven content. */
 export declare function usePart<
@@ -1006,7 +1065,7 @@ export declare function usePart<
 >(
   form: ConfiguredForm<Kind, Values>,
   slot: Slot,
-  slotProps: PartsOf<Kind, Values>[Slot] extends PartSpec<infer Props, any> ? Props : never,
+  slotProps: PartsOf<Kind, Values>[Slot] extends PartSpec<infer Props, any, any> ? Props : never,
   props: ComponentPropsWithoutRef<Tag>,
   tag: Tag,
 ): JSX.Element;
