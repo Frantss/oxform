@@ -58,7 +58,7 @@ status, events, reset, arrays, submit, handles, `defineForm`, `configureForm`, `
 `defineSlots` with the slot groups (`fieldSlots`, `fieldErrorSlots`, `submitSlots`, `resetSlots`), fragments
 (`defineFragment` and mounting in `configureForm`), `createEffect`, derived status in the store, field extras,
 and a `standardForm` preset with its slots, typed by the proposal's `StandardKind`. 178 Vitest tests pass in
-Node, 14 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
+Node, 18 more pass in Chromium for the React adapter, and `tsc` passes on the spike and on `type-tests/`.
 
 Built: the React adapter (`createParts` with `Root`, the part components and the hooks). Parts and hooks take a `scope` (decision 10). Not built: `usePart` and the Solid 1 and Solid 2 adapters.
 
@@ -72,7 +72,7 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
 | 2a  | Extension applies where its needs are met                                   | Met (types and runtime)                | `spike/src/extension.spec.ts`: `withAutosave` applies to the preset, and `@ts-expect-error` rejects it on a form without `validation`.                                                                                                                                              |
 | 2b  | Slot group reusable                                                         | Met (types and runtime)                | `spike/src/slots.spec.ts`: the same group spreads into two forms.                                                                                                                                                                                                                   |
 | 2c  | Fragment reusable                                                           | Met (types and runtime)                | `spike/src/fragments.spec.ts`: one fragment mounted twice, and in another form. A part given a `scope` names its field relative to it (`spike/src/react/parts.spec.tsx`, `type-tests/composition.tsx`).                                                                             |
-| 3a  | Add options, state, api, parts                                              | Met (types and runtime), parts as data | `spike/src/extension.spec.ts`: option, state slice, api and a slot. Parts do not render, since adapters are skipped.                                                                                                                                                                |
+| 3a  | Add options, state, api, parts                                              | Met (types and runtime), parts as data | `spike/src/extension.spec.ts`: option, state slice, api and a slot. The React adapter renders the slot (`spike/src/react/parts.spec.tsx`).                                                                                                                                          |
 | 3b  | Add members to every field handle                                           | Met (types and runtime)                | `spike/src/field-extras.spec.ts`: `mask` on string fields, typed by value, with the base handle and its live `state` kept. `type-tests/composition.tsx` checks the `fieldExtras` signature and the scoped extras (typed and working at three levels of scope).                      |
 | 3c  | Hook into change, validation, submit                                        | **Met at runtime**                     | `values.intercept` with `cancel()`, `values.onChange`, `validation.onRun`, `submit.intercept`, `submit.onResult` (`extension-hooks.spec.ts`, `submit.spec.ts`).                                                                                                                     |
 | 3d  | Wrap a base slot                                                            | Out of scope (decision)                | Unchanged.                                                                                                                                                                                                                                                                          |
@@ -104,8 +104,8 @@ Built: the React adapter (`createParts` with `Root`, the part components and the
   and was fixed (`spike/src/fragments.ts`).
 - The saving from opting out is modest above the lean tier: the lean login form is 1.7 kB gzip smaller than
   the full preset. The budget of the status tier was raised from 3.7 kB to 4.05 kB for derived status. `@tanstack/store` is about 1.7 kB gzip of every tier.
-- Comparison limits: the spike has no parts runtime or adapters, and its path helpers are simpler than today's
-  `remeda` use. Expect the new API to grow when parts arrive.
+- Comparison limits: the spike's bundle tiers leave out the React adapter, and its path helpers are simpler than today's
+  `remeda` use. Expect the new API to grow with the adapter.
 
 ## Open questions answered by the spike
 
