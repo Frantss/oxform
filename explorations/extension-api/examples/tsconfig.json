@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": [],
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "@oxform/core": ["../spike/src/index.ts"],
+      "@oxform/core/standard": ["../spike/src/standard.ts"],
+      "@oxform/react": ["../spike/src/react/index.ts"],
+      "#*": ["../../../packages/core/src/*"],
+      "@standard-schema/spec": ["../../../packages/core/node_modules/@standard-schema/spec"],
+      "@tanstack/store": ["../../../packages/core/node_modules/@tanstack/store"],
+      "@tanstack/react-store": ["../../../packages/react/node_modules/@tanstack/react-store"],
+      "react": ["../../../packages/react/node_modules/@types/react"],
+      "react/jsx-runtime": ["../../../packages/react/node_modules/@types/react/jsx-runtime"],
+      "react-dom/server": ["../../../packages/react/node_modules/@types/react-dom/server"],
+      "vitest": ["../../../node_modules/vitest"],
+      "zod": ["../../../packages/core/node_modules/zod"]
+    }
+  },
+  "include": ["./*.ts", "./*.tsx"]
+}

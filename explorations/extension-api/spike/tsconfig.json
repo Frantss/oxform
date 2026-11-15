@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": [],
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "#*": ["../../../packages/core/src/*"],
+      "@standard-schema/spec": ["../../../packages/core/node_modules/@standard-schema/spec"],
+      "@tanstack/store": ["../../../packages/core/node_modules/@tanstack/store"],
+      "@tanstack/react-store": ["../../../packages/react/node_modules/@tanstack/react-store"],
+      "react": ["../../../packages/react/node_modules/@types/react"],
+      "react/jsx-runtime": ["../../../packages/react/node_modules/@types/react/jsx-runtime"],
+      "react-dom/server": ["../../../packages/react/node_modules/@types/react-dom/server"],
+      "vitest-browser-react": ["../../../packages/react/node_modules/vitest-browser-react"]
+    }
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "../kit/**/*.ts"]
+}
