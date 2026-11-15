@@ -97,6 +97,22 @@ deep.scope('a').scope('b').scope('c').field('text').change('x'); // the base han
 deep.scope('a').scope('b').scope('c').field('count').mask('#');
 addressFields(maskedCheckout.scope('billing')); // still assignable to a function written for `HandlesApi`
 
+// The hook's field handle carries the extras too, typed by the field's value
+const maskedParts = createParts(
+  configureForm(masked(standardForm), { schema: accountSchema, defaultValues: accountDefaults }),
+  {
+    root: 'form',
+    field: 'input',
+  },
+);
+function MaskedHook() {
+  maskedParts.useField('name').mask('#');
+  maskedParts.useField('name').change('x'); // base handle is kept
+  // @ts-expect-error extras only on string values
+  maskedParts.useField('tags').mask('#');
+  return null;
+}
+
 // A component written once for the fragment works at any mount point
 function addressFields(scope: HandlesApi<Address, 'error'>) {
   scope.field('zip').change('x');

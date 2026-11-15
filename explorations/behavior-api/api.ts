@@ -962,7 +962,7 @@ export interface FormHooks<Kind extends FormKind, Values> {
    * Same signature as `form.field`, and re-renders on that field's state. With `{ scope }` (from `useScope`), the
    * path is relative to the scope and typed by its values.
    */
-  readonly useField: (ApiOf<Kind, Values> extends { readonly field: infer Field } ? Field : never) &
+  readonly useField: (WithFieldExtras<Kind, Values> extends { readonly field: infer Field } ? Field : never) &
     (<Scoped, Checks extends string, const P extends Path<Scoped>>(
       path: P,
       options: { readonly scope: HandlesApi<Scoped, Checks, Kind> },
