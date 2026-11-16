@@ -3,12 +3,12 @@ id: TK-021
 title: Check extension
 phase: 3
 work_package: P3-03
-status: todo
+status: done
 depends_on: [TK-020]
 branch: codex/P3-03-check
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-021: Check extension
@@ -54,18 +54,47 @@ chain.
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `check`.
-- [ ] Each scenario group of `03#check(name, options) (createCheck)` has a passing test in
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `check`.
+- [x] Each scenario group of `03#check(name, options) (createCheck)` has a passing test in
       `src/behaviors/check.spec.ts`. Each row that cites `B:` or `C:` passes. The array row uses `remap`
       through `checkInternals`.
-- [ ] The need `validation` has a negative type case and a unit case for its runtime error at `create`.
-- [ ] A type test shows `form.<name>` and its option typed for two names.
-- [ ] `tests/types/depth.test-d.tsx` still compiles in both type-test projects.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `export/behaviors.ts` exports no `createX` function and no `CheckNamesOf`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] The need `validation` has a negative type case and a unit case for its runtime error at `create`.
+- [x] A type test shows `form.<name>` and its option typed for two names.
+- [x] `tests/types/depth.test-d.tsx` still compiles in both type-test projects.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `export/behaviors.ts` exports no `createX` function and no `CheckNamesOf`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the D21 path and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with `check:types:dist` and `depth.test-d.tsx`), `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (514 statements, 223 branches).
+- `src/behaviors/check.spec.ts` (chain: `values`, `validation`, `check('error', { blocking, exclusive })`,
+  `check('warning')`; no `standard`):
+  - Wrapper rows: the name in the api, the options and the state; a second check with the same name throws at
+    `extend`; a `create` without `validation` throws and names the extension and the need; no validator runs at
+    creation; `checkInternals` refuses an object that `check` did not make.
+  - Exclusive: replaces every entry in scope, also manual ones; leaves them when no validator has the event.
+  - Not exclusive: refreshes only the event of the run and keeps other events and untyped entries; an event with
+    no validator keeps its entries until `clear` (`01#8`).
+  - Scope: entries outside the run stay; descendants are in; a nested read.
+  - `set`: replace, append, keep (and keep with no entries), an empty set removes the path, the path of an entry
+    does not redirect.
+  - Blocking: a check blocks only when it says so; two checks do not clear each other.
+  - `validates(event)`; `clear(path)` for one subtree; `clear()` for every entry.
+  - Root issues at `''` (D22): set, read, nested read of the root, replaced by a whole-form run, kept by a targeted
+    run.
+  - Array items through `checkInternals(check).remap`: swap, move, prepend and insert, remove.
+- `check` needs `validation` only (G5): `needs: { api: ['validation'] }`, and a negative type case.
+- D21: the check names are typed from `CheckNamesOf` of the chain. `Instance` replaces the `validation` member with
+  `ValidationApi<Values, CheckNamesOf<Api>>`, so `validation.issues()` is `IssuesByCheck<'error' | 'warning'>` and a
+  chain without a check gives `IssuesByCheck<never>`. The depth guard still compiles in both projects, so the
+  fallback was not needed. `CheckNamesOf` is in `main/types.ts` and is not exported from an entry point.
+- `01#7.5` item 1: the three casts stay inside `check`. A type test shows `form.error`, `form.warning` and their
+  options typed for two names.
+- `export/behaviors.ts` exports `check` and `CheckApi`, `CheckEntry`, `CheckOptions`, `CheckSetMode`, `CheckState`,
+  `CheckSugar`; no `createCheck` and no `CheckNamesOf`.
+- Type tests: a positive and a negative case for each export of the ticket.
+- Deviations: `CheckOptions` has no type parameter and no `name`, because the name is the first argument of
+  `check`. `TestIssue` and `reporting` moved to `tests/helpers.ts`, shared by the validation and check specs.

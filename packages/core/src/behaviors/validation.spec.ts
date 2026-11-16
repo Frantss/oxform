@@ -3,32 +3,17 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { contextInternals } from '#main/context';
 import { defineExtension, defineForm, optionKindsOf } from '#main/form';
 import type { Extendable, Needs } from '#main/types';
-import { schemaOf } from '../../tests/helpers';
-import {
-  isDiscarded,
-  isInScope,
-  registerCheck,
-  validation,
-  type CheckApi,
-  type CheckEntry,
-  type CheckValidators,
-  type ValidationEvent,
-} from './validation';
+import { reporting, schemaOf, type TestIssue } from '../../tests/helpers';
+import { isDiscarded, isInScope, registerCheck, validation, type CheckValidators, type ValidationEvent } from './validation';
 import { values } from './values';
+import type { CheckApi, CheckEntry } from './check';
 
 type Profile = { email: string; name: string; tags: string[] };
 
-type Issue = { message: string; path?: (PropertyKey | { key: PropertyKey })[] };
-
 const defaultValues: Profile = { email: '', name: '', tags: ['a'] };
 
-/** A schema that always reports `issues`. */
-const reporting = (...issues: Issue[]): StandardSchemaV1<never> => ({
-  '~standard': { version: 1, vendor: 'test', validate: () => ({ issues }) },
-});
-
 /** A schema whose result waits until the test calls `release`. */
-const deferred = (...issues: Issue[]) => {
+const deferred = (...issues: TestIssue[]) => {
   let release!: () => void;
   const gate = new Promise<void>(resolve => (release = resolve));
   const schema: StandardSchemaV1<never> = {
@@ -85,7 +70,9 @@ const setup = (...extensions: (TestCheck | Extension)[]) => {
   return {
     form,
     instance,
-    run: (...args: Parameters<typeof instance.validation.run>) => instance.validation.run(...args),
+    // The test checks are not typed by name, so the issues are read by any name.
+    run: (...args: Parameters<typeof instance.validation.run>) =>
+      instance.validation.run(...args) as Promise<readonly [boolean, Readonly<Record<string, readonly CheckEntry[]>>]>,
     checkOf: (name: string) => (instance as unknown as Record<string, CheckApi<Profile>>)[name]!,
     [Symbol.dispose]: () => instance.destroy(),
   };

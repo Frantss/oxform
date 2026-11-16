@@ -8,6 +8,8 @@ export type {
   ChangeReason,
   ChangeSource,
 } from '#behaviors/change';
+export { check } from '#behaviors/check';
+export type { CheckApi, CheckEntry, CheckOptions, CheckSetMode, CheckState, CheckSugar } from '#behaviors/check';
 export { rootSlots } from '#behaviors/slots';
 export { validation } from '#behaviors/validation';
 export type {

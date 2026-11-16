@@ -1,5 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
+import type { CheckApi } from '#behaviors/check';
 import type { ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
 import type { Path, PathValue, Unsubscribe, Updater } from './path-types';
@@ -364,8 +365,22 @@ type WithFieldMembers<Values, Api, Fields> = Api extends { readonly field: (path
     }
   : Api;
 
+/** The names of the checks in an api: the members that are a `CheckApi` under their own name. */
+export type CheckNamesOf<Api> = {
+  [Name in keyof Api & string]: Api[Name] extends CheckApi<any, Name> ? Name : never;
+}[keyof Api & string];
+
+/** The validation api of an instance knows the check names of the whole chain (D21). */
+type WithCheckNames<Values, Api> = Api extends { readonly validation: ValidationApi<any, any> }
+  ? Omit<Api, 'validation'> & { readonly validation: ValidationApi<Values, CheckNamesOf<Api>> }
+  : Api;
+
 /** One live form: the api of its extensions, its `id`, its `store` and `destroy()`. */
-export type Instance<Values, Api = {}, State = {}, Fields = never> = WithFieldMembers<Values, Api, Fields> & {
+export type Instance<Values, Api = {}, State = {}, Fields = never> = WithFieldMembers<
+  Values,
+  WithCheckNames<Values, Api>,
+  Fields
+> & {
   readonly id: string;
   readonly store: ReadonlyStore<State>;
   /** Runs every cleanup and stops the option listeners. Only the creator of the instance calls it. */

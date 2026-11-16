@@ -1,8 +1,15 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { defineForm, type Slot } from '@oxform/core';
 import {
+  check,
   rootSlots,
   validation,
+  type CheckApi,
+  type CheckEntry,
+  type CheckOptions,
+  type CheckSetMode,
+  type CheckState,
+  type CheckSugar,
   values,
   type CheckValidator,
   type CheckValidators,
@@ -144,7 +151,7 @@ describe('validation', () => {
   it('adds the validation api and the validating state', () => {
     const instance = form.extend(values).extend(validation).create();
 
-    expectTypeOf(instance.validation).toEqualTypeOf<ValidationApi<Profile>>();
+    expectTypeOf(instance.validation).toEqualTypeOf<ValidationApi<Profile, never>>();
     expectTypeOf(instance.store.state.validating).toEqualTypeOf<number>();
   });
 
@@ -159,7 +166,7 @@ describe('ValidationApi, ValidationRunOptions', () => {
 
   it('runs a path, a list or the whole form, with an event', () => {
     expectTypeOf(instance.validation.run(['name', 'address.city'], { type: 'blur' })).resolves.toEqualTypeOf<
-      readonly [valid: boolean, issues: IssuesByCheck<string>]
+      readonly [valid: boolean, issues: IssuesByCheck<never>]
     >();
   });
 
@@ -210,5 +217,95 @@ describe('ValidatorInput, CheckValidator, CheckValidators', () => {
   it('rejects a validator for another event', () => {
     // @ts-expect-error The validators are by validation event.
     accepts<CheckValidators<Profile>>({ input: {} as StandardSchemaV1<Profile> });
+  });
+});
+
+describe('check', () => {
+  const checked = form.extend(values).extend(validation).extend(check('error')).extend(check('warning'));
+
+  it('types the api member and the option of each name', () => {
+    const instance = checked.create({ error: { change: {} as StandardSchemaV1<Profile> }, warning: {} });
+
+    expectTypeOf(instance.error).toEqualTypeOf<CheckApi<Profile, 'error'>>();
+    expectTypeOf(instance.warning).toEqualTypeOf<CheckApi<Profile, 'warning'>>();
+  });
+
+  it('types the check names of the validation api from the chain (D21)', () => {
+    expectTypeOf(checked.create().validation.issues()).toEqualTypeOf<IssuesByCheck<'error' | 'warning'>>();
+  });
+
+  it('rejects an option of the check that is not a validator record', () => {
+    // @ts-expect-error The `error` option holds validators by event.
+    checked.create({ error: 'required' });
+  });
+
+  it('needs validation', () => {
+    // @ts-expect-error check needs validation.
+    form.extend(values).extend(check('error'));
+  });
+});
+
+describe('CheckApi, CheckSetMode', () => {
+  const instance = form.extend(values).extend(validation).extend(check('error')).create();
+
+  it('reads and writes a path or the root', () => {
+    expectTypeOf(instance.error.at('')).toEqualTypeOf<readonly CheckEntry[]>();
+    expectTypeOf<Parameters<typeof instance.error.set>>().toEqualTypeOf<
+      [
+        path: 'address' | 'address.city' | 'name' | '',
+        entries: readonly CheckEntry[],
+        options?: { readonly mode?: CheckSetMode },
+      ]
+    >();
+  });
+
+  it('rejects a path that the values do not have', () => {
+    // @ts-expect-error Profile has no phone.
+    instance.error.at('phone');
+  });
+
+  it('rejects another set mode', () => {
+    // @ts-expect-error The modes are replace, append and keep.
+    accepts<CheckSetMode>('merge');
+  });
+});
+
+describe('CheckOptions', () => {
+  it('takes blocking and exclusive', () => {
+    expectTypeOf<CheckOptions>().toEqualTypeOf<{ readonly blocking?: boolean; readonly exclusive?: boolean }>();
+  });
+
+  it('rejects another option', () => {
+    // @ts-expect-error A check takes blocking and exclusive.
+    check('error', { required: true });
+  });
+});
+
+describe('CheckEntry, CheckState', () => {
+  it('holds a Standard Schema issue with the event, by path', () => {
+    expectTypeOf<CheckEntry['type']>().toEqualTypeOf<ValidationEvent | undefined>();
+    expectTypeOf<CheckState>().toEqualTypeOf<Readonly<Record<string, readonly CheckEntry[]>>>();
+  });
+
+  it('needs a message', () => {
+    // @ts-expect-error An issue has a message.
+    accepts<CheckEntry>({ type: 'change' });
+  });
+
+  it('holds lists of entries', () => {
+    // @ts-expect-error The state holds lists of entries.
+    accepts<CheckState>({ email: { message: 'a' } });
+  });
+});
+
+describe('CheckSugar', () => {
+  it('reads and sets the entries of each check on a field', () => {
+    expectTypeOf<keyof CheckSugar<'error'>>().toEqualTypeOf<'error' | 'setError'>();
+  });
+
+  it('rejects a set without entries', () => {
+    const sugar = {} as CheckSugar<'error'>;
+    // @ts-expect-error setError takes the entries.
+    sugar.setError();
   });
 });

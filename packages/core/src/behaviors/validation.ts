@@ -3,25 +3,10 @@ import { defineExtension } from '#main/form';
 import { contextInternals } from '#main/context';
 import type { DeepPartial, Path, Unsubscribe } from '#main/path-types';
 import type { Extendable, FormContext, Needs } from '#main/types';
+import type { CheckApi, CheckEntry } from './check';
 import type { ValuesApi } from './values';
 
 export type ValidationEvent = 'change' | 'blur' | 'focus' | 'submit';
-
-/** A Standard Schema issue. The check adds `type`, the event of the validator that found it. */
-export type CheckEntry = StandardSchemaV1.Issue & { readonly type?: ValidationEvent };
-
-export type CheckSetMode = 'replace' | 'append' | 'keep';
-
-export interface CheckApi<Values, Name extends string = string> {
-  readonly name: Name;
-  readonly blocking: boolean;
-  at(path: Path<Values>, options?: { readonly nested?: boolean }): readonly CheckEntry[];
-  set(path: Path<Values>, entries: readonly CheckEntry[], options?: { readonly mode?: CheckSetMode }): void;
-  /** Removes the entries at a path and below, or every entry without a path. */
-  clear(path?: Path<Values>): void;
-  /** True when the check has a validator for the event, so a caller can skip a run that would do nothing. */
-  validates(event: ValidationEvent): boolean;
-}
 
 /** What a validator function gets. It has the full values, also for a targeted run (G2). */
 export interface ValidatorInput<Values> {
