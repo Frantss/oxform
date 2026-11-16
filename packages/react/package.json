@@ -24,10 +24,11 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp test",
+    "test": "vp test && vp test --config vite.ssr.config.ts",
     "test:dev": "vp test --watch",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only"
+    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only",
+    "test:ssr": "vp test --config vite.ssr.config.ts"
   },
   "dependencies": {
     "@tanstack/react-store": "^0.11.2"

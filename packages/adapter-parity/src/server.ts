@@ -21,7 +21,7 @@ export const serverScenarios = {
       const initial = await driver.renderToString('signIn', {
         root: { defaultValues: { email: 'ada@example.com', password: '' } },
       });
-      const instance = signIn.create({ id: 'sign-in' });
+      const instance = signIn.create({ id: 'server-form' });
       await instance.submit.run();
       const invalid = await driver.renderToString('signIn', { root: { form: instance } });
       const submitting = instance.submit.run();
@@ -54,7 +54,7 @@ export const serverScenarios = {
     run: async driver => {
       const check = counting();
       const instance = signIn.create({
-        id: 'sign-in',
+        id: 'server-form',
         error: { change: check.schema, blur: check.schema, focus: check.schema },
       });
       const subscribe = vi.spyOn(instance.store, 'subscribe');

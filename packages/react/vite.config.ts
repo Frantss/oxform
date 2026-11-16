@@ -5,6 +5,8 @@ import { base } from '../../vite.config';
 export default defineConfig({
   ...base,
   plugins: [react()],
+  // The server tests run in Node through `vite.ssr.config.ts`.
+  test: { ...base.test, exclude: ['tests/server/**', '**/node_modules/**'] },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
   },

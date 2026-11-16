@@ -3,12 +3,12 @@ id: TK-041
 title: React server rendering and lifecycle
 phase: 5
 work_package: P5-06
-status: todo
+status: done
 depends_on: [TK-037]
 branch: codex/P5-06-react-server-lifecycle
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-041: React server rendering and lifecycle
@@ -47,14 +47,27 @@ existing instance, and unmount and a double mount work. The parity scenarios P10
 
 ## Acceptance
 
-- [ ] P10, P12 and P13 pass in Node through `vp run @oxform/react#test:ssr`.
-- [ ] P11 and P14 pass in `packages/react/tests/parity.spec.tsx` in Chromium. P11 sees no console warning or
+- [x] P10, P12 and P13 pass in Node through `vp run @oxform/react#test:ssr`.
+- [x] P11 and P14 pass in `packages/react/tests/parity.spec.tsx` in Chromium. P11 sees no console warning or
       error.
-- [ ] P14's double mount runs in React strict mode.
-- [ ] No adapter source calls `destroy`.
-- [ ] `vp run @oxform/react#test` runs the browser tests, then `test:ssr`, and passes.
-- [ ] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
+- [x] P14's double mount runs in React strict mode.
+- [x] No adapter source calls `destroy`.
+- [x] `vp run @oxform/react#test` runs the browser tests, then `test:ssr`, and passes.
+- [x] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `vp run @oxform/react#test` runs the browser tests, then `test:ssr` (`vite.ssr.config.ts`, Node). The browser
+  config excludes `tests/server/**`.
+- P10, P12 and P13 pass in Node (`tests/server/parity.spec.tsx`). P10 wrote the three shared snapshots in
+  `packages/adapter-parity/src/snapshots/`: the initial values, the issues after a failed submit
+  (`aria-invalid`, `aria-describedby` and the error parts), and `disabled` while submitting.
+- P11 and P14 pass in Chromium. P11 hydrates the server HTML of `signIn`, keeps the email input element, and
+  sees no `console.error` or `console.warn`. P14's double mount runs in React `StrictMode`, and an unmount runs
+  the cleanups once and keeps the instance usable.
+- The `form` prop of `Root` (G12) existed since TK-037. No adapter source calls `destroy` (G19).
+- Fixed in the parity package: P10 gave its instance the id `sign-in`, which is also the value of the submit
+  button, so the normalization replaced the value. The id is now `server-form`.
+- The snapshots are in the formatter's ignore list: `vp fmt` reformatted the HTML, and P10 then failed.
+- Every scenario of P1 to P14 passes for React: 22 browser cases and 3 Node cases.

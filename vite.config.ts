@@ -90,7 +90,8 @@ export const base = defineConfig({
     },
   },
   fmt: {
-    ignorePatterns: ['apps/docs/src/routeTree.gen.ts'],
+    // The parity snapshots are server HTML as an adapter renders it, byte for byte.
+    ignorePatterns: ['apps/docs/src/routeTree.gen.ts', 'packages/adapter-parity/src/snapshots/**'],
     arrowParens: 'avoid' as const,
     singleQuote: true,
     jsxSingleQuote: true,
