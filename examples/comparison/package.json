@@ -1,0 +1,16 @@
+{
+  "name": "example-oxform-comparison",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vp test",
+    "check:types": "vp exec tsc --noEmit"
+  },
+  "dependencies": {
+    "@oxform/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

@@ -3,12 +3,12 @@ id: TK-005
 title: Tree-shaking proof and size report
 phase: 1
 work_package: P1-04
-status: in-progress
+status: done
 depends_on: [TK-003]
 branch: codex/P1-04-tree-shaking-proof
 pr: null
 started: 2026-11-16
-completed: null
+completed: 2026-11-16
 ---
 
 # TK-005: Tree-shaking proof and size report
@@ -54,7 +54,7 @@ completed: null
 - [x] The tier that does not import the pure call has no marker of it.
 - [x] It fails when a tier fixture imports outside the three entry points.
 - [x] `pnpm run report:size` prints both tiers and exits 0.
-- [ ] `pnpm run check:all` runs `check:tree-shaking` and passes.
+- [x] `pnpm run check:all` runs `check:tree-shaking` and passes.
 
 ## Evidence
 
@@ -80,5 +80,5 @@ completed: null
   `check:package`, then `check:tree-shaking`. `report:size` is not in `check:all`.
 - The base `tsconfig.json` sets `allowImportingTsExtensions`, because Node runs the scripts and needs the `.ts`
   extension in `import '../tests/bundle/markers.ts'`. The base already sets `emitDeclarationOnly`.
-- Open: `pnpm run check:all` stops at `@oxform/solid#check:package` (`publint` finds no assembled `dist`) before
-  it reaches `check:tree-shaking`. TK-008 writes the Solid assembly and closes this item.
+- `pnpm run check:all` stopped at `@oxform/solid#check:package` until TK-008 wrote the Solid assembly. After
+  TK-008 it passes and prints `Tree-shaking check passed for 2 tiers.`

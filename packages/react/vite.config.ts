@@ -12,7 +12,7 @@ export default defineConfig({
     entry: {
       index: 'export/index.ts',
     },
-    format: ['esm', 'cjs'],
+    format: ['esm'],
     platform: 'browser',
     dts: true,
     sourcemap: true,
@@ -20,6 +20,7 @@ export default defineConfig({
     clean: true,
     deps: {
       alwaysBundle: [/#.*/],
+      neverBundle: ['@oxform/core', /^@oxform\/core\//],
     },
   },
 });

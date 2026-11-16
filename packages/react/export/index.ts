@@ -1,1 +1,1 @@
-export {};
+export { createParts } from '#create-parts';

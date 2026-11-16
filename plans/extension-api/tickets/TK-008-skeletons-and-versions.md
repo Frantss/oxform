@@ -3,12 +3,12 @@ id: TK-008
 title: Adapter and example skeletons, and the version plan
 phase: 1
 work_package: [P1-07, P1-08]
-status: todo
+status: done
 depends_on: [TK-003]
 branch: codex/P1-07-skeletons-and-versions
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-008: Adapter and example skeletons, and the version plan
@@ -52,14 +52,47 @@ published packages.
 
 ## Acceptance
 
-- [ ] `pnpm run build` passes for every workspace.
-- [ ] `pnpm run check:package` passes.
-- [ ] `vp run @oxform/solid#check:consumers` passes for `.` and `./v2`.
-- [ ] `pnpm exec changeset status --verbose` shows 0.7.0 for `@oxform/core`, `@oxform/react` and `@oxform/solid`,
+- [x] `pnpm run build` passes for every workspace.
+- [x] `pnpm run check:package` passes.
+- [x] `vp run @oxform/solid#check:consumers` passes for `.` and `./v2`.
+- [x] `pnpm exec changeset status --verbose` shows 0.7.0 for `@oxform/core`, `@oxform/react` and `@oxform/solid`,
       and no version for a private workspace.
-- [ ] `pnpm run check:all` and `pnpm run test` pass.
+- [x] `pnpm run check:all` and `pnpm run test` pass.
 
 ## Evidence
 
-Record the command results, the `changeset status` output, the D04 path taken (Changesets or manual versions)
-and any deviation from the plan here.
+- Adapters, ESM only, each with `createParts(form)` as the placeholder in `src/create-parts.ts` and a sibling
+  spec. The placeholder reads `slotsOf` from `@oxform/core/adapter` at runtime, so each build proves that core
+  stays external (`deps.neverBundle: ['@oxform/core', /^@oxform\/core\//]`).
+  - `@oxform/react`: peers `@oxform/core` (`workspace:^`) and `react`. `react-dom` is a dev dependency only
+    (D35). The unused `@standard-schema/spec` and `zod` are removed.
+  - `@oxform/solid-v1` and `@oxform/solid-v2` (private): peer `@oxform/core` only. A Solid peer in a private
+    workspace made `pnpm peers check` fail for `@oxform/solid`, whose dev install is Solid 2, so the published
+    package alone states the Solid range. `remeda`, the CJS output, the `@oxform/solid*` path aliases and the
+    `vite.ssr.config.ts` files (no server test exists yet) are removed. Both set `environment: 'node'`, because
+    the Solid plugins set `jsdom` when none is given.
+  - `@oxform/solid`: `export/index.ts` and `export/v2.ts` re-export the private workspaces for the type check.
+    `scripts/assemble.ts` (new) copies `solid-v1/dist` to `dist/` and `solid-v2/dist` to `dist/v2/`. No
+    `require` condition, no `typesVersions`, no `remeda`. Peers: `@oxform/core`, `solid-js`
+    (`^1.9.0 || 2.0.0-rc.19`), `@solidjs/web` (optional).
+- `@oxform/adapter-parity` (new, private, no build, `exports: { "./*": "./src/*.ts" }`, peer `@oxform/core`), with
+  `src/fixtures.ts`.
+- Examples: `examples/kit` (new, `exports: { "./*": "./src/*.ts" }`, peer `@oxform/core`, `src/sign-in.ts`) and
+  `examples/comparison` (new, `src/libraries.ts`) run in Node. `examples/{react,solid,solid-v2}` render
+  `src/app.tsx` from `main.tsx` and `playground.tsx`, and depend on `@oxform/core` beside their adapter.
+  `nuqs`, `@faker-js/faker` and `zod` are removed. Each workspace has one spec for its placeholder.
+- `check:consumers` in core, React and Solid. The shared helper `scripts/check-consumer.ts` packs the
+  workspace packages, installs the tarballs offline in an empty ESM project with `@oxform/core` overridden to
+  its tarball, type-checks a consumer file with `nodenext`, and runs it with Node. Each consumer has a
+  negative type case. Output: `Consumer core`, `Consumer react`, `Consumer solid-1` (`@oxform/solid`) and
+  `Consumer solid-2` (`@oxform/solid/v2`): `install, type check and run passed.` Each `check:package` runs it
+  last.
+- Root `test`: core, `adapter-parity`, React, Solid (both runtimes), the kit, the three example apps, then the
+  comparison workspace. `adapter-parity` is added beside the kit and the comparison workspace, because it has
+  a spec. `@oxform/solid#test:ssr` is out of the chain until a server test exists.
+- Version plan: `.changeset/config.json` has `fixed: [["@oxform/core", "@oxform/react", "@oxform/solid"]]` and
+  `privatePackages: { "version": false, "tag": false }`. `.changeset/extension-api.md` is one `minor`
+  changeset for the three packages. `pnpm exec changeset status --verbose`:
+  `@oxform/core -> 0.7.0`, `@oxform/react -> 0.7.0`, `@oxform/solid -> 0.7.0`, all `minor`, and no private
+  workspace. D04: Changesets, no manual versions. R04 is retired.
+- `pnpm run build` (12 tasks), `pnpm run check:all` and `pnpm run test` (10 workspaces) pass.

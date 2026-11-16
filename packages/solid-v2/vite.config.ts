@@ -4,16 +4,13 @@ import { base } from '../../vite.config';
 
 export default defineConfig({
   ...base,
-  resolve: {
-    alias: { '@oxform/solid/v2': new URL('./export/index.ts', import.meta.url).pathname },
-    dedupe: ['solid-js', '@solidjs/web'],
-  },
+  resolve: { dedupe: ['solid-js', '@solidjs/web'] },
   plugins: [solid({ solid: { hydratable: true } })],
   optimizeDeps: { include: ['solid-js', '@solidjs/web', 'vite-plus/test/browser'] },
+  // The Solid plugin sets a jsdom environment when none is set. The tests run in the browser.
   test: {
     ...base.test,
     environment: 'node',
-    include: ['src/tests/**/*.spec.{ts,tsx}'],
     browser: {
       ...base.test?.browser,
       instances: [
@@ -24,12 +21,15 @@ export default defineConfig({
   },
   pack: {
     entry: { index: 'export/index.ts' },
-    format: ['esm', 'cjs'],
+    format: ['esm'],
     platform: 'browser',
     dts: true,
     sourcemap: true,
     minify: false,
     clean: true,
-    deps: { alwaysBundle: [/#.*/], neverBundle: [/^solid-js(?:\/.*)?$/, /^@solidjs\//, '@oxform/core', 'remeda'] },
+    deps: {
+      alwaysBundle: [/#.*/],
+      neverBundle: [/^solid-js(?:\/.*)?$/, /^@solidjs\//, '@oxform/core', /^@oxform\/core\//],
+    },
   },
 });

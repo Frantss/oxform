@@ -31,16 +31,16 @@ evidence.
 
 ### Phase 1: workspace skeleton and packaging proof
 
-| Id                                                   | Title                                               | Work package | Status      | Depends on     |
-| ---------------------------------------------------- | --------------------------------------------------- | ------------ | ----------- | -------------- |
-| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | done        | TK-001         |
-| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | done        | TK-002         |
-| [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | done        | TK-003         |
-| [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | in-progress | TK-003         |
-| [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | blocked     | TK-008         |
-| [TK-007](./tickets/TK-007-test-projects.md)          | Test projects                                       | P1-06        | blocked     | TK-008         |
-| [TK-008](./tickets/TK-008-skeletons-and-versions.md) | Adapter and example skeletons, and the version plan | P1-07, P1-08 | ready       | TK-003         |
-| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | blocked     | TK-005, TK-007 |
+| Id                                                   | Title                                               | Work package | Status  | Depends on     |
+| ---------------------------------------------------- | --------------------------------------------------- | ------------ | ------- | -------------- |
+| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | done    | TK-001         |
+| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | done    | TK-002         |
+| [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | done    | TK-003         |
+| [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | done    | TK-003         |
+| [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | ready   | TK-008         |
+| [TK-007](./tickets/TK-007-test-projects.md)          | Test projects                                       | P1-06        | ready   | TK-008         |
+| [TK-008](./tickets/TK-008-skeletons-and-versions.md) | Adapter and example skeletons, and the version plan | P1-07, P1-08 | done    | TK-003         |
+| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | blocked | TK-005, TK-007 |
 
 ### Phase 2: main APIs
 
@@ -115,7 +115,7 @@ evidence.
 | [TK-051](./tickets/TK-051-react-example.md)            | React example app              | P7-04        | blocked | TK-042, TK-050         |
 | [TK-052](./tickets/TK-052-solid-example.md)            | Solid 1 example app            | P7-05        | blocked | TK-046, TK-051         |
 | [TK-053](./tickets/TK-053-solid-v2-example.md)         | Solid 2 example app            | P7-06        | blocked | TK-046, TK-051         |
-| [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | blocked | TK-008                 |
+| [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | ready   | TK-008                 |
 | [TK-055](./tickets/TK-055-comparison-research.md)      | Comparison research closure    | P7-08        | ready   | None                   |
 | [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | blocked | TK-054, TK-042, TK-050 |
 | [TK-057](./tickets/TK-057-comparison-measurement.md)   | Comparison measurement         | P7-10        | blocked | TK-056, TK-033         |

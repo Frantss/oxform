@@ -1,0 +1,21 @@
+{
+  "name": "example-oxform-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "check:types": "vp exec tsc --noEmit"
+  },
+  "devDependencies": {
+    "@oxform/core": "workspace:*",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@oxform/core": "workspace:^"
+  }
+}

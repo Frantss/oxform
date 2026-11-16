@@ -1,7 +1,12 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@4.0.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": true,
   "access": "public",
-  "baseBranch": "main"
+  "baseBranch": "main",
+  "fixed": [["@oxform/core", "@oxform/react", "@oxform/solid"]],
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  }
 }
