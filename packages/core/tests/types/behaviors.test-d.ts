@@ -3,7 +3,14 @@ import { defineForm, type Slot } from '@oxform/core';
 import {
   check,
   rootSlots,
+  status,
   validation,
+  type FieldStatus,
+  type FieldStatusDefaults,
+  type FormStatus,
+  type FormStatusDefaults,
+  type StatusApi,
+  type StatusState,
   type CheckApi,
   type CheckEntry,
   type CheckOptions,
@@ -307,5 +314,80 @@ describe('CheckSugar', () => {
     const sugar = {} as CheckSugar<'error'>;
     // @ts-expect-error setError takes the entries.
     sugar.setError();
+  });
+});
+
+describe('status', () => {
+  const statused = form.extend(values).extend(status);
+
+  it('adds the status api and the derived status state', () => {
+    const instance = statused.create();
+
+    expectTypeOf(instance.status).toEqualTypeOf<StatusApi<Profile>>();
+    expectTypeOf(instance.store.state.status).toEqualTypeOf<StatusState>();
+  });
+
+  it('keys defaultFieldStatus by path or the wildcard (G8)', () => {
+    expectTypeOf(
+      statused.create({ defaultFieldStatus: { '*': { touched: true }, 'address.city': {} } }).status,
+    ).toEqualTypeOf<StatusApi<Profile>>();
+  });
+
+  it('rejects a defaultFieldStatus path that the values do not have', () => {
+    // @ts-expect-error Profile has no phone.
+    statused.create({ defaultFieldStatus: { phone: { touched: true } } });
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error status needs values.
+    form.extend(status);
+  });
+});
+
+describe('StatusApi', () => {
+  const instance = form.extend(values).extend(status).create();
+
+  it('reads the form and a field', () => {
+    expectTypeOf(instance.status.form).toEqualTypeOf<FormStatus>();
+    expectTypeOf(instance.status.at('address.city')).toEqualTypeOf<FieldStatus>();
+  });
+
+  it('rejects a path that the values do not have', () => {
+    // @ts-expect-error Profile has no phone.
+    instance.status.at('phone');
+  });
+});
+
+describe('StatusState, FieldStatus, FormStatus', () => {
+  it('holds the form and the fields by path', () => {
+    expectTypeOf<StatusState['fields']>().toEqualTypeOf<Readonly<Record<string, FieldStatus>>>();
+    expectTypeOf<FormStatus['successful']>().toEqualTypeOf<boolean | null>();
+  });
+
+  it('rejects a field status without its flags', () => {
+    // @ts-expect-error A field status has every flag.
+    accepts<FieldStatus>({ dirty: true });
+  });
+
+  it('rejects a form status without its flags', () => {
+    // @ts-expect-error A form status has every flag.
+    accepts<StatusState>({ form: { valid: true }, fields: {} });
+  });
+});
+
+describe('FormStatusDefaults, FieldStatusDefaults', () => {
+  it('takes the flags that a default can set', () => {
+    expectTypeOf<keyof FormStatusDefaults>().toEqualTypeOf<'dirty' | 'submits' | 'successful'>();
+    expectTypeOf<keyof FieldStatusDefaults>().toEqualTypeOf<'dirty' | 'touched' | 'blurred'>();
+  });
+
+  it('rejects a derived flag as a form default', () => {
+    // @ts-expect-error `valid` is derived.
+    accepts<FormStatusDefaults>({ valid: true });
+  });
+
+  it('rejects a derived flag as a field default', () => {
+    // @ts-expect-error `pristine` is derived.
+    accepts<FieldStatusDefaults>({ pristine: true });
   });
 });

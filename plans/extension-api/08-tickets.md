@@ -63,11 +63,11 @@ evidence.
 | [TK-019](./tickets/TK-019-values.md)       | Values extension     | P3-01        | done    | TK-013                         |
 | [TK-020](./tickets/TK-020-validation.md)   | Validation extension | P3-02        | done    | TK-019                         |
 | [TK-021](./tickets/TK-021-check.md)        | Check extension      | P3-03        | done    | TK-020                         |
-| [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | ready   | TK-020                         |
-| [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | blocked | TK-022                         |
-| [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | blocked | TK-022, TK-021                 |
+| [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | done    | TK-020                         |
+| [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | ready   | TK-022                         |
+| [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | ready   | TK-022, TK-021                 |
 | [TK-025](./tickets/TK-025-reset.md)        | Reset extension      | P3-07        | blocked | TK-023                         |
-| [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | blocked | TK-022, TK-021                 |
+| [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | ready   | TK-022, TK-021                 |
 | [TK-027](./tickets/TK-027-handles.md)      | Handles extension    | P3-09        | blocked | TK-023, TK-024, TK-025, TK-026 |
 | [TK-028](./tickets/TK-028-slot-groups.md)  | Slot groups          | P3-10        | blocked | TK-025, TK-026, TK-021         |
 | [TK-029](./tickets/TK-029-scope-checks.md) | Scopes on checks     | P3-11        | blocked | TK-027, TK-016                 |

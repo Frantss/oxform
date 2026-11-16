@@ -3,8 +3,9 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { contextInternals } from '#main/context';
 import { defineExtension, defineForm, optionKindsOf } from '#main/form';
 import type { Extendable, Needs } from '#main/types';
+import { isWithin } from '#internal/paths';
 import { reporting, schemaOf, type TestIssue } from '../../tests/helpers';
-import { isDiscarded, isInScope, registerCheck, validation, type CheckValidators, type ValidationEvent } from './validation';
+import { isDiscarded, isInScope, registerCheck, validation, type CheckValidators } from './validation';
 import { values } from './values';
 import type { CheckApi, CheckEntry } from './check';
 
@@ -27,35 +28,43 @@ const failing: StandardSchemaV1<never> = {
   '~standard': { version: 1, vendor: 'test', validate: () => Promise.reject(new Error('boom')) },
 };
 
-type TestCheck = { readonly name: string; readonly validators: CheckValidators<Profile>; readonly blocking?: boolean };
+type TestCheck = {
+  readonly name: string;
+  readonly validators?: CheckValidators<never>;
+  readonly blocking?: boolean;
+};
 
-/** A test-local check: it registers through `registerCheck` and keeps the entries of the last run in scope. */
+/** A test-local check: it registers through `registerCheck` and replaces every entry in the scope of a run. */
 const testCheck =
-  ({ name, validators, blocking = true }: TestCheck) =>
+  ({ name, validators = {}, blocking = true }: TestCheck) =>
   <Values>(form: Extendable<Values, Needs<Values, 'validation'>>) =>
     defineExtension(form, {
       name: `check:${name}`,
       needs: { api: ['validation'] },
-      api: (_context, deps) => {
-        const entries = new Map<string, readonly CheckEntry[]>();
+      state: () => ({ [name]: {} as Readonly<Record<string, readonly CheckEntry[]>> }),
+      api: (context, deps) => {
+        const slice = context.state[name]!;
         const check: CheckApi<unknown> = {
           name,
           blocking,
           at: (path, options) =>
-            [...entries].filter(([key]) => (options?.nested ? path === '' || isInScope(key, [path]) : key === path)).flatMap(([, found]) => found),
-          set: (path, found) => void entries.set(path, found),
-          clear: () => entries.clear(),
+            Object.entries(slice.get())
+              .filter(([key]) => (options?.nested ? isWithin(key, path) : key === path))
+              .flatMap(([, found]) => found),
+          set: (path, found) => slice.set(current => ({ ...current, [path]: found })),
+          clear: () => slice.set({}),
           validates: event => event in validators,
         };
         registerCheck(deps.validation, {
           check,
-          validatorFor: (event: ValidationEvent) => validators[event] as never,
-          refresh: (_events, targets, incoming) => {
-            for (const key of [...entries.keys()]) if (targets === undefined || isInScope(key, targets)) entries.delete(key);
-            for (const [path, found] of incoming) entries.set(path, found);
-          },
+          validatorFor: event => validators[event] as never,
+          refresh: (_events, targets, incoming) =>
+            slice.set(current => ({
+              ...Object.fromEntries(Object.entries(current).filter(([key]) => !isInScope(key, targets))),
+              ...Object.fromEntries(incoming),
+            })),
         });
-        return { [name]: check } as { readonly [check: string]: CheckApi<Profile> };
+        return { [name]: check } as {};
       },
     });
 
@@ -91,7 +100,7 @@ describe('validation as an extension', () => {
     ]);
   });
 
-  it('throws at create without values, and names itself and the need', () => {
+  it('throws at create without values, and names validation and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(validation as never);
 
