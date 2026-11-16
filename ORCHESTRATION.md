@@ -6,13 +6,13 @@ Maintain a project checkpoint in the session handoff or existing project notes: 
 
 Choose the worker once per task, by its shape:
 
-| Task | Worker |
-|---|---|
-| Lookups, search, extraction | Haiku subagent |
-| Bounded features, research | Sonnet subagent |
-| Mechanical edits within a stated scope | `bulk-coder` hc template |
+| Task                                          | Worker                   |
+| --------------------------------------------- | ------------------------ |
+| Lookups, search, extraction                   | Haiku subagent           |
+| Bounded features, research                    | Sonnet subagent          |
+| Mechanical edits within a stated scope        | `bulk-coder` hc template |
 | Hard implementation, bugs with unclear causes | `deep-coder` hc template |
-| Independent review of a non-trivial diff | `reviewer` hc template |
+| Independent review of a non-trivial diff      | `reviewer` hc template   |
 
 Subagents run on the Claude Max plan. The hc templates run DeepSeek and MiniMax models on OpenCode Go through magpie; [magpie/setup.sh](magpie/setup.sh) installs them from [hc/templates](hc/templates). Prefer a subagent for short results that need no steering; prefer an hc worker for long work or work that must stay watchable. Report substitutions.
 
