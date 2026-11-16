@@ -3,12 +3,12 @@ id: TK-016
 title: defineScope
 phase: 2
 work_package: P2-07
-status: todo
+status: done
 depends_on: [TK-012]
 branch: codex/P2-07-define-scope
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-016: `defineScope`
@@ -47,15 +47,29 @@ None.
 
 ## Acceptance
 
-- [ ] The rows of `03#Scopes` for defaults and for rules 1, 2, 5 and 6 have a passing test in
+- [x] The rows of `03#Scopes` for defaults and for rules 1, 2, 5 and 6 have a passing test in
       `src/main/scopes.spec.ts`.
-- [ ] An own key or a dotted key throws at `create` and names the scope.
-- [ ] `main/form.ts` and the modules it imports do not import `main/scopes.ts`. Record how you checked it.
-- [ ] `defineScope`, `ScopeDefinition` and `ScopedValues` have a positive and a negative type case in
+- [x] An own key or a dotted key throws at `create` and names the scope.
+- [x] `main/form.ts` and the modules it imports do not import `main/scopes.ts`. Record how you checked it.
+- [x] `defineScope`, `ScopeDefinition` and `ScopedValues` have a positive and a negative type case in
       `tests/types/`, with the duplicate-key cases of the "Duplicate names" matrix row.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (298 statements, 128 branches).
+- `src/main/scopes.spec.ts`: defaults at each path, an instance override, one definition in two forms, rule 1
+  (own key) and rule 5 (dotted key) at `create` with the scope named, rule 2 (deep merge, lowest priority
+  first, arrays replace) and rule 6 (the schema of a scope is never called).
+- Import check: `main/form.ts` reaches a scope only through `Symbol.for('oxform.scope.mount')`. Its runtime
+  imports are `./context` only, and `context.ts` imports `@tanstack/store` only (`grep -n import` on both files;
+  `import type { ScopeDefinition, ScopedValues } from './scopes'` in `form.ts` is erased). A marker in the
+  tree-shaking tiers is not possible yet: the check needs a whole string literal, and every literal of
+  `scopes.ts` is a template.
+- Type tests: `defineScope` and `ScopeDefinition` (typed by the schema; defaults of the wrong type are rejected)
+  and `ScopedValues` (one entry per scope; a key of the own values and a dotted key are type errors, the
+  "Duplicate names" matrix row).
+- Deviations: `ScopeDefinition` has no `checks` yet. TK-029 adds the scope validators and the verify hook,
+  with rules 3 and 4.

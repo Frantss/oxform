@@ -41,6 +41,8 @@ export type {
 } from '#main/types';
 export { createEffect } from '#main/effect';
 export { get, idPart } from '#main/path';
+export { defineScope } from '#main/scopes';
+export type { ScopeDefinition, ScopedValues } from '#main/scopes';
 export type {
   ArrayItem,
   ArrayPath,

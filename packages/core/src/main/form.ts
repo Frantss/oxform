@@ -1,5 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { createContext, type FieldsDefinition } from './context';
+import type { ScopeDefinition, ScopedValues } from './scopes';
 import type {
   BaseOptions,
   Extendable,
@@ -144,10 +145,15 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
   return instance;
 };
 
-type FormInit = Options & { readonly name?: string };
+/** A scope definition places itself through this key (`main/scopes.ts`), so this module never imports it. */
+const MOUNT = Symbol.for('oxform.scope.mount');
+
+type Mount = (options: Options, path: string, layers: readonly [Options, Options, Options]) => Options;
+
+type FormInit = Options & { readonly name?: string; readonly scopes?: Readonly<Record<string, object>> };
 
 const makeForm = (init: FormInit, definitions: readonly Definition[], configured: Options): object => {
-  const { name = 'form', ...initOptions } = init;
+  const { name = 'form', scopes = {}, ...initOptions } = init;
   const chain: Chain = { definitions, optionKinds: kindsOf(definitions) };
 
   const form = {
@@ -158,7 +164,10 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
     },
     configure: (options: Options) => makeForm(init, definitions, { ...configured, ...options }),
     create(options: Options = {}) {
-      const merged = { ...initOptions, ...configured, ...options };
+      let merged: Options = { ...initOptions, ...configured, ...options };
+      for (const [path, scope] of Object.entries(scopes)) {
+        merged = (scope as Record<symbol, Mount>)[MOUNT]!(merged, path, [initOptions, configured, options]);
+      }
       return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` });
     },
   };
@@ -166,13 +175,28 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
   return form;
 };
 
-/** Makes a form with no extension. `schema` only types `Values`. */
-export const defineForm = <Values>(init: {
-  readonly name?: string;
-  readonly id?: string;
-  readonly schema: StandardSchemaV1<Values>;
-  readonly defaultValues: NoInfer<Values>;
-}): Form<Values> => makeForm(init, [], {}) as Form<Values>;
+/** The scope keys that a form cannot use: a key of its own values, and a dotted key (rules 1 and 5). */
+type ForbiddenScopeKey<Base> = (keyof Base & string) | `${string}.${string}`;
+
+type DefineForm = {
+  /** Makes a form with no extension. `schema` only types `Values`. */
+  <Values>(init: {
+    readonly name?: string;
+    readonly id?: string;
+    readonly schema: StandardSchemaV1<Values>;
+    readonly defaultValues: NoInfer<Values>;
+  }): Form<Values>;
+  /** With scopes: `schema` and `defaultValues` describe the own values of the form, and each scope adds its own. */
+  <Base, const Scopes extends Readonly<Record<string, ScopeDefinition<any>>>>(init: {
+    readonly name?: string;
+    readonly id?: string;
+    readonly schema: StandardSchemaV1<Base>;
+    readonly defaultValues: NoInfer<Base>;
+    readonly scopes: Scopes & { readonly [Key in keyof Scopes & ForbiddenScopeKey<Base>]: never };
+  }): Form<Base & ScopedValues<Scopes>>;
+};
+
+export const defineForm: DefineForm = (init: FormInit) => makeForm(init, [], {}) as never;
 
 /** Defines one extension as one object. `form` only carries the types: it gives `Values` and the needs. */
 export const defineExtension = <

@@ -2,6 +2,7 @@ import {
   createEffect,
   defineExtension,
   defineForm,
+  defineScope,
   defineSlots,
   on,
   option,
@@ -35,6 +36,8 @@ import {
   type PartsOf,
   type PropKind,
   type PropsOf,
+  type ScopeDefinition,
+  type ScopedValues,
   type Self,
   type Slot,
   type SlotDefinition,
@@ -624,5 +627,53 @@ describe('createEffect', () => {
       state => state.status,
       () => {},
     );
+  });
+});
+
+type Address = { street: string; geo: { lat: number } };
+
+const address = defineScope({
+  schema: {} as StandardSchemaV1<Address>,
+  defaultValues: { street: '', geo: { lat: 0 } },
+});
+
+const checkout = defineForm({ schema, defaultValues: { email: '', password: '' }, scopes: { billing: address } });
+
+describe('defineScope, ScopeDefinition', () => {
+  it('types the scope by its schema', () => {
+    expectTypeOf(address).toEqualTypeOf<ScopeDefinition<Address>>();
+  });
+
+  it('rejects defaultValues that do not match the schema', () => {
+    // @ts-expect-error The street is not a string.
+    defineScope({ schema: {} as StandardSchemaV1<Address>, defaultValues: { street: 1, geo: { lat: 0 } } });
+  });
+});
+
+describe('ScopedValues', () => {
+  it('adds one entry per placed scope to the values', () => {
+    expectTypeOf<ValuesOf<typeof checkout>>().toEqualTypeOf<Login & ScopedValues<{ billing: typeof address }>>();
+  });
+
+  it('types a placed scope by its definition', () => {
+    expectTypeOf<ScopedValues<{ billing: typeof address }>>().toEqualTypeOf<{ readonly billing: Address }>();
+  });
+
+  it('rejects a scope key that the own values have', () => {
+    defineForm({
+      schema,
+      defaultValues: { email: '', password: '' },
+      // @ts-expect-error `email` is an own key of the form.
+      scopes: { email: address },
+    });
+  });
+
+  it('rejects a scope key with a dot', () => {
+    defineForm({
+      schema,
+      defaultValues: { email: '', password: '' },
+      // @ts-expect-error A scope key is one key.
+      scopes: { 'billing.home': address },
+    });
   });
 });
