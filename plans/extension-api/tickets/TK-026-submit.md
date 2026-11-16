@@ -3,12 +3,12 @@ id: TK-026
 title: Submit extension
 phase: 3
 work_package: P3-08
-status: todo
+status: done
 depends_on: [TK-022, TK-021]
 branch: codex/P3-08-submit
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-026: Submit extension
@@ -50,19 +50,44 @@ every run is valid.
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `submit`, also the row "on a
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `submit`, also the row "on a
       chain with no `validation`".
-- [ ] Each scenario group of `03#submit (createSubmit)` has a passing test in `src/behaviors/submit.spec.ts`.
+- [x] Each scenario group of `03#submit (createSubmit)` has a passing test in `src/behaviors/submit.spec.ts`.
       Each row that cites `B:` or `C:` passes.
-- [ ] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
+- [x] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
       `create`.
-- [ ] The specs build the shortest chain and do not import `standard`.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`. The instance
+- [x] The specs build the shortest chain and do not import `standard`.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`. The instance
       argument of `onSubmit` and `onInvalid` carries the api and field members of the whole chain.
-- [ ] `export/behaviors.ts` exports no `createX` function.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] `export/behaviors.ts` exports no `createX` function.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with the depth guard), `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (826 statements, 380 branches).
+- `src/behaviors/submit.spec.ts` (chain: `values`, `status`, `submit`, or with `validation`, `check('error', {
+  blocking })` and `check('warning')`; no `standard`):
+  - Wrapper rows: exactly the `submit` api and the options `onSubmit` and `onInvalid`, no state; a `create` without
+    `values` and one without `status` each throw and name the extension and the need; on a chain with no
+    `validation` the submit is valid (D53).
+  - `run`: `submitting` and form `dirty` before validation; `onSubmit` with the values, the instance and the intent;
+    the result in the form status; `onInvalid` with every current issue, the instance and the intent; a kept
+    blocking issue fails a valid run; a non-blocking issue does not.
+  - Concurrent calls share one attempt and drop the later intent (G16); a new attempt after it settles.
+  - Aborts: a value change during validation, a newer validation run, a reset. No callback runs, the attempt
+    settles, and after a reset the attempt does not write the status.
+  - Rejections: `onSubmit` throws, the validation rejects. `run()` rejects (G16) and `successful` is false.
+  - `intercept` (sync, async, cancel that skips the later interceptors) and `onResult`; unsubscribe.
+- D21 (G4): the check names of `onInvalid` and `submit.onResult` are typed from `CheckNamesOf` of the chain, with the
+  path of TK-021 (no fallback). `onInvalid` takes a private `SelfIssues` marker in `main/types.ts`, which
+  `configure` and `create` replace with `IssuesByCheck` of the chain, as they replace `Self`. `Instance` replaces the
+  `submit` member with `SubmitApi<Values, CheckNamesOf<Api>>`, beside `validation`, through a homomorphic mapped type
+  (an `Omit` broke apis with an index signature).
+- Type tests: `onSubmit` gets the instance with a member of a later extension; `onInvalid` gets
+  `IssuesByCheck<'error'>`; a member or a check name that the chain lacks is a type error; a negative case for
+  each need; `SubmitApi`, `SubmitAttempt`, `SubmitResult`.
+- `export/behaviors.ts` exports `submit` and `SubmitApi`, `SubmitAttempt`, `SubmitResult`; no `createSubmit`.
+- Deviations: `submit.ts` imports `isDiscarded` but not `checkInternals`, because no submit rule moves or reads
+  check internals. `SelfIssues` is a new private type, not on any entry point.

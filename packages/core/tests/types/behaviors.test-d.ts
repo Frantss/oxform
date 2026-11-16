@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineForm, type Slot, type Updater } from '@oxform/core';
+import { defineExtension, defineForm, type Slot, type Updater } from '@oxform/core';
 import {
   arrays,
   check,
@@ -14,12 +14,16 @@ import {
   type FieldChangeOptions,
   type FieldFocusOptions,
   status,
+  submit,
   validation,
   type FieldStatus,
   type FieldStatusDefaults,
   type FormStatus,
   type FormStatusDefaults,
   type StatusApi,
+  type SubmitApi,
+  type SubmitAttempt,
+  type SubmitResult,
   type StatusState,
   type CheckApi,
   type CheckEntry,
@@ -554,5 +558,86 @@ describe('ResetApi, ResetOptions', () => {
   it('rejects values of another shape', () => {
     // @ts-expect-error The values are a Profile.
     accepts<ResetOptions<Profile>>({ values: { name: 1 } });
+  });
+});
+
+describe('submit', () => {
+  const submitting = form
+    .extend(values)
+    .extend(validation)
+    .extend(check('error'))
+    .extend(status)
+    .extend(submit)
+    .extend(base =>
+      defineExtension(base, {
+        name: 'later',
+        needs: {
+          api: ['values', 'validation', 'error', 'status', 'submit'],
+          state: ['values', 'validating', 'error', 'status'],
+        },
+        api: () => ({ later: true as const }),
+      }),
+    );
+
+  it('gives onSubmit the values and the instance of the whole chain', () => {
+    submitting.create({
+      onSubmit: (submitted, instance) => {
+        expectTypeOf(submitted).toEqualTypeOf<Profile>();
+        expectTypeOf(instance.later).toEqualTypeOf<true>();
+      },
+    });
+  });
+
+  it('gives onInvalid the issues by the check names of the chain (D21)', () => {
+    submitting.create({ onInvalid: issues => expectTypeOf(issues).toEqualTypeOf<IssuesByCheck<'error'>>() });
+  });
+
+  it('types the result of submit.onResult by the check names of the chain', () => {
+    expectTypeOf(submitting.create().submit).toEqualTypeOf<SubmitApi<Profile, 'error'>>();
+  });
+
+  it('rejects a member that the instance does not have', () => {
+    // @ts-expect-error The instance has no `missing` member.
+    submitting.create({ onSubmit: (_submitted, instance) => instance.missing });
+  });
+
+  it('rejects a check name that the chain does not have', () => {
+    // @ts-expect-error The chain has no `warning` check.
+    submitting.create({ onInvalid: issues => issues.warning });
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error submit needs values.
+    form.extend(submit);
+  });
+
+  it('needs status', () => {
+    // @ts-expect-error submit needs status.
+    form.extend(values).extend(submit);
+  });
+});
+
+describe('SubmitApi, SubmitAttempt, SubmitResult', () => {
+  it('takes an interceptor of the attempt and a listener of the result', () => {
+    expectTypeOf<Parameters<SubmitApi<Profile, 'error'>['intercept']>[0]>().parameters.toEqualTypeOf<
+      [attempt: SubmitAttempt<Profile>]
+    >();
+    expectTypeOf<SubmitResult<'error'>['issues']>().toEqualTypeOf<IssuesByCheck<'error'>>();
+  });
+
+  it('rejects an intent that is not a string', () => {
+    const api = {} as SubmitApi<Profile>;
+    // @ts-expect-error The intent is a string.
+    void api.run(1);
+  });
+
+  it('rejects an attempt without cancel', () => {
+    // @ts-expect-error An attempt can cancel.
+    accepts<SubmitAttempt<Profile>>({ values: { name: '', address: { city: '' } }, canceled: false });
+  });
+
+  it('rejects a result without issues', () => {
+    // @ts-expect-error A result has the issues.
+    accepts<SubmitResult<'error'>>({ successful: true });
   });
 });

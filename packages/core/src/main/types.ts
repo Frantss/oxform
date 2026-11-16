@@ -5,7 +5,8 @@ import type { CheckApi } from '#behaviors/check';
 import type { EventsApi } from '#behaviors/events';
 import type { ResetApi } from '#behaviors/reset';
 import type { StatusApi } from '#behaviors/status';
-import type { ValidationApi } from '#behaviors/validation';
+import type { SubmitApi } from '#behaviors/submit';
+import type { IssuesByCheck, ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
 import type { Path, PathValue, Unsubscribe, Updater } from './path-types';
 
@@ -37,13 +38,27 @@ export interface Self {
   readonly [selfBrand]: true;
 }
 
-type ReplaceSelf<Parameters extends readonly unknown[], Instance> = {
-  [Index in keyof Parameters]: Parameters[Index] extends Self ? Instance : Parameters[Index];
+declare const selfIssuesBrand: unique symbol;
+
+/**
+ * The issues of the instance by check name, as a parameter of an option. `configure` and `create` replace it with
+ * `IssuesByCheck` of the check names of the whole chain (D21). Only `submit` uses it, so no entry point exports it.
+ */
+export interface SelfIssues {
+  readonly [selfIssuesBrand]: true;
+}
+
+type ReplaceSelf<Parameters extends readonly unknown[], Instance, Checks extends string> = {
+  [Index in keyof Parameters]: Parameters[Index] extends Self
+    ? Instance
+    : Parameters[Index] extends SelfIssues
+      ? IssuesByCheck<Checks>
+      : Parameters[Index];
 };
 
-type ResolveSelf<Options, Instance> = {
+type ResolveSelf<Options, Instance, Checks extends string> = {
   [Name in keyof Options]-?: Required<Options>[Name] extends (...args: infer Parameters) => infer Result
-    ? (...args: ReplaceSelf<Parameters, Instance>) => Result
+    ? (...args: ReplaceSelf<Parameters, Instance, Checks>) => Result
     : Required<Options>[Name];
 };
 
@@ -167,6 +182,7 @@ export interface BuiltInApis<Values> {
   readonly events: EventsApi<Values>;
   readonly arrays: ArraysApi<Values>;
   readonly reset: ResetApi<Values>;
+  readonly submit: SubmitApi<Values>;
   /** A stand-in until `handles` (TK-027): the field handle of a path. */
   readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
 }
@@ -318,7 +334,7 @@ type FormTypes<Values, Api, Options, State, Slots, Fields> = {
 
 /** The options of `configure` and `create`: the form's own and those of its extensions, with `Self` resolved. */
 type CreateOptions<Values, Api, Options, State, Fields> = Partial<
-  ResolveSelf<BaseOptions<Values> & Options, Instance<Values, Api, State, Fields>>
+  ResolveSelf<BaseOptions<Values> & Options, Instance<Values, Api, State, Fields>, CheckNamesOf<Api>>
 >;
 
 /** An immutable form. `extend` and `configure` return a new form, so a form is safe at module scope. */
@@ -378,10 +394,18 @@ export type CheckNamesOf<Api> = {
   [Name in keyof Api & string]: Api[Name] extends CheckApi<any, Name> ? Name : never;
 }[keyof Api & string];
 
-/** The validation api of an instance knows the check names of the whole chain (D21). */
-type WithCheckNames<Values, Api> = Api extends { readonly validation: ValidationApi<any, any> }
-  ? Omit<Api, 'validation'> & { readonly validation: ValidationApi<Values, CheckNamesOf<Api>> }
-  : Api;
+/** The validation and submit apis of an instance know the check names of the whole chain (D21). */
+type WithCheckNames<Values, Api> = {
+  [Name in keyof Api]: Name extends 'validation'
+    ? Api[Name] extends ValidationApi<any, any>
+      ? ValidationApi<Values, CheckNamesOf<Api>>
+      : Api[Name]
+    : Name extends 'submit'
+      ? Api[Name] extends SubmitApi<any, any>
+        ? SubmitApi<Values, CheckNamesOf<Api>>
+        : Api[Name]
+      : Api[Name];
+};
 
 /** One live form: the api of its extensions, its `id`, its `store` and `destroy()`. */
 export type Instance<Values, Api = {}, State = {}, Fields = never> = WithFieldMembers<
@@ -410,5 +434,5 @@ export type InstanceOf<F> =
 /** The options that `create` takes, with `Self` resolved to the instance. */
 export type OptionsOf<F> =
   F extends Typed<FormTypes<infer Values, infer Api, infer Options, infer State, any, infer Fields>>
-    ? ResolveSelf<BaseOptions<Values> & Options, Instance<Values, Api, State, Fields>>
+    ? ResolveSelf<BaseOptions<Values> & Options, Instance<Values, Api, State, Fields>, CheckNamesOf<Api>>
     : never;

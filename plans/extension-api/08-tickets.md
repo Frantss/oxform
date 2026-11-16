@@ -67,9 +67,9 @@ evidence.
 | [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | done    | TK-022                         |
 | [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | done    | TK-022, TK-021                 |
 | [TK-025](./tickets/TK-025-reset.md)        | Reset extension      | P3-07        | done    | TK-023                         |
-| [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | ready   | TK-022, TK-021                 |
-| [TK-027](./tickets/TK-027-handles.md)      | Handles extension    | P3-09        | blocked | TK-023, TK-024, TK-025, TK-026 |
-| [TK-028](./tickets/TK-028-slot-groups.md)  | Slot groups          | P3-10        | blocked | TK-025, TK-026, TK-021         |
+| [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | done    | TK-022, TK-021                 |
+| [TK-027](./tickets/TK-027-handles.md)      | Handles extension    | P3-09        | ready   | TK-023, TK-024, TK-025, TK-026 |
+| [TK-028](./tickets/TK-028-slot-groups.md)  | Slot groups          | P3-10        | ready   | TK-025, TK-026, TK-021         |
 | [TK-029](./tickets/TK-029-scope-checks.md) | Scopes on checks     | P3-11        | blocked | TK-027, TK-016                 |
 
 ### Phase 4: `standard` preset, integration tests and bundle checks

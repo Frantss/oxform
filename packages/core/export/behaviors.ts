@@ -26,6 +26,8 @@ export type {
   StatusApi,
   StatusState,
 } from '#behaviors/status';
+export { submit } from '#behaviors/submit';
+export type { SubmitApi, SubmitAttempt, SubmitResult } from '#behaviors/submit';
 export { validation } from '#behaviors/validation';
 export type {
   CheckValidator,
