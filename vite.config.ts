@@ -1,5 +1,26 @@
 import { playwright } from 'vite-plus/test/browser-playwright';
+import type { OxlintOverride } from 'vite-plus/lint';
 import { defineConfig } from 'vite-plus';
+
+const coreBarrels = ['#core', '#core/*'];
+
+const restrictImports = (
+  files: string[],
+  group: string[],
+  options: { allowTypeImports?: boolean } = {},
+): OxlintOverride => ({
+  files,
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          { group, ...options, message: 'This import goes against the dependency direction of the package areas.' },
+        ],
+      },
+    ],
+  },
+});
 
 export const base = defineConfig({
   lint: {
@@ -16,6 +37,40 @@ export const base = defineConfig({
         files: ['packages/solid*/**/*.{ts,tsx}', 'examples/solid*/**/*.{ts,tsx}'],
         rules: { 'react/refs': 'off' },
       },
+      { files: ['packages/**/*.{ts,tsx}'], rules: { 'import/no-cycle': 'error' } },
+      // The dependency direction of the core areas (plans/extension-api/02-structure.md). A later override replaces
+      // the rule options of an earlier one, so each file matches one of these entries.
+      restrictImports(['packages/core/src/internal/**'], ['#main/*', '#behaviors/*', '#presets/*', ...coreBarrels]),
+      restrictImports(['packages/core/src/main/**'], ['#behaviors/*', '#presets/*', ...coreBarrels], {
+        allowTypeImports: true,
+      }),
+      restrictImports(['packages/core/src/behaviors/**'], ['#presets/*', ...coreBarrels], { allowTypeImports: true }),
+      restrictImports(
+        ['packages/core/src/presets/**'],
+        ['#main/*', '#behaviors/*', '#internal/*', '#core/adapter', './**', '../**'],
+      ),
+      restrictImports(['packages/core/tests/**'], ['#main/*', '#behaviors/*', '#presets/*', '#internal/*']),
+      restrictImports(
+        ['packages/{react,solid-v1,solid-v2}/src/**'],
+        ['@oxform/core/presets', '@oxform/core/behaviors'],
+        {
+          allowTypeImports: true,
+        },
+      ),
+      restrictImports(
+        ['packages/adapter-parity/**'],
+        [
+          'react',
+          'react/*',
+          'react-dom',
+          'react-dom/*',
+          'solid-js',
+          'solid-js/*',
+          '@solidjs/*',
+          '@oxform/react',
+          '@oxform/solid*',
+        ],
+      ),
     ],
     options: {
       typeAware: true,
