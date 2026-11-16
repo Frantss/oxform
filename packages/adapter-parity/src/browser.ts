@@ -3,7 +3,16 @@ import { page, userEvent } from 'vite-plus/test/browser';
 import { profile } from './fixtures';
 import type { Scenario } from './scenario';
 
-const screenOf = (container: HTMLElement) => page.elementLocator(container);
+let mounts = 0;
+
+/**
+ * The locator of a mounted container. It finds the container by a test id, because `page.elementLocator` finds it
+ * by its text, which changes as the form changes.
+ */
+const screenOf = (container: HTMLElement) => {
+  container.dataset.testid ??= `parity-mount-${++mounts}`;
+  return page.getByTestId(container.dataset.testid);
+};
 
 /** The parity scenarios that run in a browser, by id (`03-testing.md#Adapter tests: the parity suite`). */
 export const browserScenarios = {
@@ -211,7 +220,7 @@ export const browserScenarios = {
       const warn = vi.spyOn(console, 'warn');
       try {
         await using view = await driver.hydrate(container, 'signIn');
-        await userEvent.fill(page.elementLocator(container).getByLabelText('Email'), 'ada@example.com');
+        await userEvent.fill(screenOf(container).getByLabelText('Email'), 'ada@example.com');
 
         expect([container.querySelector('input[name="email"]') === email, view.instance.values.get('email')]).toEqual([
           true,

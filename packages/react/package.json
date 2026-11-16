@@ -34,7 +34,9 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@oxform/adapter-parity": "workspace:*",
     "@oxform/core": "workspace:*",
+    "@standard-schema/spec": "^1.1.0",
     "@types/node": "26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

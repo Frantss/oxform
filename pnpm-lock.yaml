@@ -429,9 +429,15 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@oxform/adapter-parity':
+        specifier: workspace:*
+        version: link:../adapter-parity
       '@oxform/core':
         specifier: workspace:*
         version: link:../core
+      '@standard-schema/spec':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@types/node':
         specifier: 26.6.5
         version: 26.6.5

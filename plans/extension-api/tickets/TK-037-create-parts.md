@@ -3,12 +3,12 @@ id: TK-037
 title: React createParts
 phase: 5
 work_package: P5-02
-status: todo
+status: done
 depends_on: [TK-036, TK-017]
 branch: codex/P5-02-create-parts
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-037: React createParts
@@ -53,14 +53,32 @@ P2, P4, P8 and P9 pass in Chromium.
 
 ## Acceptance
 
-- [ ] P1, P2, P4, P8 and P9 pass in `packages/react/tests/parity.spec.tsx` in Chromium.
-- [ ] `src/create-parts.spec.tsx` has a G17 test that fails without the guard and passes with it.
-- [ ] `01-public-api.md#6.1` states the effect of each option kind.
-- [ ] An unknown name in `elements` throws.
-- [ ] The adapter imports only `@oxform/core` and `@oxform/core/adapter`.
-- [ ] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
+- [x] P1, P2, P4, P8 and P9 pass in `packages/react/tests/parity.spec.tsx` in Chromium.
+- [x] `src/create-parts.spec.tsx` has a G17 test that fails without the guard and passes with it.
+- [x] `01-public-api.md#6.1` states the effect of each option kind.
+- [x] An unknown name in `elements` throws.
+- [x] The adapter imports only `@oxform/core` and `@oxform/core/adapter`.
+- [x] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the G17 result, the option kinds kept and removed, and any deviation from the plan
-here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `packages/react/src`: `create-parts.ts` (`createParts`, `Root` with and without a `root` slot, the part
+  components, the element map), `part-view.ts` (one part: slot attributes mapped to React names (G18), native
+  listeners, `bind`, merged refs, the controlled `onChange`), `context.ts` (one context per form object) and
+  `types.ts`. The source is `.ts` with `createElement`, because the `#*` import map resolves `.ts` only.
+- `tests/driver.tsx` and `tests/views.tsx`: the React driver and the views of P1, P2, P4, P8 and P9.
+  `tests/parity.spec.tsx` runs P1, P1 bare, P2, P4, P8 and P9 in Chromium: pass.
+- G17: `src/create-parts.spec.tsx` shows that a programmatic `focus()` or `blur()` of a registered field ran
+  its validator twice (`expected [ 2, 'Name' ] to deeply equal [ 1, 'Name' ]`). The guard is in core `events`,
+  because the double run comes from `events.focus` and `events.blur` and every adapter has it. It is its own
+  commit, with a core case that fails without it.
+- D34: the `Option kinds` row of `01#6.1` states that no kind changes what an adapter does. Removing the kinds
+  from core is left to the owner (cross-cutting).
+- An unknown name in `elements` throws `oxform: the form has no part "nope".`
+- The adapter imports only `@oxform/core`, `@oxform/core/adapter`, `react` and `@tanstack/react-store`.
+- Deviation: `createParts` also returns `useForm`, because the views need the instance. TK-038 adds the other
+  hooks.
+- The parity scenarios find a mounted container by a test id: `page.elementLocator` finds it by its text, which
+  changes. A `<select>` is labelled by `aria-label`, because its options are part of a `<label>` text.
+- A spec of an adapter may import the built-in behaviors and presets (a lint override). It is not shipped.

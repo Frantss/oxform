@@ -16,8 +16,9 @@ export type ViewProps = {
 
 /**
  * The views that each adapter writes in its own JSX, by name. Each entry is the props of the view beyond
- * `ViewProps`, and its doc states the markup. "Field `x`" is the `Field` part with `name="x"`, and "labelled
- * `X`" means wrapped in `<label>X …</label>`. Props of `Root` reach it as props.
+ * `ViewProps`, and its doc states the markup. "Field `x`" is the `Field` part with `name="x"`. "Labelled `X`"
+ * means wrapped in `<label>X …</label>`, except a `<select>`, which gets `aria-label="X"`: the text of its options
+ * would be part of the label. Props of `Root` reach it as props.
  */
 export interface Views {
   /**

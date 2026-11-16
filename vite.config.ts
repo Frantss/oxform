@@ -64,6 +64,11 @@ export const base = defineConfig({
           allowTypeImports: true,
         },
       ),
+      // A spec of an adapter may build its form with the built-in behaviors. It is not shipped.
+      {
+        files: ['packages/{react,solid-v1,solid-v2}/src/**/*.spec.{ts,tsx}'],
+        rules: { 'no-restricted-imports': 'off' },
+      },
       restrictImports(
         ['packages/adapter-parity/**'],
         [

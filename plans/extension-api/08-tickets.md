@@ -88,18 +88,18 @@ evidence.
 | Id                                                   | Title                                | Work package | Status  | Depends on                     |
 | ---------------------------------------------------- | ------------------------------------ | ------------ | ------- | ------------------------------ |
 | [TK-036](./tickets/TK-036-parity-package.md)         | Parity package                       | P5-01        | done    | TK-030                         |
-| [TK-037](./tickets/TK-037-create-parts.md)           | React createParts                    | P5-02        | ready   | TK-036, TK-017                 |
-| [TK-038](./tickets/TK-038-react-hooks.md)            | React hooks                          | P5-03        | blocked | TK-037                         |
+| [TK-037](./tickets/TK-037-create-parts.md)           | React createParts                    | P5-02        | done    | TK-036, TK-017                 |
+| [TK-038](./tickets/TK-038-react-hooks.md)            | React hooks                          | P5-03        | ready   | TK-037                         |
 | [TK-039](./tickets/TK-039-react-scopes.md)           | React scopes in parts                | P5-04        | blocked | TK-038                         |
-| [TK-040](./tickets/TK-040-use-part.md)               | usePart                              | P5-05        | blocked | TK-037                         |
-| [TK-041](./tickets/TK-041-react-server-lifecycle.md) | React server rendering and lifecycle | P5-06        | blocked | TK-037                         |
+| [TK-040](./tickets/TK-040-use-part.md)               | usePart                              | P5-05        | ready   | TK-037                         |
+| [TK-041](./tickets/TK-041-react-server-lifecycle.md) | React server rendering and lifecycle | P5-06        | ready   | TK-037                         |
 | [TK-042](./tickets/TK-042-react-types-package.md)    | React types, package and coverage    | P5-07        | blocked | TK-038, TK-039, TK-040, TK-041 |
 
 ### Phase 6: Solid 1 and Solid 2 adapters
 
 | Id                                             | Title                     | Work package | Status  | Depends on     |
 | ---------------------------------------------- | ------------------------- | ------------ | ------- | -------------- |
-| [TK-043](./tickets/TK-043-solid-risk-probe.md) | Solid 1 risk probe        | P6-01        | blocked | TK-036, TK-037 |
+| [TK-043](./tickets/TK-043-solid-risk-probe.md) | Solid 1 risk probe        | P6-01        | ready   | TK-036, TK-037 |
 | [TK-044](./tickets/TK-044-solid-v1-adapter.md) | Solid 1 adapter           | P6-02        | blocked | TK-043, TK-042 |
 | [TK-045](./tickets/TK-045-solid-v2-adapter.md) | Solid 2 adapter           | P6-03        | blocked | TK-043, TK-042 |
 | [TK-046](./tickets/TK-046-solid-package.md)    | The @oxform/solid package | P6-04        | blocked | TK-044, TK-045 |
