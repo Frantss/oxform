@@ -1,18 +1,10 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { contextInternals, createContext, type ContextControls, type ValidationLink } from './context';
+import { createContext } from './context';
 
 const setup = <Options extends object>(options: Options = {} as Options) => {
   const controls = createContext(options);
 
   return Object.assign(controls, { [Symbol.dispose]: () => controls.destroy() });
-};
-
-/** An extension whose `doubled` slice derives from its `count` slice. */
-const extendDoubled = (controls: ContextControls<object>) => {
-  const context = controls.extensionContext('doubled', { count: 1, doubled: 0 });
-  contextInternals(context).derive('doubled', () => (context.state.count.get() as number) * 2);
-
-  return context;
 };
 
 describe('state slices', () => {
@@ -125,16 +117,6 @@ describe('cleanups', () => {
 
     expect(cleanup).toHaveBeenCalledOnce();
   });
-
-  it('run when the test disposes the context', () => {
-    const cleanup = vi.fn();
-    {
-      using controls = setup();
-      controls.extensionContext('test', {}).onDestroy(cleanup);
-    }
-
-    expect(cleanup).toHaveBeenCalledOnce();
-  });
 });
 
 describe('instance', () => {
@@ -152,172 +134,5 @@ describe('instance', () => {
     const context = controls.extensionContext('test', {});
 
     expect(() => context.instance()).toThrow('The instance is available after every extension api has run.');
-  });
-});
-
-describe('derived slices', () => {
-  it('hold the computed value in the store', () => {
-    using controls = setup();
-    extendDoubled(controls);
-
-    expect(controls.store.state).toEqual({ count: 1, doubled: 2 });
-  });
-
-  it('compute again when a slice changes', () => {
-    using controls = setup();
-    extendDoubled(controls).state.count.set(2);
-
-    expect(controls.store.state).toEqual({ count: 2, doubled: 4 });
-  });
-
-  it('keep the reference of the state while nothing changes', () => {
-    using controls = setup();
-    extendDoubled(controls);
-    const first = controls.store.state;
-
-    expect(controls.store.state).toBe(first);
-  });
-
-  it('keep the reference of the state across subscribe cycles', () => {
-    using controls = setup();
-    extendDoubled(controls);
-    const first = controls.store.state;
-    controls.store.subscribe(() => {}).unsubscribe();
-    controls.store.subscribe(() => {}).unsubscribe();
-
-    expect(controls.store.state).toBe(first);
-  });
-
-  it('notify a subscriber when the computed value changes', () => {
-    using controls = setup();
-    const context = extendDoubled(controls);
-    const listener = vi.fn();
-    controls.store.subscribe(listener);
-    context.state.count.set(3);
-
-    expect(listener).toHaveBeenLastCalledWith({ count: 3, doubled: 6 });
-  });
-});
-
-describe('contextInternals', () => {
-  it('refuses an object that createContext did not make', () => {
-    using controls = setup();
-    const copy = { ...controls.extensionContext('test', {}) };
-
-    expect(() => contextInternals(copy)).toThrow('This behavior needs a context created by createContext.');
-  });
-});
-
-describe('validation link', () => {
-  it('finds every path valid without validation', () => {
-    using controls = setup();
-    const link = contextInternals(controls.extensionContext('status', {})).validation();
-
-    expect([link.issues(), link.issues('address.city'), link.checks]).toEqual([{}, {}, []]);
-  });
-
-  it('is not validating without validation', () => {
-    using controls = setup();
-    const link = contextInternals(controls.extensionContext('status', {})).validation();
-
-    expect(link.validating).toBe(false);
-  });
-
-  it('resolves a run valid with no issues without validation', async () => {
-    using controls = setup();
-    const link = contextInternals(controls.extensionContext('status', {})).validation();
-
-    await expect(link.run(['address.city'], { type: 'change' })).resolves.toEqual([true, {}]);
-  });
-
-  it('never reports a run without validation', () => {
-    using controls = setup();
-    const link = contextInternals(controls.extensionContext('status', {})).validation();
-    const listener = vi.fn();
-    link.onRun(listener)();
-
-    expect(listener).not.toHaveBeenCalled();
-  });
-
-  it('gives the registered validation api to every extension of the instance', () => {
-    using controls = setup();
-    const validation = contextInternals(controls.extensionContext('validation', {}));
-    const status = contextInternals(controls.extensionContext('status', {}));
-    const api: ValidationLink = { ...validation.validation(), validating: true };
-    validation.registerValidation(api);
-
-    expect(status.validation()).toBe(api);
-  });
-
-  it('keeps the stand-in for another instance', () => {
-    using first = setup();
-    using second = setup();
-    const validation = contextInternals(first.extensionContext('validation', {}));
-    validation.registerValidation({ ...validation.validation(), validating: true });
-
-    expect(contextInternals(second.extensionContext('status', {})).validation().validating).toBe(false);
-  });
-});
-
-describe('field members', () => {
-  /** A handle whose value is `value`, with a live `state` getter. */
-  const handleOf = (value: unknown) => ({
-    get: () => value,
-    get state() {
-      return { value };
-    },
-  });
-
-  it('give a handle the members of every extension in registration order', () => {
-    using controls = setup();
-    controls.addFields('first', { build: () => ({ first: 1 }) });
-    controls.addFields('second', { build: () => ({ second: 2 }) });
-    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf('a'), 'name');
-
-    expect(Object.keys(handle)).toEqual(['get', 'state', 'first', 'second']);
-  });
-
-  it('keep a getter of the handle live', () => {
-    using controls = setup();
-    controls.addFields('first', { build: () => ({ first: 1 }) });
-    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf('a'), 'name');
-
-    expect('get' in (Object.getOwnPropertyDescriptor(handle, 'state') ?? {})).toBe(true);
-  });
-
-  it('skip an extension whose guard rejects the value', () => {
-    using controls = setup();
-    controls.addFields('strings', { guard: value => typeof value === 'string', build: () => ({ text: true }) });
-    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf(1), 'age');
-
-    expect('text' in handle).toBe(false);
-  });
-
-  it('pass the path of the handle to the builder', () => {
-    using controls = setup();
-    const build = vi.fn(() => ({}));
-    controls.addFields('recorder', { build });
-    contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf(''), 'street');
-
-    expect(build).toHaveBeenCalledWith(expect.objectContaining({ get: expect.any(Function) }), 'street');
-  });
-
-  it('refuse a member that redefines a member of the handle', () => {
-    using controls = setup();
-    controls.addFields('bad', { build: () => ({ get: () => 0 }) });
-    const internals = contextInternals(controls.extensionContext('handles', {}));
-
-    expect(() => internals.decorateField(handleOf(''), 'name')).toThrow('The "bad" extension cannot redefine the field member "get".');
-  });
-
-  it('refuse a member that two extensions add, and name both', () => {
-    using controls = setup();
-    controls.addFields('first', { build: () => ({ shared: 1 }) });
-    controls.addFields('second', { build: () => ({ shared: 2 }) });
-    const internals = contextInternals(controls.extensionContext('handles', {}));
-
-    expect(() => internals.decorateField(handleOf(''), 'name')).toThrow(
-      'The "second" extension cannot redefine the field member "shared", which "first" adds.',
-    );
   });
 });

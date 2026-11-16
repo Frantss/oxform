@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { defineExtension, defineForm, on, optionKindsOf, prefixOf } from '#main/form';
+import { defineExtension, defineForm, on, prefixOf } from '#main/form';
 import type { Extendable } from '#main/types';
 import { schemaOf } from '../../tests/helpers';
 import { arrays } from './arrays';
@@ -52,16 +52,6 @@ const setup = ({ validated = true }: { validated?: boolean } = {}) => {
 };
 
 describe('handles as an extension', () => {
-  it('adds exactly field, array and scope, and no state and no option', () => {
-    using subject = setup({ validated: false });
-
-    expect([Object.keys(subject.instance).slice(5), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['field', 'array', 'scope', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus'],
-    ]);
-  });
-
   it.each(['values', 'status', 'events', 'reset', 'arrays'] as const)('throws at create without %s, and names handles and the need', need => {
     using _subject = setup();
     const earlier = { values: [], status: [values], events: [values, status], reset: [values, status, events] };

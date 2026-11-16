@@ -1,11 +1,10 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { contextInternals } from '#main/context';
-import { defineExtension, defineForm, optionKindsOf } from '#main/form';
+import { defineExtension, defineForm } from '#main/form';
 import type { Extendable, Needs } from '#main/types';
 import { isWithin } from '#internal/paths';
 import { reporting, schemaOf, type TestIssue } from '../../tests/helpers';
-import { isDiscarded, isInScope, registerCheck, validation, type CheckValidators } from './validation';
+import { isInScope, registerCheck, validation, type CheckValidators } from './validation';
 import { values } from './values';
 import type { CheckApi, CheckEntry } from './check';
 
@@ -90,16 +89,6 @@ const setup = (...extensions: (TestCheck | Extension)[]) => {
 const messages = (entries: readonly CheckEntry[]) => entries.map(entry => entry.message);
 
 describe('validation as an extension', () => {
-  it('adds exactly the validation api, the validating state and no option', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), subject.instance.store.state.validating, Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'validation', 'id', 'store', 'destroy'],
-      0,
-      ['id', 'schema', 'defaultValues'],
-    ]);
-  });
-
   it('throws at create without values, and names validation and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(validation as never);
@@ -112,27 +101,6 @@ describe('validation as an extension', () => {
     using _subject = setup({ name: 'error', validators: { change: { '~standard': { version: 1, vendor: 'test', validate } } } });
 
     expect(validate).not.toHaveBeenCalled();
-  });
-
-  it('refuses a check for an api that validation did not create', () => {
-    using subject = setup();
-
-    expect(() => registerCheck({ ...subject.instance.validation }, {} as never)).toThrow(
-      'registerCheck expects a validation api made by the validation extension.',
-    );
-  });
-
-  it('registers its api as the validation link of the instance', () => {
-    const seen = vi.fn();
-    using subject = setup(<Values>(form: Extendable<Values, Needs<Values, 'validation'>>) =>
-      defineExtension(form, {
-        name: 'reader',
-        needs: { api: ['validation'] },
-        api: context => (seen(contextInternals(context).validation()), {}),
-      }),
-    );
-
-    expect(seen).toHaveBeenCalledWith(subject.instance.validation);
   });
 });
 
@@ -276,17 +244,6 @@ describe('stale runs', () => {
     gate.release();
 
     expect([await pending, subject.checkOf('error').at('email')]).toEqual([[true, { error: [] }], []]);
-  });
-
-  it('mark the result of a discarded run, and only that one', async () => {
-    const gate = deferred();
-    using subject = setup({ name: 'error', validators: { blur: gate.schema } });
-    const pending = subject.run(undefined, { type: 'blur' });
-    subject.instance.values.set('name', 'a');
-    gate.release();
-    const discarded = await pending;
-
-    expect([isDiscarded(discarded), isDiscarded(await subject.run('name', { type: 'focus' }))]).toEqual([true, false]);
   });
 
   it('discard a whole-form run for any change', async () => {

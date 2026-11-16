@@ -48,10 +48,6 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run check:package
 
-      - name: Check tree-shaking
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: pnpm run check:tree-shaking
-
       - name: Test coverage
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run test:coverage

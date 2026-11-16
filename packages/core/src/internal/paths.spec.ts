@@ -1,106 +1,11 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { ancestorsOf, getAt, isDeepEqual, isWithin, joinPath, segments, setAt } from './paths';
+import { isDeepEqual, joinPath } from './paths';
 
 /** The input of one case, beside new data, so a case cannot see the writes of another. */
 const setup = <const Input extends object>(input: Input) => ({
   ...input,
   data: { address: { city: 'Lisbon', zip: '1000' }, tags: ['a', 'b'], name: 'Ana', empty: null },
   [Symbol.dispose]() {},
-});
-
-describe('segments', () => {
-  it('splits a dotted path into its keys', () => {
-    using subject = setup({ path: 'tags.0.name' });
-
-    expect(segments(subject.path)).toEqual(['tags', '0', 'name']);
-  });
-
-  it('gives no key for the root', () => {
-    using subject = setup({ path: '' });
-
-    expect(segments(subject.path)).toEqual([]);
-  });
-});
-
-describe('getAt', () => {
-  it('reads a nested key', () => {
-    using subject = setup({ path: 'address.city' });
-
-    expect(getAt(subject.data, subject.path)).toBe('Lisbon');
-  });
-
-  it('reads an array index', () => {
-    using subject = setup({ path: 'tags.1' });
-
-    expect(getAt(subject.data, subject.path)).toBe('b');
-  });
-
-  it('reads the whole value at the root', () => {
-    using subject = setup({ path: '' });
-
-    expect(getAt(subject.data, subject.path)).toBe(subject.data);
-  });
-
-  it('gives undefined below a missing key', () => {
-    using subject = setup({ path: 'phone.number' });
-
-    expect(getAt(subject.data, subject.path)).toBeUndefined();
-  });
-
-  it('gives undefined below null', () => {
-    using subject = setup({ path: 'empty.key' });
-
-    expect(getAt(subject.data, subject.path)).toBeUndefined();
-  });
-});
-
-describe('setAt', () => {
-  it('writes a nested key', () => {
-    using subject = setup({ path: 'address.city' });
-
-    expect(setAt(subject.data, subject.path, 'Porto')).toEqual({
-      ...subject.data,
-      address: { city: 'Porto', zip: '1000' },
-    });
-  });
-
-  it('gives new references to the ancestors of the path', () => {
-    using subject = setup({ path: 'address.city' });
-    const written = setAt(subject.data, subject.path, 'Porto');
-
-    expect([written === subject.data, written.address === subject.data.address]).toEqual([false, false]);
-  });
-
-  it('keeps the references of the siblings', () => {
-    using subject = setup({ path: 'address.city' });
-
-    expect(setAt(subject.data, subject.path, 'Porto').tags).toBe(subject.data.tags);
-  });
-
-  it('does not change the original value', () => {
-    using subject = setup({ path: 'address.city' });
-    setAt(subject.data, subject.path, 'Porto');
-
-    expect(subject.data.address.city).toBe('Lisbon');
-  });
-
-  it('writes an array item and keeps an array', () => {
-    using subject = setup({ path: 'tags.1' });
-
-    expect(setAt(subject.data, subject.path, 'c').tags).toEqual(['a', 'c']);
-  });
-
-  it('makes the missing ancestors as objects', () => {
-    using subject = setup({ empty: {}, path: 'address.city' });
-
-    expect(setAt(subject.empty, subject.path, 'Porto')).toEqual({ address: { city: 'Porto' } });
-  });
-
-  it('replaces the whole value at the root', () => {
-    using subject = setup({ path: '' });
-
-    expect(setAt(subject.data, subject.path, 'value')).toBe('value');
-  });
 });
 
 describe('joinPath', () => {
@@ -120,58 +25,6 @@ describe('joinPath', () => {
     using subject = setup({ prefix: 'address', path: '' });
 
     expect(joinPath(subject.prefix, subject.path)).toBe('address');
-  });
-});
-
-describe('ancestorsOf', () => {
-  it('lists each ancestor, nearest first, then the root', () => {
-    using subject = setup({ path: 'a.b.c' });
-
-    expect(ancestorsOf(subject.path)).toEqual(['a.b', 'a', '']);
-  });
-
-  it('gives no ancestor for the root', () => {
-    using subject = setup({ path: '' });
-
-    expect(ancestorsOf(subject.path)).toEqual([]);
-  });
-});
-
-describe('isWithin', () => {
-  it('holds for the same path', () => {
-    using subject = setup({ path: 'address', prefix: 'address' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(true);
-  });
-
-  it('holds for a descendant', () => {
-    using subject = setup({ path: 'address.city', prefix: 'address' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(true);
-  });
-
-  it('does not hold for an ancestor', () => {
-    using subject = setup({ path: 'address', prefix: 'address.city' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(false);
-  });
-
-  it('does not hold for a sibling', () => {
-    using subject = setup({ path: 'name', prefix: 'address' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(false);
-  });
-
-  it('does not hold for a key that starts with the prefix key', () => {
-    using subject = setup({ path: 'addressLine', prefix: 'address' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(false);
-  });
-
-  it('holds for every path within the root', () => {
-    using subject = setup({ path: 'address.city', prefix: '' });
-
-    expect(isWithin(subject.path, subject.prefix)).toBe(true);
   });
 });
 

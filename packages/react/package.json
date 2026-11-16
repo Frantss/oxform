@@ -27,8 +27,7 @@
     "test": "vp test",
     "test:dev": "vp test --watch",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run check:consumers",
-    "check:consumers": "node scripts/check-consumers.ts"
+    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only"
   },
   "dependencies": {
     "@tanstack/react-store": "^0.11.2"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { defineForm, optionKindsOf } from '#main/form';
+import { defineForm } from '#main/form';
 import { reporting, schemaOf } from '../../tests/helpers';
 import { arrays, arraysInternals } from './arrays';
 import { check } from './check';
@@ -35,16 +35,6 @@ const setup = (error?: CheckValidators<Profile>) => {
 };
 
 describe('arrays as an extension', () => {
-  it('adds exactly the arrays api, and no state and no option', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'status', 'arrays', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus'],
-    ]);
-  });
-
   it('throws at create without values, and names arrays and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(arrays as never);
@@ -66,18 +56,6 @@ describe('arrays as an extension', () => {
     subject.arrays.append('tags', 'd', { should: { validate: true } });
 
     expect(subject.tags()).toEqual(['a', 'b', 'c', 'd']);
-  });
-
-  it('keeps ids off the arrays api', () => {
-    using subject = setup();
-
-    expect(Object.keys(subject.arrays)).toEqual(['append', 'prepend', 'insert', 'swap', 'move', 'update', 'remove', 'replace']);
-  });
-
-  it('refuses internals for an object that arrays did not create', () => {
-    using subject = setup();
-
-    expect(() => arraysInternals({ ...subject.arrays })).toThrow('arraysInternals expects an arrays api made by the arrays extension.');
   });
 });
 

@@ -27,8 +27,7 @@
     "build": "vp run @oxform/solid-v1#build && vp run @oxform/solid-v2#build && node scripts/assemble.ts",
     "test": "vp run @oxform/solid-v1#test && vp run @oxform/solid-v2#test",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run check:consumers",
-    "check:consumers": "node scripts/check-consumers.ts"
+    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

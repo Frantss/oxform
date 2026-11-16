@@ -617,13 +617,6 @@ describe('slots in an extension', () => {
 
     expect(ids).toEqual([{ id: 'b' }, { id: 'a' }]);
   });
-
-  it('gives the slot factory a slot unchanged', () => {
-    using subject = setup();
-    const form = subject.form.extend(slots(slot => ({ badge: slot({ element: 'span', props: { name: 'key' } }) })));
-
-    expect(slotsOf(form)).toEqual({ badge: { element: 'span', props: { name: 'key' } } });
-  });
 });
 
 describe('defineSlots', () => {

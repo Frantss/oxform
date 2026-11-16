@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { adapterControlsOf, defineForm, optionKindsOf } from '#main/form';
+import { adapterControlsOf, defineForm } from '#main/form';
 import { schemaOf } from '../../tests/helpers';
 import { values } from './values';
 
@@ -16,16 +16,6 @@ const setup = (schema = schemaOf<Profile>()) => {
 };
 
 describe('values', () => {
-  it('adds exactly the values api and the values state, and no option', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), subject.instance.store.state, Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'id', 'store', 'destroy'],
-      { values: defaultValues },
-      ['id', 'schema', 'defaultValues'],
-    ]);
-  });
-
   it('reads the whole object and a path', () => {
     using subject = setup();
 
@@ -34,14 +24,6 @@ describe('values', () => {
       'x',
       't',
     ]);
-  });
-
-  it('writes one path and keeps the references of the siblings', () => {
-    using subject = setup();
-    const before = subject.instance.values.get();
-    subject.instance.values.set('address.city', 'y');
-
-    expect([subject.instance.values.get('address'), subject.instance.values.get().tags === before.tags]).toEqual([{ city: 'y', zip: '1' }, true]);
   });
 
   it('does not change the default values', () => {

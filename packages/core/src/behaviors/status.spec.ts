@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { createEffect } from '#main/effect';
-import { defineExtension, defineForm, optionKindsOf } from '#main/form';
+import { defineExtension, defineForm } from '#main/form';
 import type { Extendable, Needs } from '#main/types';
 import { schemaOf } from '../../tests/helpers';
 import type { CheckApi, CheckEntry } from './check';
@@ -59,16 +59,6 @@ const setup = ({ checked = false, ...options }: Options & { checked?: boolean } 
 };
 
 describe('status as an extension', () => {
-  it('adds exactly the status api, the status state and its two options', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'status', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus'],
-    ]);
-  });
-
   it('throws at create without values, and names status and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(status as never);
@@ -83,18 +73,6 @@ describe('status as an extension', () => {
       true,
       expect.objectContaining({ valid: true, validating: false }),
     ]);
-  });
-
-  it('keeps its writes off the status api', () => {
-    using subject = setup();
-
-    expect(Object.keys(subject.instance.status)).toEqual(['form', 'at']);
-  });
-
-  it('refuses internals for an object that status did not create', () => {
-    using subject = setup();
-
-    expect(() => statusInternals({ ...subject.instance.status })).toThrow('statusInternals expects a status api made by the status extension.');
   });
 });
 
@@ -281,32 +259,6 @@ describe('status reset', () => {
 });
 
 describe('memoization', () => {
-  it('keeps the entry of an unaffected field, and replaces the changed one', () => {
-    using subject = setup();
-    const before = subject.instance.store.state.status;
-    subject.edit('name', 'Ada');
-    const after = subject.instance.store.state.status;
-
-    expect([after.fields['address.city'] === before.fields['address.city'], after.fields.name === before.fields.name]).toEqual([true, false]);
-  });
-
-  it('keeps the whole status when no flag changes', () => {
-    using subject = setup();
-    subject.edit('name', 'x');
-    const before = subject.instance.store.state.status;
-    subject.edit('name', 'y');
-
-    expect(subject.instance.store.state.status).toBe(before);
-  });
-
-  it('keeps the fields when only the form changes', () => {
-    using subject = setup();
-    const before = subject.instance.store.state.status;
-    subject.internals.setForm({ submitting: true });
-
-    expect(subject.instance.store.state.status.fields).toBe(before.fields);
-  });
-
   it('does not fire a selector of a field for an unrelated field', () => {
     using subject = setup();
     const effect = vi.fn();

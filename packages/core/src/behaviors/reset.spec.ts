@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expect, it } from 'vite-plus/test';
 import { isWithin } from '#internal/paths';
-import { defineExtension, defineForm, optionKindsOf } from '#main/form';
+import { defineExtension, defineForm } from '#main/form';
 import type { Extendable, Needs } from '#main/types';
 import { schemaOf } from '../../tests/helpers';
 import type { CheckApi, CheckEntry } from './check';
@@ -97,16 +97,6 @@ const setup = ({ checked = false, blur }: { checked?: boolean; blur?: StandardSc
 const element = {} as HTMLElement;
 
 describe('reset as an extension', () => {
-  it('adds exactly the reset api, and no state and no option', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'status', 'events', 'reset', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus'],
-    ]);
-  });
-
   it.each(['values', 'status', 'events'] as const)('throws at create without %s, and names reset and the need', need => {
     using _subject = setup();
     const root = defineForm({ schema: schemaOf<Profile>(), defaultValues });

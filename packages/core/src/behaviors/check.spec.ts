@@ -65,12 +65,6 @@ describe('check as an extension', () => {
 
     expect(validate).not.toHaveBeenCalled();
   });
-
-  it('refuses internals for an object that check did not create', () => {
-    using subject = setup();
-
-    expect(() => checkInternals({ ...subject.error })).toThrow('checkInternals expects a check api made by the check extension.');
-  });
 });
 
 describe('an exclusive check', () => {

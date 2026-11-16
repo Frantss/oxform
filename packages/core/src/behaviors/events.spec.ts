@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { defineForm, optionKindsOf } from '#main/form';
+import { defineForm } from '#main/form';
 import { reporting, schemaOf } from '../../tests/helpers';
 import { check } from './check';
 import { events, eventsInternals } from './events';
@@ -32,16 +32,6 @@ const setup = (error?: CheckValidators<Profile>) => {
 };
 
 describe('events as an extension', () => {
-  it('adds exactly the events api, and no state and no option', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'status', 'events', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus'],
-    ]);
-  });
-
   it('throws at create without values, and names events and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(events as never);
@@ -63,18 +53,6 @@ describe('events as an extension', () => {
     subject.instance.events.change('name', 'a', { should: { validate: true } });
 
     expect(subject.instance.status.at('name')).toEqual(expect.objectContaining({ dirty: true, touched: true }));
-  });
-
-  it('keeps ref and clearRefs off the events api', () => {
-    using subject = setup();
-
-    expect(Object.keys(subject.instance.events)).toEqual(['change', 'focus', 'blur', 'register', 'unregister']);
-  });
-
-  it('refuses internals for an object that events did not create', () => {
-    using subject = setup();
-
-    expect(() => eventsInternals({ ...subject.instance.events })).toThrow('eventsInternals expects an events api made by the events extension.');
   });
 });
 

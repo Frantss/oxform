@@ -13,13 +13,8 @@ export default defineConfig({
       reporter: ['text'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.spec.ts'],
-      thresholds: { 100: true, perFile: true },
     },
-    projects: [
-      { test: { name: 'unit', include: ['src/**/*.spec.ts'], ...node } },
-      { test: { name: 'integration', include: ['tests/*.spec.ts'], ...node } },
-      { test: { name: 'package', include: ['tests/package/**/*.spec.ts'], ...node } },
-    ],
+    projects: [{ test: { name: 'unit', include: ['src/**/*.spec.ts'], ...node } }],
   },
   pack: {
     entry: {

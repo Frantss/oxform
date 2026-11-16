@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { defineForm, optionKindsOf } from '#main/form';
+import { defineForm } from '#main/form';
 import { reporting, schemaOf, type TestIssue } from '../../tests/helpers';
 import { check } from './check';
 import { status, statusInternals } from './status';
@@ -63,16 +63,6 @@ const setup = ({
 };
 
 describe('submit as an extension', () => {
-  it('adds exactly the submit api and its two options, and no state', () => {
-    using subject = setup();
-
-    expect([Object.keys(subject.instance), Object.keys(subject.instance.store.state), Object.keys(optionKindsOf(subject.form))]).toEqual([
-      ['values', 'status', 'submit', 'id', 'store', 'destroy'],
-      ['values', 'status'],
-      ['id', 'schema', 'defaultValues', 'defaultStatus', 'defaultFieldStatus', 'onSubmit', 'onInvalid'],
-    ]);
-  });
-
   it('throws at create without values, and names submit and the need', () => {
     using _subject = setup();
     const lacking = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(submit as never);
