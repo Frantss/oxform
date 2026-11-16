@@ -12,10 +12,12 @@
   },
   "scripts": {
     "test": "vp test",
-    "check:types": "vp exec tsc --noEmit"
+    "check:types": "vp exec tsc --noEmit",
+    "check:parity": "node scripts/check-parity.ts"
   },
   "devDependencies": {
     "@oxform/core": "workspace:*",
+    "@standard-schema/spec": "^1.1.0",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {

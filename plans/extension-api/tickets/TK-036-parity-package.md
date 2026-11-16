@@ -3,12 +3,12 @@ id: TK-036
 title: Parity package
 phase: 5
 work_package: P5-01
-status: todo
+status: done
 depends_on: [TK-030]
 branch: codex/P5-01-parity-package
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-036: Parity package
@@ -50,13 +50,32 @@ no framework dependency, and `check:parity` compares the exported names of the b
 
 ## Acceptance
 
-- [ ] `packages/adapter-parity/src` exports one function per scenario P1 to P14 and the driver type.
-- [ ] Each scenario uses only the driver, the DOM, the HTML and the core instance.
-- [ ] An import of `react`, `solid-js`, `@solidjs/*` or an adapter in `packages/adapter-parity/**` fails
+- [x] `packages/adapter-parity/src` exports one function per scenario P1 to P14 and the driver type.
+- [x] Each scenario uses only the driver, the DOM, the HTML and the core instance.
+- [x] An import of `react`, `solid-js`, `@solidjs/*` or an adapter in `packages/adapter-parity/**` fails
       `pnpm run check:rules`.
-- [ ] `check:parity` fails when two adapter declaration files export different names.
-- [ ] `vp run @oxform/adapter-parity#check:types` and `pnpm run check:rules` pass.
+- [x] `check:parity` fails when two adapter declaration files export different names.
+- [x] `vp run @oxform/adapter-parity#check:types` and `pnpm run check:rules` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `packages/adapter-parity/src`:
+  - `fixtures.ts`: the quick start `signIn` (the lean chain with `rootSlots`, `fieldErrorSlots` and
+    `submitSlots`), `bare` (fields and no `root` slot) and `profile` (`standard`, every input kind, an array, a
+    placed scope, and a probe extension that counts the unmounts).
+  - `driver.ts`: `Driver` (`mount`, `renderToString`, `hydrate`), `Mounted` (with `unmount`, `rerender`,
+    `renders` and async dispose), and `Views`: the markup of each view that an adapter writes in its own JSX.
+  - `browser.ts`: P1 to P9, P11 and P14, for Chromium. `server.ts`: P10, P12 and P13, for Node. Each uses only
+    the driver, the DOM, the HTML and the core instance. P10 stores three snapshots in `src/snapshots/`, which
+    TK-041 writes.
+  - `normalize.ts`: the id normalization of the shared P10 snapshot, with a behavior spec.
+- The lint override of `packages/adapter-parity/**` already existed. A temporary file that imports `react`,
+  `@oxform/react` and `solid-js/web` fails `check:rules` with `no-restricted-imports` on each.
+- `check:parity` (`scripts/check-parity.ts`) passes on the three built adapters. Given the React and the core
+  `presets` declarations, it fails and names the missing exports of each. It is not part of `check:all`
+  yet: with Solid out of scope, the React exports will differ from the Solid stubs (TK-047).
+- Bug found and fixed in its own commit: a consumer that exports a form failed declaration emit (TS2883),
+  because `SelfIssues` and `DefaultFieldStatus` were not exported. Both are now public, with type cases. The
+  parity package's `check:types` is the regression check: the core type tests cannot see it, because inside the
+  package TS names the chunk by a relative path.
