@@ -76,16 +76,16 @@ uses them. Type tests (`*.test-d.ts`) run no code, so they have no `setup`.
 
 ## File Placement
 
-| Files                                                            | What they test                                                             | Runner                                 |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------- |
-| `packages/core/src/**/*.spec.ts`                                 | One module each, beside it (`paths.ts` and `paths.spec.ts`)                | `unit` project, Node, no `window`      |
-| `packages/core/tests/*.spec.ts`                                  | Flows across modules, imported only through the `#core*` barrels           | `integration` project, Node            |
-| `packages/core/tests/package/**/*.spec.ts`                       | The built `dist`: module sharing and no internal channel in an entry point | `package` project, Node, after `build` |
-| `packages/core/tests/types/*.test-d.ts`                          | The public types, through the package names                                | `tsc`, no runtime                      |
-| `packages/core/tests/bundle/`                                    | The tree-shaking tiers                                                     | `check:tree-shaking`                   |
-| `packages/{react,solid-v1,solid-v2}/src/`                        | Adapter specs, beside their module                                         | Browser, Chromium                      |
-| `examples/{react,solid,solid-v2}/src/`                           | The example apps                                                           | Browser, Chromium                      |
-| `examples/{kit,comparison}/src/`, `packages/adapter-parity/src/` | Shared example code and adapter fixtures                                   | Node                                   |
+| Files                                                            | What they test                                                    | Runner                            |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------- |
+| `packages/core/src/**/*.spec.ts`                                 | One module each, beside it (`paths.ts` and `paths.spec.ts`)       | `unit` project, Node, no `window` |
+| `packages/core/tests/*.spec.ts`                                  | Flows across modules, imported only through the `#core*` barrels  | `integration` project, Node       |
+| `packages/core/tests/types/*.test-d.ts`                          | The public types, through the package names                       | `tsc`, no runtime                 |
+| `packages/{react,solid-v1,solid-v2}/src/`                        | Adapter specs, beside their module                                | Browser, Chromium                 |
+| `packages/react/tests/*.spec.tsx`                                | The parity scenarios of `packages/adapter-parity`, in the browser | Browser, Chromium                 |
+| `packages/react/tests/server/*.spec.tsx`                         | The server parity scenarios                                       | `test:ssr`, Node                  |
+| `examples/{react,solid,solid-v2}/src/`                           | The example apps                                                  | Browser, Chromium                 |
+| `examples/{kit,comparison}/src/`, `packages/adapter-parity/src/` | Shared example code and adapter fixtures                          | Node                              |
 
 - Use `*.spec.ts` for code without JSX and `*.spec.tsx` for code with JSX.
 - `packages/solid` publishes the build of `solid-v1` and `solid-v2` and has no specs. Put a Solid spec in
@@ -97,35 +97,27 @@ uses them. Type tests (`*.test-d.ts`) run no code, so they have no `setup`.
 
 Import test functions and assertions from `vite-plus/test`. The root `vite.config.ts` runs browser specs
 with Playwright in headless Chromium at 1280 × 720. `solid-v2` also runs a mobile instance at 390 × 844.
-Core runs in Node only: a unit spec asserts that `window` and `document` are `undefined`.
+Core runs in Node only.
 
-Browser specs render with `vitest-browser-react` (React) or `render` from `solid-js/web` or `@solidjs/web`
-(Solid). Use locators from `vite-plus/test/browser`, await renders and interactions, and use
+Browser specs render with `vitest-browser-react` (React examples), `createRoot` from `react-dom/client` (the
+React adapter), or `render` from `solid-js/web` or `@solidjs/web` (Solid). Use locators from `vite-plus/test/browser`, await renders and interactions, and use
 `expect.element` for a DOM assertion that may need to retry.
 
 ## Cases and Assertions
 
 - Keep each file on one module or flow. Group the cases of one function with `describe()`.
-- Give each case a concrete behavior title. A title is unique across the core package.
+- Give each case a concrete behavior title.
 - Assert what a user of the code can observe: values, state, issues, DOM output and calls.
 - A case has one runtime `expect()`. To assert several values of one behavior, compare them in one
-  `expect` (for example an array of results), or give the reason in a comment:
-
-  ```ts
-  // oxform-test-structure: allow-multiple-assertions -- these assertions describe one status transition
-  ```
+  `expect` (for example an array of results).
 
 - Each case has a runtime assertion, an `expectTypeOf`, or a `@ts-expect-error`.
 - Mock only when needed. Use `vi.fn()` for callbacks.
 
-`pnpm --dir packages/core run check:test-structure` and `check:test-duplicates` enforce these rules,
-the setup rule, and the sibling spec of each runtime module in core. The source of the rules is
-`packages/core/scripts/check-test-structure.ts` and `packages/core/scripts/check-test-duplicates.ts`.
-
 ## Coverage
 
-The core `unit` project must cover each file of `src/` at 100% (`thresholds: { 100: true, perFile: true }`).
-Integration specs do not count toward it. Run `pnpm run test:coverage`.
+`pnpm run test:coverage` reports the coverage of the core `unit` project. No threshold fails a run, and
+integration specs do not count toward it.
 
 ## Type Tests
 
@@ -157,7 +149,6 @@ it('rejects an unknown path', () => {
 pnpm run test                                                # every workspace
 pnpm run test:coverage                                       # core unit coverage
 pnpm --dir packages/core run test src/main/context.spec.ts  # one core spec
-pnpm --dir packages/core run test:package                    # the dist specs, after pnpm run build
 pnpm --dir packages/solid-v2 run test                        # one adapter, in the browser
 ```
 

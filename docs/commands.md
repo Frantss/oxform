@@ -20,7 +20,6 @@ pnpm install
 - Use `pnpm run build:dev` to pass `--watch` to workspace build tasks.
 - Library packages build through `vp pack`, which uses tsdown under Vite+.
 - The published Solid package builds both private adapters and assembles their output.
-- The root `postbuild` script formats the repository. Inspect its diff and preserve unrelated edits.
 
 ## Docs and Examples
 
@@ -41,18 +40,18 @@ content pipeline and production server configuration.
 
 ## Testing Commands
 
-- Run `pnpm run test` to execute core, React, both Solid adapters, and all three example suites.
+- Run `pnpm run test` to execute core, the parity fixtures, React, both Solid adapters, and the example suites.
 - From inside an implementation package, run `pnpm run test` for its suite.
-- Run one core file with `pnpm --dir packages/core run test run src/tests/form-core-field/change.spec.ts`.
+- Run one core file with `pnpm --dir packages/core run test run src/main/form.spec.ts`.
 - Filter core tests by name with `pnpm --dir packages/core run test -t "<test name>"`.
 - Browser tests run in headless Chromium through the Playwright provider.
-- `pnpm --dir packages/solid run test:ssr` runs both adapters' server-rendering
-  suites in Node. Each private adapter owns a `vite.ssr.config.ts`.
-- Test either private adapter directly with
+- `pnpm --dir packages/react run test:ssr` runs the React server-rendering
+  suite in Node, with `vite.ssr.config.ts`. The React `test` runs it after the
+  browser suite.
+- Test either private Solid adapter directly with
   `pnpm --dir packages/solid-v1 run test` or
-  `pnpm --dir packages/solid-v2 run test`. The published package's test scripts
-  run both adapters; Solid 2's `test` runs its SSR suite before browser tests.
-  Solid 2 browser tests cover desktop and mobile viewports.
+  `pnpm --dir packages/solid-v2 run test`. The published package's `test` runs
+  both. Solid 2 browser tests cover desktop and mobile viewports.
 
 See [Testing Patterns](./testing.md) for file placement, assertions, and type tests.
 
@@ -75,14 +74,12 @@ See [Testing Patterns](./testing.md) for file placement, assertions, and type te
 
 - Build before running `pnpm run check:package`; it validates generated
   package exports with `publint --strict` and `attw --pack --no-emoji`.
-- Core package validation also rejects duplicate test titles and invalid
-  assertion structure. Run these checks independently with
-  `pnpm --dir packages/core run check:test-duplicates` and
-  `pnpm --dir packages/core run check:test-structure`.
-- Run `pnpm --dir packages/solid run check:consumers` after building to verify
-  the packed Solid 1 and Solid 2 entries in isolated applications, including
-  ESM, CJS, and inferred types. This uses the local pnpm dependency cache.
-- Solid package validation includes the consumer checks.
+- Core and React package validation also type-checks the type tests against
+  the built `dist` (`check:types:dist`) and fails when an export has no type
+  test (`check:type-coverage`).
+- `pnpm --dir packages/adapter-parity run check:parity` fails when the adapters
+  do not export the same names. It is not in `check:all` until the Solid
+  adapters catch up.
 - Run `pnpm run check:all` to run lint, format, types, and package checks together.
 
 ## Before Finishing
