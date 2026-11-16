@@ -40,7 +40,7 @@ evidence.
 | [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | done   | TK-008         |
 | [TK-007](./tickets/TK-007-test-projects.md)          | Test projects                                       | P1-06        | done   | TK-008         |
 | [TK-008](./tickets/TK-008-skeletons-and-versions.md) | Adapter and example skeletons, and the version plan | P1-07, P1-08 | done   | TK-003         |
-| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | ready  | TK-005, TK-007 |
+| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | done   | TK-005, TK-007 |
 
 ### Phase 2: main APIs
 

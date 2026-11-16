@@ -1,0 +1,10 @@
+# Fast checks on the staged files. CI runs the full checks (.github/workflows/ci.yml).
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      run: pnpm exec vp fmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    - name: lint
+      glob: '*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}'
+      run: pnpm exec vp lint --type-aware --no-error-on-unmatched-pattern {staged_files}

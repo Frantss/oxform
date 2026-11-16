@@ -35,14 +35,27 @@ jobs:
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps --only-shell
 
+      # The steps after the build run when an earlier check fails, so one run shows all failures.
       - name: Build
+        id: build
         run: pnpm run build
 
       - name: Check (fmt + lint + types)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run check
 
       - name: Check package
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run check:package
 
+      - name: Check tree-shaking
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm run check:tree-shaking
+
+      - name: Test coverage
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm run test:coverage
+
       - name: Run tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run test
