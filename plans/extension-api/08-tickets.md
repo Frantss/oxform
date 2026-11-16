@@ -74,14 +74,14 @@ evidence.
 
 ### Phase 4: `standard` preset, integration tests and bundle checks
 
-| Id                                                  | Title                 | Work package | Status | Depends on     |
-| --------------------------------------------------- | --------------------- | ------------ | ------ | -------------- |
-| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | done   | TK-027, TK-028 |
-| [TK-031](./tickets/TK-031-preset-flows.md)          | Preset flows          | P4-02        | done   | TK-030         |
-| [TK-032](./tickets/TK-032-cross-extension-flows.md) | Cross-extension flows | P4-03        | done   | TK-029         |
-| [TK-033](./tickets/TK-033-tiers-and-size-report.md) | Tiers and size report | P4-04        | ready  | TK-030, TK-005 |
-| [TK-034](./tickets/TK-034-type-coverage.md)         | Type coverage         | P4-05        | done   | TK-030, TK-018 |
-| [TK-035](./tickets/TK-035-benchmark.md)             | Benchmark             | P4-06        | ready  | TK-030         |
+| Id                                                  | Title                 | Work package | Status  | Depends on     |
+| --------------------------------------------------- | --------------------- | ------------ | ------- | -------------- |
+| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | done    | TK-027, TK-028 |
+| [TK-031](./tickets/TK-031-preset-flows.md)          | Preset flows          | P4-02        | done    | TK-030         |
+| [TK-032](./tickets/TK-032-cross-extension-flows.md) | Cross-extension flows | P4-03        | done    | TK-029         |
+| [TK-033](./tickets/TK-033-tiers-and-size-report.md) | Tiers and size report | P4-04        | dropped | TK-030, TK-005 |
+| [TK-034](./tickets/TK-034-type-coverage.md)         | Type coverage         | P4-05        | done    | TK-030, TK-018 |
+| [TK-035](./tickets/TK-035-benchmark.md)             | Benchmark             | P4-06        | dropped | TK-030         |
 
 ### Phase 5: React adapter and the parity suite
 

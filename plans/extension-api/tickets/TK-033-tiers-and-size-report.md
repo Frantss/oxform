@@ -3,12 +3,12 @@ id: TK-033
 title: Tiers and size report
 phase: 4
 work_package: P4-04
-status: todo
+status: dropped
 depends_on: [TK-030, TK-005]
 branch: codex/P4-04-tiers-and-size-report
 pr: null
 started: null
-completed: null
+completed: 2026-11-16
 ---
 
 # TK-033: Tiers and size report
@@ -59,4 +59,5 @@ size of each tier, and the first sizes are in `reports/`.
 
 ## Evidence
 
-Record the command results, the D05 and R02 paths, the report file name and any deviation from the plan here.
+Dropped on 2026-11-16. The owner keeps only behavior tests and type tests, and deleted the tree-shaking
+fixtures, the size report and the measurement scripts. TK-057, TK-062, TK-063 and TK-064 depend on this ticket.

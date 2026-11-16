@@ -3,12 +3,12 @@ id: TK-035
 title: Benchmark
 phase: 4
 work_package: P4-06
-status: todo
+status: dropped
 depends_on: [TK-030]
 branch: codex/P4-06-benchmark
 pr: null
 started: null
-completed: null
+completed: 2026-11-16
 ---
 
 # TK-035: Benchmark
@@ -48,4 +48,5 @@ numbers are in `reports/`. The benchmark is run by hand and does not gate CI.
 
 ## Evidence
 
-Record the command results, the R06 path, the file paths and any deviation from the plan here.
+Dropped on 2026-11-16. The owner keeps only behavior tests and type tests, and deleted the tree-shaking
+fixtures, the size report and the measurement scripts. TK-057, TK-062, TK-063 and TK-064 depend on this ticket.
