@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "imports": {
-    "#app": "./src/app.tsx",
-    "#styles.css": "./src/styles.css"
-  },
   "scripts": {
     "dev": "vp dev",
     "build": "vp build",

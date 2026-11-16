@@ -2,7 +2,7 @@ import { DocsBrand } from '@frantss/fumadocs-theme';
 import { BookOpen, Code2, GitFork } from 'lucide-react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
-export function baseOptions(framework: 'react' | 'solid' = 'react'): BaseLayoutProps {
+export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: <DocsBrand>Oxform</DocsBrand>,
@@ -10,14 +10,8 @@ export function baseOptions(framework: 'react' | 'solid' = 'react'): BaseLayoutP
     links: [
       {
         text: 'Docs',
-        url: `/docs/${framework}`,
+        url: '/docs',
         icon: <BookOpen />,
-        active: 'nested-url',
-      },
-      {
-        text: 'API',
-        url: `/docs/${framework}/api`,
-        icon: <Code2 />,
         active: 'nested-url',
       },
       {

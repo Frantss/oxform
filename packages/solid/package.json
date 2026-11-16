@@ -49,13 +49,12 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp run @oxform/solid-v1#build && vp run @oxform/solid-v2#build && node scripts/assemble.ts",
+    "build": "vp run @oxform/solid-v1#build && vp run @oxform/solid-v2#build",
     "test": "vp run @oxform/solid-v1#test && vp run @oxform/solid-v2#test",
     "test:dev": "vp run -r --filter '@oxform/solid-*' --parallel test:dev",
     "test:ssr": "vp run @oxform/solid-v1#test:ssr && vp run @oxform/solid-v2#test:ssr",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji && node scripts/check-consumers.ts",
-    "check:consumers": "node scripts/check-consumers.ts"
+    "check:package": "publint --strict && attw --pack --no-emoji"
   },
   "dependencies": {
     "@oxform/core": "workspace:*",

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite-plus';
 
 export const base = defineConfig({
   lint: {
-    ignorePatterns: ['dist/**', 'node_modules/**'],
+    ignorePatterns: ['dist/**', 'node_modules/**', 'explorations/**'],
     plugins: ['oxc', 'typescript', 'import', 'promise', 'react', 'react-perf'],
     env: {
       browser: true,
@@ -23,7 +23,7 @@ export const base = defineConfig({
     },
   },
   fmt: {
-    ignorePatterns: ['apps/docs/src/routeTree.gen.ts', 'packages/solid-v2/src/tests/fixtures/hydration.html'],
+    ignorePatterns: ['apps/docs/src/routeTree.gen.ts'],
     arrowParens: 'avoid' as const,
     singleQuote: true,
     jsxSingleQuote: true,

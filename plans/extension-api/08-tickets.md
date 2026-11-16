@@ -33,8 +33,8 @@ evidence.
 
 | Id                                                   | Title                                               | Work package | Status  | Depends on     |
 | ---------------------------------------------------- | --------------------------------------------------- | ------------ | ------- | -------------- |
-| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | ready   | TK-001         |
-| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | blocked | TK-002         |
+| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | done    | TK-001         |
+| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | ready   | TK-002         |
 | [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | blocked | TK-003         |
 | [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | blocked | TK-003         |
 | [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | blocked | TK-008         |
@@ -124,7 +124,7 @@ evidence.
 
 | Id                                                  | Title                     | Work package | Status  | Depends on             |
 | --------------------------------------------------- | ------------------------- | ------------ | ------- | ---------------------- |
-| [TK-058](./tickets/TK-058-site-skeleton.md)         | Site skeleton             | P8-01        | blocked | TK-002                 |
+| [TK-058](./tickets/TK-058-site-skeleton.md)         | Site skeleton             | P8-01        | ready   | TK-002                 |
 | [TK-059](./tickets/TK-059-agent-outputs.md)         | Agent outputs             | P8-02        | blocked | TK-058                 |
 | [TK-060](./tickets/TK-060-prose-pages.md)           | Prose with no code        | P8-03        | blocked | TK-059                 |
 | [TK-061](./tickets/TK-061-main-api-pages.md)        | Main API pages            | P8-04        | blocked | TK-050, TK-059         |

@@ -20,32 +20,18 @@ function Home() {
           <div className='flex flex-wrap gap-3'>
             <Link
               to='/playground'
-              search={{ framework: 'react', example: 'basic' }}
+              search={{ framework: 'react', example: 'placeholder' }}
               className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
             >
               Playground
             </Link>
             <Link
               to='/docs/$'
-              params={{ _splat: 'react' }}
+              params={{ _splat: '' }}
               className='inline-flex items-center gap-2 rounded-md bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground'
             >
-              React docs
+              Docs
               <ArrowRight className='size-4' />
-            </Link>
-            <Link
-              to='/docs/$'
-              params={{ _splat: 'solid' }}
-              className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
-            >
-              Solid docs
-            </Link>
-            <Link
-              to='/docs/$'
-              params={{ _splat: 'react/api' }}
-              className='inline-flex items-center gap-2 rounded-md border border-fd-border px-4 py-2 text-sm font-medium text-fd-foreground'
-            >
-              React API
             </Link>
           </div>
         </section>

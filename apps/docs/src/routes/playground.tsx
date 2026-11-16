@@ -24,7 +24,7 @@ function PlaygroundPage() {
   const selected = examples.find(entry => entry.id === example) ?? examples[0];
 
   return (
-    <HomeLayout {...baseOptions(framework === 'react' ? 'react' : 'solid')}>
+    <HomeLayout {...baseOptions()}>
       <main className='playground'>
         <header className='playground-heading'>
           <h1>Playground</h1>
