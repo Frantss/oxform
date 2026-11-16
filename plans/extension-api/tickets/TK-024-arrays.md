@@ -3,12 +3,12 @@ id: TK-024
 title: Arrays extension
 phase: 3
 work_package: P3-06
-status: todo
+status: done
 depends_on: [TK-022, TK-021]
 branch: codex/P3-06-arrays
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-024: Arrays extension
@@ -46,18 +46,44 @@ keeps stable item ids. Check entries follow their items.
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `arrays`, also the row "on a
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `arrays`, also the row "on a
       chain with no `validation`".
-- [ ] Each scenario group of `03#arrays (createArrays)` has a passing test in `src/behaviors/arrays.spec.ts`.
+- [x] Each scenario group of `03#arrays (createArrays)` has a passing test in `src/behaviors/arrays.spec.ts`.
       Each row that cites `B:` passes.
-- [ ] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
+- [x] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
       `create`.
-- [ ] The specs build the shortest chain and do not import `standard`.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `export/behaviors.ts` exports no `createX` function.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] The specs build the shortest chain and do not import `standard`.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `export/behaviors.ts` exports no `createX` function.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (751 statements, 343 branches).
+- `src/behaviors/arrays.spec.ts` (chain: `values`, `status`, `arrays`, or with `validation` and `check('error')`; no
+  `standard`):
+  - Wrapper rows: exactly the `arrays` api, no state, no option; a `create` without `values` and one without
+    `status` each throw and name the extension and the need; on a chain with no `validation` the array changes and
+    nothing is requested (D53); `ids` is not on `ArraysApi`; `arraysInternals` refuses an object that `arrays` did
+    not make.
+  - Append, prepend, insert: end, start with the item state shifted, an index and a negative index, padding after
+    the end, an absent array, an item that is a function is stored as the item (an insertion takes no updater,
+    `01#8`).
+  - Swap and move: the order of the others; same index and an index after the end are no-ops (nothing marked);
+    the item state moves with the items.
+  - Update: a value or an updater; a clamped index; the state of the item resets; an empty array.
+  - Remove: a clamped index; the later states shift; an empty array; validation is always skipped.
+  - Replace: an array or an updater; every item state resets and trailing states drop.
+  - Marks and validation: the array and its ancestors; change validation of the array when a check has a change
+    validator; none without one or with `should.validate: false`; `should.dirty` and `should.touch`; a refused
+    write changes nothing.
+  - Check entries follow swap, insert and remove through `checkInternals(check).remap`.
+  - Item ids: stable between reads; follow swap, move and remove; new for new items; all new after replace; follow
+    a write of the array outside `arrays`.
+- `export/behaviors.ts` exports `arrays` and `ArraysApi`, `ArrayOperations`; no `createArrays`.
+- Type tests: a positive and a negative case for `arrays` (a negative case for each need), `ArraysApi` (a path that
+  is not an array, an updater as an inserted item) and `ArrayOperations`.
+- Deviations from the spike: `append` has no remap, because no index moves; `move` to the same index is a no-op, so
+  it marks nothing.

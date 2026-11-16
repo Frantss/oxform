@@ -65,7 +65,7 @@ evidence.
 | [TK-021](./tickets/TK-021-check.md)        | Check extension      | P3-03        | done    | TK-020                         |
 | [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | done    | TK-020                         |
 | [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | done    | TK-022                         |
-| [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | ready   | TK-022, TK-021                 |
+| [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | done    | TK-022, TK-021                 |
 | [TK-025](./tickets/TK-025-reset.md)        | Reset extension      | P3-07        | ready   | TK-023                         |
 | [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | ready   | TK-022, TK-021                 |
 | [TK-027](./tickets/TK-027-handles.md)      | Handles extension    | P3-09        | blocked | TK-023, TK-024, TK-025, TK-026 |

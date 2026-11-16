@@ -1,3 +1,5 @@
+export { arrays } from '#behaviors/arrays';
+export type { ArrayOperations, ArraysApi } from '#behaviors/arrays';
 export type {
   Change,
   ChangeApi,

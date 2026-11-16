@@ -1,9 +1,12 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { defineForm, type Slot, type Updater } from '@oxform/core';
 import {
+  arrays,
   check,
   events,
   rootSlots,
+  type ArrayOperations,
+  type ArraysApi,
   type EventsApi,
   type FieldChangeOptions,
   type FieldFocusOptions,
@@ -441,5 +444,62 @@ describe('FieldFocusOptions', () => {
   it('rejects should.dirty', () => {
     // @ts-expect-error focus and blur take validate only.
     accepts<FieldFocusOptions>({ should: { dirty: true } });
+  });
+});
+
+type Listed = { tags: string[]; people: { name: string }[] };
+
+const listed = defineForm({ schema: {} as StandardSchemaV1<Listed>, defaultValues: { tags: [], people: [] } });
+
+describe('arrays', () => {
+  it('adds the arrays api', () => {
+    expectTypeOf(listed.extend(values).extend(status).extend(arrays).create().arrays).toEqualTypeOf<
+      ArraysApi<Listed>
+    >();
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error arrays needs values.
+    listed.extend(arrays);
+  });
+
+  it('needs status', () => {
+    // @ts-expect-error arrays needs status.
+    listed.extend(values).extend(arrays);
+  });
+});
+
+describe('ArraysApi', () => {
+  const instance = listed.extend(values).extend(status).extend(arrays).create();
+
+  it('takes an item of the array, and an updater for update and replace', () => {
+    const update: (path: 'people', index: number, item: Updater<{ name: string }>) => void = (...args) =>
+      instance.arrays.update(...args);
+
+    expectTypeOf(update).returns.toBeVoid();
+  });
+
+  it('rejects a path that is not an array', () => {
+    // @ts-expect-error `people.0.name` is not an array.
+    instance.arrays.append('people.0.name', 'a');
+  });
+
+  it('rejects an updater as an inserted item', () => {
+    // @ts-expect-error append takes an item, not an updater (01-public-api.md, 8).
+    instance.arrays.append('tags', (current: string) => current);
+  });
+});
+
+describe('ArrayOperations', () => {
+  it('has the operations of one array, without the path', () => {
+    expectTypeOf<Parameters<ArrayOperations<string, string[]>['append']>>().toEqualTypeOf<
+      [item: string, options?: FieldChangeOptions]
+    >();
+  });
+
+  it('rejects an item of another type', () => {
+    const operations = {} as ArrayOperations<string, string[]>;
+    // @ts-expect-error The items are strings.
+    operations.append(1);
   });
 });

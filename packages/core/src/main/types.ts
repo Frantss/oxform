@@ -1,5 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
+import type { ArraysApi } from '#behaviors/arrays';
 import type { CheckApi } from '#behaviors/check';
 import type { EventsApi } from '#behaviors/events';
 import type { StatusApi } from '#behaviors/status';
@@ -163,6 +164,7 @@ export interface BuiltInApis<Values> {
   readonly validation: ValidationApi<Values>;
   readonly status: StatusApi<Values>;
   readonly events: EventsApi<Values>;
+  readonly arrays: ArraysApi<Values>;
   /** A stand-in until `handles` (TK-027): the field handle of a path. */
   readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
 }
