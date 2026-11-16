@@ -1,5 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
+import type { ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
 import type { Path, PathValue, Unsubscribe, Updater } from './path-types';
 
@@ -156,6 +157,7 @@ export interface AdapterControls {
 /** The api of the built-in extensions by name. `Needs<V, 'field'>` states a need by name. */
 export interface BuiltInApis<Values> {
   readonly values: ValuesApi<Values>;
+  readonly validation: ValidationApi<Values>;
   /** A stand-in until `handles` (TK-027): the field handle of a path. */
   readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
 }

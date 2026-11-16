@@ -61,9 +61,9 @@ evidence.
 | Id                                         | Title                | Work package | Status  | Depends on                     |
 | ------------------------------------------ | -------------------- | ------------ | ------- | ------------------------------ |
 | [TK-019](./tickets/TK-019-values.md)       | Values extension     | P3-01        | done    | TK-013                         |
-| [TK-020](./tickets/TK-020-validation.md)   | Validation extension | P3-02        | ready   | TK-019                         |
-| [TK-021](./tickets/TK-021-check.md)        | Check extension      | P3-03        | blocked | TK-020                         |
-| [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | blocked | TK-020                         |
+| [TK-020](./tickets/TK-020-validation.md)   | Validation extension | P3-02        | done    | TK-019                         |
+| [TK-021](./tickets/TK-021-check.md)        | Check extension      | P3-03        | ready   | TK-020                         |
+| [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | ready   | TK-020                         |
 | [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | blocked | TK-022                         |
 | [TK-024](./tickets/TK-024-arrays.md)       | Arrays extension     | P3-06        | blocked | TK-022, TK-021                 |
 | [TK-025](./tickets/TK-025-reset.md)        | Reset extension      | P3-07        | blocked | TK-023                         |
