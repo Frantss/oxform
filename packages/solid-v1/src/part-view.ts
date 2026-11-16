@@ -47,11 +47,28 @@ export type PartViewProps = Record<string, unknown> & {
   readonly scope?: object;
 };
 
+let applying = 0;
+
+/**
+ * Applies a store write to the DOM. Solid moves both items of a swapped list, and the browser blurs a focused
+ * element that moves. So the focused element gets its focus back, and the events of the update reach no slot.
+ */
+const applyWrite = (write: () => void) => {
+  const focused = document.activeElement;
+  applying++;
+  try {
+    write();
+    if (focused instanceof HTMLElement && focused.isConnected && focused !== document.activeElement) focused.focus();
+  } finally {
+    applying--;
+  }
+};
+
 /** The state of the store as a signal. On the server it is read once, with no subscription. */
 export const storeState = (instance: Instance): Accessor<unknown> => {
   if (isServer) return () => instance.store.state;
   const [state, setState] = createSignal(instance.store.state, { equals: false });
-  const subscription = instance.store.subscribe(next => setState(() => next));
+  const subscription = instance.store.subscribe(next => applyWrite(() => setState(() => next)));
   onCleanup(() => subscription.unsubscribe());
   return state;
 };
@@ -125,7 +142,9 @@ export const PartView = (input: {
   /** The listeners and `bind` of one element. They read the current part at each event. */
   const attach = (element: HTMLElement) => {
     const removers = Object.entries(slot.on ?? {}).map(([event, handler]) => {
-      const listener = (domEvent: Event) => handler(domEvent, { ...part(), element });
+      const listener = (domEvent: Event) => {
+        if (applying === 0) handler(domEvent, { ...part(), element });
+      };
       element.addEventListener(event, listener);
       return () => element.removeEventListener(event, listener);
     });

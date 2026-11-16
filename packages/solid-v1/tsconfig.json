@@ -5,5 +5,5 @@
     "jsxImportSource": "solid-js"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "export/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx"],
-  "exclude": ["dist", "vite.config.ts"]
+  "exclude": ["dist", "vite.config.ts", "vite.ssr.config.ts", "tests/types"]
 }

@@ -97,6 +97,6 @@ describe('createParts', () => {
   it('throws for an element of a part that the form does not have', () => {
     using _subject = setup();
 
-    expect(() => createParts(form, { nope: 'span' })).toThrow('oxform: the form has no part "nope".');
+    expect(() => createParts(form, { nope: 'span' } as never)).toThrow('oxform: the form has no part "nope".');
   });
 });

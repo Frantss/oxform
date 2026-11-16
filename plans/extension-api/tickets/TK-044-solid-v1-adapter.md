@@ -3,12 +3,12 @@ id: TK-044
 title: Solid 1 adapter
 phase: 6
 work_package: P6-02
-status: todo
+status: done
 depends_on: [TK-043, TK-042]
 branch: codex/P6-02-solid-v1-adapter
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-044: Solid 1 adapter
@@ -50,14 +50,41 @@ React only in the rows of `01#6.3`. The parity scenarios P1 to P14 pass.
 
 ## Acceptance
 
-- [ ] P1 to P14 pass: the Chromium rows in `tests/parity.spec.tsx`, P10, P12 and P13 in Node through
+- [x] P1 to P14 pass: the Chromium rows in `tests/parity.spec.tsx`, P10, P12 and P13 in Node through
       `vp run @oxform/solid-v1#test:ssr`.
-- [ ] Every difference from React is a row of `01#6.3`.
-- [ ] Each export has a positive and a negative type case in `tests/types/`. Every `ElementTag` is a key of
+- [x] Every difference from React is a row of `01#6.3`.
+- [x] Each export has a positive and a negative type case in `tests/types/`. Every `ElementTag` is a key of
       Solid's intrinsic elements.
 - [ ] `vp run @oxform/solid-v1#test:coverage` passes at the thresholds of `03#Coverage`.
-- [ ] `vp run @oxform/solid-v1#check:types` and `pnpm run check:all` pass.
+- [x] `vp run @oxform/solid-v1#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, any new parity row and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. `@oxform/solid-v1`: 28 browser tests (P1 to P14
+  in Chromium, and the sibling specs of `create-parts`, `hooks` and `use-part`), and 3 server tests (P10, P12 and
+  P13 in Node, `test:ssr`). React still passes 23 browser and 3 server tests against the same scenarios.
+- `check:package` of `@oxform/solid-v1`: `publint --strict`, `attw`, `check:types:dist` and `check:type-coverage`
+  pass. Each of the 10 exports has a positive case and a `@ts-expect-error` case. With the `@ts-expect-error`
+  lines removed, each of the 11 negative cases fails for its own reason. `ElementTag` extends the keys of
+  Solid's `JSX.IntrinsicElements`.
+- P11 in Chromium: Solid's client build renders no string. The Vitest browser command `renderView`
+  (`vite.config.ts`) loads `tests/render.ts` through `project.vite.ssrLoadModule` and renders it in Node.
+  `solid({ ssr: true })` makes the client code hydratable. The driver sets the `_$HY` registry that Solid's
+  hydration script makes.
+- New parity behavior, under R17, in `adapter-parity` first (`test: compare the server html of the adapters as
+  equivalent html`):
+  - `normalizeHtml` sorts the attributes of a tag, writes a bare attribute as `=""` and removes the space
+    before the end of a tag. Solid's server HTML differs from React's in these points only. The stored
+    snapshots were updated from React, and Solid matches them without an update.
+  - P13 runs the pending timers after the render, and asserts that no timer is left. Solid's
+    `renderToString` starts `setTimeout(dispose)` for its root (`solid-js/web/dist/server.js:227`), so a count
+    of `setTimeout` calls cannot be 0. `03#P13` and `01#6.4` item 4 say this.
+- New `01#6.3` row: focus across a list move. Solid moves both nodes of a swap, and Chrome blurs a moved
+  element, so P7 failed. `storeState` applies each store write, gives the focus back to the element that had it,
+  and drops the slot events that the write fires.
+- Core fix found by P7 (`fix: move the item ids before a store subscriber hears an array write`): `arrays`
+  set the item ids after the write, so a subscriber of the write read the old ids. The new case in
+  `arrays.spec.ts` failed before the fix.
+- Deviations: the parity spec is `tests/parity.spec.ts`, not `.tsx`. The branch name is the one of this ticket.
+- Not done: `test:coverage`. The owner dropped coverage gates, so the box stays open.
+- G18 for Solid is identity: Solid takes the HTML attribute names.

@@ -1,13 +1,15 @@
-import type { AnyForm } from '@oxform/core';
+import type { AnyForm, PartsOf } from '@oxform/core';
 import { adapterControlsOf } from '@oxform/core/adapter';
 import { createComputed, createUniqueId, mergeProps, onCleanup, splitProps, type Component, type JSX } from 'solid-js';
 import { createComponent } from 'solid-js/web';
-import { contextOf, slotsOfForm, useInstance } from '#context';
+import { contextOf, slotsOfForm } from '#context';
+import { createHooks } from '#hooks';
 import { PartView, type Instance, type PartViewProps } from '#part-view';
+import type { FormHooks, PartComponents, PartElements, RootComponent } from '#types';
 
 type FormLike = { create(options?: Record<string, unknown>): Instance };
 
-type RootProps = Record<string, unknown> & {
+type RootInput = Record<string, unknown> & {
   readonly form?: Instance;
   readonly options?: Record<string, unknown>;
   readonly children?: JSX.Element;
@@ -19,13 +21,18 @@ const capitalize = (name: string) => `${name.charAt(0).toUpperCase()}${name.slic
  * The Solid parts of a form: `Root`, and one component per slot. Everything a part does comes from its slot, so
  * the adapter knows no behavior.
  */
-export const createParts = (form: AnyForm, elements: Readonly<Record<string, string>> = {}) => {
+export const createParts = (<F extends AnyForm, const Elements extends PartElements<PartsOf<F>> = {}>(
+  form: F,
+  elements?: Elements,
+) => {
   const slots = slotsOfForm(form);
-  for (const name of Object.keys(elements))
+  const overrides = (elements ?? {}) as Readonly<Record<string, string>>;
+  for (const name of Object.keys(overrides))
     if (!(name in slots)) throw new Error(`oxform: the form has no part "${name}".`);
-  const tagOf = (name: string) => elements[name] ?? slots[name]!.element ?? 'div';
+  const tagOf = (name: string) => overrides[name] ?? slots[name]!.element ?? 'div';
   const FormContext = contextOf(form);
-  const useForm = () => useInstance(form);
+  const hooks = createHooks(form);
+  const { useForm } = hooks;
 
   const parts: Record<string, Component<PartViewProps>> = {};
   for (const [name, slot] of Object.entries(slots)) {
@@ -33,7 +40,7 @@ export const createParts = (form: AnyForm, elements: Readonly<Record<string, str
     parts[capitalize(name)] = props => PartView({ instance: useForm(), slot, tag: tagOf(name), props });
   }
 
-  const Root = (props: RootProps) => {
+  const Root = (props: RootInput) => {
     const [local, domProps] = splitProps(props, ['form', 'options', 'children']);
     // The id of the framework is hydration-safe. An `id` option of the caller wins.
     const id = createUniqueId();
@@ -61,8 +68,8 @@ export const createParts = (form: AnyForm, elements: Readonly<Record<string, str
     });
   };
 
-  return { ...parts, Root, useForm } as Record<string, Component<any>> & {
-    readonly Root: Component<RootProps>;
-    readonly useForm: () => any;
-  };
-};
+  return { ...parts, Root, ...hooks };
+}) as unknown as <F extends AnyForm, const Elements extends PartElements<PartsOf<F>> = {}>(
+  form: F,
+  elements?: Elements,
+) => PartComponents<F, Elements> & { readonly Root: RootComponent<F, Elements> } & FormHooks<F>;
