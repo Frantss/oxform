@@ -2,6 +2,8 @@
 
 ## 2026-11-16
 
+- TK-010 confirmed by the owner on 2026-11-16: paths are dotted only, `isDeepEqual` compares class instances other
+  than `Date`, `Map` and `Set` by identity, and `idPart` is injective.
 - `packages/core/src/main/types.ts` (`NeedsMember`) with `Form.extend` (extension overload): an inline
   extension, `form.extend(form => defineExtension(form, { ... }))`, gets the whole form so far as its
   `Extendable` parameter. Every need is required and exact (D51), so on a form that already has an api or a
