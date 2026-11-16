@@ -48,8 +48,9 @@
   `packages/core/src/main/form.ts`), and a duplicate option name is a type error of `extend`
   (`packages/core/src/main/types.ts`). `Root` takes the options in `options`, so `onSubmit` and other DOM props
   with an option name reach the element (`packages/react/src/create-parts.ts`).
-- Limit: the duplicate-name check is a type error only. JavaScript callers get no runtime error for a duplicate
-  option name; a duplicate check name still throws at create, through its state key.
+- Decided: the duplicate-name check is a type error only, and the owner accepted that (2026-11-16). JavaScript
+  callers get no runtime error for a duplicate option name; a duplicate check name still throws at create, through
+  its state key.
 - Limit: `standard` runs its chain on a form typed with no options, because a generic `Options` leaves the check
   undecided, and casts the result (`packages/core/src/presets/standard.ts`).
 
