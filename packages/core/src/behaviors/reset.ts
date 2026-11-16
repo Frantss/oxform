@@ -48,6 +48,8 @@ export const createReset = <Values>(
   return {
     all({ values, status: override, keep = {} } = {}) {
       deps.values.set('' as never, (values ?? context.options().defaultValues) as never, { reason: 'reset' });
+      // A reset to equal values writes nothing, so it discards the pending runs itself.
+      contextInternals(context).validation().discard();
       status.reset({ status: override, keepFields: keep.fields });
       if (keep.fields) return;
       clearChecks(undefined, keep.checks);
@@ -56,6 +58,7 @@ export const createReset = <Values>(
     at(path, options = {}) {
       const value = 'value' in options ? options.value : getAt(context.options().defaultValues, path);
       deps.values.set(path, value as never, { reason: 'reset' });
+      contextInternals(context).validation().discard(path);
       status.reset({ path });
       clearChecks(path);
     },

@@ -227,6 +227,28 @@ describe('reset and validation', () => {
     expect(subject.entries('error', 'name')).toEqual([]);
   });
 
+  it('discards a pending run when the values are already the defaults', async () => {
+    const gate = deferred();
+    using subject = setup({ checked: true, blur: gate.schema });
+    const pending = subject.validation.run('name', { type: 'blur' });
+    subject.instance.reset.all();
+    gate.release();
+    await pending;
+
+    expect(subject.entries('error', 'name')).toEqual([]);
+  });
+
+  it('discards a pending run of a path that reset.at resets to an equal value', async () => {
+    const gate = deferred();
+    using subject = setup({ checked: true, blur: gate.schema });
+    const pending = subject.validation.run('name', { type: 'blur' });
+    subject.instance.reset.at('name');
+    gate.release();
+    await pending;
+
+    expect(subject.entries('error', 'name')).toEqual([]);
+  });
+
   it('does not validate', () => {
     using subject = setup({ checked: true, blur: deferred().schema });
     subject.instance.events.change('name', 'a', { should: { validate: false } });

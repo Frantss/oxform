@@ -34,6 +34,8 @@ export type ValidationLink = {
   issues(path?: string): Readonly<Record<string, unknown>>;
   readonly checks: readonly unknown[];
   readonly validating: boolean;
+  /** Discards the pending runs that a write at the path would make stale, also when the write changes nothing. */
+  discard(path?: string): void;
 };
 
 /** A chain without `validation` acts as a chain with `validation` and no check (D53). */
@@ -43,6 +45,7 @@ const noValidation: ValidationLink = Object.freeze({
   issues: () => Object.freeze({}),
   checks: Object.freeze([]),
   validating: false,
+  discard: () => {},
 });
 
 /** What `on` returns at runtime: the builder, and the guard that stands in for the erased value type. */

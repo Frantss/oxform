@@ -70,6 +70,8 @@ type Run = { readonly targets: readonly string[] | undefined; readonly lanes: re
 const EVENTS: readonly ValidationEvent[] = ['change', 'blur', 'focus', 'submit'];
 
 const registries = new WeakMap<object, Set<RegisteredCheck>>();
+/** Marks the pending runs that a write at the path would make stale. `reset` uses it through the link. */
+const discarders = new WeakMap<object, (path: string) => void>();
 const discarded = new WeakSet<object>();
 
 /** Adds a check to the runs of a validation api. Only an api that `validation` created takes one. */
@@ -111,9 +113,10 @@ export const createValidation = <Values, Checks extends string = string>(
   const pending = new Set<Run>();
   const counter = context.state.validating;
 
-  deps.values.onChange(change => {
-    for (const run of pending) if (overlaps(change.path, run.targets)) run.stale = true;
-  });
+  const discard = (path: string) => {
+    for (const run of pending) if (overlaps(path, run.targets)) run.stale = true;
+  };
+  deps.values.onChange(change => discard(change.path));
 
   const emptyIssues = () =>
     Object.fromEntries([...checks].map(({ check }) => [check.name, []])) as Record<string, CheckEntry[]>;
@@ -194,6 +197,7 @@ export const createValidation = <Values, Checks extends string = string>(
   };
 
   registries.set(validation, checks);
+  discarders.set(validation, discard);
   return validation;
 };
 
@@ -205,7 +209,19 @@ export const validation = <Values>(form: Extendable<Values, Needs<Values, 'value
     state: () => ({ validating: 0 }),
     api: (context, { values }) => {
       const api = createValidation<Values>(context, { values });
-      contextInternals(context).registerValidation(api);
+      const discard = discarders.get(api)!;
+      contextInternals(context).registerValidation({
+        run: (targets, options) => api.run(targets as never, options),
+        onRun: listener => api.onRun(listener),
+        issues: path => api.issues(path as never),
+        get checks() {
+          return api.checks;
+        },
+        get validating() {
+          return api.validating;
+        },
+        discard: (path = '') => discard(path),
+      });
       return { validation: api };
     },
   });
