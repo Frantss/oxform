@@ -3,12 +3,12 @@ id: TK-011
 title: Context
 phase: 2
 work_package: P2-02
-status: todo
+status: done
 depends_on: [TK-010]
 branch: codex/P2-02-context
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-011: Context
@@ -48,14 +48,38 @@ with no check when the chain has no `validation`.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#Context` has a passing test in `src/main/context.spec.ts`.
-- [ ] A test shows that a cleanup runs at an unmount, stays registered, and runs again at `destroy()`.
-- [ ] A test shows each answer of the stand-in: valid, not validating, and a run that resolves valid with no
+- [x] Each scenario group of `03#Context` has a passing test in `src/main/context.spec.ts`.
+- [x] A test shows that a cleanup runs at an unmount, stays registered, and runs again at `destroy()`.
+- [x] A test shows each answer of the stand-in: valid, not validating, and a run that resolves valid with no
       issues. A test shows that a registered api replaces the stand-in.
-- [ ] No barrel exports `createContext`, `contextInternals` or the validation link.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] No barrel exports `createContext`, `contextInternals` or the validation link.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `src/main/context.ts`: `createContext(options)` returns the controls `store`, `setOptions`, `bindInstance`,
+  `extensionContext`, `unmount` and `destroy`. `extensionContext(extension, state)` gives the context of one
+  extension: `store`, `options()`, `onOptions`, `onDestroy`, `instance()` and its own `state` slices.
+  `contextInternals(context)` gives `derive`, `validation()` and `registerValidation(api)`.
+- `addFields` and `decorateField` (spike) are left out: TK-013 adds field members. The context types
+  (`ExtensionContext`, `StateSlice`, `ValidationLink`) are module types for TK-013 and TK-020. No barrel exports
+  the module, and no built `.d.ts` names `createContext`, `contextInternals` or `registerValidation`.
+- Validation link: `ValidationLink` holds the members that the six behaviors read in the spike (`run`, `onRun`,
+  `issues`, `checks`, `validating`). The stand-in is one frozen object, because it holds no state.
+- `instance()` throws `The instance is available after every extension api has run.` before `bindInstance`.
+  The spike returned `undefined`. This follows the `FormContext` row of `01#2.3`.
+- Scenario groups of `03#Context` in `src/main/context.spec.ts` (27 cases):
+  - State slices: they start in the store, a value and an updater are written, each extension sees only its own
+    keys, one store is shared, and a key that is declared twice throws and names both extensions.
+  - Options and cleanups: a listener gets the new and the previous options, unsubscribes, and is dropped at
+    `destroy()`. G1 and D16: a cleanup ran at two unmounts and at `destroy()` (3 calls), then was dropped.
+  - Derived slices: the computed value is in the store, it is computed again after a change, the state keeps its
+    reference on a second read and after two subscribe and unsubscribe cycles, and a subscriber gets the new
+    value.
+  - `contextInternals` refuses an object that `createContext` did not make.
+  - Stand-in (D53): `issues()` and `issues(path)` are `{}` and `checks` is `[]` (every path is valid),
+    `validating` is `false`, `run` resolves `[true, {}]`, and `onRun` never calls its listener. A registered
+    api replaces the stand-in for every extension of the instance, and another instance keeps the stand-in.
+- `test:coverage`: `7 files fully covered.`, `Statements : 100% ( 151/151 )`. `pnpm run build`,
+  `pnpm run check:all` (with `check:types`) and `pnpm run test` pass.
