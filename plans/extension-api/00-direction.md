@@ -147,13 +147,13 @@ to name), so that a reader of the spike can map the names.
 
 `@oxform/core` (main APIs):
 
-- Functions and values: `defineForm`, `defineExtension`, `defineSlots`, `slots`, `defineScope`, `option`,
+- Functions and values: `defineForm`, `defineExtension`, `defineSlots`, `slots`, `defineScope`, `optionTypes`,
   `on`, `createEffect`, `get`, `idPart`.
 - Form members: `form.name`, `form.extend(extensionOrPreset)`, `form.configure(options)`,
   `form.create(options?)`.
   (`scope(path)`, `field(path)` and `array(path)` are instance members that the `handles` extension adds.)
 - Form types: `Form`, `AnyForm`, `Instance`, `Extension`, `Extendable`, `Needs`, `BuiltInApis`, `Self`,
-  `FormContext`, `StateSlice`, `BaseOptions`, `OptionDescriptor`, `OptionKind`, `FieldMembers`, `FieldOf`,
+  `FormContext`, `StateSlice`, `BaseOptions`, `OptionTypes`, `FieldMembers`, `FieldOf`,
   `ElementTag`.
 - Read-back types: `ValuesOf`, `ApiOf`, `StateOf`, `OptionsOf`, `PartsOf`, `FieldsOf`, `InstanceOf`.
 - Scope types: `Scope`, `ScopeDefinition`, `ScopedValues`.

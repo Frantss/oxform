@@ -23,14 +23,14 @@ not needed in Solid.
 
 - In: a minimal `packages/solid-v1/src/create-parts.ts` with `Root` and the part components, enough for P1 and
   P8. The parity driver and fixture views for P1 and P8 in `packages/solid-v1/tests/parity.spec.tsx`. The
-  effect of each option kind in Solid, as `01#6.1` states it.
+  `options` prop of `Root`, as `01#6.1` states it.
 - Out: the full Solid 1 surface and the other scenarios (TK-044). Solid 2 (TK-045). The `@oxform/solid`
   package (TK-046).
 
 ## Read first
 
 - `01-public-api.md#6.3`: the last paragraph names the two risks. The table lists what differs from React.
-- `01-public-api.md#6.1`: the part contract and the effect of each option kind (written by TK-037).
+- `01-public-api.md#6.1`: the part contract and the `Options` row (written by TK-037).
 - `02-structure.md#Solid`: the `packages/solid-v1` tree.
 - `03-testing.md#Adapter tests: the parity suite`: P1 and P8.
 - No Solid spike exists. Read only, for patterns: the current `packages/solid-v1/src` (`internal/`,
@@ -38,7 +38,7 @@ not needed in Solid.
 
 ## Decisions to apply
 
-- D34: the Solid adapters follow the option kinds that `01#6.1` states.
+- D34: options are a type only. `Root` takes them in `options`, as `01#6.1` states.
 - R10: the part model was made for React and has no Solid spike. If P1 or P8 cannot pass with that model,
   stop. Propose a change to `01#6.1` or `01#6.3` before TK-044 and TK-045 start. Record which path was taken
   under Evidence.

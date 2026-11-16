@@ -12,10 +12,7 @@ import type {
   FormContext,
   NeedNames,
   NeedsMember,
-  OptionDescriptor,
-  OptionDescriptors,
-  OptionKind,
-  OptionsFrom,
+  OptionTypes,
   SlotFactory,
   SlotRecord as PublicSlotRecord,
 } from './types';
@@ -26,7 +23,6 @@ type Options = Record<string, unknown>;
 type Definition = {
   readonly name: string;
   readonly needs?: NeedNames;
-  readonly options?: Readonly<Record<string, OptionDescriptor>>;
   readonly state?: (options: Options) => Options;
   api(context: FormContext<Options, Options>, deps: Options): object;
   readonly fields?: FieldsDefinition;
@@ -41,40 +37,16 @@ type SlotRecord = Readonly<Record<string, object>>;
 /** The slot group of each slot that a group made, with the needs that the group states. */
 const groups = new WeakMap<object, { readonly name: string; readonly needs?: NeedNames }>();
 
-type Chain = {
-  readonly definitions: readonly Definition[];
-  readonly optionKinds: Readonly<Record<string, OptionKind>>;
-};
-
-/** The options of every form. An extension cannot declare them again. */
-const baseOptionKinds: Readonly<Record<string, OptionKind>> = { id: 'id', schema: 'value', defaultValues: 'value' };
 const instanceKeys = new Set(['id', 'store', 'destroy']);
 
-const chains = new WeakMap<object, Chain>();
+/** The extensions of each form, in order. */
+const chains = new WeakMap<object, readonly Definition[]>();
 let instanceCount = 0;
 
-const chainOf = (form: object): Chain => {
+const chainOf = (form: object): readonly Definition[] => {
   const chain = chains.get(form);
   if (!chain) throw new TypeError('This function expects a form made by defineForm.');
   return chain;
-};
-
-/** Records the kind of each option of the chain. An option name with an owner already throws, and names both. */
-const kindsOf = (definitions: readonly Definition[]) => {
-  const kinds: Record<string, OptionKind> = { ...baseOptionKinds };
-  const owners = new Map<string, string>();
-  for (const definition of definitions) {
-    for (const [name, descriptor] of Object.entries(definition.options ?? {})) {
-      const owner = owners.get(name);
-      if (name in kinds) {
-        const which = owner === undefined ? 'the form has' : `"${owner}" already declares`;
-        throw new Error(`The "${definition.name}" extension declares the option "${name}", which ${which}.`);
-      }
-      owners.set(name, definition.name);
-      kinds[name] = descriptor.kind;
-    }
-  }
-  return kinds;
 };
 
 /** A need that the api or the state so far does not meet throws. `owner` names the extension or the slot group. */
@@ -175,7 +147,6 @@ type FormInit = Options & { readonly name?: string; readonly scopes?: Readonly<R
 
 const makeForm = (init: FormInit, definitions: readonly Definition[], configured: Options): object => {
   const { name = 'form', scopes = {}, ...initOptions } = init;
-  const chain: Chain = { definitions, optionKinds: kindsOf(definitions) };
 
   /** The options of `create` win over those of `configure`, and those over the options of `defineForm`. */
   const merge = (options: Options) => {
@@ -202,7 +173,7 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
       return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` }, merge, verify);
     },
   };
-  chains.set(form, chain);
+  chains.set(form, definitions);
   return form;
 };
 
@@ -236,7 +207,7 @@ export const defineExtension = <
   NeedState,
   const ApiNames extends readonly (keyof Provides & string)[] = [],
   const StateNames extends readonly (keyof NeedState & string)[] = [],
-  Descriptors extends OptionDescriptors = {},
+  Options extends object = {},
   State extends object = {},
   Api extends object = {},
   Slots extends PublicSlotRecord = {},
@@ -245,17 +216,18 @@ export const defineExtension = <
   _form: Extendable<Values, Provides, NeedState>,
   definition: {
     readonly name: string;
-    readonly options?: Descriptors;
+    /** The types of the options of the extension, from `optionTypes`. */
+    readonly options?: OptionTypes<Options>;
     /** Runs once per instance, with the merged options. The store starts from its result. */
-    readonly state?: (options: BaseOptions<Values> & OptionsFrom<Descriptors>) => State;
+    readonly state?: (options: BaseOptions<Values> & Partial<Options>) => State;
     /** Runs once per instance, on a server too. It must be inert: no DOM, no timer, no request. */
-    readonly api: (context: FormContext<BaseOptions<Values> & OptionsFrom<Descriptors>, State>, deps: Provides) => Api;
+    readonly api: (context: FormContext<BaseOptions<Values> & Partial<Options>, State>, deps: Provides) => Api;
     /** The slots of the extension. `slot` sees the api and the state of the form so far, and its own. */
     readonly slots?: (slot: SlotFactory<Provides & Api, NeedState & State>) => Slots;
     /** Members for field handles, built with `on`. */
     readonly fields?: Fields;
   } & NeedsMember<Provides, NeedState, ApiNames, StateNames>,
-): Extension<OptionsFrom<Descriptors>, State, Api, Slots, Fields> => definition as never;
+): Extension<Partial<Options>, State, Api, Slots, Fields> => definition as never;
 
 /**
  * Field members for the field handles whose value extends `Condition`: `fields: on<string>(isString)(build)`. The
@@ -269,28 +241,11 @@ export const on =
   ): FieldMembers<Condition, Members> =>
     ({ guard, build }) as never;
 
-/** The typed option descriptors. At runtime a descriptor is its kind. */
-export const option: {
-  string<Type extends string = string>(): OptionDescriptor<Type, 'string'>;
-  number(): OptionDescriptor<number, 'number'>;
-  boolean(): OptionDescriptor<boolean, 'boolean'>;
-  list<Type extends readonly unknown[] = readonly string[]>(): OptionDescriptor<Type, 'list'>;
-  value<Type>(): OptionDescriptor<Type, 'value'>;
-  callback<Type extends (...args: any[]) => unknown>(): OptionDescriptor<Type, 'callback'>;
-  action<Type extends (...args: any[]) => unknown>(): OptionDescriptor<Type, 'action'>;
-  id(): OptionDescriptor<string, 'id'>;
-  key(): OptionDescriptor<string, 'key'>;
-} = {
-  string: () => ({ kind: 'string' }),
-  number: () => ({ kind: 'number' }),
-  boolean: () => ({ kind: 'boolean' }),
-  list: () => ({ kind: 'list' }),
-  value: () => ({ kind: 'value' }),
-  callback: () => ({ kind: 'callback' }),
-  action: () => ({ kind: 'action' }),
-  id: () => ({ kind: 'id' }),
-  key: () => ({ kind: 'key' }),
-};
+/**
+ * The options of an extension, as one type: `options: optionTypes<{ limit: number }>()`. Every option is optional in
+ * `configure` and `create`. It is only a type: nothing reads the options of an extension at runtime.
+ */
+export const optionTypes = <Options extends object>(): OptionTypes<Options> => ({});
 
 /** The adapter controls of an instance. Only an adapter calls it (D17). */
 export const adapterControlsOf = (instance: object): AdapterControls => {
@@ -299,15 +254,12 @@ export const adapterControlsOf = (instance: object): AdapterControls => {
   return found;
 };
 
-/** The runtime kind of every option of a form, for an adapter. */
-export const optionKindsOf = (form: object): Readonly<Record<string, OptionKind>> => chainOf(form).optionKinds;
-
 /**
  * The slots of a form, in the order of its extensions. A slot with the key of an earlier slot replaces it. An adapter
  * reads them to render the parts.
  */
 export const slotsOf = (form: object): SlotRecord =>
-  Object.assign({}, ...chainOf(form).definitions.map(definition => definition.slots?.(slotFactory)));
+  Object.assign({}, ...chainOf(form).map(definition => definition.slots?.(slotFactory)));
 
 /**
  * A reusable group of slots. `build` annotates its `slot` parameter with what the slots need

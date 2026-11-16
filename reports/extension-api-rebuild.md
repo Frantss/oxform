@@ -43,10 +43,15 @@
 
 ## Option kinds have no effect in an adapter (D34)
 
-- What: the React `Root` reads only the option names (`optionKindsOf`). No kind changes what it does, as G11
-  predicted. `01#6.1` now states this.
-- Why it matters: D34 says to remove a kind that has no effect in any adapter. Here that is every kind of
-  `option.*` (`packages/core/src/main/types.ts:15`), a cross-cutting change of the core API. Owner decision needed.
+- What: the React `Root` read only the option names. No kind changed what it did, as G11 predicted.
+- Resolved: the owner chose to remove the kinds. Options are a type only (`optionTypes`,
+  `packages/core/src/main/form.ts`), and a duplicate option name is a type error of `extend`
+  (`packages/core/src/main/types.ts`). `Root` takes the options in `options`, so `onSubmit` and other DOM props
+  with an option name reach the element (`packages/react/src/create-parts.ts`).
+- Limit: the duplicate-name check is a type error only. JavaScript callers get no runtime error for a duplicate
+  option name; a duplicate check name still throws at create, through its state key.
+- Limit: `standard` runs its chain on a form typed with no options, because a generic `Options` leaves the check
+  undecided, and casts the result (`packages/core/src/presets/standard.ts`).
 
 ## The type coverage script exists twice
 

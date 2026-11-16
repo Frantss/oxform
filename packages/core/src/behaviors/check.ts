@@ -1,8 +1,8 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { isWithin } from '#internal/paths';
-import { defineExtension, option } from '#main/form';
+import { defineExtension, optionTypes } from '#main/form';
 import type { Path } from '#main/path-types';
-import type { Extendable, FormContext, Needs, OptionDescriptor } from '#main/types';
+import type { Extendable, FormContext, Needs } from '#main/types';
 import { isInScope, registerCheck, type CheckValidators, type ValidationApi, type ValidationEvent } from './validation';
 
 /** A Standard Schema issue. The check adds `type`, the event of the validator that found it. */
@@ -139,11 +139,8 @@ export const check =
     defineExtension(form, {
       name: `check:${name}`,
       needs: { api: ['validation'] },
-      // A key from a parameter widens to `string`, so these three casts state the name (01-public-api.md, 7.5).
-      options: { [name]: option.value<CheckValidators<Values>>() } as Record<
-        Name,
-        OptionDescriptor<CheckValidators<Values>, 'value'>
-      >,
+      options: optionTypes<Record<Name, CheckValidators<Values>>>(),
+      // A key from a parameter widens to `string`, so these two casts state the name (01-public-api.md, 7.5).
       state: () => ({ [name]: {} }) as Record<Name, CheckState>,
       api: (context, { validation }) =>
         ({ [name]: createCheck(context, { validation }, { ...options, name }) }) as Record<

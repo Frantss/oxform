@@ -449,8 +449,8 @@ Verification tasks of P8-02, at the installed versions:
    embed follows the source it runs, as text.
 9. **Glossary terms only.** Pages use the terms of `00-direction.md#Glossary`. A check fails on "fragment",
    "kind", "field extras", "form definition", "configured form", "pipe", "stage", "kernel", "plugin" and
-   "behavior API", and on "primitive" outside the text that describes UI SDK. The check allows "option kind",
-   "prop kind" and code identifiers such as `OptionKind` and `PropKind`. `check:terms` of `02-structure.md`
+   "behavior API", and on "primitive" outside the text that describes UI SDK. The check allows "prop kind" and
+   code identifiers such as `PropKind`. `check:terms` of `02-structure.md`
    applies the same list to source, tests and contributor documents.
 10. **The chain is shown whole.** A snippet that uses a form shows its `defineForm(...)` chain, or imports it
     from a block on the same page. An agent must see the order of the extensions.

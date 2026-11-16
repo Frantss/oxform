@@ -1,5 +1,5 @@
 import { contextInternals } from '#main/context';
-import { defineExtension, option } from '#main/form';
+import { defineExtension, optionTypes } from '#main/form';
 import type { MaybePromise, Unsubscribe } from '#main/path-types';
 import type { Extendable, FormContext, Needs, Self, SelfIssues } from '#main/types';
 import { statusInternals, type StatusApi } from './status';
@@ -129,9 +129,9 @@ export const submit = <Values>(form: Extendable<Values, Needs<Values, 'values' |
   defineExtension(form, {
     name: 'submit',
     needs: { api: ['values', 'status'] },
-    options: {
-      onSubmit: option.action<(values: Values, form: Self, intent?: string) => MaybePromise<unknown>>(),
-      onInvalid: option.action<(issues: SelfIssues, form: Self, intent?: string) => MaybePromise<unknown>>(),
-    },
+    options: optionTypes<{
+      onSubmit: (values: Values, form: Self, intent?: string) => MaybePromise<unknown>;
+      onInvalid: (issues: SelfIssues, form: Self, intent?: string) => MaybePromise<unknown>;
+    }>(),
     api: (context, deps) => ({ submit: createSubmit<Values>(context, deps) }),
   });

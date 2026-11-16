@@ -92,8 +92,8 @@ packages/core/
 │   └── adapter.ts            # @oxform/core/adapter
 ├── src/
 │   ├── main/
-│   │   ├── form.ts           # defineForm, defineExtension, option, on, defineSlots, slots, the needs check at create.
-│   │   │                     #   Also the adapter-facing slotsOf, optionKindsOf, adapterControlsOf and prefixOf, with the scope prefix key
+│   │   ├── form.ts           # defineForm, defineExtension, optionTypes, on, defineSlots, slots, the needs check at create.
+│   │   │                     #   Also the adapter-facing slotsOf, adapterControlsOf and prefixOf, with the scope prefix key
 │   │   ├── context.ts        # The form context: state slices, derived state, field members. Owns contextInternals
 │   │   │                     #   and the validation link with its stand-in (01-public-api.md, 3.1 and section 5)
 │   │   ├── scopes.ts         # defineScope. Carries its mount and verify hooks, so form.ts never imports it
@@ -243,11 +243,11 @@ sizes can be above the spike's, and the size report shows them. The path types a
 
 The spike's React adapter imports `adapterControlsOf` and `slotsOf` from `form.ts`, `prefixOf` from
 `handles.ts`, and `getAt`, `isDeepEqual` and `joinPath` from `paths.ts` (`X/spike/src/react/create-parts.tsx:23-25`).
-It reads `form.optionKinds` as a member of the form (`create-parts.tsx:29`). Section 7.2 of
-`01-public-api.md` replaces that member with `optionKindsOf(form)`. With core as a peer dependency, an adapter
+It reads `form.optionKinds` as a member of the form (`create-parts.tsx:29`), which the target removes
+(`01-public-api.md`, D34). With core as a peer dependency, an adapter
 needs a public home for them (design item 2). That home is `@oxform/core/adapter` (owner decision 8).
 `01-public-api.md`, section 7.2, owns the list: `slotsOf`,
-`optionKindsOf`, `adapterControlsOf`, `prefixOf`, `joinPath` and `isDeepEqual`. `getAt` is not in the list:
+`adapterControlsOf`, `prefixOf`, `joinPath` and `isDeepEqual`. `getAt` is not in the list:
 an adapter uses the public `get`. The packaging consequence of each choice that was considered:
 
 | Approach                                            | Packaging consequence                                                                                                                                                                                   | Verification                                                                                                                | Risks and mitigation                                                                                                                          |

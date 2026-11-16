@@ -19,7 +19,7 @@ export const serverScenarios = {
       'the server HTML of the quick start form matches the stored snapshots of its values, aria and disabled state',
     run: async driver => {
       const initial = await driver.renderToString('signIn', {
-        root: { defaultValues: { email: 'ada@example.com', password: '' } },
+        root: { options: { defaultValues: { email: 'ada@example.com', password: '' } } },
       });
       const instance = signIn.create({ id: 'server-form' });
       await instance.submit.run();
@@ -38,7 +38,7 @@ export const serverScenarios = {
     run: async driver => {
       const [first, second] = await Promise.all(
         ['ada@example.com', 'grace@example.com'].map(email =>
-          driver.renderToString('signIn', { root: { defaultValues: { email, password: '' } } }),
+          driver.renderToString('signIn', { root: { options: { defaultValues: { email, password: '' } } } }),
         ),
       );
 

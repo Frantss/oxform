@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { schemaOf } from '../../tests/helpers';
 import { getAt, setAt } from '#internal/paths';
 import { contextInternals } from './context';
-import { adapterControlsOf, defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slots, slotsOf } from './form';
+import { adapterControlsOf, defineExtension, defineForm, defineSlots, on, optionTypes, slots, slotsOf } from './form';
 import type { Path } from './path-types';
 import type { BuiltInApis, Extendable, Form, Needs, Self, SlotFactory } from './types';
 
@@ -42,7 +42,7 @@ const store = <Values>(form: Extendable<Values>) =>
 const limited = <Values>(form: Extendable<Values>) =>
   defineExtension(form, {
     name: 'limited',
-    options: { limit: option.number(), onDone: option.action<(form: Self) => void>() },
+    options: optionTypes<{ limit: number; onDone: (form: Self) => void }>(),
     api: context => ({
       limit: () => context.options().limit,
       done: () => context.options().onDone?.(context.instance()),
@@ -66,10 +66,6 @@ const returning = (name: string, key: string) => (form: Extendable<unknown>) => 
 /** An extension that declares the state key `key`. */
 const declaring = (name: string, key: string) => (form: Extendable<unknown>) =>
   defineExtension(form, { name, state: () => ({ [key]: 1 }), api: () => ({}) });
-
-/** An extension that declares the given options. */
-const withOptions = (name: string, options: Record<string, ReturnType<typeof option.number>>) => (form: Extendable<unknown>) =>
-  defineExtension(form, { name, options, api: () => ({}) });
 
 /**
  * An extension that needs the api names and the state keys it is given, and records when its api runs. Its type
@@ -213,18 +209,6 @@ describe('defineForm', () => {
     expect([subject.form.name, defineForm({ schema: schemaOf<Login>(), defaultValues: {} as Login }).name]).toEqual(['login', 'form']);
   });
 
-  it('lists the kind of every option, the base options first', () => {
-    using subject = setup();
-
-    expect(optionKindsOf(subject.form.extend(limited))).toEqual({
-      id: 'id',
-      schema: 'value',
-      defaultValues: 'value',
-      limit: 'number',
-      onDone: 'action',
-    });
-  });
-
   it('starts no timer and calls no method at creation', () => {
     using subject = setup();
     vi.useFakeTimers();
@@ -340,23 +324,6 @@ describe('form.extend', () => {
     expect(Object.keys(subject.create(() => form.create()))).toEqual(['limit', 'done', 'values', 'marker', 'id', 'store', 'destroy']);
   });
 
-  it('throws when two extensions declare an option, and names both', () => {
-    using subject = setup();
-    const form = subject.form.extend(withOptions('first', { limit: option.number() }));
-
-    expect(() => form.extend(withOptions('second', { limit: option.number() }))).toThrow(
-      'The "second" extension declares the option "limit", which "first" already declares.',
-    );
-  });
-
-  it('throws when an extension declares an option of the form', () => {
-    using subject = setup();
-
-    expect(() => subject.form.extend(withOptions('bad', { id: option.number() }))).toThrow(
-      'The "bad" extension declares the option "id", which the form has.',
-    );
-  });
-
   it('throws at create when two extensions return the same api key, and names both', () => {
     using subject = setup();
     const form = subject.form.extend(returning('first', 'shared')).extend(returning('second', 'shared'));
@@ -422,7 +389,7 @@ describe('defineExtension', () => {
     const counter = <Values>(form: Extendable<Values>) =>
       defineExtension(form, {
         name: 'counter',
-        options: { start: option.number() },
+        options: optionTypes<{ start: number }>(),
         state: options => ({ count: options.start ?? 0 }),
         api: context => ({ count: () => context.state.count.get() }),
       });
@@ -555,43 +522,6 @@ describe('form.configure', () => {
   });
 });
 
-describe('option', () => {
-  it('records the runtime kind of each descriptor', () => {
-    using subject = setup();
-    const kinds = Object.entries(option as Record<string, () => { kind: string }>).map(([name, make]) => [name, make().kind]);
-
-    expect([subject.form.name, ...kinds]).toEqual([
-      'form',
-      ['string', 'string'],
-      ['number', 'number'],
-      ['boolean', 'boolean'],
-      ['list', 'list'],
-      ['value', 'value'],
-      ['callback', 'callback'],
-      ['action', 'action'],
-      ['id', 'id'],
-      ['key', 'key'],
-    ]);
-  });
-
-  it('passes the instance where an option callback takes Self', () => {
-    using subject = setup();
-    const received: unknown[] = [];
-    const instance = subject.create(() => subject.form.extend(limited).create({ onDone: form => received.push(form) }));
-    instance.done();
-
-    expect(received).toEqual([instance]);
-  });
-});
-
-describe('optionKindsOf', () => {
-  it('refuses an object that defineForm did not make', () => {
-    using subject = setup();
-
-    expect(() => optionKindsOf({ ...subject.form })).toThrow('This function expects a form made by defineForm.');
-  });
-});
-
 describe('slotsOf', () => {
   it('gives a form with no slot an empty record', () => {
     using subject = setup();
@@ -658,16 +588,12 @@ describe('defineSlots', () => {
 });
 
 describe('slots', () => {
-  it('adds slots and no api, option or state', () => {
+  it('adds slots and no api or state', () => {
     using subject = setup();
     const form = subject.form.extend(slots(slot => ({ badge: slot({}) })));
     const instance = subject.create(() => form.create());
 
-    expect([Object.keys(instance), instance.store.state, Object.keys(optionKindsOf(form))]).toEqual([
-      ['id', 'store', 'destroy'],
-      {},
-      ['id', 'schema', 'defaultValues'],
-    ]);
+    expect([Object.keys(instance), instance.store.state]).toEqual([['id', 'store', 'destroy'], {}]);
   });
 
   it('merges across extend calls, and a later slot replaces an earlier one with the same key', () => {

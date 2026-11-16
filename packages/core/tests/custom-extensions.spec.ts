@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { defineExtension, defineForm, on, option, type Extendable, type Needs } from '#core';
+import { defineExtension, defineForm, on, optionTypes, type Extendable, type Needs } from '#core';
 import { slotsOf } from '#core/adapter';
 import { standard } from '#core/presets';
 import { schemaOf } from './helpers';
@@ -18,7 +18,7 @@ const tracked =
     defineExtension(form, {
       name,
       needs: { api: ['values', 'submit'] },
-      options: { limit: option.number() },
+      options: optionTypes<{ limit: number }>(),
       state: () => ({ edits: 0 }),
       api: (context, deps) => {
         const stop = deps.values.onChange(() => context.state.edits.set(edits => edits + 1));

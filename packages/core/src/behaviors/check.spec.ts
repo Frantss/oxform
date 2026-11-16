@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { defineForm, optionKindsOf } from '#main/form';
+import { defineForm } from '#main/form';
 import { reporting, schemaOf } from '../../tests/helpers';
 import { check, checkInternals, type CheckEntry } from './check';
 import { validation, type CheckValidators } from './validation';
@@ -31,23 +31,22 @@ const setup = (options: { error?: CheckValidators<Profile>; warning?: CheckValid
 const messages = (entries: readonly CheckEntry[]) => entries.map(entry => entry.message);
 
 describe('check as an extension', () => {
-  it('takes its name from the argument, in the api, the options and the state', () => {
+  it('takes its name from the argument, in the api and the state', () => {
     using subject = setup();
 
-    expect([subject.error.name, subject.warning.name, Object.keys(optionKindsOf(subject.form)), subject.instance.store.state]).toEqual([
+    expect([subject.error.name, subject.warning.name, subject.instance.store.state]).toEqual([
       'error',
       'warning',
-      ['id', 'schema', 'defaultValues', 'error', 'warning'],
       expect.objectContaining({ error: {}, warning: {} }),
     ]);
   });
 
-  it('refuses a second check with the same name', () => {
+  it('refuses a second check with the same name at create', () => {
     using subject = setup();
+    // The option name `error` is declared twice, which `extend` rejects as a type error. JavaScript reaches create.
+    const twice = subject.form.extend(check('error') as never) as typeof subject.form;
 
-    expect(() => subject.form.extend(check('error'))).toThrow(
-      'The "check:error" extension declares the option "error", which "check:error" already declares.',
-    );
+    expect(() => twice.create()).toThrow('"check:error" already');
   });
 
   it('throws at create without validation, and names itself and the need', () => {

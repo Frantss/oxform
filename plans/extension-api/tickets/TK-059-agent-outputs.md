@@ -54,8 +54,8 @@ page or a forbidden term. Each docs tool check has a recorded result.
 - [ ] `pnpm run docs:check:agents` passes after `pnpm run docs:build`.
 - [ ] Each check of `04#7.5` fails on a planted fault: an empty `.md` output, a dead `llms.txt` link, a
       missing fixed heading, a block with no `twoslash`, a `---cut---`, a forbidden term, a removed heading id.
-- [ ] `pnpm run check:terms` fails on a forbidden term in `packages/*/src` and allows `OptionKind` and
-      "option kind". `pnpm run check:all` runs it.
+- [ ] `pnpm run check:terms` fails on a forbidden term in `packages/*/src` and allows `PropKind` and
+      "prop kind". `pnpm run check:all` runs it.
 - [ ] CI runs `check:terms` and `docs:check:agents` in the order of `02#CI`.
 - [ ] The three text routes are prerendered, and the `.md` route answers `Accept: text/markdown` on the srvx
       server.

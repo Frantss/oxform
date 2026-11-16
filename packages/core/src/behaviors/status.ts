@@ -1,6 +1,6 @@
 import { ancestorsOf, getAt, isDeepEqual, isWithin } from '#internal/paths';
 import { contextInternals } from '#main/context';
-import { defineExtension, option } from '#main/form';
+import { defineExtension, optionTypes } from '#main/form';
 import type { Path } from '#main/path-types';
 import type { Extendable, FormContext, Needs } from '#main/types';
 import type { ValuesApi } from './values';
@@ -252,10 +252,7 @@ export const status = <Values>(form: Extendable<Values, Needs<Values, 'values'>>
   defineExtension(form, {
     name: 'status',
     needs: { api: ['values'] },
-    options: {
-      defaultStatus: option.value<FormStatusDefaults>(),
-      defaultFieldStatus: option.value<DefaultFieldStatus<Values>>(),
-    },
+    options: optionTypes<{ defaultStatus: FormStatusDefaults; defaultFieldStatus: DefaultFieldStatus<Values> }>(),
     state: options => ({
       status: { form: formFlagsOf(options), fields: {}, generation: 0 } satisfies StatusSlice as unknown as StatusState,
     }),

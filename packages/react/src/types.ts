@@ -73,20 +73,18 @@ export type PartComponents<F, Elements> = {
   readonly [Name in PartNames<F> as Capitalize<Name>]: PartComponent<F, Name, TagOf<F, Name, Elements> & ElementTag>;
 };
 
-type CreateOptionsOf<F> = Partial<OptionsOf<F>>;
-type NoOptions<F> = { readonly [Name in keyof OptionsOf<F>]?: never };
-/** The DOM props of the element of `Root`: none for a form with no `root` slot. Option names shadow DOM props. */
+/** The DOM props of the element of `Root`: none for a form with no `root` slot. */
 type RootDomProps<F, Elements> = 'root' extends keyof PartsOf<F>
-  ? Omit<ComponentPropsWithRef<TagOf<F, 'root', Elements> & ElementTag>, 'children' | keyof OptionsOf<F>>
+  ? Omit<ComponentPropsWithRef<TagOf<F, 'root', Elements> & ElementTag>, 'children' | 'form'>
   : {};
 
 /**
- * The props of `Root`: the options of the form, or an existing instance in `form` (G12). The instance keeps the
- * options of its owner, so option props beside `form` are a type error.
+ * The props of `Root`: the DOM props of its element, and the options of the form in `options`, or an existing
+ * instance in `form` (G12). The instance keeps the options of its owner, so `options` beside `form` is a type error.
  */
 export type RootProps<F, Elements = {}> = RootDomProps<F, Elements> & { readonly children?: ReactNode } & (
-    | (CreateOptionsOf<F> & { readonly form?: never })
-    | (NoOptions<F> & { readonly form: InstanceOf<F> })
+    | { readonly options?: Partial<OptionsOf<F>>; readonly form?: never }
+    | { readonly options?: never; readonly form: InstanceOf<F> }
   );
 
 /** `Root` provides the instance to its parts. With a `root` slot it renders the element of that slot. */

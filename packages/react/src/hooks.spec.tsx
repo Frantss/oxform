@@ -63,7 +63,7 @@ describe('useForm', () => {
 
     expect(
       subject.toString(
-        <Root defaultValues={{ name: 'Ada', address: { city: '' } }}>
+        <Root options={{ defaultValues: { name: 'Ada', address: { city: '' } } }}>
           <Reader />
         </Root>,
       )(),

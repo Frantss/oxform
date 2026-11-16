@@ -20,7 +20,7 @@ export const browserScenarios = {
     title: 'parts render in the declared element, typing writes to the form, and option props reach the instance',
     run: async driver => {
       await using view = await driver.mount('signIn', {
-        root: { defaultValues: { email: 'ada@example.com', password: '' } },
+        root: { options: { defaultValues: { email: 'ada@example.com', password: '' } } },
       });
       const screen = screenOf(view.container);
       const email = screen.getByLabelText('Email');
@@ -52,7 +52,7 @@ export const browserScenarios = {
       'a submit through the root shows the issues in the error parts, then calls onSubmit with the values and the pressed button',
     run: async driver => {
       const onSubmit = vi.fn();
-      await using view = await driver.mount('signIn', { root: { onSubmit } });
+      await using view = await driver.mount('signIn', { root: { options: { onSubmit } } });
       const screen = screenOf(view.container);
       await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 

@@ -5,7 +5,7 @@ import {
   defineScope,
   defineSlots,
   on,
-  option,
+  optionTypes,
   slots,
   type AnyForm,
   type ApiOf,
@@ -24,10 +24,7 @@ import {
   type InstanceOf,
   type KeyProp,
   type Needs,
-  type OptionDescriptor,
-  type OptionDescriptors,
-  type OptionKind,
-  type OptionsFrom,
+  type OptionTypes,
   type OptionsOf,
   type PartDomProps,
   type PartEventContext,
@@ -70,7 +67,7 @@ const store = <Values>(form: Extendable<Values>) =>
 const done = <Values>(form: Extendable<Values>) =>
   defineExtension(form, {
     name: 'done',
-    options: { limit: option.number(), onDone: option.action<(form: Self) => void>() },
+    options: optionTypes<{ limit: number; onDone: (form: Self) => void }>(),
     api: () => ({ done: () => {} }),
   });
 
@@ -188,46 +185,29 @@ describe('Self', () => {
   });
 });
 
-describe('option, OptionDescriptor, OptionKind', () => {
-  it('carries the kind and the type of an option', () => {
-    expectTypeOf(option.string<'a' | 'b'>()).toEqualTypeOf<OptionDescriptor<'a' | 'b', 'string'>>();
+/** Declares the option `limit` again. */
+const limitedAgain = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, { name: 'limitedAgain', options: optionTypes<{ limit: number }>(), api: () => ({}) });
+
+/** Declares the option `id`, which every form has. */
+const withId = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, { name: 'withId', options: optionTypes<{ id: number }>(), api: () => ({}) });
+
+describe('optionTypes, OptionTypes', () => {
+  it('declares the options of an extension as one type, each optional in configure and create', () => {
+    expectTypeOf(optionTypes<{ limit: number }>()).toEqualTypeOf<OptionTypes<{ limit: number }>>();
+    expectTypeOf<OptionsOf<typeof form>['limit']>().toEqualTypeOf<number>();
   });
 
-  it('records one of the known kinds', () => {
-    expectTypeOf(option.number().kind).toEqualTypeOf<OptionKind & 'number'>();
+  it('rejects an option that an earlier extension declares', () => {
+    expectTypeOf(form.extend(limitedAgain).error).toEqualTypeOf<'The option "limit" is declared twice.'>();
+    // @ts-expect-error The option "limit" is declared twice.
+    form.extend(limitedAgain).create();
   });
 
-  it('rejects a string option of another type', () => {
-    // @ts-expect-error A string option has a string type.
-    option.string<number>();
-  });
-
-  it('rejects an unknown kind', () => {
-    // @ts-expect-error There is no date kind.
-    accepts<OptionKind>('date');
-  });
-
-  it('rejects a descriptor of another kind', () => {
-    // @ts-expect-error A number descriptor is not a string descriptor.
-    accepts<OptionDescriptor<string, 'string'>>(option.number());
-  });
-});
-
-describe('OptionDescriptors, OptionsFrom', () => {
-  it('types a record of descriptors as optional options', () => {
-    const descriptors = { limit: option.number() } satisfies OptionDescriptors;
-
-    expectTypeOf<OptionsFrom<typeof descriptors>>().toEqualTypeOf<{ readonly limit?: number }>();
-  });
-
-  it('rejects a record value that is not a descriptor', () => {
-    // @ts-expect-error A number is not a descriptor.
-    accepts<OptionDescriptors>({ limit: 1 });
-  });
-
-  it('rejects an option of the wrong type', () => {
-    // @ts-expect-error `limit` is a number.
-    accepts<OptionsFrom<{ limit: OptionDescriptor<number> }>>({ limit: 'many' });
+  it('rejects an option that every form has', () => {
+    // @ts-expect-error The option "id" is declared twice.
+    login.extend(withId).create();
   });
 });
 
@@ -265,9 +245,7 @@ describe('ValuesOf, ApiOf, StateOf, OptionsOf, InstanceOf', () => {
 
 describe('defineExtension, Extension, Extendable', () => {
   it('returns the types that the extension adds', () => {
-    expectTypeOf(store(login)).toEqualTypeOf<
-      Extension<OptionsFrom<{}>, { values: Login }, { values: { get: () => Login } }>
-    >();
+    expectTypeOf(store(login)).toEqualTypeOf<Extension<{}, { values: Login }, { values: { get: () => Login } }>>();
   });
 
   it('needs an api', () => {

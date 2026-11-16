@@ -1,4 +1,4 @@
-export { defineExtension, defineForm, defineSlots, on, option, slots } from '#main/form';
+export { defineExtension, defineForm, defineSlots, on, optionTypes, slots } from '#main/form';
 
 export type {
   AnyForm,
@@ -18,10 +18,7 @@ export type {
   InstanceOf,
   KeyProp,
   Needs,
-  OptionDescriptor,
-  OptionDescriptors,
-  OptionKind,
-  OptionsFrom,
+  OptionTypes,
   OptionsOf,
   PartDomProps,
   PartEventContext,

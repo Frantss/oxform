@@ -3,7 +3,6 @@ import {
   adapterControlsOf,
   isDeepEqual,
   joinPath,
-  optionKindsOf,
   prefixOf,
   slotsOf,
   type AdapterControls,
@@ -12,7 +11,6 @@ import {
   type PartsFromSlots,
   type ResolveKeys,
 } from '@oxform/core/adapter';
-import type { OptionKind } from '@oxform/core';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expectTypeOf, it } from 'vite-plus/test';
 
@@ -31,17 +29,6 @@ describe('slotsOf', () => {
   it('takes a form', () => {
     // @ts-expect-error slotsOf takes a form.
     slotsOf('form');
-  });
-});
-
-describe('optionKindsOf', () => {
-  it('reads the kind of every option', () => {
-    expectTypeOf(optionKindsOf(form)).toEqualTypeOf<Readonly<Record<string, OptionKind>>>();
-  });
-
-  it('takes a form', () => {
-    // @ts-expect-error optionKindsOf takes a form.
-    optionKindsOf(1);
   });
 });
 

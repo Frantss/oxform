@@ -127,8 +127,8 @@ describe('PartComponents', () => {
 });
 
 describe('RootProps', () => {
-  it('takes the options of the form, or an existing instance', () => {
-    accepts<RootProps<typeof form>>({ defaultValues: { name: 'Ada', color: '', address: { city: '' } } });
+  it('takes the options of the form in options, or an existing instance', () => {
+    accepts<RootProps<typeof form>>({ options: { defaultValues: { name: 'Ada', color: '', address: { city: '' } } } });
     accepts<RootProps<typeof form>>({ form: instance });
   });
 
@@ -136,14 +136,27 @@ describe('RootProps', () => {
     // @ts-expect-error The instance keeps the options of its owner.
     accepts<RootProps<typeof form>>({
       form: instance,
-      defaultValues: { name: 'Ada', color: '', address: { city: '' } },
+      options: { defaultValues: { name: 'Ada', color: '', address: { city: '' } } },
     });
+  });
+
+  it('rejects an option outside options', () => {
+    // @ts-expect-error `defaultValues` is an option, so it goes in `options`.
+    accepts<RootProps<typeof form>>({ defaultValues: { name: 'Ada', color: '', address: { city: '' } } });
   });
 });
 
 describe('RootComponent', () => {
   it('takes the DOM props of the element of the root slot', () => {
     accepts(<parts.Root action='/sign-in' />);
+  });
+
+  it('gives a DOM prop with the name of an option to the element', () => {
+    accepts(
+      <parts.Root
+        onSubmit={event => expectTypeOf(event.currentTarget).toEqualTypeOf<EventTarget & HTMLFormElement>()}
+      />,
+    );
   });
 
   it('takes no DOM prop for a form with no root slot', () => {

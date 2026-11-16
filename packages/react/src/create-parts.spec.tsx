@@ -13,8 +13,11 @@ const accepting = (validate = vi.fn((value: unknown) => ({ value: value as never
 
 const form = defineForm({ schema: accepting().schema as StandardSchemaV1<{ name: string }>, defaultValues: { name: '' } }).extend(standard);
 
-/** A mounted `Root` with the Field `name`, whose `error` check counts its focus and blur runs. */
-const setup = () => {
+/**
+ * A mounted `Root` with the Field `name`, whose `error` check counts its focus and blur runs. `rootProps` replaces the
+ * props of `Root`, which default to that instance.
+ */
+const setup = (rootProps?: Record<string, unknown>) => {
   const focus = accepting();
   const blur = accepting();
   const { Root, Field } = createParts(form);
@@ -23,7 +26,7 @@ const setup = () => {
   const root = createRoot(container);
   flushSync(() =>
     root.render(
-      <Root form={instance}>
+      <Root {...(rootProps ?? { form: instance })}>
         <Field name='name' aria-label='Name' />
       </Root>,
     ),
@@ -31,6 +34,7 @@ const setup = () => {
 
   return {
     instance,
+    container,
     focus,
     blur,
     [Symbol.dispose]: () => {
@@ -54,6 +58,15 @@ describe('createParts', () => {
     subject.instance.field('name').blur();
 
     expect(subject.blur.validate.mock.calls.length).toBe(1);
+  });
+
+  it('gives the onSubmit prop to the element and the onSubmit option to the form', async () => {
+    const element = vi.fn();
+    const option = vi.fn();
+    using subject = setup({ onSubmit: element, options: { onSubmit: option } });
+    subject.container.querySelector('form')!.requestSubmit();
+
+    await vi.waitFor(() => expect([element.mock.calls.length, option.mock.calls[0]?.[0]]).toEqual([1, { name: '' }]));
   });
 
   it('throws for an element of a part that the form does not have', () => {

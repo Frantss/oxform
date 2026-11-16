@@ -11,28 +11,28 @@ import type { IssuesByCheck, ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
 import type { ArrayPath, ObjectPath, Path, PathValue, Unsubscribe, Updater } from './path-types';
 
-/** How an adapter passes an option. The descriptor gives the option its TypeScript type. */
-export type OptionKind = 'string' | 'number' | 'boolean' | 'list' | 'value' | 'callback' | 'action' | 'id' | 'key';
+declare const optionTypes: unique symbol;
 
-declare const optionType: unique symbol;
-
-/** An option: the runtime kind and the TypeScript type, declared together. At runtime it is `{ kind }`. */
-export interface OptionDescriptor<Type = unknown, Kind extends OptionKind = OptionKind> {
-  readonly kind: Kind;
-  readonly [optionType]?: Type;
+/** The options of an extension, as a type only. `optionTypes` makes it, and at runtime it is nothing. */
+export interface OptionTypes<Options> {
+  readonly [optionTypes]?: Options;
 }
 
-export type OptionDescriptors = Readonly<Record<string, OptionDescriptor<any>>>;
+/** The option names that `Next` declares and `Options` already has. */
+type ClashingOptions<Options, Next> = keyof Next & keyof Options & string;
 
-/** The options of a descriptor record. Every option is optional. */
-export type OptionsFrom<Descriptors> = {
-  readonly [Name in keyof Descriptors]?: Descriptors[Name] extends OptionDescriptor<infer Type> ? Type : never;
-};
+/**
+ * What `extend` returns for an extension that declares an option the form already has. It has no form member, so
+ * the next `extend`, `configure` or `create` is a type error that names the option.
+ */
+interface DuplicateOption<Name extends string> {
+  readonly error: `The option "${Name}" is declared twice.`;
+}
 
 declare const selfBrand: unique symbol;
 
 /**
- * The instance, as a parameter of an option: `option.action<(values: V, form: Self) => unknown>()`. An extension
+ * The instance, as a parameter of an option: `optionTypes<{ onDone: (form: Self) => void }>()`. An extension
  * cannot name the instance, because later extensions add to it. `configure` and `create` replace `Self` with it.
  */
 export interface Self {
@@ -217,7 +217,7 @@ export type Needs<Values, Names extends keyof BuiltInApis<Values>> = Pick<BuiltI
 export type ElementTag = keyof HTMLElementTagNameMap;
 
 /** How a part passes a prop to a slot. A `key` prop is a path of the form, or of the scope of the part. */
-export type PropKind = 'key' | OptionKind;
+export type PropKind = 'key' | 'string' | 'number' | 'boolean' | 'list' | 'value' | 'callback' | 'action' | 'id';
 
 type PropType<Kind extends PropKind> = Kind extends 'key' | 'string' | 'id'
   ? string
@@ -377,14 +377,16 @@ export interface Form<Values, Api = {}, Options = {}, State = {}, Slots = {}, Fi
     extension: (
       form: Extendable<Values, Api, State>,
     ) => Extension<NextOptions, NextState, NextApi, NextSlots, NextFields>,
-  ): Form<
-    Values,
-    Api & NextApi,
-    Options & NextOptions,
-    State & NextState,
-    Omit<Slots, keyof NextSlots> & NextSlots,
-    Fields | NextFields
-  >;
+  ): [ClashingOptions<BaseOptions<Values> & Options, NextOptions>] extends [never]
+    ? Form<
+        Values,
+        Api & NextApi,
+        Options & NextOptions,
+        State & NextState,
+        Omit<Slots, keyof NextSlots> & NextSlots,
+        Fields | NextFields
+      >
+    : DuplicateOption<ClashingOptions<BaseOptions<Values> & Options, NextOptions>>;
   /**
    * Applies a preset: a function from form to form, such as `standard`. It is the last overload, because the first
    * one types the parameter of an inline extension, `form.extend(form => defineExtension(form, ...))` (D18).

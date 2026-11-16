@@ -1,7 +1,7 @@
 'use client';
 
 import type { AnyForm, PartsOf } from '@oxform/core';
-import { adapterControlsOf, optionKindsOf } from '@oxform/core/adapter';
+import { adapterControlsOf } from '@oxform/core/adapter';
 import { createElement, useEffect, useId, useLayoutEffect, useState, type ReactNode } from 'react';
 import { contextOf, slotsOfForm } from '#context';
 import { createHooks } from '#hooks';
@@ -25,7 +25,6 @@ export const createParts = (<F extends AnyForm, const Elements extends PartEleme
   for (const name of Object.keys(overrides))
     if (!(name in slots)) throw new Error(`oxform: the form has no part "${name}".`);
   const tagOf = (name: string) => overrides[name] ?? slots[name]!.element ?? 'div';
-  const optionNames = new Set(Object.keys(optionKindsOf(form)));
   const FormContext = contextOf(form);
   const hooks = createHooks(form);
   const { useForm } = hooks;
@@ -39,16 +38,15 @@ export const createParts = (<F extends AnyForm, const Elements extends PartEleme
 
   const Root = ({
     form: provided,
+    options: given,
     children,
-    ...rest
-  }: Record<string, unknown> & { form?: Instance; children?: ReactNode }) => {
-    const id = useId();
-    const options: Record<string, unknown> = { id };
-    const domProps: Record<string, unknown> = {};
-    for (const [name, value] of Object.entries(rest)) (optionNames.has(name) ? options : domProps)[name] = value;
+    ...domProps
+  }: Record<string, unknown> & { form?: Instance; options?: Record<string, unknown>; children?: ReactNode }) => {
+    // The id of the framework is hydration-safe. An `id` option of the caller wins.
+    const options = { id: useId(), ...given };
 
     const [instance] = useState(() => provided ?? (form as unknown as FormLike).create(options));
-    // An instance that `Root` made follows the option props. A given instance keeps the options of its owner.
+    // An instance that `Root` made follows `options`. A given instance keeps the options of its owner.
     const controls = provided ? undefined : adapterControlsOf(instance);
     useLayoutEffect(() => controls?.setOptions(options));
     useEffect(() => () => controls?.unmount(), [controls]);
