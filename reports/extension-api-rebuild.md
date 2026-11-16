@@ -22,8 +22,10 @@
 - What: `packages/core/src/behaviors/slots.ts` marks each `defineSlots` call `/* @__PURE__ */`, but
   `packages/core/dist/behaviors.js` holds no such annotation after `pnpm run build`.
 - Why it matters: a bundler may keep every slot group of `@oxform/core/behaviors` in an app that spreads one.
-  Plan risk R02 names the fallback: one module per group. The tree-shaking check that would show the effect was
-  deleted on 2026-11-16, so the fallback is not applied. Owner decision needed.
+  Plan risk R02 names the fallback: one module per group.
+- Resolved on 2026-11-16: the current build keeps the annotations (`dist/behaviors-*.js`, each `defineSlots`
+  call). An esbuild bundle of `dist/behaviors.js` that imports only `rootSlots` keeps `rootSlots` and drops the
+  other four groups; one that imports only `values` keeps no slot group. The fallback is not needed.
 
 ## The React peer range allows versions that the adapter does not support
 
