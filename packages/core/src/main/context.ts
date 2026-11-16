@@ -45,8 +45,19 @@ const noValidation: ValidationLink = Object.freeze({
   validating: false,
 });
 
+/** What `on` returns at runtime: the builder, and the guard that stands in for the erased value type. */
+export type FieldsDefinition = {
+  readonly guard?: (value: unknown) => boolean;
+  readonly build: (field: { get(): unknown }, path: string) => object;
+};
+
 /** Not on the extension context: the channel that the built-in behaviors share. */
 export type ContextInternals = {
+  /**
+   * Gives a field handle the members that extensions declare in `fields`. `path` is relative to the scope of the
+   * handle. A member cannot redefine a member of the handle, or a member of another extension.
+   */
+  decorateField<Handle extends { get(): unknown }>(handle: Handle, path: string): Handle;
   /** The store holds the computed value under the slice name, so slots and selectors read it as plain state. */
   derive(name: string, compute: () => unknown): void;
   /** The validation api of the instance, or a stand-in with no check when the chain has no `validation`. */
@@ -60,6 +71,8 @@ export type ContextControls<Options> = {
   readonly store: ReadonlyStore<State>;
   setOptions(next: Options): void;
   bindInstance(instance: unknown): void;
+  /** Registers the field members of an extension. The handles built later carry them. */
+  addFields(extension: string, fields: FieldsDefinition): void;
   /** Starts the state slices of an extension and returns its context. A key that another extension owns throws. */
   extensionContext(extension: string, state: State): ExtensionContext<Options>;
   /** Runs the cleanups. The instance stays usable, so it can mount again. */
@@ -83,6 +96,22 @@ const isShallowEqual = (left: State, right: State): boolean => {
 
 const unbound = Symbol('unbound');
 
+/** The handle with the members added. Descriptors are copied, because a getter of the handle must stay live. */
+const withMembers = (handle: object, members: object, extension: string, owners: Map<string, string>): object => {
+  for (const key of Object.keys(members)) {
+    const owner = owners.get(key);
+    if (key in handle) {
+      const which = owner === undefined ? '' : `, which "${owner}" adds`;
+      throw new Error(`The "${extension}" extension cannot redefine the field member "${key}"${which}.`);
+    }
+    owners.set(key, extension);
+  }
+  return Object.defineProperties(
+    {},
+    { ...Object.getOwnPropertyDescriptors(handle), ...Object.getOwnPropertyDescriptors(members) },
+  );
+};
+
 export const createContext = <Options>(initialOptions: Options): ContextControls<Options> => {
   /** The slices are written here. The store of the context derives from it. */
   const base = createStore<State>({});
@@ -104,6 +133,7 @@ export const createContext = <Options>(initialOptions: Options): ContextControls
   let options = initialOptions;
   let instance: unknown = unbound;
   let validation = noValidation;
+  const fieldDefinitions: { readonly extension: string; readonly fields: FieldsDefinition }[] = [];
 
   const sliceOf = (name: string): StateSlice<unknown> => ({
     get: () => base.state[name],
@@ -115,6 +145,15 @@ export const createContext = <Options>(initialOptions: Options): ContextControls
   });
 
   const sharedInternals: ContextInternals = {
+    decorateField(handle, path) {
+      let decorated: object = handle;
+      const owners = new Map<string, string>();
+      for (const { extension, fields } of fieldDefinitions) {
+        if (fields.guard && !fields.guard(handle.get())) continue;
+        decorated = withMembers(decorated, fields.build(handle, path), extension, owners);
+      }
+      return decorated as typeof handle;
+    },
     derive: (name, compute) => void derivations.set(name, compute),
     validation: () => validation,
     registerValidation: api => void (validation = api),
@@ -130,6 +169,7 @@ export const createContext = <Options>(initialOptions: Options): ContextControls
     bindInstance(next) {
       instance = next;
     },
+    addFields: (extension, fields) => void fieldDefinitions.push({ extension, fields }),
     extensionContext(extension, state) {
       for (const key of Object.keys(state)) {
         const owner = stateOwners.get(key);

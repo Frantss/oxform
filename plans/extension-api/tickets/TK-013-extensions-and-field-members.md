@@ -3,12 +3,12 @@ id: TK-013
 title: Extensions and field members
 phase: 2
 work_package: P2-04
-status: todo
+status: done
 depends_on: [TK-012]
 branch: codex/P2-04-extensions-and-field-members
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-013: Extensions and field members
@@ -51,16 +51,40 @@ appear on the field handles whose value fits.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#defineExtension` and `#on and field members` has a passing test in
+- [x] Each scenario group of `03#defineExtension` and `#on and field members` has a passing test in
       `src/main/form.spec.ts` or `src/main/context.spec.ts`. The rows that need a `field` api or an extension
       hook use a test-local extension. The `values` hook row moves to TK-019. Record the moved row under
       Evidence.
-- [ ] A `needs` list that differs from the `Extendable` parameter is a type error, for a missing and for an
+- [x] A `needs` list that differs from the `Extendable` parameter is a type error, for a missing and for an
       extra name.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the moved test rows and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass. Lint reports no warning in core.
+- `pnpm run test:coverage`: 100% per file (241 statements, 106 branches).
+- `src/main/form.spec.ts`: `defineExtension` (api, option and state; inert, then work, then cleanup; any order
+  that gives the needs; extension hooks in the order applied) and `on` (live members, base members kept, the
+  guard, several extensions, no `field` api). The `field` api is the test-local `fielded`, and the hook is the
+  test-local `pinger`.
+- `src/main/context.spec.ts`: `decorateField` (registration order, live getters, the guard, the path, a member
+  that redefines a handle member, a member of two extensions).
+- Type tests: a `needs` list with a missing name, with an extra name, and a missing `needs` are type errors.
+  With every `@ts-expect-error` removed, each case reports its own error.
+- Moved rows:
+  - `03#defineExtension`, "Extension hooks: `values.intercept` with `cancel()`, `values.onChange`; two instances
+    stay apart" moves to TK-019.
+  - `03#on and field members`, "Scoped handles carry the members at any depth; the builder gets the relative
+    path": the builder gets the path that `decorateField` receives (tested here). The scoped handles that pass a
+    relative path are `handles` (TK-027).
+  - `03#defineExtension`, "Adds a slot, keeps earlier slots, replaces a slot with an earlier key", and the
+    `slots` member of a definition, move to TK-014, which owns the slot types that the member needs.
+- Deviations:
+  - `BuiltInApis` has one stand-in member, `field`, typed with `FieldOf`. Each phase 3 ticket adds its api,
+    and TK-027 replaces `field` with the handle type.
+  - `FieldOf` has `get` and `change`. TK-023 and TK-027 add `state`, `focus`, `blur`, `register`,
+    `unregister` and `reset` when their types exist.
+  - `needs` lists are exact through `NeedsMember` (private). A missing name shows as a required `missing`
+    member that names it.

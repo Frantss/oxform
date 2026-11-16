@@ -1,12 +1,15 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { createContext } from './context';
+import { createContext, type FieldsDefinition } from './context';
 import type {
   BaseOptions,
   Extendable,
   Extension,
+  FieldMembers,
+  FieldOf,
   Form,
   FormContext,
   NeedNames,
+  NeedsMember,
   OptionDescriptor,
   OptionDescriptors,
   OptionKind,
@@ -22,6 +25,7 @@ type Definition = {
   readonly options?: Readonly<Record<string, OptionDescriptor>>;
   readonly state?: (options: Options) => Options;
   api(context: FormContext<Options, Options>, deps: Options): object;
+  readonly fields?: FieldsDefinition;
 };
 
 type Chain = {
@@ -87,6 +91,7 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
   const controls = createContext(options);
   const api: Options = {};
   const owners = new Map<string, string>();
+  for (const definition of definitions) if (definition.fields) controls.addFields(definition.name, definition.fields);
 
   try {
     for (const definition of definitions) {
@@ -102,6 +107,10 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
         owners.set(key, definition.name);
       }
       Object.defineProperties(api, Object.getOwnPropertyDescriptors(additions));
+    }
+    const withFields = definitions.find(definition => definition.fields);
+    if (withFields && typeof api.field !== 'function') {
+      throw new Error(`The "${withFields.name}" extension adds field members, so the form needs a field(path) api.`);
     }
   } catch (error) {
     controls.destroy();
@@ -152,21 +161,37 @@ export const defineExtension = <
   Values,
   Provides,
   NeedState,
+  const ApiNames extends readonly (keyof Provides & string)[] = [],
+  const StateNames extends readonly (keyof NeedState & string)[] = [],
   Descriptors extends OptionDescriptors = {},
   State extends object = {},
   Api extends object = {},
+  Fields = never,
 >(
   _form: Extendable<Values, Provides, NeedState>,
   definition: {
     readonly name: string;
-    readonly needs?: NeedNames;
     readonly options?: Descriptors;
     /** Runs once per instance, with the merged options. The store starts from its result. */
     readonly state?: (options: BaseOptions<Values> & OptionsFrom<Descriptors>) => State;
     /** Runs once per instance, on a server too. It must be inert: no DOM, no timer, no request. */
     readonly api: (context: FormContext<BaseOptions<Values> & OptionsFrom<Descriptors>, State>, deps: Provides) => Api;
-  },
-): Extension<OptionsFrom<Descriptors>, State, Api> => definition as never;
+    /** Members for field handles, built with `on`. */
+    readonly fields?: Fields;
+  } & NeedsMember<Provides, NeedState, ApiNames, StateNames>,
+): Extension<OptionsFrom<Descriptors>, State, Api, {}, Fields> => definition as never;
+
+/**
+ * Field members for the field handles whose value extends `Condition`: `fields: on<string>(isString)(build)`. The
+ * types are erased at runtime, so `guard` decides there. Without a guard, the members go on every field. `path`
+ * is relative to the scope of the handle.
+ */
+export const on =
+  <Condition = unknown>(guard?: (value: unknown) => value is Condition) =>
+  <Members extends object>(
+    build: (field: FieldOf<Condition>, path: string) => Members,
+  ): FieldMembers<Condition, Members> =>
+    ({ guard, build }) as never;
 
 /** The typed option descriptors. At runtime a descriptor is its kind. */
 export const option: {

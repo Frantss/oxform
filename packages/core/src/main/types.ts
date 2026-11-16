@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { ReadonlyStore } from '@tanstack/store';
-import type { Unsubscribe, Updater } from './path-types';
+import type { Path, PathValue, Unsubscribe, Updater } from './path-types';
 
 /** How an adapter passes an option. The descriptor gives the option its TypeScript type. */
 export type OptionKind = 'string' | 'number' | 'boolean' | 'list' | 'value' | 'callback' | 'action' | 'id' | 'key';
@@ -75,11 +75,64 @@ export interface Extendable<Values, Provides = {}, State = {}> {
   readonly [extendable]: { readonly values: Values; readonly provides: Provides; readonly state: State };
 }
 
-/** The names that `needs` lists: every api name and state key that the `Extendable` parameter states. */
+/** The names that `needs` lists at runtime. */
 export interface NeedNames {
   readonly api?: readonly string[];
   readonly state?: readonly string[];
 }
+
+/** A list of names that holds every name of `All`. A missing name becomes a required `missing` member. */
+type Covering<Listed extends readonly string[], All> = Listed &
+  ([Exclude<All, Listed[number]>] extends [never] ? unknown : { readonly missing: Exclude<All, Listed[number]> });
+
+/**
+ * The `needs` member of a definition. It lists every api name and state key of the `Extendable` parameter, and no
+ * other name. It is required when the parameter states a need (D51).
+ */
+export type NeedsMember<Provides, State, ApiNames extends readonly string[], StateNames extends readonly string[]> = [
+  keyof Provides | keyof State,
+] extends [never]
+  ? { readonly needs?: { readonly api?: readonly []; readonly state?: readonly [] } }
+  : {
+      readonly needs: ([keyof Provides] extends [never]
+        ? { readonly api?: readonly [] }
+        : { readonly api: Covering<ApiNames, keyof Provides> }) &
+        ([keyof State] extends [never]
+          ? { readonly state?: readonly [] }
+          : { readonly state: Covering<StateNames, keyof State> });
+    };
+
+/** A field handle as a field-members builder sees it, with its value typed `Value`. */
+export interface FieldOf<Value> {
+  get(): Value;
+  change(updater: Updater<Value>): void;
+}
+
+declare const fieldMembers: unique symbol;
+
+/** Members for the field handles whose value extends `Condition`. `on` builds them. */
+export interface FieldMembers<Condition, Members> {
+  readonly [fieldMembers]?: { readonly condition: Condition; readonly members: Members };
+}
+
+/** The members of `Fields` on a field whose value is `Value`: the intersection of the members whose condition holds. */
+type MembersFor<Fields, Value> = (
+  Fields extends FieldMembers<infer Condition, infer Members>
+    ? Value extends Condition
+      ? (members: Members) => void
+      : (members: {}) => void
+    : never
+) extends (members: infer Intersection) => void
+  ? Intersection
+  : never;
+
+/** The api of the built-in extensions by name. `Needs<V, 'field'>` states a need by name. */
+export interface BuiltInApis<Values> {
+  /** A stand-in until `handles` (TK-027): the field handle of a path. */
+  readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
+}
+
+export type Needs<Values, Names extends keyof BuiltInApis<Values>> = Pick<BuiltInApis<Values>, Names>;
 
 declare const extensionBrand: unique symbol;
 
@@ -153,8 +206,17 @@ export interface Form<Values, Api = {}, Options = {}, State = {}, Slots = {}, Fi
 export type AnyForm = Form<any, any, any, any, any, any>;
 
 /** One live form: the api of its extensions, its `id`, its `store` and `destroy()`. */
-/** `Values` and `Fields` type the field handles (TK-013). */
-export type Instance<_Values, Api = {}, State = {}, _Fields = never> = Api & {
+/** `form.field(path)` returns the base handle plus the members of `Fields` whose condition holds. */
+type WithFieldMembers<Values, Api, Fields> = Api extends { readonly field: (path: any) => any }
+  ? Omit<Api, 'field'> & {
+      readonly field: <At extends Path<Values>>(
+        path: At,
+      ) => FieldOf<PathValue<Values, At>> & MembersFor<Fields, PathValue<Values, At>>;
+    }
+  : Api;
+
+/** One live form: the api of its extensions, its `id`, its `store` and `destroy()`. */
+export type Instance<Values, Api = {}, State = {}, Fields = never> = WithFieldMembers<Values, Api, Fields> & {
   readonly id: string;
   readonly store: ReadonlyStore<State>;
   /** Runs every cleanup and stops the option listeners. Only the creator of the instance calls it. */
@@ -166,6 +228,7 @@ type Typed<Types> = { readonly [formTypes]: Types };
 export type ValuesOf<F> = F extends Typed<FormTypes<infer Values, any, any, any, any, any>> ? Values : never;
 export type ApiOf<F> = F extends Typed<FormTypes<any, infer Api, any, any, any, any>> ? Api : never;
 export type StateOf<F> = F extends Typed<FormTypes<any, any, any, infer State, any, any>> ? State : never;
+export type FieldsOf<F> = F extends Typed<FormTypes<any, any, any, any, any, infer Fields>> ? Fields : never;
 export type InstanceOf<F> =
   F extends Typed<FormTypes<infer Values, infer Api, any, infer State, any, infer Fields>>
     ? Instance<Values, Api, State, Fields>

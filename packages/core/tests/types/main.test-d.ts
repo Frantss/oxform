@@ -2,16 +2,22 @@ import {
   defineExtension,
   defineForm,
   defineSlots,
+  on,
   option,
   type AnyForm,
   type ApiOf,
   type BaseOptions,
+  type BuiltInApis,
   type Extendable,
   type Extension,
+  type FieldMembers,
+  type FieldOf,
+  type FieldsOf,
   type Form,
   type FormContext,
   type Instance,
   type InstanceOf,
+  type Needs,
   type OptionDescriptor,
   type OptionDescriptors,
   type OptionKind,
@@ -288,5 +294,134 @@ describe('defineSlots, SlotDefinition', () => {
   it('needs a build function', () => {
     // @ts-expect-error The build function is missing.
     defineSlots({ name: 'x' });
+  });
+});
+
+/** A `field(path)` api, as `handles` gives it. */
+const fielded = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, { name: 'fielded', api: () => ({ field: {} as BuiltInApis<Values>['field'] }) });
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+/** `mask` on string fields. */
+const mask = <Values>(form: Extendable<Values, Needs<Values, 'field'>>) =>
+  defineExtension(form, {
+    name: 'mask',
+    needs: { api: ['field'] },
+    api: () => ({}),
+    fields: on(isString)(field => ({ mask: (pattern: string) => pattern + field.get() })),
+  });
+
+const masked = login.extend(fielded).extend(mask);
+
+describe('defineExtension', () => {
+  it('lists the needs of the Extendable parameter', () => {
+    expectTypeOf(masked.create().field('email').mask('#')).toEqualTypeOf<string>();
+  });
+
+  it('rejects a needs list with a missing name', () => {
+    accepts(<Values>(form: Extendable<Values, Needs<Values, 'field'>, { values: Values }>) =>
+      // @ts-expect-error The state key `values` is not listed.
+      defineExtension(form, { name: 'missing', needs: { api: ['field'] }, api: () => ({}) }),
+    );
+  });
+
+  it('rejects a needs list with an extra name', () => {
+    accepts(<Values>(form: Extendable<Values>) =>
+      // @ts-expect-error The parameter states no `field` need.
+      defineExtension(form, { name: 'extra', needs: { api: ['field'] }, api: () => ({}) }),
+    );
+  });
+
+  it('rejects a definition without needs when the parameter states one', () => {
+    accepts(<Values>(form: Extendable<Values, Needs<Values, 'field'>>) =>
+      // @ts-expect-error `needs` is required.
+      defineExtension(form, { name: 'unlisted', api: () => ({}) }),
+    );
+  });
+
+  it('types the state of the context by the state factory', () => {
+    accepts(<Values>(form: Extendable<Values>) =>
+      defineExtension(form, {
+        name: 'counter',
+        state: () => ({ count: 0 }),
+        api: context => {
+          // @ts-expect-error The count is a number.
+          context.state.count.set('one');
+          return {};
+        },
+      }),
+    );
+  });
+});
+
+describe('Needs, BuiltInApis', () => {
+  it('picks the built-in apis by name', () => {
+    expectTypeOf<Needs<Login, 'field'>>().toEqualTypeOf<Pick<BuiltInApis<Login>, 'field'>>();
+  });
+
+  it('rejects an unknown api name', () => {
+    // @ts-expect-error There is no built-in `nope` api.
+    accepts<Needs<Login, 'nope'>>({});
+  });
+
+  it('rejects an extension whose need is applied after it', () => {
+    // @ts-expect-error `field` comes after `mask`.
+    login.extend(mask).extend(fielded);
+  });
+
+  it('types the field of BuiltInApis by the path', () => {
+    expectTypeOf<ReturnType<BuiltInApis<Login>['field']>>().toEqualTypeOf<FieldOf<string>>();
+  });
+
+  it('rejects a path that the values do not have', () => {
+    const field = {} as BuiltInApis<Login>['field'];
+    // @ts-expect-error Login has no name.
+    field('name');
+  });
+});
+
+describe('on, FieldMembers, FieldOf, FieldsOf', () => {
+  it('types the members by the condition', () => {
+    expectTypeOf(on(isString)(() => ({ mask: 1 }))).toEqualTypeOf<FieldMembers<string, { mask: number }>>();
+  });
+
+  it('gives the builder a field of the condition type', () => {
+    on(isString)(field => {
+      expectTypeOf(field).toEqualTypeOf<FieldOf<string>>();
+      return {};
+    });
+  });
+
+  it('reads the field members of a form back', () => {
+    expectTypeOf<FieldsOf<typeof masked>>().toEqualTypeOf<
+      FieldMembers<string, { mask: (pattern: string) => string }>
+    >();
+  });
+
+  it('adds no member to a field whose value does not fit', () => {
+    const form = defineForm({ schema: {} as StandardSchemaV1<{ age: number }>, defaultValues: { age: 1 } })
+      .extend(fielded)
+      .extend(mask)
+      .create();
+    // @ts-expect-error `age` is a number.
+    accepts(form.field('age').mask);
+  });
+
+  it('rejects a change of the wrong type on a FieldOf', () => {
+    const field = {} as FieldOf<string>;
+    // @ts-expect-error The field holds a string.
+    field.change(1);
+  });
+
+  it('rejects members that are not an object', () => {
+    // @ts-expect-error Members are an object.
+    on()(() => 1);
+  });
+
+  it('gives never for a type that is not a form', () => {
+    expectTypeOf<FieldsOf<string>>().toBeNever();
+    // @ts-expect-error A string has no field members.
+    accepts<FieldsOf<string>>({});
   });
 });

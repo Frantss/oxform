@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { named, schemaOf } from '../../tests/helpers';
-import { defineExtension, defineForm, defineSlots, option, optionKindsOf, slotsOf } from './form';
-import type { Extendable, Form, Self } from './types';
+import { getAt, setAt } from '#internal/paths';
+import { contextInternals } from './context';
+import { defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slotsOf } from './form';
+import type { Path, PathValue } from './path-types';
+import type { Extendable, Form, Needs, Self } from './types';
 
 type Login = { email: string; password: string };
 
@@ -57,11 +60,14 @@ const declaring = (name: string, key: string) => (form: Extendable<unknown>) =>
 const withOptions = (name: string, options: Record<string, ReturnType<typeof option.number>>) => (form: Extendable<unknown>) =>
   defineExtension(form, { name, options, api: () => ({}) });
 
-/** An extension that needs the api names and the state keys it is given, and records when its api runs. */
+/**
+ * An extension that needs the api names and the state keys it is given, and records when its api runs. Its type
+ * states no need, as for a JavaScript caller, so only the runtime check sees the needs.
+ */
 const needing =
   (needs: { api?: string[]; state?: string[] }, ran = vi.fn()) =>
   (form: Extendable<unknown>) =>
-    defineExtension(form, { name: 'needing', needs, api: () => (ran(), {}) });
+    defineExtension(form, { name: 'needing', needs: needs as never, api: () => (ran(), {}) });
 
 /** The message of the error that `run` throws, or "returned". */
 const attempt = (run: () => unknown) => {
@@ -76,6 +82,75 @@ const attempt = (run: () => unknown) => {
 /** A preset: a function from form to form. */
 const preset = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(form: Form<Values, Api, Options, State, Slots, Fields>) =>
   form.extend(store);
+
+/** A stand-in for `handles`: the `values` state, and a `field(path)` api that carries the field members. */
+const fielded = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, {
+    name: 'fielded',
+    state: options => ({ values: options.defaultValues }),
+    api: context => ({
+      field: <At extends Path<Values>>(path: At) =>
+        contextInternals(context).decorateField(
+          {
+            get: () => getAt(context.state.values.get(), path) as PathValue<Values, At>,
+            change: (next: PathValue<Values, At>) => context.state.values.set(values => setAt(values, path, next)),
+          },
+          path,
+        ),
+    }),
+  });
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+/** `mask` on string fields: it fills each `#` of a pattern with the next character of the value. */
+const mask = <Values>(form: Extendable<Values, Needs<Values, 'field'>>) =>
+  defineExtension(form, {
+    name: 'mask',
+    needs: { api: ['field'] },
+    api: () => ({}),
+    fields: on(isString)(field => ({
+      mask: (pattern: string) =>
+        field
+          .get()
+          .split('')
+          .reduce((masked, character) => masked.replace('#', character), pattern),
+    })),
+  });
+
+/** `upper` on every field. */
+const upper = <Values>(form: Extendable<Values, Needs<Values, 'field'>>) =>
+  defineExtension(form, {
+    name: 'upper',
+    needs: { api: ['field'] },
+    api: () => ({}),
+    fields: on()(field => ({ upper: () => String(field.get()).toUpperCase() })),
+  });
+
+type PingApi = { intercept(step: (value: string) => string): void; run(value: string): string };
+
+/** An api with an extension hook: `intercept` steps run in the order they were added. */
+const pinger = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, {
+    name: 'pinger',
+    api: () => {
+      const steps: ((value: string) => string)[] = [];
+      const ping: PingApi = {
+        intercept: step => void steps.push(step),
+        run: value => steps.reduce((current, step) => step(current), value),
+      };
+      return { ping };
+    },
+  });
+
+/** Adds `suffix` to each ping, through the extension hook of `pinger`. */
+const suffix =
+  (name: string) =>
+  <Values>(form: Extendable<Values, { ping: PingApi }>) =>
+    defineExtension(form, {
+      name,
+      needs: { api: ['ping'] },
+      api: (_context, { ping }) => (ping.intercept(value => value + name), {}),
+    });
 
 describe('defineForm', () => {
   it('makes instances that take their values from defaultValues', () => {
@@ -301,6 +376,105 @@ describe('form.extend', () => {
     const form = subject.form.extend(needing({ api: ['values'] })).extend(store);
 
     expect(() => form.create()).toThrow('The "needing" extension needs "values", which no earlier extension provides.');
+  });
+});
+
+describe('defineExtension', () => {
+  it('adds an api, an option and a state slice, and gives the merged options to the state factory', () => {
+    using subject = setup();
+    const counter = <Values>(form: Extendable<Values>) =>
+      defineExtension(form, {
+        name: 'counter',
+        options: { start: option.number() },
+        state: options => ({ count: options.start ?? 0 }),
+        api: context => ({ count: () => context.state.count.get() }),
+      });
+    const instance = subject.create(() => subject.form.extend(counter).configure({ start: 1 }).create({ start: 2 }));
+
+    expect([instance.count(), instance.store.state.count]).toEqual([2, 2]);
+  });
+
+  it('is inert at creation, starts work in a method and stops it at destroy', () => {
+    using subject = setup();
+    vi.useFakeTimers();
+    const poller = <Values>(form: Extendable<Values>) =>
+      defineExtension(form, {
+        name: 'poller',
+        api: context => {
+          let timer: ReturnType<typeof setInterval> | undefined;
+          context.onDestroy(() => clearInterval(timer));
+          return { start: () => void (timer = setInterval(() => {}, 10)) };
+        },
+      });
+    const instance = subject.form.extend(poller).create();
+    const counts = [vi.getTimerCount()];
+    instance.start();
+    counts.push(vi.getTimerCount());
+    instance.destroy();
+    counts.push(vi.getTimerCount());
+    vi.useRealTimers();
+
+    expect(counts).toEqual([0, 1, 0]);
+  });
+
+  it('applies in any order that gives its needs', () => {
+    using subject = setup();
+    const forms = [subject.form.extend(fielded).extend(mask).extend(upper), subject.form.extend(fielded).extend(upper).extend(mask)];
+    const members = forms.map(form => Object.keys(subject.create(() => form.create()).field('email')).sort());
+
+    expect(members).toEqual([
+      ['change', 'get', 'mask', 'upper'],
+      ['change', 'get', 'mask', 'upper'],
+    ]);
+  });
+
+  it('runs the extension hooks of several extensions in the order applied', () => {
+    using subject = setup();
+    const instance = subject.create(() => subject.form.extend(pinger).extend(suffix('a')).extend(suffix('b')).create());
+
+    expect(instance.ping.run('x')).toBe('xab');
+  });
+});
+
+describe('on', () => {
+  it('adds the members to every field handle, and the members read the live value', () => {
+    using subject = setup();
+    const instance = subject.create(() => subject.form.extend(fielded).extend(mask).create());
+    const email = instance.field('email');
+    email.change('abc');
+
+    expect([email.mask('#-#'), instance.field('password').mask('#')]).toEqual(['a-b', '#']);
+  });
+
+  it('keeps the members of the base handle', () => {
+    using subject = setup();
+    const email = subject.create(() => subject.form.extend(fielded).extend(mask).create()).field('email');
+    email.change('abc');
+
+    expect(email.get()).toBe('abc');
+  });
+
+  it('gives no member to a field whose value the guard rejects', () => {
+    using subject = setup();
+    const form = defineForm({ schema: schemaOf<{ age: number }>(), defaultValues: { age: 1 } });
+    const instance = subject.create(() => form.extend(fielded).extend(mask).create());
+
+    expect('mask' in instance.field('age')).toBe(false);
+  });
+
+  it('combines the members of several extensions', () => {
+    using subject = setup();
+    const email = subject.create(() => subject.form.extend(fielded).extend(mask).extend(upper).create()).field('email');
+    email.change('ab');
+
+    expect([email.mask('#.#'), email.upper()]).toEqual(['a.b', 'AB']);
+  });
+
+  it('fails at create on a form with no field api', () => {
+    using subject = setup();
+    const loose = <Values>(form: Extendable<Values>) => defineExtension(form, { name: 'loose', api: () => ({}), fields: on()(() => ({})) });
+
+    expect(() => subject.form.extend(loose).create()).toThrow('The "loose" extension adds field members, so the form needs a field(path) api.');
   });
 });
 

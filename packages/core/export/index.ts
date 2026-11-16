@@ -1,15 +1,20 @@
-export { defineExtension, defineForm, defineSlots, option } from '#main/form';
+export { defineExtension, defineForm, defineSlots, on, option } from '#main/form';
 export type { SlotDefinition } from '#main/form';
 export type {
   AnyForm,
   ApiOf,
   BaseOptions,
+  BuiltInApis,
   Extendable,
   Extension,
+  FieldMembers,
+  FieldOf,
+  FieldsOf,
   Form,
   FormContext,
   Instance,
   InstanceOf,
+  Needs,
   OptionDescriptor,
   OptionDescriptors,
   OptionKind,

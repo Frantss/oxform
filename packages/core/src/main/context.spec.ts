@@ -258,3 +258,66 @@ describe('validation link', () => {
     expect(contextInternals(second.extensionContext('status', {})).validation().validating).toBe(false);
   });
 });
+
+describe('field members', () => {
+  /** A handle whose value is `value`, with a live `state` getter. */
+  const handleOf = (value: unknown) => ({
+    get: () => value,
+    get state() {
+      return { value };
+    },
+  });
+
+  it('give a handle the members of every extension in registration order', () => {
+    using controls = setup();
+    controls.addFields('first', { build: () => ({ first: 1 }) });
+    controls.addFields('second', { build: () => ({ second: 2 }) });
+    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf('a'), 'name');
+
+    expect(Object.keys(handle)).toEqual(['get', 'state', 'first', 'second']);
+  });
+
+  it('keep a getter of the handle live', () => {
+    using controls = setup();
+    controls.addFields('first', { build: () => ({ first: 1 }) });
+    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf('a'), 'name');
+
+    expect('get' in (Object.getOwnPropertyDescriptor(handle, 'state') ?? {})).toBe(true);
+  });
+
+  it('skip an extension whose guard rejects the value', () => {
+    using controls = setup();
+    controls.addFields('strings', { guard: value => typeof value === 'string', build: () => ({ text: true }) });
+    const handle = contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf(1), 'age');
+
+    expect('text' in handle).toBe(false);
+  });
+
+  it('pass the path of the handle to the builder', () => {
+    using controls = setup();
+    const build = vi.fn(() => ({}));
+    controls.addFields('recorder', { build });
+    contextInternals(controls.extensionContext('handles', {})).decorateField(handleOf(''), 'street');
+
+    expect(build).toHaveBeenCalledWith(expect.objectContaining({ get: expect.any(Function) }), 'street');
+  });
+
+  it('refuse a member that redefines a member of the handle', () => {
+    using controls = setup();
+    controls.addFields('bad', { build: () => ({ get: () => 0 }) });
+    const internals = contextInternals(controls.extensionContext('handles', {}));
+
+    expect(() => internals.decorateField(handleOf(''), 'name')).toThrow('The "bad" extension cannot redefine the field member "get".');
+  });
+
+  it('refuse a member that two extensions add, and name both', () => {
+    using controls = setup();
+    controls.addFields('first', { build: () => ({ shared: 1 }) });
+    controls.addFields('second', { build: () => ({ shared: 2 }) });
+    const internals = contextInternals(controls.extensionContext('handles', {}));
+
+    expect(() => internals.decorateField(handleOf(''), 'name')).toThrow(
+      'The "second" extension cannot redefine the field member "shared", which "first" adds.',
+    );
+  });
+});
