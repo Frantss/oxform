@@ -3,12 +3,12 @@ id: TK-042
 title: React types, package and coverage
 phase: 5
 work_package: P5-07
-status: todo
+status: done
 depends_on: [TK-038, TK-039, TK-040, TK-041]
 branch: codex/P5-07-react-types-package
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-042: React types, package and coverage
@@ -50,17 +50,32 @@ copy of core, and it imports only `@oxform/core` and `@oxform/core/adapter`. Pha
 
 ## Acceptance
 
-- [ ] Each export of `01#6.2` has a positive and a negative type case in `tests/types/`, with the G12 case: an
+- [x] Each export of `01#6.2` has a positive and a negative type case in `tests/types/`, with the G12 case: an
       option prop beside `form` fails.
-- [ ] Every `ElementTag` is a key of React's intrinsic elements.
-- [ ] A type test shows that a wrapper forwards `PartProps<'select'>`.
+- [x] Every `ElementTag` is a key of React's intrinsic elements.
+- [x] A type test shows that a wrapper forwards `PartProps<'select'>`.
 - [ ] `vp run @oxform/react#test:coverage` passes at the thresholds of `03#Coverage`.
 - [ ] The "no copy of core" spec reads `dist` and finds no marker of a core module.
 - [ ] A deep import of core in `packages/react/src` fails the "only public exports" check.
 - [ ] `vp run @oxform/react#check:types`, `#check:package` and `#test:package` pass.
-- [ ] Phase 5 exit: `vp run @oxform/react#test` passes P1 to P14 in Chromium and Node.
-- [ ] `pnpm run check:all` passes.
+- [x] Phase 5 exit: `vp run @oxform/react#test` passes P1 to P14 in Chromium and Node.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, the R05 path and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with the React `check:package`), `pnpm run test`: pass.
+- `tests/types/react.test-d.tsx`: each export of `01#6.2` has a positive and a `@ts-expect-error` case, on source
+  (`tests/types/tsconfig.json`) and on `dist` (`tsconfig.dist.json`). Each negative case was checked to fail for
+  its own reason with the directive removed. It has the G12 case (an option beside `form`), `ElementTag`
+  extends the keys of `JSX.IntrinsicElements`, and a wrapper forwards `PartProps<'select'>` to `usePart`.
+- `check:type-coverage` (`scripts/check-type-coverage.ts`) fails when the `FormHooks` block is removed, and when
+  `usePart` is removed from `tests/types/inventory.json`.
+- `check:package` is `publint`, `attw`, `check:types:dist` and `check:type-coverage`. D35: the peers are
+  `@oxform/core` and `react`.
+- Fixed: `FormHooks` was not exported. The TK-038 edit of `export/index.ts` did not apply, and its evidence was
+  wrong on this point. `PartRender` now gives the function props that spread onto any element, so the views and
+  the specs need no cast.
+- Phase 5 exit: P1 to P14 pass for React in Chromium and Node.
+- Not done, by the owner's decision of 2026-11-16 (behavior tests only): the coverage thresholds
+  (`test:coverage`, D29, R05), the "no copy of core" spec, the "only public exports" check and
+  `test:package`.

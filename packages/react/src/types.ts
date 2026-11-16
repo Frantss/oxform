@@ -26,7 +26,8 @@ export type PartElements<Parts> = { readonly [Name in keyof Parts]?: ElementTag 
  */
 export type PartRender<State> =
   | ReactElement
-  | ((props: HTMLAttributes<HTMLElement> & { readonly ref?: Ref<HTMLElement> }, state: State) => ReactNode);
+  // `any`: the props spread onto whichever element the function renders.
+  | ((props: HTMLAttributes<any> & { readonly ref?: Ref<any> }, state: State) => ReactNode);
 
 /** The props of a part: those of its element, those of its slot, `children` (content or a function of the state) and `render`. */
 export type PartProps<Tag extends ElementTag, Props = {}, State = {}> = Omit<

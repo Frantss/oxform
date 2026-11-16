@@ -26,9 +26,11 @@
     "build": "vp pack",
     "test": "vp test && vp test --config vite.ssr.config.ts",
     "test:dev": "vp test --watch",
-    "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only",
-    "test:ssr": "vp test --config vite.ssr.config.ts"
+    "check:types": "vp exec tsc --noEmit && vp exec tsc --noEmit -p tests/types",
+    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run check:types:dist && pnpm run check:type-coverage",
+    "test:ssr": "vp test --config vite.ssr.config.ts",
+    "check:types:dist": "vp exec tsc --noEmit -p tests/types/tsconfig.dist.json",
+    "check:type-coverage": "node scripts/check-type-coverage.ts"
   },
   "dependencies": {
     "@tanstack/react-store": "^0.11.2"

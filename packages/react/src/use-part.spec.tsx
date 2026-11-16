@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { defineForm } from '@oxform/core';
 import { standard } from '@oxform/core/presets';
-import type { ReactNode, SelectHTMLAttributes } from 'react';
+import type { ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
@@ -52,7 +52,7 @@ describe('usePart', () => {
   it('renders a slot through a wrapper that forwards the part props, with render and a function child', async () => {
     using subject = setup();
     subject.render(
-      <ColorSelect aria-label='Color' render={props => <select {...(props as SelectHTMLAttributes<HTMLSelectElement>)} data-wrapped='' />}>
+      <ColorSelect aria-label='Color' render={props => <select {...props} data-wrapped='' />}>
         {() => (
           <>
             <option value='red'>red</option>

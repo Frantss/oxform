@@ -1,0 +1,11 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@oxform/react": ["../../export/index.ts"]
+    }
+  },
+  "include": ["./*.test-d.tsx"]
+}

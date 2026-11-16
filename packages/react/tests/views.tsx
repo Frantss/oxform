@@ -1,7 +1,7 @@
 import type { ViewName, ViewProps, Views } from '@oxform/adapter-parity/driver';
 import { fixtures } from '@oxform/adapter-parity/fixtures';
-import { useLayoutEffect, type ComponentType, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react';
-import { createParts, usePart } from '../export/index';
+import { useLayoutEffect, type ComponentType } from 'react';
+import { createParts, usePart, type PartRender } from '../export/index';
 
 const signIn = createParts(fixtures.signIn);
 const bare = createParts(fixtures.bare);
@@ -23,10 +23,12 @@ const ExposeBare = exposer(bare.useForm);
 const ExposeProfile = exposer(profile.useForm);
 
 /** A `render` function that counts its calls under `probe`, and renders an `<input>`. */
-const countedInput = (count: ViewProps['count'], probe: string) => (props: object) => {
-  count(probe);
-  return <input {...(props as InputHTMLAttributes<HTMLInputElement>)} />;
-};
+const countedInput =
+  (count: ViewProps['count'], probe: string): PartRender<{}> =>
+  props => {
+    count(probe);
+    return <input {...props} />;
+  };
 
 const Selected = ({ count }: Pick<ViewProps, 'count'>) => {
   const name = profile.useSelector(state => state.values.name);
@@ -152,11 +154,7 @@ export const views: { readonly [Name in ViewName]?: ComponentType<ViewProps & Vi
   otherElements: ({ expose }) => (
     <profile.Root>
       <ExposeProfile expose={expose} />
-      <profile.Field
-        name='name'
-        aria-label='Name'
-        render={props => <textarea {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)} />}
-      />
+      <profile.Field name='name' aria-label='Name' render={props => <textarea {...props} />} />
       <ColorSelect />
     </profile.Root>
   ),
