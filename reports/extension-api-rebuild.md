@@ -16,6 +16,8 @@
   catch it, as in the spike (`spike/events.ts:47`). A validator that rejects during `change`, `focus` or `blur`
   gives an unhandled promise rejection, which fails a Vitest run and logs an error in a browser. Options: catch and
   drop the rejection, or report it through an option such as `onError`.
+  Resolved on 2026-11-16 (owner): `events` takes an `onError(error, form, { path, event })` option. Without it, the
+  rejection stays unhandled, so a broken validator is still visible.
 
 ## The build drops `/* @__PURE__ */` from the slot groups
 

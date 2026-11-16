@@ -31,6 +31,7 @@ import {
   type ResetOptions,
   type FieldChangeOptions,
   type FieldFocusOptions,
+  type EventErrorDetails,
   status,
   submit,
   validation,
@@ -583,6 +584,23 @@ describe('EventsApi, FieldChangeOptions', () => {
   it('rejects a should flag that change does not have', () => {
     // @ts-expect-error The change flags are dirty, touch and validate.
     accepts<FieldChangeOptions>({ should: { blur: true } });
+  });
+});
+
+describe('EventErrorDetails', () => {
+  const eventful = form.extend(values).extend(status).extend(events);
+
+  it('gives onError the error, the instance and where the run failed', () => {
+    type OnError = NonNullable<NonNullable<Parameters<typeof eventful.configure>[0]>['onError']>;
+
+    expectTypeOf<Parameters<OnError>>().toEqualTypeOf<
+      [error: unknown, form: ReturnType<typeof eventful.create>, details: EventErrorDetails]
+    >();
+  });
+
+  it('rejects an event that does not validate', () => {
+    // @ts-expect-error The events that validate are change, focus, blur and submit.
+    accepts<EventErrorDetails>({ path: 'name', event: 'hover' });
   });
 });
 

@@ -1,7 +1,7 @@
 import { contextInternals } from '#main/context';
-import { defineExtension } from '#main/form';
+import { defineExtension, optionTypes } from '#main/form';
 import type { Path, PathValue, Updater } from '#main/path-types';
-import type { Extendable, FormContext, Needs } from '#main/types';
+import type { Extendable, FormContext, Needs, Self } from '#main/types';
 import { statusInternals } from './status';
 import type { StatusApi } from './status';
 import type { ValidationEvent } from './validation';
@@ -34,6 +34,12 @@ export interface EventsApi<Values> {
   unregister(path: Path<Values>): void;
 }
 
+/** Where a validation run that an event started failed. */
+export interface EventErrorDetails {
+  readonly path: string;
+  readonly event: ValidationEvent;
+}
+
 /** Not on `EventsApi`: a field handle reads its ref, and reset clears the refs. */
 export interface EventsInternals {
   ref(path: string): HTMLElement | null;
@@ -53,7 +59,7 @@ type LinkedCheck = { validates(event: ValidationEvent): boolean };
 
 /** Field events. It touches an element only in `focus`, `blur` and `register`. */
 export const createEvents = <Values>(
-  context: FormContext,
+  context: FormContext<{ readonly onError?: (error: unknown, form: Self, details: EventErrorDetails) => void }>,
   deps: { readonly values: ValuesApi<Values>; readonly status: StatusApi<Values> },
 ): EventsApi<Values> => {
   const refs = new Map<string, HTMLElement>();
@@ -77,11 +83,18 @@ export const createEvents = <Values>(
     return true;
   };
 
-  /** Requests validation of the event when a check has a validator for it, unless `should` decides. */
+  /**
+   * Requests validation of the event when a check has a validator for it, unless `should` decides. The event
+   * returns first, so a failed run goes to the `onError` option. Without it, the rejection stays unhandled.
+   */
   const validate = (path: string, event: ValidationEvent, should?: boolean) => {
     const validation = contextInternals(context).validation();
     if (should ?? (validation.checks as readonly LinkedCheck[]).some(check => check.validates(event))) {
-      void validation.run(path, { type: event });
+      validation.run(path, { type: event }).catch((error: unknown) => {
+        const { onError } = context.options();
+        if (!onError) throw error;
+        onError(error, context.instance(), { path, event });
+      });
     }
   };
 
@@ -117,5 +130,6 @@ export const events = <Values>(form: Extendable<Values, Needs<Values, 'values' |
   defineExtension(form, {
     name: 'events',
     needs: { api: ['values', 'status'] },
+    options: optionTypes<{ onError: (error: unknown, form: Self, details: EventErrorDetails) => void }>(),
     api: (context, deps) => ({ events: createEvents<Values>(context, deps) }),
   });

@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { defineForm } from '#main/form';
 import { reporting, schemaOf } from '../../tests/helpers';
@@ -14,12 +15,20 @@ const defaultValues: Profile = { name: '', address: { city: '' } };
 /** An element that records the calls of `focus` and `blur`. */
 const elementOf = (calls: string[]) => ({ focus: () => calls.push('focus'), blur: () => calls.push('blur') }) as unknown as HTMLElement;
 
-/** `values`, `status` and `events`, or with `validation` and an `error` check that takes `error` as validators. */
-const setup = (error?: CheckValidators<Profile>) => {
+/** A schema whose validation rejects with `error`. */
+const failing = (error: Error): StandardSchemaV1<never> => ({
+  '~standard': { version: 1, vendor: 'oxform-test', validate: () => Promise.reject(error) },
+});
+
+/**
+ * `values`, `status` and `events`, or with `validation` and an `error` check that takes `error` as validators.
+ * `onError` is the option of `events`.
+ */
+const setup = (error?: CheckValidators<Profile>, onError?: (...args: unknown[]) => void) => {
   const base = defineForm({ schema: schemaOf<Profile>(), defaultValues }).extend(values);
   const checked = base.extend(validation).extend(check('error')).extend(status).extend(events);
   const plain = base.extend(status).extend(events);
-  const instance = error ? checked.create({ error }) : plain.create();
+  const instance = error ? checked.create({ error, onError }) : plain.create();
   const validated = instance as ReturnType<typeof checked.create>;
 
   return {
@@ -161,6 +170,15 @@ describe('requested validation', () => {
     await ran;
 
     expect([subject.error.at('name')[0]?.type, subject.error.at('address.city')[0]?.type]).toEqual(['blur', 'focus']);
+  });
+
+  it('gives a failed run to onError, with the instance, the path and the event', async () => {
+    const failure = new Error('The validator is down.');
+    const onError = vi.fn();
+    using subject = setup({ blur: failing(failure) }, onError);
+    subject.instance.events.blur('name');
+
+    await vi.waitFor(() => expect(onError.mock.calls).toEqual([[failure, subject.instance, { path: 'name', event: 'blur' }]]));
   });
 
   it('lets the operation return before the validation settles', () => {

@@ -79,6 +79,7 @@
     "CheckValidator",
     "CheckValidators",
     "DefaultFieldStatus",
+    "EventErrorDetails",
     "EventsApi",
     "FieldChangeOptions",
     "FieldFocusOptions",
