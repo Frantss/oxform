@@ -1,5 +1,5 @@
 import { shallow, useSelector } from '@tanstack/react-store';
-import { isDeepEqual } from '@oxform/core/adapter';
+import { isDeepEqual, joinPath, prefixOf } from '@oxform/core/adapter';
 import type { ReadonlyStore } from '@tanstack/react-store';
 import {
   cloneElement,
@@ -37,6 +37,8 @@ export type PartViewProps = Record<string, unknown> & {
   readonly children?: ReactNode | ((state: unknown) => ReactNode);
   readonly render?: unknown;
   readonly ref?: RefLike;
+  /** A scope, from `useScope` or `form.scope`: the `'key'` props are then paths of the scope. */
+  readonly scope?: object;
 };
 
 type RefLike = ((element: HTMLElement | null) => unknown) | { current: unknown } | null | undefined;
@@ -99,18 +101,16 @@ export const PartView = ({
   slot,
   tag,
   props,
-  keyPrefix = '',
 }: {
   readonly instance: Instance;
   readonly slot: SlotDefinition;
   readonly tag: string;
   readonly props: PartViewProps;
-  readonly keyPrefix?: string;
 }) => {
-  const { children, render, ref: authorRef, ...rest } = props;
+  const { children, render, ref: authorRef, scope, ...rest } = props;
   const declared = slot.props ?? {};
   const keyProp = Object.keys(declared).find(name => declared[name] === 'key');
-  const key = keyProp === undefined ? '' : `${keyPrefix}${String(rest[keyProp])}`;
+  const key = keyProp === undefined ? '' : joinPath(prefixOf(scope), String(rest[keyProp]));
   // The declared props go to the slot only. The slot also reads the DOM props, as `type` and `value`.
   const domProps = Object.fromEntries(Object.entries(rest).filter(([name]) => !(name in declared)));
 
@@ -149,6 +149,7 @@ export const PartView = ({
   );
 
   const renderRef = isValidElement(render) ? (render.props as { ref?: RefLike }).ref : undefined;
+  // oxlint-disable-next-line react/refs -- this builds a ref callback from ref callbacks, and reads no `current`.
   const ref = useMemo(() => mergeRefs(attach, authorRef, renderRef), [attach, authorRef, renderRef]);
 
   if (!view) return null;

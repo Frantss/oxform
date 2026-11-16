@@ -3,12 +3,12 @@ id: TK-039
 title: React scopes in parts
 phase: 5
 work_package: P5-04
-status: todo
+status: done
 depends_on: [TK-038]
 branch: codex/P5-04-react-scopes
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-039: React scopes in parts
@@ -40,12 +40,22 @@ scope, and the adapter hooks take `{ scope }`. The parity scenario P6 passes in 
 
 ## Acceptance
 
-- [ ] P6 passes in `packages/react/tests/parity.spec.tsx` in Chromium: the `scope` prop, nested scopes, a
+- [x] P6 passes in `packages/react/tests/parity.spec.tsx` in Chromium: the `scope` prop, nested scopes, a
       placed scope, and the hooks with `{ scope }`.
-- [ ] `useScope` returns the same object for the same inputs across renders.
-- [ ] No `within` export or member exists.
-- [ ] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
+- [x] `useScope` returns the same object for the same inputs across renders.
+- [x] No `within` export or member exists.
+- [x] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (no lint warning), `pnpm run test`: pass.
+- A part takes `scope`. Its `'key'` props are then paths of the scope. The `PartComponent` type has a scoped
+  overload, with inferred check names and field members. `Scope<Scoped, any>` would turn the check sugar into an
+  index signature, and an instance passed as a scope would then fail to type-check.
+- `src/hooks.ts`: `useScope`, and `{ scope }` on `useField`, `useArray` and `useScope`.
+- P6 passes in Chromium with the `scopes` view: the `scope` prop, a nested scope (`geo`), the placed scope
+  `address` through `form.scope`, `useField` with a scope, and `useArray` with the instance as the scope.
+- `src/hooks.spec.tsx`: `useScope` returns the same scope across two renders.
+- D30: no `within` exists in `packages/react`. No test pins the export list (behavior tests only).
+- Also fixed: a `react(refs)` lint warning on the merged ref of `part-view.ts`, from TK-037. The check script
+  passed with it, and the TK-037 report missed it.

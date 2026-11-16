@@ -1,5 +1,20 @@
-import type { ElementTag, InstanceOf, OptionsOf, PartSpec, PartsOf, StateOf, ValuesOf } from '@oxform/core';
-import type { ResolveKeys } from '@oxform/core/adapter';
+import type {
+  ArrayPath,
+  ElementTag,
+  FieldsOf,
+  InstanceOf,
+  ObjectPath,
+  OptionsOf,
+  PartSpec,
+  PartsOf,
+  Path,
+  PathValue,
+  Scope,
+  StateOf,
+  ValuesOf,
+} from '@oxform/core';
+import type { FieldMembersOf, ResolveKeys } from '@oxform/core/adapter';
+import type { ArrayHandle, FieldHandle } from '@oxform/core/behaviors';
 import type { ComponentPropsWithRef, HTMLAttributes, JSX, ReactElement, ReactNode, Ref } from 'react';
 
 /** Overrides of the elements that the slots of a form declare, by slot name. */
@@ -36,9 +51,20 @@ export type SlotPropsOf<F, Name, Values = ValuesOf<F>> =
 export type SlotStateOf<F, Name> = SpecOf<F, Name> extends PartSpec<any, infer State, any> ? State : never;
 type PartNames<F> = Exclude<keyof PartsOf<F> & string, 'root'>;
 
-/** The component of one part. Its `'key'` props are paths of the form. */
+/**
+ * The component of one part. Its `'key'` props are paths of the form, or, with a `scope` (from `useScope` or
+ * `form.scope`), paths of the scope. The two signatures are overloads: a mapped type that infers the values of the
+ * scope per part is too deep for TypeScript.
+ */
 export interface PartComponent<F, Name extends string, Tag extends ElementTag> {
-  (props: PartProps<Tag, SlotPropsOf<F, Name>, SlotStateOf<F, Name>>): JSX.Element | null;
+  (
+    props: PartProps<Tag, SlotPropsOf<F, Name>, SlotStateOf<F, Name>> & { readonly scope?: undefined },
+  ): JSX.Element | null;
+  <Scoped, Checks extends string = never, Fields = never>(
+    props: PartProps<Tag, SlotPropsOf<F, Name, Scoped>, SlotStateOf<F, Name>> & {
+      readonly scope: Scope<Scoped, Checks, Fields>;
+    },
+  ): JSX.Element | null;
 }
 
 /** One component per slot except `root`, named by the capitalized slot name. */
@@ -77,8 +103,25 @@ export interface FormHooks<F> {
     selector: (state: StateOf<F>) => Selected,
     options?: { readonly compare?: (a: Selected, b: Selected) => boolean },
   ) => Selected;
-  /** `form.field`, and it follows the value and the status of that path only. */
-  readonly useField: InstanceOf<F> extends { readonly field: infer Field } ? Field : never;
-  /** `form.array`, and it follows the array value. */
-  readonly useArray: InstanceOf<F> extends { readonly array: infer ArrayField } ? ArrayField : never;
+  /**
+   * `form.field`, and it follows the value and the status of that path only. With `{ scope }`, the path is a path
+   * of the scope.
+   */
+  readonly useField: (InstanceOf<F> extends { readonly field: infer Field } ? Field : never) &
+    (<Scoped, Checks extends string, const At extends Path<Scoped>>(
+      path: At,
+      options: { readonly scope: Scope<Scoped, Checks, FieldsOf<F>> },
+    ) => FieldHandle<Scoped, At, Checks> & FieldMembersOf<FieldsOf<F>, Scoped, At>);
+  /** `form.array`, and it follows the array value. It takes `{ scope }` like `useField`. */
+  readonly useArray: (InstanceOf<F> extends { readonly array: infer ArrayField } ? ArrayField : never) &
+    (<Scoped, Checks extends string, const At extends ArrayPath<Scoped>>(
+      path: At,
+      options: { readonly scope: Scope<Scoped, Checks, FieldsOf<F>> },
+    ) => ArrayHandle<Scoped, At>);
+  /** `form.scope`, the same object for the same inputs. With `{ scope }`, the prefix is a path of the scope. */
+  readonly useScope: (InstanceOf<F> extends { readonly scope: infer ScopeOf } ? ScopeOf : never) &
+    (<Scoped, Checks extends string, const At extends ObjectPath<Scoped>>(
+      prefix: At,
+      options: { readonly scope: Scope<Scoped, Checks, FieldsOf<F>> },
+    ) => Scope<NonNullable<PathValue<Scoped, At>>, Checks, FieldsOf<F>>);
 }

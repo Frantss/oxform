@@ -49,6 +49,29 @@ const Items = () => {
   ));
 };
 
+const Scopes = () => {
+  const form = profile.useForm();
+  const scope = profile.useScope('address');
+  const geo = profile.useScope('geo', { scope });
+  const street = profile.useField('street', { scope });
+  const items = profile.useArray('items', { scope: form });
+  return (
+    <>
+      <label>
+        Street <profile.Field name='street' scope={scope} />
+      </label>
+      <label>
+        Latitude <profile.Field name='lat' scope={geo} type='number' />
+      </label>
+      <label>
+        Street again <profile.Field name='street' scope={form.scope('address')} />
+      </label>
+      <output aria-label='street'>{street.get()}</output>
+      <output aria-label='items'>{items.get().length}</output>
+    </>
+  );
+};
+
 const SignInView = ({ expose, root }: ViewProps & Views['signIn']) => (
   <signIn.Root data-testid='root' {...(root as {})}>
     <ExposeSignIn expose={expose} />
@@ -107,6 +130,12 @@ export const views: { readonly [Name in ViewName]?: ComponentType<ViewProps & Vi
       </label>
       <Selected count={count} />
       <EmailField count={count} />
+    </profile.Root>
+  ),
+  scopes: ({ expose }) => (
+    <profile.Root>
+      <ExposeProfile expose={expose} />
+      <Scopes />
     </profile.Root>
   ),
   list: ({ expose }) => (
