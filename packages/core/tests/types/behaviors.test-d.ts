@@ -4,8 +4,10 @@ import {
   defineForm,
   slots,
   type Extendable,
+  type OptionsOf,
   type PartsOf,
   type Scope,
+  type SelfIssues,
   type Updater,
 } from '@oxform/core';
 import {
@@ -32,6 +34,7 @@ import {
   status,
   submit,
   validation,
+  type DefaultFieldStatus,
   type FieldStatus,
   type FieldStatusDefaults,
   type FormStatus,
@@ -529,6 +532,32 @@ describe('FormStatusDefaults, FieldStatusDefaults', () => {
   it('rejects a derived flag as a field default', () => {
     // @ts-expect-error `pristine` is derived.
     accepts<FieldStatusDefaults>({ pristine: true });
+  });
+});
+
+describe('DefaultFieldStatus', () => {
+  it('takes the field defaults by path, and for every path', () => {
+    expectTypeOf<DefaultFieldStatus<Profile>['address.city']>().toEqualTypeOf<FieldStatusDefaults | undefined>();
+    expectTypeOf<DefaultFieldStatus<Profile>['*']>().toEqualTypeOf<FieldStatusDefaults | undefined>();
+  });
+
+  it('rejects a path that the values do not have', () => {
+    // @ts-expect-error `age` is not a path of Profile.
+    accepts<DefaultFieldStatus<Profile>>({ age: { dirty: true } });
+  });
+});
+
+describe('SelfIssues', () => {
+  it('becomes the issues of the check names of the chain in the options of create', () => {
+    const checked = form.extend(values).extend(validation).extend(check('error')).extend(status).extend(submit);
+    expectTypeOf<Parameters<NonNullable<OptionsOf<typeof checked>['onInvalid']>>[0]>().toEqualTypeOf<
+      IssuesByCheck<'error'>
+    >();
+  });
+
+  it('is a marker, not the issues of a form', () => {
+    // @ts-expect-error SelfIssues stands in for the issues until `create` resolves it.
+    accepts<SelfIssues>({ error: [] });
   });
 });
 

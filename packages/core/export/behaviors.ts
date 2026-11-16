@@ -21,6 +21,7 @@ export type { ResetApi, ResetOptions } from '#behaviors/reset';
 export { fieldErrorSlots, fieldSlots, resetSlots, rootSlots, submitSlots } from '#behaviors/slots';
 export { status } from '#behaviors/status';
 export type {
+  DefaultFieldStatus,
   FieldStatus,
   FieldStatusDefaults,
   FormStatus,

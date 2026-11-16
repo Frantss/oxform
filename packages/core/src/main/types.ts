@@ -43,7 +43,8 @@ declare const selfIssuesBrand: unique symbol;
 
 /**
  * The issues of the instance by check name, as a parameter of an option. `configure` and `create` replace it with
- * `IssuesByCheck` of the check names of the whole chain (D21). Only `submit` uses it, so no entry point exports it.
+ * `IssuesByCheck` of the check names of the whole chain (D21). It is exported so that a consumer can export a form
+ * whose chain has `submit`.
  */
 export interface SelfIssues {
   readonly [selfIssuesBrand]: true;

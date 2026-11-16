@@ -32,6 +32,7 @@ export type {
   PropsOf,
   Scope,
   Self,
+  SelfIssues,
   Slot,
   SlotDefinition,
   SlotFactory,
