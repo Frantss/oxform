@@ -1,5 +1,6 @@
+import { slotsOf } from '@oxform/core/adapter';
 import { createContext, useContext, type Context } from 'react';
-import type { Instance } from '#part-view';
+import type { Instance, SlotDefinition } from '#part-view';
 
 /** One context per form object, so `createParts` and `usePart` find the same instance. */
 const contexts = new WeakMap<object, Context<Instance | null>>();
@@ -19,4 +20,13 @@ export const useInstance = (form: object) => {
     );
   }
   return instance;
+};
+
+/** The slots of each form object. `slotsOf` builds them on each call, and a part needs the same slot on each render. */
+const slotCache = new WeakMap<object, Readonly<Record<string, SlotDefinition>>>();
+
+export const slotsOfForm = (form: object) => {
+  let slots = slotCache.get(form);
+  if (!slots) slotCache.set(form, (slots = slotsOf(form) as unknown as Readonly<Record<string, SlotDefinition>>));
+  return slots;
 };

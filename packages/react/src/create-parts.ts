@@ -1,11 +1,11 @@
 'use client';
 
 import type { AnyForm, PartsOf } from '@oxform/core';
-import { adapterControlsOf, optionKindsOf, slotsOf } from '@oxform/core/adapter';
+import { adapterControlsOf, optionKindsOf } from '@oxform/core/adapter';
 import { createElement, useEffect, useId, useLayoutEffect, useState, type ReactNode } from 'react';
-import { contextOf } from '#context';
+import { contextOf, slotsOfForm } from '#context';
 import { createHooks } from '#hooks';
-import { PartView, type Instance, type PartViewProps, type SlotDefinition } from '#part-view';
+import { PartView, type Instance, type PartViewProps } from '#part-view';
 import type { FormHooks, PartComponents, PartElements, RootComponent } from '#types';
 
 type FormLike = { create(options?: Record<string, unknown>): Instance };
@@ -20,7 +20,7 @@ export const createParts = (<F extends AnyForm, const Elements extends PartEleme
   form: F,
   elements?: Elements,
 ) => {
-  const slots = slotsOf(form) as unknown as Readonly<Record<string, SlotDefinition>>;
+  const slots = slotsOfForm(form);
   const overrides = (elements ?? {}) as Readonly<Record<string, string>>;
   for (const name of Object.keys(overrides))
     if (!(name in slots)) throw new Error(`oxform: the form has no part "${name}".`);

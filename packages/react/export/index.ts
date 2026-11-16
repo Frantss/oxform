@@ -1,4 +1,5 @@
 export { createParts } from '#create-parts';
+export { usePart } from '#use-part';
 export type {
   PartComponent,
   PartComponents,

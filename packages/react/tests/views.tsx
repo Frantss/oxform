@@ -1,7 +1,7 @@
 import type { ViewName, ViewProps, Views } from '@oxform/adapter-parity/driver';
 import { fixtures } from '@oxform/adapter-parity/fixtures';
-import { useLayoutEffect, type ComponentType, type InputHTMLAttributes } from 'react';
-import { createParts } from '../export/index';
+import { useLayoutEffect, type ComponentType, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { createParts, usePart } from '../export/index';
 
 const signIn = createParts(fixtures.signIn);
 const bare = createParts(fixtures.bare);
@@ -72,6 +72,23 @@ const Scopes = () => {
   );
 };
 
+const ColorSelect = () =>
+  usePart(
+    fixtures.profile,
+    'field',
+    { name: 'color' },
+    {
+      'aria-label': 'Color',
+      children: (
+        <>
+          <option value='red'>red</option>
+          <option value='blue'>blue</option>
+        </>
+      ),
+    },
+    'select',
+  );
+
 const SignInView = ({ expose, root }: ViewProps & Views['signIn']) => (
   <signIn.Root data-testid='root' {...(root as {})}>
     <ExposeSignIn expose={expose} />
@@ -130,6 +147,17 @@ export const views: { readonly [Name in ViewName]?: ComponentType<ViewProps & Vi
       </label>
       <Selected count={count} />
       <EmailField count={count} />
+    </profile.Root>
+  ),
+  otherElements: ({ expose }) => (
+    <profile.Root>
+      <ExposeProfile expose={expose} />
+      <profile.Field
+        name='name'
+        aria-label='Name'
+        render={props => <textarea {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)} />}
+      />
+      <ColorSelect />
     </profile.Root>
   ),
   scopes: ({ expose }) => (

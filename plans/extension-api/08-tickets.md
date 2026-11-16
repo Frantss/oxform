@@ -91,7 +91,7 @@ evidence.
 | [TK-037](./tickets/TK-037-create-parts.md)           | React createParts                    | P5-02        | done    | TK-036, TK-017                 |
 | [TK-038](./tickets/TK-038-react-hooks.md)            | React hooks                          | P5-03        | done    | TK-037                         |
 | [TK-039](./tickets/TK-039-react-scopes.md)           | React scopes in parts                | P5-04        | done    | TK-038                         |
-| [TK-040](./tickets/TK-040-use-part.md)               | usePart                              | P5-05        | ready   | TK-037                         |
+| [TK-040](./tickets/TK-040-use-part.md)               | usePart                              | P5-05        | done    | TK-037                         |
 | [TK-041](./tickets/TK-041-react-server-lifecycle.md) | React server rendering and lifecycle | P5-06        | ready   | TK-037                         |
 | [TK-042](./tickets/TK-042-react-types-package.md)    | React types, package and coverage    | P5-07        | blocked | TK-038, TK-039, TK-040, TK-041 |
 
