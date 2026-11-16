@@ -14,6 +14,8 @@ export { check } from '#behaviors/check';
 export type { CheckApi, CheckEntry, CheckOptions, CheckSetMode, CheckState, CheckSugar } from '#behaviors/check';
 export { events } from '#behaviors/events';
 export type { EventsApi, FieldChangeOptions, FieldFocusOptions } from '#behaviors/events';
+export { handles } from '#behaviors/handles';
+export type { ArrayHandle, FieldHandle, FieldState } from '#behaviors/handles';
 export { reset } from '#behaviors/reset';
 export type { ResetApi, ResetOptions } from '#behaviors/reset';
 export { rootSlots } from '#behaviors/slots';

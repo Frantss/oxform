@@ -30,6 +30,7 @@ export type {
   PartsOf,
   PropKind,
   PropsOf,
+  Scope,
   Self,
   Slot,
   SlotDefinition,

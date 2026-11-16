@@ -1,10 +1,14 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineExtension, defineForm, type Slot, type Updater } from '@oxform/core';
+import { defineExtension, defineForm, type Scope, type Slot, type Updater } from '@oxform/core';
 import {
   arrays,
   check,
   events,
+  handles,
   reset,
+  type ArrayHandle,
+  type FieldHandle,
+  type FieldState,
   rootSlots,
   type ArrayOperations,
   type ArraysApi,
@@ -639,5 +643,103 @@ describe('SubmitApi, SubmitAttempt, SubmitResult', () => {
   it('rejects a result without issues', () => {
     // @ts-expect-error A result has the issues.
     accepts<SubmitResult<'error'>>({ successful: true });
+  });
+});
+
+describe('handles', () => {
+  const chain = form.extend(values).extend(validation).extend(check('error')).extend(status).extend(events);
+  const handled = chain.extend(arrays).extend(reset).extend(handles).extend(check('late')).create();
+
+  it('adds field, array and scope, with sugar for each check before handles', () => {
+    expectTypeOf(handled.field('name')).toEqualTypeOf<FieldHandle<Profile, 'name', 'error'>>();
+    expectTypeOf(handled.scope('address')).toEqualTypeOf<Scope<{ city: string }, 'error'>>();
+  });
+
+  it('gives no sugar for a check after handles (01-public-api.md, 7.6)', () => {
+    // @ts-expect-error `late` comes after handles.
+    accepts(handled.field('name').late);
+  });
+
+  it('gives no sugar on a chain without validation', () => {
+    const plain = form.extend(values).extend(status).extend(events).extend(arrays).extend(reset).extend(handles);
+    // @ts-expect-error The chain has no check.
+    accepts(plain.create().field('name').error);
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error handles needs values.
+    form.extend(handles);
+  });
+
+  it('needs status', () => {
+    // @ts-expect-error handles needs status.
+    form.extend(values).extend(handles);
+  });
+
+  it('needs events', () => {
+    // @ts-expect-error handles needs events.
+    form.extend(values).extend(status).extend(handles);
+  });
+
+  it('needs reset', () => {
+    // @ts-expect-error handles needs reset.
+    form.extend(values).extend(status).extend(events).extend(arrays).extend(handles);
+  });
+
+  it('needs arrays', () => {
+    // @ts-expect-error handles needs arrays.
+    form.extend(values).extend(status).extend(events).extend(reset).extend(handles);
+  });
+});
+
+describe('Scope', () => {
+  const instance = form
+    .extend(values)
+    .extend(status)
+    .extend(events)
+    .extend(arrays)
+    .extend(reset)
+    .extend(handles)
+    .create();
+  const city = (scope: Scope<{ city: string }>) => scope.field('city').get();
+
+  it('takes the scope of any form whose values have the shape', () => {
+    expectTypeOf(city(instance.scope('address'))).toEqualTypeOf<string>();
+  });
+
+  it('rejects a scope of values of another shape (D25)', () => {
+    // @ts-expect-error The root values are a Profile.
+    city(instance);
+  });
+
+  it('rejects a path that is not an object', () => {
+    // @ts-expect-error `name` is a string.
+    instance.scope('name');
+  });
+});
+
+describe('FieldHandle, ArrayHandle, FieldState', () => {
+  type Order = { lines: { sku: string }[] };
+
+  it('types the value, the operations and the state by the path', () => {
+    expectTypeOf<FieldHandle<Profile, 'address.city'>['state']>().toEqualTypeOf<FieldState<string>>();
+    expectTypeOf<ArrayHandle<Order, 'lines'>['get']>().returns.toEqualTypeOf<{ sku: string }[]>();
+  });
+
+  it('rejects a change of the wrong type', () => {
+    const field = {} as FieldHandle<Profile, 'name'>;
+    // @ts-expect-error The field holds a string.
+    field.change(1);
+  });
+
+  it('rejects an item of the wrong type', () => {
+    const lines = {} as ArrayHandle<Order, 'lines'>;
+    // @ts-expect-error A line has a sku.
+    lines.append({ id: 1 });
+  });
+
+  it('rejects a state without an id', () => {
+    // @ts-expect-error A state has an id.
+    accepts<FieldState<string>>({ value: '', defaultValue: '', ref: null, status: {} as FieldStatus });
   });
 });

@@ -3,12 +3,12 @@ id: TK-027
 title: Handles extension
 phase: 3
 work_package: P3-09
-status: todo
+status: done
 depends_on: [TK-023, TK-024, TK-025, TK-026]
 branch: codex/P3-09-handles
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-027: Handles extension
@@ -61,18 +61,49 @@ completed: null
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `handles`, also the row "on a
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `handles`, also the row "on a
       chain with no `validation`".
-- [ ] Each scenario group of `03#handles (createHandles)` has a passing test in `src/behaviors/handles.spec.ts`.
+- [x] Each scenario group of `03#handles (createHandles)` has a passing test in `src/behaviors/handles.spec.ts`.
       Each row that cites `B:` passes. The rows marked "Preset" are written new on the shortest chain.
-- [ ] Each of the five needs has a negative type case and a unit case for its runtime error at `create`.
-- [ ] A check after `handles` has no sugar, in a type test and a unit test.
-- [ ] `tests/types/depth.test-d.tsx` still compiles in both type-test projects.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `export/behaviors.ts` exports no `createX` function. `vp run @oxform/core#test:package` covers `prefixOf`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] Each of the five needs has a negative type case and a unit case for its runtime error at `create`.
+- [x] A check after `handles` has no sugar, in a type test and a unit test.
+- [x] `tests/types/depth.test-d.tsx` still compiles in both type-test projects.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `export/behaviors.ts` exports no `createX` function. `vp run @oxform/core#test:package` covers `prefixOf`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the D25 path and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with `check:types:dist`, `check:type-coverage`, `test:package` and the depth
+  guard), `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (892 statements, 386 branches).
+- `src/behaviors/handles.spec.ts` (chain: `values`, `status`, `events`, `arrays`, `reset`, `handles`, or with
+  `validation`, `check('error')` before `handles` and `check('late')` after it; no `standard`):
+  - Wrapper rows: exactly `field`, `array` and `scope`, no state, no option; a `create` without each of the five needs
+    throws and names the extension and the need; on a chain with no `validation`, a field has no sugar (D53).
+  - Field handle: a live `state` (`id` through `idPart`, G10; value, default value, element, status); `change`,
+    `focus`, `blur`, `register`, `unregister` and `reset` bound to the path; the field members of the extensions,
+    with the path relative to the scope.
+  - Array handle: every operation on the path, and ids that follow the items.
+  - Check sugar: `error()` (also `nested`) and `setError` (also `mode`) for the check before `handles`; none for
+    the check after it (`01#7.6`).
+  - `setError`: its entries go when the field or an ancestor changes, and at a reset; they stay when another field
+    changes; only the entries it set go.
+  - Scopes: paths at any depth and on an array item path; the same object per prefix (G9); `prefixOf`, also after a
+    spread.
+- D25: the primary path holds. `Scope` has an invariant phantom member (`(values: Values) => Values`), so a scope
+  of values of another shape is a type error. Without the member the negative case compiles (checked by removing
+  it). `depth.test-d.tsx` compiles in both type-test projects. The comment of G20 is not carried over.
+- `Scope` is in `main/types.ts` and the main entry point. `BuiltInApis` has `field`, `array` and `scope` from
+  `Scope<Values>`, in place of the stand-in. `Instance` adds the field members and the check names of the chain to
+  `field` and `scope` through one homomorphic mapped type.
+- `prefixOf` and the key `Symbol.for('oxform.scope.prefix')` are in `main/form.ts`; `export/adapter.ts` exports
+  `prefixOf`. `test:package` reads the prefix of a scope from the built `behaviors` entry in the built `adapter`
+  entry.
+- Type tests: `handles` (sugar for the check before it, a negative case for the check after it, for a chain with
+  no `validation`, and for each of the five needs), `Scope` (D25, an object path only), `FieldHandle`,
+  `ArrayHandle`, `FieldState`, `prefixOf`.
+- `export/behaviors.ts` exports `handles` and `FieldHandle`, `ArrayHandle`, `FieldState`; no `createHandles`.
+- Changes outside the scope: the test-local `field` stand-in of `form.spec.ts` is cast to the built-in `field`
+  type, and a type case of `main.test-d.ts` reads the value type of the built-in field.

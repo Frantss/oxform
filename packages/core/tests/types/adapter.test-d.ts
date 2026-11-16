@@ -4,6 +4,7 @@ import {
   isDeepEqual,
   joinPath,
   optionKindsOf,
+  prefixOf,
   slotsOf,
   type AdapterControls,
   type ChecksOfApi,
@@ -133,5 +134,16 @@ describe('FieldMembersOf', () => {
     const members = {} as FieldMembersOf<Fields, Login, 'age'>;
     // @ts-expect-error `age` is a number.
     accepts(members.mask);
+  });
+});
+
+describe('prefixOf', () => {
+  it('reads the prefix of any object', () => {
+    expectTypeOf(prefixOf(form)).toEqualTypeOf<string>();
+  });
+
+  it('rejects a value that is not an object', () => {
+    // @ts-expect-error A prefix belongs to a scope object.
+    prefixOf('items');
   });
 });

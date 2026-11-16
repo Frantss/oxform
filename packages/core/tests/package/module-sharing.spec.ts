@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { defineForm, slots } from '@oxform/core';
-import { adapterControlsOf, slotsOf } from '@oxform/core/adapter';
-import { rootSlots } from '@oxform/core/behaviors';
+import { adapterControlsOf, prefixOf, slotsOf } from '@oxform/core/adapter';
+import { arrays, events, handles, reset, rootSlots, status } from '@oxform/core/behaviors';
 import { standard } from '@oxform/core/presets';
 import { describe, expect, it } from 'vite-plus/test';
 import { entryPoints, exportedNames, type EntryPoint } from '../../scripts/declarations.ts';
@@ -44,6 +44,16 @@ describe('built entry points', () => {
     instance.destroy();
 
     expect(Object.keys(controls)).toEqual(['setOptions', 'unmount']);
+  });
+
+  it('read in @oxform/core/adapter the prefix of a scope from @oxform/core/behaviors', () => {
+    using built = setup();
+    const chain = built.form().extend(status).extend(events).extend(arrays).extend(reset).extend(handles);
+    const instance = chain.create();
+    const prefix = prefixOf(instance.scope('address' as never));
+    instance.destroy();
+
+    expect(prefix).toBe('address');
   });
 
   it('emit each source module in one chunk only', () => {

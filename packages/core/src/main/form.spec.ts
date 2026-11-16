@@ -3,8 +3,8 @@ import { schemaOf } from '../../tests/helpers';
 import { getAt, setAt } from '#internal/paths';
 import { contextInternals } from './context';
 import { adapterControlsOf, defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slots, slotsOf } from './form';
-import type { Path, PathValue } from './path-types';
-import type { Extendable, Form, Needs, Self, SlotFactory } from './types';
+import type { Path } from './path-types';
+import type { BuiltInApis, Extendable, Form, Needs, Self, SlotFactory } from './types';
 
 type Login = { email: string; password: string };
 
@@ -100,14 +100,14 @@ const fielded = <Values>(form: Extendable<Values>) =>
     name: 'fielded',
     state: options => ({ values: options.defaultValues }),
     api: context => ({
-      field: <At extends Path<Values>>(path: At) =>
+      field: (path: Path<Values>) =>
         contextInternals(context).decorateField(
           {
-            get: () => getAt(context.state.values.get(), path) as PathValue<Values, At>,
-            change: (next: PathValue<Values, At>) => context.state.values.set(values => setAt(values, path, next)),
+            get: () => getAt(context.state.values.get(), path),
+            change: (next: unknown) => context.state.values.set(values => setAt(values, path, next)),
           },
           path,
-        ),
+        ) as unknown as ReturnType<BuiltInApis<Values>['field']>,
     }),
   });
 

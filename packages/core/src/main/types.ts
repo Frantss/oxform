@@ -3,12 +3,13 @@ import type { ReadonlyStore } from '@tanstack/store';
 import type { ArraysApi } from '#behaviors/arrays';
 import type { CheckApi } from '#behaviors/check';
 import type { EventsApi } from '#behaviors/events';
+import type { ArrayHandle, FieldHandle } from '#behaviors/handles';
 import type { ResetApi } from '#behaviors/reset';
 import type { StatusApi } from '#behaviors/status';
 import type { SubmitApi } from '#behaviors/submit';
 import type { IssuesByCheck, ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
-import type { Path, PathValue, Unsubscribe, Updater } from './path-types';
+import type { ArrayPath, ObjectPath, Path, PathValue, Unsubscribe, Updater } from './path-types';
 
 /** How an adapter passes an option. The descriptor gives the option its TypeScript type. */
 export type OptionKind = 'string' | 'number' | 'boolean' | 'list' | 'value' | 'callback' | 'action' | 'id' | 'key';
@@ -153,8 +154,29 @@ export type FieldMembersOf<Fields, Values, At extends string> = MembersFor<Field
 
 declare const handlesChecks: unique symbol;
 
-/** `handles` adds it to its api type, so the field sugar knows the check names of the chain. */
-export type HandlesChecks<Checks extends string> = { readonly [handlesChecks]?: Checks };
+declare const scopeValues: unique symbol;
+
+/**
+ * The api of `handles`, and a scope of it. `Fields` adds the field members of the extensions at every depth. A
+ * function written for `Scope<Address, 'error'>` takes the scope of any form whose values there are an `Address`.
+ *
+ * It must stay one recursive interface. A recursive alias, a depth counter or a second interface related to it
+ * makes TypeScript fail with "Type instantiation is excessively deep".
+ */
+export interface Scope<Values, Checks extends string = never, Fields = never> {
+  /** Phantom: lets `Instance` read the check names back from an api that has handles. */
+  readonly [handlesChecks]?: Checks;
+  /** Phantom and invariant: a scope of values of another shape is a type error (D25). */
+  readonly [scopeValues]?: (values: Values) => Values;
+  readonly field: <At extends Path<Values>>(
+    path: At,
+  ) => FieldHandle<Values, At, Checks> & FieldMembersOf<Fields, Values, At>;
+  readonly array: <At extends ArrayPath<Values>>(path: At) => ArrayHandle<Values, At>;
+  /** The handles of a sub-object, so a component written for one scope works at any path. */
+  readonly scope: <At extends ObjectPath<Values>>(
+    path: At,
+  ) => Scope<NonNullable<PathValue<Values, At>>, Checks, Fields>;
+}
 
 /** The check names of an api that has handles, or `never`. */
 export type ChecksOfApi<Api> = Api extends { readonly [handlesChecks]?: infer Checks }
@@ -183,8 +205,9 @@ export interface BuiltInApis<Values> {
   readonly arrays: ArraysApi<Values>;
   readonly reset: ResetApi<Values>;
   readonly submit: SubmitApi<Values>;
-  /** A stand-in until `handles` (TK-027): the field handle of a path. */
-  readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
+  readonly field: Scope<Values>['field'];
+  readonly array: Scope<Values>['array'];
+  readonly scope: Scope<Values>['scope'];
 }
 
 export type Needs<Values, Names extends keyof BuiltInApis<Values>> = Pick<BuiltInApis<Values>, Names>;
@@ -380,14 +403,18 @@ export interface Form<Values, Api = {}, Options = {}, State = {}, Slots = {}, Fi
 export type AnyForm = Form<any, any, any, any, any, any>;
 
 /** One live form: the api of its extensions, its `id`, its `store` and `destroy()`. */
-/** `form.field(path)` returns the base handle plus the members of `Fields` whose condition holds. */
-type WithFieldMembers<Values, Api, Fields> = Api extends { readonly field: (path: any) => any }
-  ? Omit<Api, 'field'> & {
-      readonly field: <At extends Path<Values>>(
-        path: At,
-      ) => FieldOf<PathValue<Values, At>> & FieldMembersOf<Fields, Values, At>;
-    }
-  : Api;
+/** `form.field(path)` and `form.scope(path)` carry the field members of the whole chain. */
+type WithFieldMembers<Values, Api, Fields> = {
+  [Name in keyof Api]: Name extends 'field'
+    ? Api[Name] extends (path: any) => any
+      ? Scope<Values, ChecksOfApi<Api>, Fields>['field']
+      : Api[Name]
+    : Name extends 'scope'
+      ? Api[Name] extends (path: any) => any
+        ? Scope<Values, ChecksOfApi<Api>, Fields>['scope']
+        : Api[Name]
+      : Api[Name];
+};
 
 /** The names of the checks in an api: the members that are a `CheckApi` under their own name. */
 export type CheckNamesOf<Api> = {

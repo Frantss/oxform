@@ -155,6 +155,12 @@ const createInstance = (definitions: readonly Definition[], options: Options, me
 /** A scope definition places itself through this key (`main/scopes.ts`), so this module never imports it. */
 const MOUNT = Symbol.for('oxform.scope.mount');
 
+/**
+ * The prefix of a scope that `handles` made, under a symbol so a spread of the scope keeps it. It is not on `Scope`:
+ * an adapter reads it with `prefixOf` to resolve the names of a part against the scope it was given.
+ */
+export const scopePrefix = Symbol.for('oxform.scope.prefix');
+
 type Mount = (options: Options, path: string, layers: readonly [Options, Options, Options]) => Options;
 
 type FormInit = Options & { readonly name?: string; readonly scopes?: Readonly<Record<string, object>> };
@@ -324,3 +330,7 @@ export const slots =
   ) =>
   (_form: Extendable<Values, Provides, NeedState>): Extension<{}, {}, {}, Slots> =>
     ({ name: 'slots', api: () => ({}), slots: build }) as never;
+
+/** The prefix of a scope from `handles`, or `''` for an object that is not a scope. */
+export const prefixOf = (scope: object | undefined): string =>
+  (scope as { readonly [scopePrefix]?: string } | undefined)?.[scopePrefix] ?? '';

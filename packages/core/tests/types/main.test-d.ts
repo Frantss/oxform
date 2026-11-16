@@ -378,7 +378,8 @@ describe('Needs, BuiltInApis', () => {
   });
 
   it('types the field of BuiltInApis by the path', () => {
-    expectTypeOf<ReturnType<BuiltInApis<Login>['field']>>().toEqualTypeOf<FieldOf<string>>();
+    const field = {} as BuiltInApis<Login>['field'];
+    expectTypeOf(field('email').get()).toEqualTypeOf<string>();
   });
 
   it('rejects a path that the values do not have', () => {
