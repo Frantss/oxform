@@ -16,3 +16,11 @@
   catch it, as in the spike (`spike/events.ts:47`). A validator that rejects during `change`, `focus` or `blur`
   gives an unhandled promise rejection, which fails a Vitest run and logs an error in a browser. Options: catch and
   drop the rejection, or report it through an option such as `onError`.
+
+## The build drops `/* @__PURE__ */` from the slot groups
+
+- What: `packages/core/src/behaviors/slots.ts` marks each `defineSlots` call `/* @__PURE__ */`, but
+  `packages/core/dist/behaviors.js` holds no such annotation after `pnpm run build`.
+- Why it matters: a bundler may keep every slot group of `@oxform/core/behaviors` in an app that spreads one.
+  Plan risk R02 names the fallback: one module per group. The tree-shaking check that would show the effect was
+  deleted on 2026-11-16, so the fallback is not applied. Owner decision needed.

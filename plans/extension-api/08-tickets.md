@@ -69,14 +69,14 @@ evidence.
 | [TK-025](./tickets/TK-025-reset.md)        | Reset extension      | P3-07        | done   | TK-023                         |
 | [TK-026](./tickets/TK-026-submit.md)       | Submit extension     | P3-08        | done   | TK-022, TK-021                 |
 | [TK-027](./tickets/TK-027-handles.md)      | Handles extension    | P3-09        | done   | TK-023, TK-024, TK-025, TK-026 |
-| [TK-028](./tickets/TK-028-slot-groups.md)  | Slot groups          | P3-10        | ready  | TK-025, TK-026, TK-021         |
+| [TK-028](./tickets/TK-028-slot-groups.md)  | Slot groups          | P3-10        | done   | TK-025, TK-026, TK-021         |
 | [TK-029](./tickets/TK-029-scope-checks.md) | Scopes on checks     | P3-11        | ready  | TK-027, TK-016                 |
 
 ### Phase 4: `standard` preset, integration tests and bundle checks
 
 | Id                                                  | Title                 | Work package | Status  | Depends on     |
 | --------------------------------------------------- | --------------------- | ------------ | ------- | -------------- |
-| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | blocked | TK-027, TK-028 |
+| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | ready   | TK-027, TK-028 |
 | [TK-031](./tickets/TK-031-preset-flows.md)          | Preset flows          | P4-02        | blocked | TK-030         |
 | [TK-032](./tickets/TK-032-cross-extension-flows.md) | Cross-extension flows | P4-03        | blocked | TK-029         |
 | [TK-033](./tickets/TK-033-tiers-and-size-report.md) | Tiers and size report | P4-04        | blocked | TK-030, TK-005 |
