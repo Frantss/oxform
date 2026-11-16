@@ -17,6 +17,7 @@ document for the `0.7.0` release. The reference is the spike in
 | [05-migration-guide.md](./05-migration-guide.md) | The draft of the agent-focused guide from 0.x                                    |
 | [06-roadmap.md](./06-roadmap.md)                 | Phases, work packages, the decision register, the risk register                  |
 | [07-comparison.md](./07-comparison.md)           | The comparison with TanStack Form, React Hook Form and Formisch                  |
+| [08-tickets.md](./08-tickets.md)                 | The tickets, each mapped to a work package of `06-roadmap.md`                    |
 
 `00-direction.md` is the source of truth. Each fact has one owner file (see its ownership table). The other
 files link to the owner.

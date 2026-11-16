@@ -296,6 +296,7 @@ Each fact has one owner. Other files link to it and do not restate it.
 | [05-migration-guide.md](./05-migration-guide.md) | The draft of the agent-focused migration guide itself                              |
 | [06-roadmap.md](./06-roadmap.md)                 | Phases, work packages, order, exit criteria, risks, the decision register          |
 | [07-comparison.md](./07-comparison.md)           | The comparison with other form libraries: method, fairness rules, features, sizes  |
+| [08-tickets.md](./08-tickets.md)                 | The ticket list and the map from each ticket to its work package                   |
 
 ## Owner decisions
 
