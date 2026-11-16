@@ -3,12 +3,12 @@ id: TK-043
 title: Solid 1 risk probe
 phase: 6
 work_package: P6-01
-status: todo
+status: done
 depends_on: [TK-036, TK-037]
 branch: codex/P6-01-solid-risk-probe
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-043: Solid 1 risk probe
@@ -45,11 +45,33 @@ not needed in Solid.
 
 ## Acceptance
 
-- [ ] P1 and P8 pass in `packages/solid-v1/tests/parity.spec.tsx` in Chromium.
-- [ ] A test shows that a controlled value reaches the element as a DOM property.
-- [ ] A test shows whether the toggle `click` listener is needed in Solid.
-- [ ] `vp run @oxform/solid-v1#check:types` passes.
+- [x] P1 and P8 pass in `packages/solid-v1/tests/parity.spec.tsx` in Chromium.
+- [x] A test shows that a controlled value reaches the element as a DOM property.
+- [x] A test shows whether the toggle `click` listener is needed in Solid.
+- [x] `vp run @oxform/solid-v1#check:types` passes.
 
 ## Evidence
 
-Record the command results, the result of each risk, the R10 path and any deviation from the plan here.
+- `packages/solid-v1/src/part-view.ts`, `context.ts` and `create-parts.ts`: `Root`, the part components and
+  `useForm`. The parts render with `Dynamic` from `solid-js/web`. The slot's `on` handlers become native
+  listeners and `bind` runs in the element ref. The store state is a signal, with no subscription on the server.
+  `Root` takes `options`, makes the id with `createUniqueId`, follows `options` in a `createComputed`, and calls
+  `unmount` in `onCleanup`.
+- `packages/solid-v1/tests/{driver.ts,views.tsx,parity.spec.ts}`: the Solid 1 driver and the `signIn` and
+  `inputs` views. `renderToString` and `hydrate` reject until TK-044.
+- `vp run @oxform/solid-v1#test`: 6 passed. P1 and P8 pass in Chromium (`tests/parity.spec.ts`).
+- Risk 1, controlled value: Solid sets `value` and `checked` as DOM properties. `src/create-parts.spec.tsx`
+  ("sets a controlled value as a DOM property, also after the user typed") types, then sets the value: the
+  element shows it, and the `value` attribute stays absent. One gap was found: Solid also sets a list `value`
+  on a `<select multiple>` as a property, which turns `['a', 'b']` into `"a,b"` and selects nothing. The part
+  selects the options itself for a list value. "selects the options of a multiple select from a list value"
+  fails without that code and passes with it. `01#6.3` has a new row for it.
+- Risk 2, toggle `click` listener: not needed in Solid. "reads a controlled checkbox on input, with no click
+  listener" uses a slot that reads a checkbox on `input` only: two clicks give `true` and then `false`, in the
+  value and in `checked`. The `field` slot of core keeps its `click` listener, because React needs it and it
+  also works in Solid (P8).
+- R10: the part model holds for Solid 1. No change to `01#6.1` was needed.
+- `vp run @oxform/solid-v1#check:types` passes. `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
+- Deviation: `render` (function only) is in the probe, because the `inputs` view renders the two selects with
+  it. The other parts of the Solid surface are TK-044.
+- Deviation: the parity spec is `tests/parity.spec.ts`, not `.tsx`, because it holds no JSX.
