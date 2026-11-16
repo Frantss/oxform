@@ -126,6 +126,32 @@ type MembersFor<Fields, Value> = (
   ? Intersection
   : never;
 
+/** The members of `Fields` on a field of `Values` at `At`. */
+export type FieldMembersOf<Fields, Values, At extends string> = MembersFor<Fields, PathValue<Values, At>>;
+
+declare const handlesChecks: unique symbol;
+
+/** `handles` adds it to its api type, so the field sugar knows the check names of the chain. */
+export type HandlesChecks<Checks extends string> = { readonly [handlesChecks]?: Checks };
+
+/** The check names of an api that has handles, or `never`. */
+export type ChecksOfApi<Api> = Api extends { readonly [handlesChecks]?: infer Checks }
+  ? [Checks] extends [string]
+    ? Checks
+    : never
+  : never;
+
+/**
+ * What an adapter needs from an instance, and what is not in its public api: new options on each render, and a
+ * way to stop the work in progress when the component leaves. Neither ends the instance, so it can mount again.
+ */
+export interface AdapterControls {
+  /** Merges the options like `create`: over the options of `configure` and `defineForm`. */
+  setOptions(options: Readonly<Record<string, unknown>>): void;
+  /** Runs the cleanups, and keeps them registered. */
+  unmount(): void;
+}
+
 /** The api of the built-in extensions by name. `Needs<V, 'field'>` states a need by name. */
 export interface BuiltInApis<Values> {
   /** A stand-in until `handles` (TK-027): the field handle of a path. */
@@ -241,6 +267,11 @@ export type SlotFactory<Api, State> = <
 
 export type SlotRecord = Readonly<Record<string, Slot<any, any, any>>>;
 
+/** Replaces each `KeyProp` with a path of `Values`, the values of the form or of the scope of the part. */
+export type ResolveKeys<Props, Values> = {
+  readonly [Name in keyof Props]: Props[Name] extends KeyProp ? Path<Values> : Props[Name];
+};
+
 /** The parts of a form, from its slots. An adapter renders one part per slot. */
 export type PartsFromSlots<Slots> = {
   readonly [Name in keyof Slots]: Slots[Name] extends Slot<infer Props, infer SlotState, infer Tag>
@@ -325,7 +356,7 @@ type WithFieldMembers<Values, Api, Fields> = Api extends { readonly field: (path
   ? Omit<Api, 'field'> & {
       readonly field: <At extends Path<Values>>(
         path: At,
-      ) => FieldOf<PathValue<Values, At>> & MembersFor<Fields, PathValue<Values, At>>;
+      ) => FieldOf<PathValue<Values, At>> & FieldMembersOf<Fields, Values, At>;
     }
   : Api;
 

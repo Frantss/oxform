@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { createContext, type FieldsDefinition } from './context';
 import type { ScopeDefinition, ScopedValues } from './scopes';
 import type {
+  AdapterControls,
   BaseOptions,
   Extendable,
   Extension,
@@ -105,7 +106,9 @@ const copyOf = (api: object): Options => Object.defineProperties({}, Object.getO
  * Runs the extensions in order. Each one gets the api of the ones before it. A key that two extensions return
  * throws, and the message names both. When an extension throws, the context is destroyed and no instance exists.
  */
-const createInstance = (definitions: readonly Definition[], options: Options) => {
+const adapterControls = new WeakMap<object, AdapterControls>();
+
+const createInstance = (definitions: readonly Definition[], options: Options, merge: (next: Options) => Options) => {
   const controls = createContext(options);
   const api: Options = {};
   const owners = new Map<string, string>();
@@ -142,6 +145,10 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
     destroy: { value: () => controls.destroy(), enumerable: true },
   });
   controls.bindInstance(instance);
+  adapterControls.set(instance, {
+    setOptions: next => controls.setOptions(merge({ id: options.id, ...next })),
+    unmount: () => controls.unmount(),
+  });
   return instance;
 };
 
@@ -156,6 +163,15 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
   const { name = 'form', scopes = {}, ...initOptions } = init;
   const chain: Chain = { definitions, optionKinds: kindsOf(definitions) };
 
+  /** The options of `create` win over those of `configure`, and those over the options of `defineForm`. */
+  const merge = (options: Options) => {
+    let merged: Options = { ...initOptions, ...configured, ...options };
+    for (const [path, scope] of Object.entries(scopes)) {
+      merged = (scope as Record<symbol, Mount>)[MOUNT]!(merged, path, [initOptions, configured, options]);
+    }
+    return merged;
+  };
+
   const form = {
     name,
     extend(extension: (form: object) => object) {
@@ -164,11 +180,8 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
     },
     configure: (options: Options) => makeForm(init, definitions, { ...configured, ...options }),
     create(options: Options = {}) {
-      let merged: Options = { ...initOptions, ...configured, ...options };
-      for (const [path, scope] of Object.entries(scopes)) {
-        merged = (scope as Record<symbol, Mount>)[MOUNT]!(merged, path, [initOptions, configured, options]);
-      }
-      return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` });
+      const merged = merge(options);
+      return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` }, merge);
     },
   };
   chains.set(form, chain);
@@ -259,6 +272,13 @@ export const option: {
   action: () => ({ kind: 'action' }),
   id: () => ({ kind: 'id' }),
   key: () => ({ kind: 'key' }),
+};
+
+/** The adapter controls of an instance. Only an adapter calls it (D17). */
+export const adapterControlsOf = (instance: object): AdapterControls => {
+  const found = adapterControls.get(instance);
+  if (!found) throw new TypeError('adapterControlsOf expects an instance made by form.create.');
+  return found;
 };
 
 /** The runtime kind of every option of a form, for an adapter. */

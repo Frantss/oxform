@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { schemaOf } from '../../tests/helpers';
 import { getAt, setAt } from '#internal/paths';
 import { contextInternals } from './context';
-import { defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slots, slotsOf } from './form';
+import { adapterControlsOf, defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slots, slotsOf } from './form';
 import type { Path, PathValue } from './path-types';
 import type { Extendable, Form, Needs, Self, SlotFactory } from './types';
 
@@ -47,6 +47,17 @@ const limited = <Values>(form: Extendable<Values>) =>
       limit: () => context.options().limit,
       done: () => context.options().onDone?.(context.instance()),
     }),
+  });
+
+/** Records the id of each options change. */
+const observed = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, {
+    name: 'observed',
+    api: context => {
+      const seen: unknown[] = [];
+      context.onOptions(options => seen.push(options.id));
+      return { seen: () => seen };
+    },
   });
 
 /** An extension that returns `key` from its api. */
@@ -680,5 +691,66 @@ describe('slots', () => {
     const form = subject.form.extend(provides).extend(slots(slot => ({ ...shownSlots(slot) })));
 
     expect(attrsOf(form, 'shown', subject.create(() => form.create()).store.state)).toEqual({ 'data-shown': true });
+  });
+});
+
+describe('adapterControlsOf', () => {
+  it('merges new options over the options of configure and defineForm', () => {
+    using subject = setup({ id: 'login' });
+    const instance = subject.create(() => subject.form.extend(limited).configure({ limit: 1 }).create());
+    adapterControlsOf(instance).setOptions({});
+
+    expect([instance.limit(), instance.id]).toEqual([1, 'login']);
+  });
+
+  it('applies a new value of an option to a live instance', () => {
+    using subject = setup();
+    const instance = subject.create(() => subject.form.extend(limited).configure({ limit: 1 }).create());
+    adapterControlsOf(instance).setOptions({ limit: 2 });
+
+    expect(instance.limit()).toBe(2);
+  });
+
+  it('keeps an action current, so a method calls the newest one', () => {
+    using subject = setup();
+    const first = vi.fn();
+    const second = vi.fn();
+    const instance = subject.create(() => subject.form.extend(limited).create({ onDone: first }));
+    adapterControlsOf(instance).setOptions({ onDone: second });
+    instance.done();
+
+    expect([first.mock.calls.length, second.mock.calls.length]).toEqual([0, 1]);
+  });
+
+  it('keeps the id of the instance when the new options give none', () => {
+    using subject = setup();
+    const instance = subject.create(() => subject.form.extend(store).extend(observed).create());
+    adapterControlsOf(instance).setOptions({});
+
+    expect(instance.seen()).toEqual([instance.id]);
+  });
+
+  it('unmounts the work in progress and leaves the instance usable for a new mount', () => {
+    using subject = setup();
+    const cleanup = vi.fn();
+    const instance = subject.create(() =>
+      subject.form
+        .extend(form => defineExtension(form, { name: 'cleanup', api: context => (context.onDestroy(cleanup), {}) }))
+        .extend(store)
+        .create(),
+    );
+    adapterControlsOf(instance).unmount();
+    adapterControlsOf(instance).unmount();
+    instance.values.set({ email: 'a', password: '' });
+
+    expect([cleanup.mock.calls.length, instance.values.get().email]).toEqual([2, 'a']);
+  });
+
+  it('refuses an object that is not an instance', () => {
+    using subject = setup();
+
+    expect(() => adapterControlsOf({ ...subject.create(() => subject.form.create()) })).toThrow(
+      'adapterControlsOf expects an instance made by form.create.',
+    );
   });
 });

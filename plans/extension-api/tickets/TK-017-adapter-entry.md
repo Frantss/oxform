@@ -3,12 +3,12 @@ id: TK-017
 title: Adapter entry point
 phase: 2
 work_package: P2-08
-status: todo
+status: done
 depends_on: [TK-014]
 branch: codex/P2-08-adapter-entry
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-017: The `@oxform/core/adapter` entry point
@@ -45,17 +45,32 @@ change the options of a live instance.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#Adapter controls`, and the row "How an adapter treats each kind" of
+- [x] Each scenario group of `03#Adapter controls`, and the row "How an adapter treats each kind" of
       `03#option`, has a passing test in `src/main/form.spec.ts`.
-- [ ] `export/adapter.ts` exports the names of `01#7.2` that this ticket owns, and no other name. No other
+- [x] `export/adapter.ts` exports the names of `01#7.2` that this ticket owns, and no other name. No other
       entry point exports them.
-- [ ] `test:package` covers the entry: an instance made from `@oxform/core` is known to
+- [x] `test:package` covers the entry: an instance made from `@oxform/core` is known to
       `@oxform/core/adapter`.
-- [ ] Each export of the entry has a positive and a negative type case in `tests/types/`, or is on the
+- [x] Each export of the entry has a positive and a negative type case in `tests/types/`, or is on the
       exemption list with a reason.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (310 statements, 130 branches).
+- `src/main/form.spec.ts`, `adapterControlsOf`: new options merge over `configure` and `defineForm`, a new value
+  is applied, an action stays current, the id stays when the new options give none, `unmount` runs the cleanups
+  and leaves the instance usable, and a non-instance is refused.
+- `export/adapter.ts` exports `slotsOf`, `optionKindsOf`, `adapterControlsOf`, `joinPath`, `isDeepEqual` and the
+  types `AdapterControls`, `ResolveKeys`, `PartsFromSlots`, `ChecksOfApi` and `FieldMembersOf`. No other entry
+  point exports them (`check:type-coverage` reads every entry against `inventory.json`).
+- `tests/package/module-sharing.spec.ts`: an instance made from the built `@oxform/core` is known to the built
+  `@oxform/core/adapter`.
+- Type tests: a positive and a negative case for each export of the entry; each negative case reports its own
+  error.
+- Deviations:
+  - `ChecksOfApi` reads the `HandlesChecks` brand of `main/types.ts`, which `handles` adds in TK-027.
+  - An issue found here is in `reports/extension-api-rebuild.md`: an inline extension on a form with an api
+    must list every api name and state key in `needs`.

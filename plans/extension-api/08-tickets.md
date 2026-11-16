@@ -53,7 +53,7 @@ evidence.
 | [TK-014](./tickets/TK-014-slots.md)                        | Slots                        | P2-05        | done   | TK-013     |
 | [TK-015](./tickets/TK-015-create-effect.md)                | createEffect                 | P2-06        | done   | TK-012     |
 | [TK-016](./tickets/TK-016-define-scope.md)                 | defineScope                  | P2-07        | done   | TK-012     |
-| [TK-017](./tickets/TK-017-adapter-entry.md)                | Adapter entry point          | P2-08        | ready  | TK-014     |
+| [TK-017](./tickets/TK-017-adapter-entry.md)                | Adapter entry point          | P2-08        | done   | TK-014     |
 | [TK-018](./tickets/TK-018-depth-guard.md)                  | Depth guard, first form      | P2-09        | ready  | TK-014     |
 
 ### Phase 3: built-in extensions and slot groups

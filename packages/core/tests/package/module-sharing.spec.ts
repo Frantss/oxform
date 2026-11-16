@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { defineForm, slots } from '@oxform/core';
-import { slotsOf } from '@oxform/core/adapter';
+import { adapterControlsOf, slotsOf } from '@oxform/core/adapter';
 import { rootSlots } from '@oxform/core/behaviors';
 import { standard } from '@oxform/core/presets';
 import { describe, expect, it } from 'vite-plus/test';
@@ -35,6 +35,15 @@ describe('built entry points', () => {
     const form = built.form();
 
     expect(Object.keys(slotsOf(form.extend(slots(slot => ({ ...rootSlots(slot) })))))).toEqual(['root']);
+  });
+
+  it('know an instance of @oxform/core in @oxform/core/adapter', () => {
+    using built = setup();
+    const instance = built.form().create();
+    const controls = adapterControlsOf(instance);
+    instance.destroy();
+
+    expect(Object.keys(controls)).toEqual(['setOptions', 'unmount']);
   });
 
   it('emit each source module in one chunk only', () => {
