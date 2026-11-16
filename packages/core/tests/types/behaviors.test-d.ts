@@ -1,8 +1,12 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineForm, type Slot } from '@oxform/core';
+import { defineForm, type Slot, type Updater } from '@oxform/core';
 import {
   check,
+  events,
   rootSlots,
+  type EventsApi,
+  type FieldChangeOptions,
+  type FieldFocusOptions,
   status,
   validation,
   type FieldStatus,
@@ -389,5 +393,53 @@ describe('FormStatusDefaults, FieldStatusDefaults', () => {
   it('rejects a derived flag as a field default', () => {
     // @ts-expect-error `pristine` is derived.
     accepts<FieldStatusDefaults>({ pristine: true });
+  });
+});
+
+describe('events', () => {
+  it('adds the events api', () => {
+    expectTypeOf(form.extend(values).extend(status).extend(events).create().events).toEqualTypeOf<EventsApi<Profile>>();
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error events needs values.
+    form.extend(events);
+  });
+
+  it('needs status', () => {
+    // @ts-expect-error events needs status.
+    form.extend(values).extend(events);
+  });
+});
+
+describe('EventsApi, FieldChangeOptions', () => {
+  const instance = form.extend(values).extend(status).extend(events).create();
+
+  it('types a change by path, with its options', () => {
+    const change: (path: 'name', updater: Updater<string>, options?: FieldChangeOptions) => void = (...args) =>
+      instance.events.change(...args);
+
+    expectTypeOf(change).returns.toBeVoid();
+  });
+
+  it('rejects a value of the wrong type', () => {
+    // @ts-expect-error name is a string.
+    instance.events.change('name', 1);
+  });
+
+  it('rejects a should flag that change does not have', () => {
+    // @ts-expect-error The change flags are dirty, touch and validate.
+    accepts<FieldChangeOptions>({ should: { blur: true } });
+  });
+});
+
+describe('FieldFocusOptions', () => {
+  it('takes should.validate', () => {
+    expectTypeOf<NonNullable<FieldFocusOptions['should']>>().toEqualTypeOf<{ readonly validate?: boolean }>();
+  });
+
+  it('rejects should.dirty', () => {
+    // @ts-expect-error focus and blur take validate only.
+    accepts<FieldFocusOptions>({ should: { dirty: true } });
   });
 });

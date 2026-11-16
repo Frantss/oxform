@@ -12,3 +12,7 @@
 - `packages/core/src/main/types.ts` (`Form.extend`): D18 was checked. With the preset overload first, a
   rejected extension reports the extension overload's error, which reads better, but an inline extension then
   fails with TS2769, because TypeScript types its parameter from the first overload. The spike order stays.
+- `packages/core/src/behaviors/events.ts` (`validate`): `events` starts a validation run with `void` and does not
+  catch it, as in the spike (`spike/events.ts:47`). A validator that rejects during `change`, `focus` or `blur`
+  gives an unhandled promise rejection, which fails a Vitest run and logs an error in a browser. Options: catch and
+  drop the rejection, or report it through an option such as `onError`.

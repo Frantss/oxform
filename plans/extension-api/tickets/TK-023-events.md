@@ -3,12 +3,12 @@ id: TK-023
 title: Events extension
 phase: 3
 work_package: P3-05
-status: todo
+status: done
 depends_on: [TK-022]
 branch: codex/P3-05-events
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-023: Events extension
@@ -44,18 +44,41 @@ and `register`.
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `events`, also the row "on a
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `events`, also the row "on a
       chain with no `validation`".
-- [ ] Each scenario group of `03#events (createEvents)` has a passing test in `src/behaviors/events.spec.ts`.
+- [x] Each scenario group of `03#events (createEvents)` has a passing test in `src/behaviors/events.spec.ts`.
       Each row that cites `B:` or `C:` passes.
-- [ ] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
+- [x] Each need (`values`, `status`) has a negative type case and a unit case for its runtime error at
       `create`.
-- [ ] The specs build the shortest chain and do not import `standard`.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `export/behaviors.ts` exports no `createX` function.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] The specs build the shortest chain and do not import `standard`.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `export/behaviors.ts` exports no `createX` function.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (653 statements, 292 branches).
+- `src/behaviors/events.spec.ts` (chain: `values`, `status`, `events`, or with `validation` and `check('error')`; no
+  `standard`):
+  - Wrapper rows: exactly the `events` api, no state, no option; a `create` without `values` and one without
+    `status` each throw and name the extension and the need; on a chain with no `validation` the status is marked
+    and nothing is requested, also with `should.validate: true` (D53); `ref` and `clearRefs` are not on
+    `EventsApi`; `eventsInternals` refuses an object that `events` did not make.
+  - `change`: writes with the reason `input` and marks dirty and touched; `should.dirty` and `should.touch` off; a
+    refused change marks nothing.
+  - `focus` and `blur`: drive the registered element and mark touched and blurred; a field without an element.
+  - Requested validation: a change validator runs on the path; nothing runs when no check has a validator for the
+    event; `should.validate: false` skips; `should.validate: true` runs without a validator; blur and focus
+    validators run for their events; the operation returns before the validation settles.
+  - Register: the element reaches the ref; `null` keeps it; `unregister` forgets it and keeps the value;
+    `clearRefs` forgets every element.
+- The handle that exposes the ref is TK-027; this ticket tests the ref through `eventsInternals(events).ref`.
+- `export/behaviors.ts` exports `events` and `EventsApi`, `FieldChangeOptions`, `FieldFocusOptions`; no
+  `createEvents`.
+- Type tests: a positive and a negative case for `events` (a negative case for each need), `EventsApi`,
+  `FieldChangeOptions` and `FieldFocusOptions`.
+- Issue: a requested validation that rejects is not caught (`void validation.run(...)`), as in the spike. A
+  validator that throws during a field event gives an unhandled rejection. Recorded in
+  `reports/extension-api-rebuild.md`.
