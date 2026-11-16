@@ -50,7 +50,7 @@ export const serverScenarios = {
     },
   },
   P13: {
-    title: 'a server render starts no subscription, validation, timer or effect',
+    title: 'a server render leaves no subscription, validation, timer or effect running',
     run: async driver => {
       const check = counting();
       const instance = signIn.create({
@@ -58,21 +58,16 @@ export const serverScenarios = {
         error: { change: check.schema, blur: check.schema, focus: check.schema },
       });
       const subscribe = vi.spyOn(instance.store, 'subscribe');
-      const timeout = vi.spyOn(globalThis, 'setTimeout');
-      const interval = vi.spyOn(globalThis, 'setInterval');
+      // A framework may start a timer that ends its render, as Solid does. Each timer runs, and none is left.
+      vi.useFakeTimers();
       try {
         await driver.renderToString('signIn', { root: { form: instance } });
+        vi.runOnlyPendingTimers();
 
-        expect([
-          subscribe.mock.calls.length,
-          timeout.mock.calls.length,
-          interval.mock.calls.length,
-          check.validate.mock.calls.length,
-        ]).toEqual([0, 0, 0, 0]);
+        expect([subscribe.mock.calls.length, vi.getTimerCount(), check.validate.mock.calls.length]).toEqual([0, 0, 0]);
         expect(instance.status.form.validating).toBe(false);
       } finally {
-        timeout.mockRestore();
-        interval.mockRestore();
+        vi.useRealTimers();
       }
     },
   },

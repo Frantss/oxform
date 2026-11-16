@@ -355,7 +355,8 @@ Parity means all of these hold. [03-testing.md](./03-testing.md) owns the tests.
 2. `createParts` returns the same member names for the same form.
 3. One shared list of scenarios runs against each adapter in a browser. Each scenario asserts DOM output,
    attributes and form state, not framework internals.
-4. The server HTML of one form is the same in the three adapters, apart from framework markers.
+4. The server HTML of one form is the same in the three adapters, apart from framework markers, the order
+   of attributes, `disabled` against `disabled=""`, and the space before the end of a tag (`normalizeHtml`).
 5. The only allowed differences are the rows of the table in 6.3. A new difference needs a new row.
 
 ## 7. Design items
