@@ -46,8 +46,8 @@ evidence.
 
 | Id                                                         | Title                        | Work package | Status  | Depends on |
 | ---------------------------------------------------------- | ---------------------------- | ------------ | ------- | ---------- |
-| [TK-010](./tickets/TK-010-paths.md)                        | Paths                        | P2-01        | ready   | TK-007     |
-| [TK-011](./tickets/TK-011-context.md)                      | Context                      | P2-02        | blocked | TK-010     |
+| [TK-010](./tickets/TK-010-paths.md)                        | Paths                        | P2-01        | done    | TK-007     |
+| [TK-011](./tickets/TK-011-context.md)                      | Context                      | P2-02        | ready   | TK-010     |
 | [TK-012](./tickets/TK-012-form-builder.md)                 | Form builder                 | P2-03        | blocked | TK-011     |
 | [TK-013](./tickets/TK-013-extensions-and-field-members.md) | Extensions and field members | P2-04        | blocked | TK-012     |
 | [TK-014](./tickets/TK-014-slots.md)                        | Slots                        | P2-05        | blocked | TK-013     |

@@ -41,7 +41,7 @@ for (const entry of Object.keys(entryPoints) as EntryPoint[]) {
 
     if (!inventory[entry].includes(name)) findings.push(`${where}, which is not in the inventory of 01-public-api.md.`);
     if (!imported.has(name)) findings.push(`${where}, which no type test imports from ${entryPoints[entry]}.`);
-    if (!named.some(block => block.body.includes('expectTypeOf('))) {
+    if (!named.some(block => /\bexpectTypeOf\s*[<(]/.test(block.body))) {
       findings.push(`${where}, which no describe block names with a positive case.`);
     }
     if (!(name in exemptions) && !named.some(block => block.body.includes('@ts-expect-error'))) {

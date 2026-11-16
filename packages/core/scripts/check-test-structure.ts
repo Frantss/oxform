@@ -5,7 +5,12 @@ const casePattern = /\b(?:it|test)(?:\.each\([^)]*\))?\(\s*(["'`])((?:\\.|(?!\1)
 const allowPattern = /oxform-test-structure:\s*allow-multiple-assertions\s+--\s+\S+/;
 const findings: string[] = [];
 
-for (const module of filesIn(['src'], /\.tsx?$/).filter(file => !specPattern.test(file))) {
+/** A module with types only (`types.ts` or `*-types.ts`, 02-structure.md) has no runtime code to test. */
+const typesOnlyPattern = /(?:^|[/-])types\.ts$/;
+
+for (const module of filesIn(['src'], /\.tsx?$/).filter(
+  file => !specPattern.test(file) && !typesOnlyPattern.test(file),
+)) {
   const spec = module.replace(/\.(tsx?)$/, '.spec.$1');
   if (!existsSync(spec)) findings.push(`${module}\n  The runtime module has no sibling spec ${spec}.`);
 }
@@ -24,7 +29,7 @@ for (const file of filesIn(['src', 'tests'], specPattern)) {
         `${place}\n  ${assertions} runtime assertions: split the case, or add an allow comment with a reason.`,
       );
     }
-    if (assertions === 0 && !body.includes('expectTypeOf(') && !body.includes('@ts-expect-error')) {
+    if (assertions === 0 && !/\bexpectTypeOf\s*[<(]/.test(body) && !body.includes('@ts-expect-error')) {
       findings.push(`${place}\n  The case has no runtime, type or @ts-expect-error assertion.`);
     }
   });

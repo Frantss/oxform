@@ -400,12 +400,6 @@ importers:
       '@tanstack/store':
         specifier: ^0.11.2
         version: 0.11.2
-      remeda:
-        specifier: ^2.54.1
-        version: 2.54.1
-      type-fest:
-        specifier: ^5.10.0
-        version: 5.10.0
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
@@ -3922,10 +3916,6 @@ packages:
   remark@15.0.1:
     resolution: {integrity: sha512-Eht5w30ruCXgFmxVUSlNWQ9iiimq07URKeFS3hNc8cUWy1llX4KDWfyEDZRycMc+znsN9Ux5/tJ/BFdgdOwA3A==}
 
-  remeda@2.54.1:
-    resolution: {integrity: sha512-l3pxw2Hz5V2FG3RaU9C6z121H8dF5VYjj3z6lnHoN3SCRLoxr+pZS2dq8dDe3NA+9kyKm56A1BB2Ejr+DrLlJw==}
-    engines: {node: '>=18.0.0'}
-
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -4057,10 +4047,6 @@ packages:
     resolution: {integrity: sha512-zFObLMyZeEwzAoKCyu1B91U79K2t7ApXuQfo8OuxwXLDgcKxuwM+YvcbIhm6QWqz7mHUH1TVytR1PwVVjEuMig==}
     engines: {node: '>=14.18'}
 
-  tagged-tag@1.0.0:
-    resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
-    engines: {node: '>=20'}
-
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
 
@@ -4107,10 +4093,6 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
-
-  type-fest@5.10.0:
-    resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==}
-    engines: {node: '>=20'}
 
   typescript@5.6.1-rc:
     resolution: {integrity: sha512-E3b2+1zEFu84jB0YQi9BORDjz9+jGbwwy1Zi3G0LUNw7a7cePUrHMRNy8aPh53nXpkFGVHSxIZo5vKTfYaFiBQ==}
@@ -7879,8 +7861,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  remeda@2.54.1: {}
-
   require-directory@2.1.1: {}
 
   reselect@5.3.0: {}
@@ -8006,8 +7986,6 @@ snapshots:
       has-flag: 4.0.0
       supports-color: 7.2.0
 
-  tagged-tag@1.0.0: {}
-
   tailwindcss@4.3.3: {}
 
   tapable@2.3.3: {}
@@ -8040,10 +8018,6 @@ snapshots:
   trough@2.2.0: {}
 
   tslib@2.8.1: {}
-
-  type-fest@5.10.0:
-    dependencies:
-      tagged-tag: 1.0.0
 
   typescript@5.6.1-rc: {}
 

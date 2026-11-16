@@ -56,9 +56,7 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/store": "^0.11.2",
-    "remeda": "^2.54.1",
-    "type-fest": "^5.10.0"
+    "@tanstack/store": "^0.11.2"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
