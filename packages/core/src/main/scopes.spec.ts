@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { schemaOf } from '../../tests/helpers';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
+import { arrays } from '#behaviors/arrays';
+import { check } from '#behaviors/check';
+import { events } from '#behaviors/events';
+import { handles } from '#behaviors/handles';
+import { reset } from '#behaviors/reset';
+import { status } from '#behaviors/status';
+import { validation } from '#behaviors/validation';
+import { values } from '#behaviors/values';
+import { reporting, schemaOf } from '../../tests/helpers';
 import { defineExtension, defineForm } from './form';
 import { defineScope } from './scopes';
 import type { Extendable } from './types';
@@ -107,5 +116,122 @@ describe('defineScope', () => {
     subject.create(() => subject.checkout.create());
 
     expect(validate).not.toHaveBeenCalled();
+  });
+});
+
+/** A schema that reports an empty `street`, with a path relative to the address. */
+const streetRequired: StandardSchemaV1<never> = {
+  '~standard': {
+    version: 1,
+    vendor: 'test',
+    validate: value => ((value as Address).street === '' ? { issues: [{ message: 'Street', path: ['street'] }] } : { value: value as never }),
+  },
+};
+
+/** A scope whose `error` check requires the street at submit, and a checkout form with a chain that validates. */
+const validated = (scopeChecks: object = { error: { submit: streetRequired } }) => {
+  const address = defineScope({
+    schema: schemaOf<Address>(),
+    defaultValues: { street: '', tags: [], geo: { lat: 0, lng: 0 } },
+    checks: scopeChecks as never,
+  });
+  const form = defineForm({
+    schema: schemaOf<Checkout & { items: Address[] }>(),
+    defaultValues: { email: '', items: [{ street: 'Item', tags: [], geo: { lat: 0, lng: 0 } }] },
+    scopes: { billing: address, shipping: address },
+  })
+    .extend(values)
+    .extend(validation)
+    .extend(check('error'))
+    .extend(status)
+    .extend(events)
+    .extend(arrays)
+    .extend(reset)
+    .extend(handles);
+  return { address, form };
+};
+
+describe('scope validators', () => {
+  it('run at each path, and give issue paths that start with the path', async () => {
+    using subject = setup();
+    const instance = subject.create(() => validated().form.create());
+    instance.values.set('billing.street', 'Main');
+    await instance.validation.run();
+
+    expect(instance.validation.issues()).toEqual({
+      error: [{ message: 'Street', path: ['shipping', 'street'], type: 'submit' }],
+    });
+  });
+
+  it('give a validator function the values at the path', async () => {
+    using subject = setup();
+    const seen: unknown[] = [];
+    const recording = (input: { values: unknown }) => (seen.push(input.values), streetRequired);
+    const instance = subject.create(() => validated({ error: { submit: recording } }).form.create());
+    instance.values.set('shipping.street', 'Side');
+    await instance.validation.run();
+
+    expect(seen).toEqual([expect.objectContaining({ street: '' }), expect.objectContaining({ street: 'Side' })]);
+  });
+
+  it('merge with the validators of the form, and keep both issues (rule 3)', async () => {
+    using subject = setup();
+    const formStreet = reporting({ message: 'Form', path: ['billing', 'street'] });
+    const instance = subject.create(() => validated().form.create({ error: { submit: formStreet } }));
+    instance.values.set('shipping.street', 'Side');
+    await instance.validation.run();
+
+    expect(instance.error.at('billing.street').map(entry => entry.message)).toEqual(['Form', 'Street']);
+  });
+
+  it('place one definition in two forms, each with its own path', async () => {
+    using subject = setup();
+    const { address } = validated();
+    const other = defineForm({ schema: schemaOf<object>(), defaultValues: {}, scopes: { home: address } })
+      .extend(values)
+      .extend(validation)
+      .extend(check('error'));
+    const instance = subject.create(() => other.create());
+    await instance.validation.run();
+
+    expect(instance.error.at('home.street' as never)).toHaveLength(1);
+  });
+
+  it('throw at create for a check that the form does not have, and name the scope and the check (rule 4)', () => {
+    using subject = setup();
+    const form = validated({ warning: { submit: streetRequired } }).form;
+
+    expect(() => subject.create(() => form.create())).toThrow(
+      'The scope "billing" has validators for the check "warning", which the form does not have.',
+    );
+  });
+
+  it('throw at create on a form without validation (rule 4)', () => {
+    using subject = setup();
+    const { address } = validated();
+    const form = defineForm({ schema: schemaOf<object>(), defaultValues: {}, scopes: { home: address } }).extend(store);
+
+    expect(() => subject.create(() => form.create())).toThrow('The scope "home" has validators for the check "error", which the form does not have.');
+  });
+});
+
+describe('scoped paths', () => {
+  it('change and reset one path, and keep the other', () => {
+    using subject = setup();
+    const instance = subject.create(() => validated().form.create());
+    instance.field('billing.street').change('Main');
+    instance.field('shipping.street').change('Side');
+    instance.scope('billing').field('street').reset();
+
+    expect([instance.values.get('billing.street'), instance.values.get('shipping.street')]).toEqual(['', 'Side']);
+  });
+
+  it('give one view to a placed scope, an object path and an array item, and no instance member', () => {
+    using subject = setup();
+    const instance = subject.create(() => validated().form.create());
+    instance.values.set('billing.street', 'Main');
+    const street = (scope: { field(path: 'street'): { get(): string } }) => scope.field('street').get();
+
+    expect([street(instance.scope('billing')), street(instance.scope('items.0')), 'billing' in instance]).toEqual(['Main', 'Item', false]);
   });
 });

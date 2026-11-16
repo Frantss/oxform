@@ -45,6 +45,8 @@ export const base = defineConfig({
         allowTypeImports: true,
       }),
       restrictImports(['packages/core/src/behaviors/**'], ['#presets/*', ...coreBarrels], { allowTypeImports: true }),
+      // A spec of a main module may build a chain with the built-in behaviors. It is not shipped.
+      restrictImports(['packages/core/src/main/**/*.spec.ts'], ['#presets/*', ...coreBarrels]),
       restrictImports(
         ['packages/core/src/presets/**'],
         ['#main/*', '#behaviors/*', '#internal/*', '#core/adapter', './**', '../**'],

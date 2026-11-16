@@ -108,7 +108,12 @@ const copyOf = (api: object): Options => Object.defineProperties({}, Object.getO
  */
 const adapterControls = new WeakMap<object, AdapterControls>();
 
-const createInstance = (definitions: readonly Definition[], options: Options, merge: (next: Options) => Options) => {
+const createInstance = (
+  definitions: readonly Definition[],
+  options: Options,
+  merge: (next: Options) => Options,
+  verify: (api: object) => void,
+) => {
   const controls = createContext(options);
   const api: Options = {};
   const owners = new Map<string, string>();
@@ -134,6 +139,7 @@ const createInstance = (definitions: readonly Definition[], options: Options, me
     if (withFields && typeof api.field !== 'function') {
       throw new Error(`The "${withFields.name}" extension adds field members, so the form needs a field(path) api.`);
     }
+    verify(api);
   } catch (error) {
     controls.destroy();
     throw error;
@@ -154,6 +160,7 @@ const createInstance = (definitions: readonly Definition[], options: Options, me
 
 /** A scope definition places itself through this key (`main/scopes.ts`), so this module never imports it. */
 const MOUNT = Symbol.for('oxform.scope.mount');
+const VERIFY = Symbol.for('oxform.scope.verify');
 
 /**
  * The prefix of a scope that `handles` made, under a symbol so a spread of the scope keeps it. It is not on `Scope`:
@@ -162,6 +169,7 @@ const MOUNT = Symbol.for('oxform.scope.mount');
 export const scopePrefix = Symbol.for('oxform.scope.prefix');
 
 type Mount = (options: Options, path: string, layers: readonly [Options, Options, Options]) => Options;
+type Verify = (api: object, path: string) => void;
 
 type FormInit = Options & { readonly name?: string; readonly scopes?: Readonly<Record<string, object>> };
 
@@ -178,6 +186,10 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
     return merged;
   };
 
+  const verify = (api: object) => {
+    for (const [path, scope] of Object.entries(scopes)) (scope as Record<symbol, Verify>)[VERIFY]!(api, path);
+  };
+
   const form = {
     name,
     extend(extension: (form: object) => object) {
@@ -187,7 +199,7 @@ const makeForm = (init: FormInit, definitions: readonly Definition[], configured
     configure: (options: Options) => makeForm(init, definitions, { ...configured, ...options }),
     create(options: Options = {}) {
       const merged = merge(options);
-      return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` }, merge);
+      return createInstance(definitions, { ...merged, id: merged.id ?? `form-${++instanceCount}` }, merge, verify);
     },
   };
   chains.set(form, chain);

@@ -649,6 +649,29 @@ describe('defineScope, ScopeDefinition', () => {
     // @ts-expect-error The street is not a string.
     defineScope({ schema: {} as StandardSchemaV1<Address>, defaultValues: { street: 1, geo: { lat: 0 } } });
   });
+  it('takes validators by check name and event, as a function of the values at the path', () => {
+    defineScope({
+      schema: {} as StandardSchemaV1<Address>,
+      defaultValues: { street: '', geo: { lat: 0 } },
+      checks: {
+        error: {
+          blur: ({ values }) => {
+            expectTypeOf(values).toEqualTypeOf<Address>();
+            return {} as StandardSchemaV1<Address>;
+          },
+        },
+      },
+    });
+  });
+
+  it('rejects a validator for an event that does not exist', () => {
+    defineScope({
+      schema: {} as StandardSchemaV1<Address>,
+      defaultValues: { street: '', geo: { lat: 0 } },
+      // @ts-expect-error There is no `hover` event.
+      checks: { error: { hover: {} as StandardSchemaV1<Address> } },
+    });
+  });
 });
 
 describe('ScopedValues', () => {

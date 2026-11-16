@@ -3,12 +3,12 @@ id: TK-029
 title: Scopes on checks
 phase: 3
 work_package: P3-11
-status: todo
+status: done
 depends_on: [TK-027, TK-016]
 branch: codex/P3-11-scope-checks
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-029: Scopes on checks
@@ -43,12 +43,29 @@ One scope view fits a placed scope, a plain object path and an array item.
 
 ## Acceptance
 
-- [ ] Each row of `03#Scopes (defineScope, form.scope)` that this ticket owns has a passing test.
-- [ ] A form without scopes does not load `main/scopes.ts`.
-- [ ] Each export that this ticket changes has a positive and a negative type case in `tests/types/`.
+- [x] Each row of `03#Scopes (defineScope, form.scope)` that this ticket owns has a passing test.
+- [x] A form without scopes does not load `main/scopes.ts`.
+- [x] Each export that this ticket changes has a positive and a negative type case in `tests/types/`.
 - [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- Not done, by the owner's decision of 2026-11-16 (behavior tests only): the 100% per-file coverage gate.
+- `src/main/scopes.spec.ts` (chain: `values`, `validation`, `check('error')`, `status`, `events`, `arrays`,
+  `reset`, `handles`; no `standard`):
+  - Validators run at each path, and the issue paths start with the path; a validator function gets the values
+    at its path.
+  - Rule 3: a form validator and a scope validator of one check both run, and both issues stay.
+  - One definition in two forms, each with its own path.
+  - Rule 4: a check that the form does not have throws at `create` and names the scope and the check; also on a
+    form with no `validation`.
+  - Paths are independent for change and reset; one view (`scope.field('street')`) fits a placed scope and an
+    array item; a scope is no instance member.
+- `main/form.ts` calls the scope through `Symbol.for('oxform.scope.verify')` once every api exists, and keeps a
+  type-only import of `main/scopes.ts`, so a form without scopes does not load it.
+- Type tests: `defineScope` takes `checks` by name and event, and a validator function gets the values at the
+  path; an unknown event is a type error.
+- Changes outside the scope: `vite.config.ts` lets a spec in `src/main` import `#behaviors/*` to build a chain.
+  Source files of `src/main` keep the rule.
