@@ -32,6 +32,10 @@ const blocks = typeTests.flatMap(source => {
 
 const findings: string[] = [];
 
+for (const [name, reason] of Object.entries(exemptions)) {
+  if (reason.trim() === '') findings.push(`The exemption of ${name} has no reason.`);
+}
+
 for (const entry of Object.keys(entryPoints) as EntryPoint[]) {
   const imported = importedFrom(entryPoints[entry]);
 

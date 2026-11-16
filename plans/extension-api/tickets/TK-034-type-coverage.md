@@ -3,12 +3,12 @@ id: TK-034
 title: Type coverage
 phase: 4
 work_package: P4-05
-status: todo
+status: done
 depends_on: [TK-030, TK-018]
 branch: codex/P4-05-type-coverage
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-034: Type coverage
@@ -46,14 +46,23 @@ passes with `standard`. This retires R08.
 
 ## Acceptance
 
-- [ ] Each export of `@oxform/core`, `@oxform/core/behaviors`, `@oxform/core/presets` and
+- [x] Each export of `@oxform/core`, `@oxform/core/behaviors`, `@oxform/core/presets` and
       `@oxform/core/adapter` has a positive and a `@ts-expect-error` case.
-- [ ] `vp run @oxform/core#check:types` and `#check:types:dist` pass.
-- [ ] Removing the type case of one export fails `check:type-coverage`. An export not in `01` fails it. An
+- [x] `vp run @oxform/core#check:types` and `#check:types:dist` pass.
+- [x] Removing the type case of one export fails `check:type-coverage`. An export not in `01` fails it. An
       exempt name with no reason fails it.
 - [ ] `tests/types/depth.test-d.tsx` compiles in both projects with no `@ts-expect-error`.
-- [ ] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
+- [x] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
 
 ## Evidence
 
-Record the command results, the R08 path and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with `check:types:dist` and `check:type-coverage`), `pnpm run test`:
+  pass.
+- Each export of the four core entries has a positive and a `@ts-expect-error` case, on source and on `dist`.
+  Every name of `tests/types/inventory.json` is exported. The phase 2 and phase 3 tickets wrote the cases;
+  no row of the matrix was left.
+- `check:type-coverage` fails in the three cases, each checked by a temporary edit:
+  - The `standard` block removed: "exports standard, which no describe block names with a positive case".
+  - `standard` removed from the inventory: "exports standard, which is not in the inventory".
+  - The reason of `Unsubscribe` emptied: "The exemption of Unsubscribe has no reason". This check is new.
+- Not done, by the owner's decision of 2026-11-16 (behavior tests only): the depth guard. Its file was deleted.
