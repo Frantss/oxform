@@ -4,10 +4,13 @@ import {
   defineSlots,
   on,
   option,
+  slots,
   type AnyForm,
   type ApiOf,
+  type Attributes,
   type BaseOptions,
   type BuiltInApis,
+  type ElementTag,
   type Extendable,
   type Extension,
   type FieldMembers,
@@ -17,14 +20,25 @@ import {
   type FormContext,
   type Instance,
   type InstanceOf,
+  type KeyProp,
   type Needs,
   type OptionDescriptor,
   type OptionDescriptors,
   type OptionKind,
   type OptionsFrom,
   type OptionsOf,
+  type PartDomProps,
+  type PartEventContext,
+  type PartHandle,
+  type PartSpec,
+  type PartsOf,
+  type PropKind,
+  type PropsOf,
   type Self,
+  type Slot,
   type SlotDefinition,
+  type SlotFactory,
+  type SlotRecord,
   type StateOf,
   type StateSlice,
   type ValuesOf,
@@ -286,17 +300,6 @@ describe('FormContext, StateSlice', () => {
   });
 });
 
-describe('defineSlots, SlotDefinition', () => {
-  it('makes a slot group with a name', () => {
-    expectTypeOf(defineSlots({ name: 'x' }, () => ({}))).toEqualTypeOf<SlotDefinition>();
-  });
-
-  it('needs a build function', () => {
-    // @ts-expect-error The build function is missing.
-    defineSlots({ name: 'x' });
-  });
-});
-
 /** A `field(path)` api, as `handles` gives it. */
 const fielded = <Values>(form: Extendable<Values>) =>
   defineExtension(form, { name: 'fielded', api: () => ({ field: {} as BuiltInApis<Values>['field'] }) });
@@ -423,5 +426,183 @@ describe('on, FieldMembers, FieldOf, FieldsOf', () => {
     expectTypeOf<FieldsOf<string>>().toBeNever();
     // @ts-expect-error A string has no field members.
     accepts<FieldsOf<string>>({});
+  });
+});
+
+/** The `shown` state and the `flag` api that `shownSlots` needs. */
+const provides = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, { name: 'provides', state: () => ({ shown: true }), api: () => ({ flag: true as const }) });
+
+const shownSlots = defineSlots(
+  { name: 'shownSlots', needs: { api: ['flag'], state: ['shown'] } },
+  (slot: SlotFactory<{ readonly flag: true }, { readonly shown: boolean }>) => ({
+    shown: slot({ element: 'span', props: { name: 'key' }, state: state => ({ shown: state.shown }) }),
+  }),
+);
+
+const shown = login.extend(provides).extend(slots(slot => ({ ...shownSlots(slot) })));
+
+describe('defineSlots, slots, Slot, SlotFactory, SlotDefinition, SlotRecord', () => {
+  it('types the props, the state and the element of each slot', () => {
+    expectTypeOf(shownSlots).returns.toEqualTypeOf<{
+      shown: Slot<{ readonly name: KeyProp }, { shown: boolean }, 'span'>;
+    }>();
+  });
+
+  it('accepts a record of slots', () => {
+    expectTypeOf<ReturnType<typeof shownSlots>>().toExtend<SlotRecord>();
+  });
+
+  it('types an inline slot by the state of the form', () => {
+    login.extend(provides).extend(
+      slots(slot => ({
+        // @ts-expect-error The state has no `nope`.
+        lost: slot({ attrs: state => ({ 'data-nope': state.nope }) }),
+      })),
+    );
+  });
+
+  it('rejects a group on a form without its api need', () => {
+    const stateOnly = <Values>(form: Extendable<Values>) =>
+      defineExtension(form, { name: 'stateOnly', state: () => ({ shown: true }), api: () => ({}) });
+    login.extend(stateOnly).extend(
+      slots(slot => ({
+        // @ts-expect-error The api has no `flag`.
+        ...shownSlots(slot),
+      })),
+    );
+  });
+
+  it('rejects a group on a form without its state need', () => {
+    const apiOnly = <Values>(form: Extendable<Values>) =>
+      defineExtension(form, { name: 'apiOnly', api: () => ({ flag: true as const }) });
+    login.extend(apiOnly).extend(
+      slots(slot => ({
+        // @ts-expect-error The state has no `shown`.
+        ...shownSlots(slot),
+      })),
+    );
+  });
+
+  it('rejects a group inside an extension that does not state its needs', () => {
+    accepts(<Values>(form: Extendable<Values, { readonly flag: true }>) =>
+      defineExtension(form, {
+        name: 'lacksState',
+        needs: { api: ['flag'] },
+        api: () => ({}),
+        // @ts-expect-error The extension does not state the `shown` state.
+        slots: slot => ({ ...shownSlots(slot) }),
+      }),
+    );
+  });
+
+  it('rejects needs that differ from the slot annotation', () => {
+    defineSlots(
+      // @ts-expect-error The `shown` state is not listed.
+      { name: 'unlisted', needs: { api: ['flag'] } },
+      (slot: SlotFactory<{ readonly flag: true }, { readonly shown: boolean }>) => ({ shown: slot({}) }),
+    );
+  });
+
+  it('rejects an unknown element', () => {
+    slots(slot => ({
+      // @ts-expect-error There is no `inptu` element.
+      field: slot({ element: 'inptu' }),
+    }));
+  });
+
+  it('rejects a slot that the factory did not make', () => {
+    // @ts-expect-error A plain object is not a slot.
+    accepts<SlotRecord>({ shown: {} });
+  });
+
+  it('types the definition of a slot by its spec', () => {
+    expectTypeOf<SlotDefinition<{ name: 'key' }, {}, {}, {}, 'input'>['element']>().toEqualTypeOf<
+      'input' | undefined
+    >();
+  });
+});
+
+describe('PartsOf, PartSpec', () => {
+  it('reads the parts of a form back', () => {
+    expectTypeOf<PartsOf<typeof shown>>().toEqualTypeOf<{
+      readonly shown: PartSpec<{ readonly name: KeyProp }, { shown: boolean }, 'span'>;
+    }>();
+  });
+
+  it('gives never for a type that is not a form', () => {
+    // @ts-expect-error A string has no parts.
+    accepts<PartsOf<string>>({});
+  });
+
+  it('rejects a part spec with an unknown element', () => {
+    // @ts-expect-error There is no `inptu` element.
+    accepts<PartSpec<{}, {}, 'inptu'>>({} as never);
+  });
+});
+
+describe('PartHandle, PartEventContext, PartDomProps, PropKind, PropsOf, KeyProp', () => {
+  it('gives a slot function the props of the part', () => {
+    expectTypeOf<PartHandle<PropsOf<{ name: 'key'; size: 'number' }>, {}>['props']>().toEqualTypeOf<
+      PropsOf<{ name: 'key'; size: 'number' }> & PartDomProps
+    >();
+  });
+
+  it('reads a key prop as a string in a slot', () => {
+    expectTypeOf<PropsOf<{ name: 'key' }>['name']>().toEqualTypeOf<string>();
+  });
+
+  it('gives an event handler the element', () => {
+    expectTypeOf<PartEventContext<{}, {}>['element']>().toEqualTypeOf<HTMLElement | null>();
+  });
+
+  it('rejects an unknown prop kind', () => {
+    // @ts-expect-error There is no `date` kind.
+    accepts<PropKind>('date');
+  });
+
+  it('rejects a string for a key prop of a part', () => {
+    // @ts-expect-error A key prop is resolved by the adapter.
+    accepts<KeyProp>('name');
+  });
+
+  it('rejects a DOM value of the wrong type', () => {
+    // @ts-expect-error A value is a string, a number or a list of strings.
+    accepts<PartDomProps>({ value: true });
+  });
+
+  it('rejects a handle with no id', () => {
+    // @ts-expect-error The handle has an id.
+    accepts<PartHandle<{}, {}>>({ key: '', props: {}, api: {} });
+  });
+
+  it('rejects an event context with no element', () => {
+    // @ts-expect-error The context has an element.
+    accepts<PartEventContext<{}, {}>>({ id: '', key: '', props: {}, api: {} });
+  });
+
+  it('rejects props of the wrong type in a slot', () => {
+    // @ts-expect-error A number prop is a number.
+    accepts<PropsOf<{ size: 'number' }>>({ size: 'big' });
+  });
+});
+
+describe('Attributes, ElementTag', () => {
+  it('holds HTML attributes, a list of strings too', () => {
+    expectTypeOf<Attributes['value']>().toEqualTypeOf<string | number | boolean | readonly string[] | undefined>();
+  });
+
+  it('is the tag of an HTML element', () => {
+    expectTypeOf<'input'>().toExtend<ElementTag>();
+  });
+
+  it('rejects an object as an attribute', () => {
+    // @ts-expect-error An attribute is not an object.
+    accepts<Attributes>({ style: {} });
+  });
+
+  it('rejects an unknown tag', () => {
+    // @ts-expect-error There is no `inptu` element.
+    accepts<ElementTag>('inptu');
   });
 });

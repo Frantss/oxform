@@ -7,5 +7,5 @@ const setup = () => ({ form: fixtures.empty(), [Symbol.dispose]() {} });
 it('makes a form with no extension', () => {
   using subject = setup();
 
-  expect(slotsOf(subject.form)).toEqual([]);
+  expect(slotsOf(subject.form)).toEqual({});
 });

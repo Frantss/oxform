@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineForm, type Extension, type SlotDefinition } from '@oxform/core';
+import { defineForm, type Extension, type Slot } from '@oxform/core';
 import { rootSlots, values } from '@oxform/core/behaviors';
 import { describe, expectTypeOf, it } from 'vite-plus/test';
 
@@ -18,11 +18,11 @@ describe('values', () => {
 
 describe('rootSlots', () => {
   it('is a slot group', () => {
-    expectTypeOf(rootSlots).toEqualTypeOf<SlotDefinition>();
+    expectTypeOf(rootSlots).returns.toHaveProperty('root').toExtend<Slot<{}, {}, 'form'>>();
   });
 
-  it('is not an extension', () => {
-    // @ts-expect-error A slot group is not called.
+  it('takes a slot factory', () => {
+    // @ts-expect-error A slot group takes a slot factory.
     rootSlots({});
   });
 });

@@ -1,11 +1,14 @@
-import { slotsOf } from '@oxform/core/adapter';
 import { expect, it } from 'vite-plus/test';
 import { signInForm } from './sign-in';
 
-const setup = () => ({ form: signInForm, [Symbol.dispose]() {} });
+const setup = () => {
+  const instance = signInForm.create();
 
-it('applies the values extension', () => {
-  using subject = setup();
+  return Object.assign(instance, { [Symbol.dispose]: () => instance.destroy() });
+};
 
-  expect(slotsOf(subject.form)).toEqual(['values']);
+it('creates an instance with an id', () => {
+  using instance = setup();
+
+  expect(instance.id).toMatch(/^form-\d+$/u);
 });

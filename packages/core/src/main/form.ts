@@ -14,6 +14,8 @@ import type {
   OptionDescriptors,
   OptionKind,
   OptionsFrom,
+  SlotFactory,
+  SlotRecord as PublicSlotRecord,
 } from './types';
 
 type Options = Record<string, unknown>;
@@ -26,7 +28,16 @@ type Definition = {
   readonly state?: (options: Options) => Options;
   api(context: FormContext<Options, Options>, deps: Options): object;
   readonly fields?: FieldsDefinition;
+  readonly slots?: (slot: typeof slotFactory) => SlotRecord;
 };
+
+/** A slot is plain data, so the factory that `slots` and a slot group get is the identity. */
+const slotFactory = <Slot extends object>(definition: Slot) => definition;
+
+type SlotRecord = Readonly<Record<string, object>>;
+
+/** The slot group of each slot that a group made, with the needs that the group states. */
+const groups = new WeakMap<object, { readonly name: string; readonly needs?: NeedNames }>();
 
 type Chain = {
   readonly definitions: readonly Definition[];
@@ -64,19 +75,25 @@ const kindsOf = (definitions: readonly Definition[]) => {
   return kinds;
 };
 
-/** A need that no earlier extension meets throws, before the `api` of the extension runs (D52). */
-const checkNeeds = (definition: Definition, api: object, state: object) => {
-  for (const need of definition.needs?.api ?? []) {
-    if (!(need in api)) {
-      throw new Error(`The "${definition.name}" extension needs "${need}", which no earlier extension provides.`);
-    }
+/** A need that the api or the state so far does not meet throws. `owner` names the extension or the slot group. */
+const checkNeeds = (owner: string, needs: NeedNames | undefined, api: object, state: object) => {
+  for (const need of needs?.api ?? []) {
+    if (!(need in api)) throw new Error(`${owner} needs "${need}", which no earlier extension provides.`);
   }
-  for (const need of definition.needs?.state ?? []) {
-    if (!(need in state)) {
-      throw new Error(
-        `The "${definition.name}" extension needs the state key "${need}", which no earlier extension provides.`,
-      );
-    }
+  for (const need of needs?.state ?? []) {
+    if (!(need in state))
+      throw new Error(`${owner} needs the state key "${need}", which no earlier extension provides.`);
+  }
+};
+
+/** The needs of each slot group in the slots of an extension, checked once the extension has run. */
+const checkGroups = (definition: Definition, api: object, state: object) => {
+  const checked = new Set<string>();
+  for (const slot of Object.values(definition.slots?.(slotFactory) ?? {})) {
+    const group = groups.get(slot);
+    if (group === undefined || checked.has(group.name)) continue;
+    checked.add(group.name);
+    checkNeeds(`The "${group.name}" slot group`, group.needs, api, state);
   }
 };
 
@@ -95,7 +112,7 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
 
   try {
     for (const definition of definitions) {
-      checkNeeds(definition, api, controls.store.state);
+      checkNeeds(`The "${definition.name}" extension`, definition.needs, api, controls.store.state);
       const context = controls.extensionContext(definition.name, definition.state?.(options) ?? {});
       const additions = definition.api(context as FormContext<Options, Options>, copyOf(api));
       for (const key of Object.keys(additions)) {
@@ -107,6 +124,7 @@ const createInstance = (definitions: readonly Definition[], options: Options) =>
         owners.set(key, definition.name);
       }
       Object.defineProperties(api, Object.getOwnPropertyDescriptors(additions));
+      checkGroups(definition, api, controls.store.state);
     }
     const withFields = definitions.find(definition => definition.fields);
     if (withFields && typeof api.field !== 'function') {
@@ -166,6 +184,7 @@ export const defineExtension = <
   Descriptors extends OptionDescriptors = {},
   State extends object = {},
   Api extends object = {},
+  Slots extends PublicSlotRecord = {},
   Fields = never,
 >(
   _form: Extendable<Values, Provides, NeedState>,
@@ -176,10 +195,12 @@ export const defineExtension = <
     readonly state?: (options: BaseOptions<Values> & OptionsFrom<Descriptors>) => State;
     /** Runs once per instance, on a server too. It must be inert: no DOM, no timer, no request. */
     readonly api: (context: FormContext<BaseOptions<Values> & OptionsFrom<Descriptors>, State>, deps: Provides) => Api;
+    /** The slots of the extension. `slot` sees the api and the state of the form so far, and its own. */
+    readonly slots?: (slot: SlotFactory<Provides & Api, NeedState & State>) => Slots;
     /** Members for field handles, built with `on`. */
     readonly fields?: Fields;
   } & NeedsMember<Provides, NeedState, ApiNames, StateNames>,
-): Extension<OptionsFrom<Descriptors>, State, Api, {}, Fields> => definition as never;
+): Extension<OptionsFrom<Descriptors>, State, Api, Slots, Fields> => definition as never;
 
 /**
  * Field members for the field handles whose value extends `Condition`: `fields: on<string>(isString)(build)`. The
@@ -219,13 +240,43 @@ export const option: {
 /** The runtime kind of every option of a form, for an adapter. */
 export const optionKindsOf = (form: object): Readonly<Record<string, OptionKind>> => chainOf(form).optionKinds;
 
-/** The names of the extensions of a form, in order. TK-014 replaces it with the resolved slots. */
-export const slotsOf = (form: object): readonly string[] =>
-  chainOf(form).definitions.map(definition => definition.name);
+/**
+ * The slots of a form, in the order of its extensions. A slot with the key of an earlier slot replaces it. An adapter
+ * reads them to render the parts.
+ */
+export const slotsOf = (form: object): SlotRecord =>
+  Object.assign({}, ...chainOf(form).definitions.map(definition => definition.slots?.(slotFactory)));
 
-export type SlotDefinition = { readonly name: string; readonly slots: Readonly<Record<string, object>> };
+/**
+ * A reusable group of slots. `build` annotates its `slot` parameter with what the slots need
+ * (`SlotFactory<Api, State>`), and `needs` lists the same names. Each slot records the group, so `create` checks
+ * the needs once the extension that spreads the group has run.
+ */
+export const defineSlots = <
+  Api,
+  State,
+  Slots extends PublicSlotRecord,
+  const ApiNames extends readonly (keyof Api & string)[] = [],
+  const StateNames extends readonly (keyof State & string)[] = [],
+>(
+  definition: { readonly name: string } & NeedsMember<Api, State, ApiNames, StateNames>,
+  build: (slot: SlotFactory<Api, State>) => Slots,
+): ((slot: SlotFactory<Api, State>) => Slots) => {
+  const group = { name: definition.name, needs: (definition as { readonly needs?: NeedNames }).needs };
+  return slot => {
+    const slots = build(slot);
+    for (const made of Object.values(slots)) groups.set(made, group);
+    return slots;
+  };
+};
 
-export const defineSlots = (definition: { name: string }, build: () => Record<string, object>): SlotDefinition => ({
-  name: definition.name,
-  slots: build(),
-});
+/**
+ * An extension that adds slots only: no api, no option and no state. `slot` is typed by the api and the state of
+ * the form, so each spread group checks its needs there. A later slot with the key of an earlier one replaces it.
+ */
+export const slots =
+  <Values, Provides, NeedState, Slots extends PublicSlotRecord>(
+    build: (slot: SlotFactory<Provides, NeedState>) => Slots,
+  ) =>
+  (_form: Extendable<Values, Provides, NeedState>): Extension<{}, {}, {}, Slots> =>
+    ({ name: 'slots', api: () => ({}), slots: build }) as never;

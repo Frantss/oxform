@@ -6,7 +6,7 @@ import { describe, expectTypeOf, it } from 'vite-plus/test';
 describe('slotsOf', () => {
   it('reads the chain of a form', () => {
     expectTypeOf(slotsOf(defineForm({ schema: {} as StandardSchemaV1<object>, defaultValues: {} }))).toEqualTypeOf<
-      readonly string[]
+      Readonly<Record<string, object>>
     >();
   });
 

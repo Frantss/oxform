@@ -3,12 +3,12 @@ id: TK-014
 title: Slots
 phase: 2
 work_package: P2-05
-status: todo
+status: done
 depends_on: [TK-013]
 branch: codex/P2-05-slots
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-014: Slots
@@ -49,15 +49,32 @@ type error.
 
 ## Acceptance
 
-- [ ] The rows of `03#slots, defineSlots and the slot groups` that need no built-in group have a passing test
+- [x] The rows of `03#slots, defineSlots and the slot groups` that need no built-in group have a passing test
       in `src/main/form.spec.ts`: the missing need at `create`, the spread into any form, the slot order, and
       `slots(build)`. They use test-local groups.
-- [ ] A group with a missing api need or state need throws at `create` and names the group and the need.
-- [ ] `element: 'inptu'` is a type error.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] A group with a missing api need or state need throws at `create` and names the group and the need.
+- [x] `element: 'inptu'` is a type error.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (262 statements, 112 branches).
+- `src/main/form.spec.ts`: the slots of an extension (added, kept, later key wins in both orders), `defineSlots`
+  (spread into any form, needs met, a missing api need and a missing state need at `create` with the group
+  and the need named, a group with no needs) and `slots(build)` (no api, option or state; merge across
+  `extend`; reads the state of the form). The groups are test-local.
+- Type tests: `element: 'inptu'` is a type error in `slot(...)`, in `PartSpec` and in `ElementTag`. A group on a
+  form without its api need, without its state need, inside an extension that does not state the need, and a
+  `needs` list that differs from the `slot` annotation are type errors. Each case reports its own error.
+- This ticket also takes the rows that TK-013 moved: the `slots` member of `defineExtension` and the
+  `slotsOf` reader, which now resolves the slots in chain order.
+- Deviations:
+  - `PartEventContext` names the element `element`, not the spike's `el` (semantic naming).
+  - `text` takes `NoInfer<SlotState>`, so only `state` infers the slot state.
+  - `PartsFromSlots` is in `main/types.ts`. TK-017 exports it from the adapter entry point.
+  - `rootSlots` is a placeholder group (the `root` part as a `form` element) until TK-028.
+  - The placeholder users of `slotsOf` (entry-point and module-sharing specs, consumer checks, adapter
+    skeletons, kit and parity specs) now read the slot keys.

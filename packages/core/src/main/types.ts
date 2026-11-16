@@ -134,6 +134,120 @@ export interface BuiltInApis<Values> {
 
 export type Needs<Values, Names extends keyof BuiltInApis<Values>> = Pick<BuiltInApis<Values>, Names>;
 
+/** A tag that a slot can render: every HTML element of the DOM library (D13). */
+export type ElementTag = keyof HTMLElementTagNameMap;
+
+/** How a part passes a prop to a slot. A `key` prop is a path of the form, or of the scope of the part. */
+export type PropKind = 'key' | OptionKind;
+
+type PropType<Kind extends PropKind> = Kind extends 'key' | 'string' | 'id'
+  ? string
+  : Kind extends 'number'
+    ? number
+    : Kind extends 'boolean'
+      ? boolean
+      : Kind extends 'list'
+        ? string | readonly string[]
+        : unknown;
+
+/** The props of a part, as a slot body reads them. A `key` prop is a string. */
+export type PropsOf<Spec> = {
+  readonly [Name in keyof Spec]: Spec[Name] extends PropKind ? PropType<Spec[Name]> : never;
+};
+
+declare const keyProp: unique symbol;
+
+/**
+ * The type of a `key` prop in the public props of a part. A slot does not know the values of the form, so the
+ * adapter replaces it with a path of the form, or of the scope.
+ */
+export interface KeyProp {
+  readonly [keyProp]: true;
+}
+
+type SlotPropsOf<Spec> = {
+  readonly [Name in keyof Spec]: Spec[Name] extends 'key'
+    ? KeyProp
+    : Spec[Name] extends PropKind
+      ? PropType<Spec[Name]>
+      : never;
+};
+
+/** What a part is: its props, the state that its children can read, and its element. */
+export interface PartSpec<Props = {}, State = {}, Tag extends ElementTag = 'div'> {
+  readonly props: Props;
+  readonly state: State;
+  readonly element: Tag;
+}
+
+/** DOM props that a slot may read from the part, although it does not declare them. */
+export interface PartDomProps {
+  readonly type?: string;
+  readonly value?: string | number | readonly string[];
+}
+
+/** The part as a slot function sees it: the form id, the `key` prop, the props and the api of the form. */
+export interface PartHandle<Props, Api> {
+  readonly id: string;
+  readonly key: string;
+  readonly props: Props & PartDomProps;
+  readonly api: Api;
+}
+
+export interface PartEventContext<Props, Api> extends PartHandle<Props, Api> {
+  readonly element: HTMLElement | null;
+}
+
+/** HTML attributes by their HTML names (`for`, `readonly`). Each adapter maps them to its own names. */
+export type Attributes = Readonly<Record<string, string | number | boolean | readonly string[] | undefined>>;
+
+/**
+ * One slot. `text`, `present`, `state` and `attrs` are pure functions of the store state, so they run on a server.
+ * `on` and `bind` run in a browser only. The functions are properties, not methods, so their parameters are compared
+ * strictly and a group that needs state that the form does not have is a type error.
+ */
+export interface SlotDefinition<Spec, SlotState, Api, State, Tag extends ElementTag = 'div'> {
+  /** The element of the part, unless the caller of `createParts` chooses another. */
+  readonly element?: Tag;
+  readonly props?: Spec;
+  /** What the part shows when it gets no children. */
+  readonly text?: (state: NoInfer<SlotState>) => string | undefined;
+  readonly present?: (state: State, part: PartHandle<PropsOf<Spec>, Api>) => boolean;
+  readonly state?: (state: State, part: PartHandle<PropsOf<Spec>, Api>) => SlotState;
+  readonly attrs?: (state: State, part: PartHandle<PropsOf<Spec>, Api>) => Attributes;
+  readonly on?: {
+    readonly [Event in keyof HTMLElementEventMap]?: (
+      event: HTMLElementEventMap[Event],
+      context: PartEventContext<PropsOf<Spec>, Api>,
+    ) => void;
+  };
+  readonly bind?: (element: HTMLElement, part: PartHandle<PropsOf<Spec>, Api>) => void | (() => void);
+}
+
+declare const slotBrand: unique symbol;
+
+export interface Slot<Props = {}, SlotState = {}, Tag extends ElementTag = 'div'> {
+  readonly [slotBrand]: PartSpec<Props, SlotState, Tag>;
+}
+
+/** Makes a slot. `Spec` comes from `props`, `SlotState` from `state` and `Tag` from `element`. */
+export type SlotFactory<Api, State> = <
+  const Spec extends Readonly<Record<string, PropKind>> = {},
+  SlotState = {},
+  const Tag extends ElementTag = 'div',
+>(
+  definition: SlotDefinition<Spec, SlotState, Api, State, Tag>,
+) => Slot<SlotPropsOf<Spec>, SlotState, Tag>;
+
+export type SlotRecord = Readonly<Record<string, Slot<any, any, any>>>;
+
+/** The parts of a form, from its slots. An adapter renders one part per slot. */
+export type PartsFromSlots<Slots> = {
+  readonly [Name in keyof Slots]: Slots[Name] extends Slot<infer Props, infer SlotState, infer Tag>
+    ? PartSpec<Props, SlotState, Tag>
+    : never;
+};
+
 declare const extensionBrand: unique symbol;
 
 /** What `defineExtension` returns: the types that an extension adds. `form.extend` collects them. */
@@ -228,6 +342,8 @@ type Typed<Types> = { readonly [formTypes]: Types };
 export type ValuesOf<F> = F extends Typed<FormTypes<infer Values, any, any, any, any, any>> ? Values : never;
 export type ApiOf<F> = F extends Typed<FormTypes<any, infer Api, any, any, any, any>> ? Api : never;
 export type StateOf<F> = F extends Typed<FormTypes<any, any, any, infer State, any, any>> ? State : never;
+export type PartsOf<F> =
+  F extends Typed<FormTypes<any, any, any, any, infer Slots, any>> ? PartsFromSlots<Slots> : never;
 export type FieldsOf<F> = F extends Typed<FormTypes<any, any, any, any, any, infer Fields>> ? Fields : never;
 export type InstanceOf<F> =
   F extends Typed<FormTypes<infer Values, infer Api, any, infer State, any, infer Fields>>

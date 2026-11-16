@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { named, schemaOf } from '../../tests/helpers';
+import { schemaOf } from '../../tests/helpers';
 import { getAt, setAt } from '#internal/paths';
 import { contextInternals } from './context';
-import { defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slotsOf } from './form';
+import { defineExtension, defineForm, defineSlots, on, option, optionKindsOf, slots, slotsOf } from './form';
 import type { Path, PathValue } from './path-types';
-import type { Extendable, Form, Needs, Self } from './types';
+import type { Extendable, Form, Needs, Self, SlotFactory } from './types';
 
 type Login = { email: string; password: string };
 
@@ -151,6 +151,32 @@ const suffix =
       needs: { api: ['ping'] },
       api: (_context, { ping }) => (ping.intercept(value => value + name), {}),
     });
+
+/** The `shown` state key and the `flag` api member that `shownSlots` needs. */
+const provides = <Values>(form: Extendable<Values>) =>
+  defineExtension(form, { name: 'provides', state: () => ({ shown: true }), api: () => ({ flag: true as const }) });
+const stateOnly = <Values>(form: Extendable<Values>) => defineExtension(form, { name: 'stateOnly', state: () => ({ shown: true }), api: () => ({}) });
+const apiOnly = <Values>(form: Extendable<Values>) => defineExtension(form, { name: 'apiOnly', api: () => ({ flag: true as const }) });
+
+/** A group that needs the `flag` api and the `shown` state. */
+const shownSlots = defineSlots(
+  { name: 'shownSlots', needs: { api: ['flag'], state: ['shown'] } },
+  (slot: SlotFactory<{ readonly flag: true }, { readonly shown: boolean }>) => ({
+    shown: slot({ element: 'span', attrs: state => ({ 'data-shown': state.shown }) }),
+  }),
+);
+
+/** An extension with a `badge` slot whose id is `id`. */
+const badge = (name: string, id: string) => (form: Extendable<unknown>) =>
+  defineExtension(form, { name, api: () => ({}), slots: slot => ({ badge: slot({ attrs: () => ({ id }) }) }) });
+
+/** An extension with an empty slot under `key`. */
+const slotted = (name: string, key: string) => (form: Extendable<unknown>) =>
+  defineExtension(form, { name, api: () => ({}), slots: slot => ({ [key]: slot({}) }) });
+
+/** The attributes of the slot `key` of a form, for the given state. */
+const attrsOf = (form: object, key: string, state: object = {}) =>
+  (slotsOf(form)[key] as { attrs(state: object, part: object): object }).attrs(state, {});
 
 describe('defineForm', () => {
   it('makes instances that take their values from defaultValues', () => {
@@ -300,7 +326,7 @@ describe('form.extend', () => {
     using subject = setup();
     const form = subject.form.extend(limited).extend(preset).extend(returning('marker', 'marker'));
 
-    expect(slotsOf(form)).toEqual(['limited', 'store', 'marker']);
+    expect(Object.keys(subject.create(() => form.create()))).toEqual(['limit', 'done', 'values', 'marker', 'id', 'store', 'destroy']);
   });
 
   it('throws when two extensions declare an option, and names both', () => {
@@ -556,18 +582,103 @@ describe('optionKindsOf', () => {
 });
 
 describe('slotsOf', () => {
-  it('lists the extensions of a form in order', () => {
+  it('gives a form with no slot an empty record', () => {
     using subject = setup();
 
-    expect(slotsOf(subject.form.extend(named('first')).extend(named('second')))).toEqual(['first', 'second']);
+    expect(slotsOf(subject.form.extend(store))).toEqual({});
+  });
+});
+
+describe('slots in an extension', () => {
+  it('adds a slot and keeps the slots of the earlier extensions', () => {
+    using subject = setup();
+    const form = subject.form.extend(badge('first', 'a')).extend(slotted('second', 'other'));
+
+    expect(Object.keys(slotsOf(form))).toEqual(['badge', 'other']);
+  });
+
+  it('resolves in extension order, so a later slot with the same key wins', () => {
+    using subject = setup();
+    const ids = [
+      subject.form.extend(badge('first', 'a')).extend(badge('second', 'b')),
+      subject.form.extend(badge('second', 'b')).extend(badge('first', 'a')),
+    ].map(form => attrsOf(form, 'badge'));
+
+    expect(ids).toEqual([{ id: 'b' }, { id: 'a' }]);
+  });
+
+  it('gives the slot factory a slot unchanged', () => {
+    using subject = setup();
+    const form = subject.form.extend(slots(slot => ({ badge: slot({ element: 'span', props: { name: 'key' } }) })));
+
+    expect(slotsOf(form)).toEqual({ badge: { element: 'span', props: { name: 'key' } } });
   });
 });
 
 describe('defineSlots', () => {
-  it('records the name of the group beside its slots', () => {
+  it('spreads into any form, and the form keeps only the groups it spreads', () => {
     using subject = setup();
-    const group = defineSlots({ name: 'group' }, () => ({ form: subject.form }));
+    const form = subject.form.extend(provides).extend(slots(slot => ({ ...shownSlots(slot) })));
 
-    expect(group).toEqual({ name: 'group', slots: { form: subject.form } });
+    expect(Object.keys(slotsOf(form))).toEqual(['shown']);
+  });
+
+  it('passes create when an earlier extension meets the needs of the group', () => {
+    using subject = setup();
+    const form = subject.form.extend(provides).extend(slots(slot => ({ ...shownSlots(slot) })));
+
+    expect(subject.create(() => form.create()).flag).toBe(true);
+  });
+
+  it('throws at create for a missing api need of a group, and names the group and the need', () => {
+    using subject = setup();
+    const form = subject.form.extend(stateOnly).extend(slots(slot => ({ ...shownSlots(slot as never) })));
+
+    expect(() => form.create()).toThrow('The "shownSlots" slot group needs "flag", which no earlier extension provides.');
+  });
+
+  it('throws at create for a missing state need of a group, and names the state key', () => {
+    using subject = setup();
+    const form = subject.form.extend(apiOnly).extend(slots(slot => ({ ...shownSlots(slot as never) })));
+
+    expect(() => form.create()).toThrow('The "shownSlots" slot group needs the state key "shown", which no earlier extension provides.');
+  });
+
+  it('checks a group with no needs', () => {
+    using subject = setup();
+    const plain = defineSlots({ name: 'plain' }, (slot: SlotFactory<{}, {}>) => ({ plain: slot({}) }));
+    const form = subject.form.extend(slots(slot => ({ ...plain(slot), ...plain(slot) })));
+
+    expect(subject.create(() => form.create()).id).toMatch(/^form-/u);
+  });
+});
+
+describe('slots', () => {
+  it('adds slots and no api, option or state', () => {
+    using subject = setup();
+    const form = subject.form.extend(slots(slot => ({ badge: slot({}) })));
+    const instance = subject.create(() => form.create());
+
+    expect([Object.keys(instance), instance.store.state, Object.keys(optionKindsOf(form))]).toEqual([
+      ['id', 'store', 'destroy'],
+      {},
+      ['id', 'schema', 'defaultValues'],
+    ]);
+  });
+
+  it('merges across extend calls, and a later slot replaces an earlier one with the same key', () => {
+    using subject = setup();
+    const form = subject.form
+      .extend(slots(slot => ({ badge: slot({ attrs: () => ({ id: 'a' }) }), kept: slot({}) })))
+      .extend(slots(slot => ({ badge: slot({ attrs: () => ({ id: 'b' }) }) })));
+
+    expect([Object.keys(slotsOf(form)), attrsOf(form, 'badge')]).toEqual([['badge', 'kept'], { id: 'b' }]);
+  });
+
+  it('reads the state of the form it is applied to', () => {
+    using subject = setup();
+    const form = subject.form.extend(provides).extend(slots(slot => ({ ...shownSlots(slot) })));
+
+    expect(attrsOf(form, 'shown', subject.create(() => form.create()).store.state)).toEqual({ 'data-shown': true });
   });
 });
