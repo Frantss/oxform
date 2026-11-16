@@ -14,7 +14,10 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.spec.ts'],
     },
-    projects: [{ test: { name: 'unit', include: ['src/**/*.spec.ts'], ...node } }],
+    projects: [
+      { test: { name: 'unit', include: ['src/**/*.spec.ts'], ...node } },
+      { test: { name: 'integration', include: ['tests/*.spec.ts'], ...node } },
+    ],
   },
   pack: {
     entry: {

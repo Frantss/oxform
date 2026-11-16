@@ -40,9 +40,9 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp test --project unit",
+    "test": "vp test --project unit --project integration",
     "test:coverage": "vp test --project unit --coverage.enabled",
-    "test:dev": "vp test --project unit --watch",
+    "test:dev": "vp test --project unit --project integration --watch",
     "check:types": "vp exec tsc --noEmit && vp exec tsc --noEmit -p scripts && vp exec tsc --noEmit -p tests/types",
     "check:types:dist": "vp exec tsc --noEmit -p tests/types/tsconfig.dist.json",
     "check:type-coverage": "node scripts/check-type-coverage.ts",
