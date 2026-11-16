@@ -4,7 +4,7 @@ import { contextInternals, createContext, type ContextControls, type ValidationL
 const setup = <Options extends object>(options: Options = {} as Options) => {
   const controls = createContext(options);
 
-  return Object.assign(controls, { [Symbol.dispose]: controls.destroy });
+  return Object.assign(controls, { [Symbol.dispose]: () => controls.destroy() });
 };
 
 /** An extension whose `doubled` slice derives from its `count` slice. */

@@ -1,25 +1,16 @@
 import { expect, it } from 'vite-plus/test';
-import type { Form } from '#core';
-import { values } from '#core/behaviors';
+import { defineForm } from '#core';
 import { standard } from '#core/presets';
 
-/** A form that records each extension it is given. */
 const setup = () => {
-  const applied: unknown[] = [];
-  const form: Form = {
-    extend: extension => {
-      applied.push(extension);
+  const schema = { '~standard': { version: 1 as const, vendor: 'test', validate: (value: unknown) => ({ value }) } };
+  const instance = defineForm({ schema, defaultValues: {} }).extend(standard).create();
 
-      return form;
-    },
-  };
-
-  return { form, applied, [Symbol.dispose]() {} };
+  return Object.assign(instance, { [Symbol.dispose]: () => instance.destroy() });
 };
 
-it('applies the values extension', () => {
-  using recorder = setup();
-  standard(recorder.form);
+it('makes a form that creates an instance', () => {
+  using instance = setup();
 
-  expect(recorder.applied).toEqual([values]);
+  expect(instance.id).toMatch(/^form-\d+$/u);
 });

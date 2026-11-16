@@ -48,11 +48,11 @@ evidence.
 | ---------------------------------------------------------- | ---------------------------- | ------------ | ------- | ---------- |
 | [TK-010](./tickets/TK-010-paths.md)                        | Paths                        | P2-01        | done    | TK-007     |
 | [TK-011](./tickets/TK-011-context.md)                      | Context                      | P2-02        | done    | TK-010     |
-| [TK-012](./tickets/TK-012-form-builder.md)                 | Form builder                 | P2-03        | ready   | TK-011     |
-| [TK-013](./tickets/TK-013-extensions-and-field-members.md) | Extensions and field members | P2-04        | blocked | TK-012     |
+| [TK-012](./tickets/TK-012-form-builder.md)                 | Form builder                 | P2-03        | done    | TK-011     |
+| [TK-013](./tickets/TK-013-extensions-and-field-members.md) | Extensions and field members | P2-04        | ready   | TK-012     |
 | [TK-014](./tickets/TK-014-slots.md)                        | Slots                        | P2-05        | blocked | TK-013     |
-| [TK-015](./tickets/TK-015-create-effect.md)                | createEffect                 | P2-06        | blocked | TK-012     |
-| [TK-016](./tickets/TK-016-define-scope.md)                 | defineScope                  | P2-07        | blocked | TK-012     |
+| [TK-015](./tickets/TK-015-create-effect.md)                | createEffect                 | P2-06        | ready   | TK-012     |
+| [TK-016](./tickets/TK-016-define-scope.md)                 | defineScope                  | P2-07        | ready   | TK-012     |
 | [TK-017](./tickets/TK-017-adapter-entry.md)                | Adapter entry point          | P2-08        | blocked | TK-014     |
 | [TK-018](./tickets/TK-018-depth-guard.md)                  | Depth guard, first form      | P2-09        | blocked | TK-014     |
 

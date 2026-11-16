@@ -10,7 +10,7 @@ await checkConsumers(
 import { defineForm } from '@oxform/core';
 import { createParts } from '@oxform/react';
 
-if (createParts(defineForm()).slots.length !== 0) throw new Error('A form with no extension has no slot.');
+if (createParts(defineForm({ schema: { "~standard": { version: 1, vendor: "test", validate: (value: unknown) => ({ value }) } }, defaultValues: {} })).slots.length !== 0) throw new Error('A form with no extension has no slot.');
 // A type case only: it is never called.
 export const rejected = () => {
   // @ts-expect-error createParts takes a form.

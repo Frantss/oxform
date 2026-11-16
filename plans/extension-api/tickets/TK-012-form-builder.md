@@ -3,12 +3,12 @@ id: TK-012
 title: Form builder
 phase: 2
 work_package: P2-03
-status: todo
+status: done
 depends_on: [TK-011]
 branch: codex/P2-03-form-builder
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-012: Form builder
@@ -51,14 +51,30 @@ throws, names the extension and the need, and returns no instance.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#defineForm and form.create`, `#form.extend`, `#form.configure` and `#option`
+- [x] Each scenario group of `03#defineForm and form.create`, `#form.extend`, `#form.configure` and `#option`
       has a passing test in `src/main/form.spec.ts`, except the two rows that the Out list gives to TK-013 and
       TK-017. The rows that need an extension use a test-local definition object.
-- [ ] A missing need throws at `create` and names the extension and the need.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] A missing need throws at `create` and names the extension and the need.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the D18 result and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% statements, branches, functions and lines per file (214 statements).
+- `src/main/form.spec.ts`: 36 cases for the groups of `03#defineForm and form.create`, `#form.extend`,
+  `#form.configure` and `#option`. The test-local extensions (`store`, `limited`, `needing`, ...) are written with
+  `defineExtension`, which is the identity at runtime.
+- D18 result: the spike order stays (extension overload first). With the preset overload first, a rejected
+  extension reports `Type 'Extendable<{ a: string; }, {}, {}>' is not assignable to type 'Extendable<..., { values:
+  ... }, {}>'`, which reads better than the preset message. But TypeScript then types the parameter of an inline
+  extension from the first overload (`Form<...>`), so `form.extend(form => defineExtension(form, {...}))` fails
+  with TS2769. Inline extensions are a documented pattern, so the better message is not worth it.
+- Deviations:
+  - `defineExtension` is typed here with `name`, `needs` (plain name lists), `options`, `state` and `api`, because
+    `Form.extend` needs `Extension`. TK-013 adds the exact needs lists, `fields` and `on`.
+  - `optionKindsOf` is in `main/form.ts` and tested here. TK-017 exports it from the adapter entry point.
+  - `slotsOf` still lists the extension names, as the placeholder did. TK-014 replaces it.
+  - `Instance` ignores `Values` and `Fields` until TK-013 adds the field members.
+  - A failed `create` destroys the partial context, so the cleanups of earlier extensions run.

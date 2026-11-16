@@ -5,12 +5,14 @@ import { standard } from '@oxform/core/presets';
 import { describe, expect, it } from 'vite-plus/test';
 import { entryPoints, exportedNames, type EntryPoint } from '../../scripts/declarations.ts';
 
+const schemaOf = <Values>() => ({ '~standard': { version: 1 as const, vendor: 'test', validate: (value: unknown) => ({ value: value as Values }) } });
+
 const dist = new URL('../../dist/', import.meta.url);
 const entries = Object.keys(entryPoints) as EntryPoint[];
 
 /** A form and readers, all from the built package. */
 const setup = () => ({
-  form: () => defineForm().extend(standard),
+  form: () => defineForm({ schema: schemaOf<object>(), defaultValues: {} }).extend(standard),
   /** The chunks of `dist` that hold each source module, from the source maps. */
   chunksBySource: () => {
     const chunks = new Map<string, string[]>();

@@ -6,12 +6,12 @@ await checkConsumers(
     {
       name: 'core',
       source: `
-import { defineForm, type Form } from '@oxform/core';
+import { defineForm } from '@oxform/core';
 import { slotsOf } from '@oxform/core/adapter';
 import { values } from '@oxform/core/behaviors';
 import { standard } from '@oxform/core/presets';
 
-const form: Form = defineForm().extend(standard).extend(values);
+const form = defineForm({ schema: { "~standard": { version: 1, vendor: "test", validate: (value: unknown) => ({ value }) } }, defaultValues: {} }).extend(standard).extend(values);
 if (slotsOf(form).join() !== 'values,values') throw new Error('The packed entry points do not share a module.');
 // A type case only: it is never called.
 export const rejected = () => {

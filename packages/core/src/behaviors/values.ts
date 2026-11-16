@@ -1,3 +1,4 @@
-import { defineExtension, type Form } from '#main/form';
+import { defineExtension } from '#main/form';
+import type { Extendable } from '#main/types';
 
-export const values = (form: Form) => defineExtension(form, { name: 'values' });
+export const values = <Values>(form: Extendable<Values>) => defineExtension(form, { name: 'values', api: () => ({}) });
