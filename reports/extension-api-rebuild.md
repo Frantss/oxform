@@ -63,6 +63,10 @@
   parser of `packages/core/scripts/declarations.ts`.
 - Why it matters: a change to the rule must be made in each copy. A root script that takes the entries and the
   inventory would remove the copies. It is a refactor outside the adapter tickets.
+- Resolved on 2026-11-16: `scripts/type-coverage.ts` holds the rule and the export parser. The core and React
+  scripts pass their entries, and `check-parity.ts` uses the parser. Each inventory is keyed by specifier. Both
+  packages now get the union of the two rules: an inventory name that is not exported fails, and `accepts(...)`
+  counts as a positive case.
 
 ## Fixed in this session
 

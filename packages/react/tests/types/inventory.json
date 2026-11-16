@@ -1,12 +1,14 @@
-[
-  "FormHooks",
-  "PartComponent",
-  "PartComponents",
-  "PartElements",
-  "PartProps",
-  "PartRender",
-  "RootComponent",
-  "RootProps",
-  "createParts",
-  "usePart"
-]
+{
+  "@oxform/react": [
+    "FormHooks",
+    "PartComponent",
+    "PartComponents",
+    "PartElements",
+    "PartProps",
+    "PartRender",
+    "RootComponent",
+    "RootProps",
+    "createParts",
+    "usePart"
+  ]
+}

@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { exportedNames } from '../../../scripts/type-coverage.ts';
 
 /** The built declaration entry of each adapter. Arguments replace them, as `name=path` pairs. */
 const declarations: Record<string, string> =
@@ -10,29 +11,11 @@ const declarations: Record<string, string> =
         '@oxform/solid/v2': '../solid/dist/v2/index.d.ts',
       };
 
-/** The value and type names that a declaration file exports, read from its `export` statements. */
-const exportedNames = (declaration: string) => {
-  const listed = [...declaration.matchAll(/export\s*(?:type\s*)?\{([^}]*)\}/g)]
-    .flatMap(match => match[1]!.split(','))
-    .map(item =>
-      item
-        .trim()
-        .replace(/^type\s+/, '')
-        .split(/\s+as\s+/)
-        .at(-1)!,
-    )
-    .filter(Boolean);
-  const declared = [
-    ...declaration.matchAll(/export\s+(?:declare\s+)?(?:const|function|type|interface|class)\s+(\w+)/g),
-  ];
-  return new Set([...listed, ...declared.map(match => match[1]!)]);
-};
-
 const findings: string[] = [];
 const names = new Map<string, Set<string>>();
 for (const [adapter, path] of Object.entries(declarations)) {
   if (!existsSync(path)) findings.push(`${adapter} has no built declarations at ${path}. Build it first.`);
-  else names.set(adapter, exportedNames(readFileSync(path, 'utf8')));
+  else names.set(adapter, exportedNames(path));
 }
 
 const all = new Set([...names.values()].flatMap(set => [...set]));

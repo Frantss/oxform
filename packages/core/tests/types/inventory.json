@@ -1,5 +1,5 @@
 {
-  "index": [
+  "@oxform/core": [
     "AnyForm",
     "ApiOf",
     "ArrayItem",
@@ -59,7 +59,7 @@
     "Updater",
     "ValuesOf"
   ],
-  "behaviors": [
+  "@oxform/core/behaviors": [
     "ArrayHandle",
     "ArrayOperations",
     "ArraysApi",
@@ -117,8 +117,8 @@
     "validation",
     "values"
   ],
-  "presets": ["standard"],
-  "adapter": [
+  "@oxform/core/presets": ["standard"],
+  "@oxform/core/adapter": [
     "slotsOf",
     "adapterControlsOf",
     "prefixOf",
