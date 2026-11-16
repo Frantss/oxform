@@ -71,7 +71,10 @@ export const createSubmit = <Values, Checks extends string = string>(
     const generation = status.generation();
     let successful: boolean | undefined;
     try {
-      if (await intercepted()) return void status.setForm({ submitting: false });
+      if (await intercepted()) {
+        status.setForm({ submitting: false });
+        return;
+      }
       const validation = contextInternals(context).validation();
       const values = deps.values.get();
       const outcome = await validation.run(undefined, { type: 'submit' });
