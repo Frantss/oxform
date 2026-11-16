@@ -3,12 +3,12 @@ id: TK-004
 title: Module-sharing proof
 phase: 1
 work_package: P1-03
-status: todo
+status: done
 depends_on: [TK-003]
 branch: codex/P1-03-module-sharing
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-004: Module-sharing proof
@@ -44,12 +44,27 @@ emitted in two chunks, or if a built entry exports an `*Internals` name.
 
 ## Acceptance
 
-- [ ] `vp run @oxform/core#test:package` passes after `pnpm run build`.
-- [ ] The sharing spec fails when the channel module is copied into a second chunk (check it once by hand, for
+- [x] `vp run @oxform/core#test:package` passes after `pnpm run build`.
+- [x] The sharing spec fails when the channel module is copied into a second chunk (check it once by hand, for
       example with a second pack configuration, and revert).
-- [ ] `vp run @oxform/core#check:package` runs `test:package` and passes.
+- [x] `vp run @oxform/core#check:package` runs `test:package` and passes.
 
 ## Evidence
 
-Record the command results, the chunk list of `dist`, the D05 path taken (bundled or `unbundle`) and any
-deviation from the plan here.
+- Channel: the placeholder `WeakMap` from a form to its extensions in `src/main/form.ts`. The spec reaches it
+  through all four built entries: `defineForm` (`.`), `standard` (`./presets`, which applies `values` from
+  `./behaviors`) and `slotsOf` (`./adapter`).
+- `tests/package/module-sharing.spec.ts` (10 tests) imports the entries by package name, which resolves through
+  `exports` to `dist`: with `dist` removed, the run fails with `Failed to resolve entry for package
+  "@oxform/core"`. It checks that one channel instance is shared, that no source module is in two chunks (the
+  `sources` of every `.js.map`), and that no entry exports an `*Internals` name at runtime or in its `.d.ts`.
+- Chunk list of `dist`: the entries `index.js`, `behaviors.js`, `presets.js`, `adapter.js`, and the shared
+  chunks `form-*.js` (main and internal modules) and `behaviors-*.js`.
+- Hand check: with one pack configuration per entry (reverted), "share one instance of a module-private
+  channel" and "emit each source module in one chunk only" fail, and the other 8 pass.
+- D05: bundled entries with shared chunks are kept. No `unbundle`. R01 is retired.
+- The core `test` block no longer spreads the root browser configuration: Vitest 5 inline projects inherit the
+  root configuration and merge its arrays, so the root `include` would leak into each project. The `package`
+  project runs in Node. `test:package` runs `vp test --project package`, and `check:package` runs it last.
+  `@types/node` 26.6.5 is a new core dev dependency (the version that `@oxform/solid` uses).
+- `pnpm run check` and `vp run @oxform/core#check:package` pass.
