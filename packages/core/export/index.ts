@@ -1,2 +1,2 @@
-export { defineExtension, defineForm } from '#main/form';
-export type { Extension, Form } from '#main/form';
+export { defineExtension, defineForm, defineSlots } from '#main/form';
+export type { Extension, Form, SlotDefinition } from '#main/form';

@@ -31,3 +31,10 @@ export const slotsOf = (form: Form): readonly string[] => {
   if (!chain) throw new TypeError('slotsOf expects a form made by defineForm.');
   return chain.map(extension => extension.name);
 };
+
+export type SlotDefinition = { readonly name: string; readonly slots: Readonly<Record<string, object>> };
+
+export const defineSlots = (definition: { name: string }, build: () => Record<string, object>): SlotDefinition => ({
+  name: definition.name,
+  slots: build(),
+});

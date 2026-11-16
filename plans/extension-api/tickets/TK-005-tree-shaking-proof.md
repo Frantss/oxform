@@ -3,11 +3,11 @@ id: TK-005
 title: Tree-shaking proof and size report
 phase: 1
 work_package: P1-04
-status: todo
+status: in-progress
 depends_on: [TK-003]
 branch: codex/P1-04-tree-shaking-proof
 pr: null
-started: null
+started: 2026-11-16
 completed: null
 ---
 
@@ -49,14 +49,36 @@ completed: null
 
 ## Acceptance
 
-- [ ] `pnpm run check:tree-shaking` passes.
-- [ ] It fails when a placeholder tier imports a module whose marker that tier must not contain.
-- [ ] The tier that does not import the pure call has no marker of it.
-- [ ] It fails when a tier fixture imports outside the three entry points.
-- [ ] `pnpm run report:size` prints both tiers and exits 0.
+- [x] `pnpm run check:tree-shaking` passes.
+- [x] It fails when a placeholder tier imports a module whose marker that tier must not contain.
+- [x] The tier that does not import the pure call has no marker of it.
+- [x] It fails when a tier fixture imports outside the three entry points.
+- [x] `pnpm run report:size` prints both tiers and exits 0.
 - [ ] `pnpm run check:all` runs `check:tree-shaking` and passes.
 
 ## Evidence
 
-Record the command results, the printed sizes, the R02 result (annotation kept, or the fallback taken) and any
-deviation from the plan here.
+- Placeholders: `defineSlots` in `src/main/form.ts`, and the module-level call
+  `rootSlots = /* @__PURE__ */ defineSlots({ name: 'rootSlots' }, ...)` in `src/behaviors/slots.ts`, exported
+  from `@oxform/core/behaviors`.
+- `tests/bundle/`: `tier-values.ts` (`values` only) and `tier-full.ts` (`standard` and `rootSlots`), `markers.ts`
+  (the markers, the forbidden markers of each tier, the full tier, the allowed imports) and `vite.config.ts`
+  (one minified build per tier, core and `@tanstack/*` bundled). The fixtures import the package names, which
+  resolve through `exports` to `dist`.
+- `scripts/check-tree-shaking.ts` fails for a forbidden marker, a marker that the full tier lacks, a fixture
+  import outside the three entry points, and a tier with no output. A marker is the content of a string
+  literal: the minifier writes `values` with backticks, so the check accepts any quote character.
+- `pnpm run check:tree-shaking` prints `Tree-shaking check passed for 2 tiers.` Hand checks, each reverted:
+  `tier-values` that imports `rootSlots` fails with `tier-values contains rootSlots, which its chain does not
+  import.`; a fixture that imports `../../src/main/form` fails with `tier-values imports ../../src/main/form,
+  which is not a public entry point.`
+- R02: the annotation is kept in non-minified `dist` (`behaviors-*.js` holds `/* @__PURE__ */ defineSlots(...)`).
+  Without it, `tier-values` contains `rootSlots`, so the annotation is what removes the call. No fallback.
+- `pnpm run report:size`, exit 0: `tier-values` 271 B minified, 204 B gzip; `tier-full` 392 B minified, 256 B
+  gzip.
+- Root scripts `check:tree-shaking` and `report:size` run the core scripts. `check:all` is now `check`,
+  `check:package`, then `check:tree-shaking`. `report:size` is not in `check:all`.
+- The base `tsconfig.json` sets `allowImportingTsExtensions`, because Node runs the scripts and needs the `.ts`
+  extension in `import '../tests/bundle/markers.ts'`. The base already sets `emitDeclarationOnly`.
+- Open: `pnpm run check:all` stops at `@oxform/solid#check:package` (`publint` finds no assembled `dist`) before
+  it reaches `check:tree-shaking`. TK-008 writes the Solid assembly and closes this item.

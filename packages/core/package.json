@@ -45,7 +45,9 @@
     "test:dev": "vp test --watch",
     "check:types": "vp exec tsc --noEmit",
     "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run test:package",
-    "test:package": "vp test --project package"
+    "test:package": "vp test --project package",
+    "check:tree-shaking": "cd tests/bundle && vp pack && cd ../.. && node scripts/check-tree-shaking.ts",
+    "report:size": "cd tests/bundle && vp pack && cd ../.. && node scripts/measure-bundles.ts"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
