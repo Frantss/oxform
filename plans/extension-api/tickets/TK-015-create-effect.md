@@ -3,12 +3,12 @@ id: TK-015
 title: createEffect
 phase: 2
 work_package: P2-06
-status: todo
+status: done
 depends_on: [TK-012]
 branch: codex/P2-06-create-effect
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-015: `createEffect`
@@ -40,11 +40,17 @@ None.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#createEffect` has a passing test in `src/main/effect.spec.ts`.
-- [ ] `createEffect` has a positive and a negative type case in `tests/types/`.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] Each scenario group of `03#createEffect` has a passing test in `src/main/effect.spec.ts`.
+- [x] `createEffect` has a positive and a negative type case in `tests/types/`.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (272 statements, 114 branches).
+- `src/main/effect.spec.ts`: five cases on a test-local extension with a `filters` state key: no call for the
+  first selection, a call per change, no call for a deeply equal selection, none after `unsubscribe`, and two
+  async runs that overlap.
+- Type tests: the selection is typed by the state of the instance, and a key that the state does not have is a
+  type error.

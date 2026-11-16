@@ -1,4 +1,5 @@
 import {
+  createEffect,
   defineExtension,
   defineForm,
   defineSlots,
@@ -604,5 +605,24 @@ describe('Attributes, ElementTag', () => {
   it('rejects an unknown tag', () => {
     // @ts-expect-error There is no `inptu` element.
     accepts<ElementTag>('inptu');
+  });
+});
+
+describe('createEffect', () => {
+  it('types the selection by the state of the instance', () => {
+    createEffect(
+      form.create(),
+      state => state.values.email,
+      email => void expectTypeOf(email).toEqualTypeOf<string>(),
+    );
+  });
+
+  it('rejects a key that the state does not have', () => {
+    createEffect(
+      form.create(),
+      // @ts-expect-error The state has no status.
+      state => state.status,
+      () => {},
+    );
   });
 });

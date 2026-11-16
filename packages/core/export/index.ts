@@ -39,6 +39,7 @@ export type {
   StateSlice,
   ValuesOf,
 } from '#main/types';
+export { createEffect } from '#main/effect';
 export { get, idPart } from '#main/path';
 export type {
   ArrayItem,
