@@ -3,12 +3,12 @@ id: TK-032
 title: Cross-extension flows
 phase: 4
 work_package: P4-03
-status: todo
+status: done
 depends_on: [TK-029]
 branch: codex/P4-03-cross-extension-flows
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-032: Cross-extension flows
@@ -41,18 +41,35 @@ scopes, and a request handler that shares no state between two requests.
 
 ## Acceptance
 
-- [ ] I2 passes: change during a run, newer run, reset during a run, change during submit, reset during submit,
+- [x] I2 passes: change during a run, newer run, reset during a run, change during submit, reset during submit,
       two checks pending.
-- [ ] I3 passes: a test-local extension with an option, state, api, slot, field members and extension hooks;
+- [x] I3 passes: a test-local extension with an option, state, api, slot, field members and extension hooks;
       two extensions in both orders; destroy cleans up.
-- [ ] I4 passes: one scope definition at two paths and in two forms, field members on nested scopes,
+- [x] I4 passes: one scope definition at two paths and in two forms, field members on nested scopes,
       independent validation and reset.
-- [ ] I6 passes: validate a body, render the errors from the same instance, two concurrent requests share
+- [x] I6 passes: validate a body, render the errors from the same instance, two concurrent requests share
       nothing.
-- [ ] Integration specs import only through the `#core*` barrels.
-- [ ] `vp run @oxform/core#test` passes.
-- [ ] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
+- [x] Integration specs import only through the `#core*` barrels.
+- [x] `vp run @oxform/core#test` passes.
+- [x] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- All four flows run on `standard`, import only `#core`, `#core/adapter` and `#core/presets`, and are in the
+  `integration` project.
+- I2, `tests/validation-races.spec.ts`: a change during a run drops it; the newer of two runs of one lane wins;
+  a reset during a run drops it; a change and a reset during submit abort it with no callback, and the reset
+  status stays; `validating` stays true until the last of two pending checks settles.
+- I3, `tests/custom-extensions.spec.ts`: a test-local extension with an option, state, api, slot, field members
+  and a submit hook; two extensions run their hooks in the order applied, in both orders; destroy runs the
+  cleanup and stops the listener.
+- I4, `tests/scopes.spec.ts`: one definition at two paths and in two forms validates each path on its own;
+  `reset.at` of one path keeps the other; field members on a nested scope.
+- I6, `tests/request-handler.spec.ts`: a module-level form validates a body and renders the errors from the
+  same instance through the `fieldError` slot; two concurrent requests share nothing.
+- Bug found by I2 and fixed in its own commit: `reset.all()` on values that were already the defaults wrote
+  nothing, so a pending run was not discarded, and its issues arrived after the reset. The validation link has
+  `discard(path?)`, and `reset.all` and `reset.at` call it. Two unit cases in `reset.spec.ts` fail without the
+  fix.
+- `tests/helpers.ts` gains `deferred`.

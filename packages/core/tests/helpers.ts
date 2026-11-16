@@ -26,3 +26,13 @@ export const requiredAt = (key: string, message: string): StandardSchemaV1<never
 
 /** Waits until the validation that an event started has settled. */
 export const settled = () => new Promise(resolve => setTimeout(resolve));
+
+/** A schema whose result waits until the test calls `release`, then reports `issues`. */
+export const deferred = (...issues: TestIssue[]) => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => (release = resolve));
+  const schema: StandardSchemaV1<never> = {
+    '~standard': { version: 1, vendor: 'oxform-test', validate: async () => (await gate, { issues }) },
+  };
+  return { schema, release };
+};
