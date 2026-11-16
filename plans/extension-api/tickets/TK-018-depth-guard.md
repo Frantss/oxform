@@ -3,12 +3,12 @@ id: TK-018
 title: Depth guard, first form
 phase: 2
 work_package: P2-09
-status: todo
+status: done
 depends_on: [TK-014]
 branch: codex/P2-09-depth-guard
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-018: Depth guard, first form
@@ -39,10 +39,16 @@ None.
 
 ## Acceptance
 
-- [ ] `tests/types/depth.test-d.tsx` holds the three cases of the In list and no `@ts-expect-error`.
-- [ ] The file compiles in `vp run @oxform/core#check:types` and in `vp run @oxform/core#check:types:dist`.
-- [ ] `pnpm run check:all` passes.
+- [x] `tests/types/depth.test-d.tsx` holds the three cases of the In list and no `@ts-expect-error`.
+- [x] The file compiles in `vp run @oxform/core#check:types` and in `vp run @oxform/core#check:types:dist`.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all` (with `check:types` and `check:types:dist`), `pnpm run test`: pass.
+- `tests/types/depth.test-d.tsx`: a chain of nine test-local extensions (each with an option, a state key, an api
+  member and a slot), a preset that applies the nine inside a chain followed by one more extension, and a
+  `Values` type of 60 fields (40 strings, 10 nested objects with a `Date`, 10 arrays of objects) with `Path`,
+  `PathValue`, `ObjectPath`, `ArrayPath`, `ArrayItem`, `ArrayValue`, `PartsOf` and `PartsFromSlots`. No
+  `@ts-expect-error`.
+- `tsc --extendedDiagnostics` on the dist project: 101,933 instantiations, 0.046 s check time. No case failed.
