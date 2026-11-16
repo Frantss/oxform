@@ -3,39 +3,14 @@ import { base } from '../../vite.config';
 
 export default defineConfig({
   ...base,
-  test: {
-    ...base.test,
-    coverage: {
-      ...base.test?.coverage,
-      enabled: false,
-      provider: 'v8' as const,
-      reporter: ['text', 'html'] as const,
-      all: true,
-      include: ['src/constants.ts', 'src/form/**/*.ts', 'src/utils/**/*.ts'],
-      exclude: [
-        'src/**/*.spec.{ts,tsx}',
-        'src/**/tests/**',
-        'src/tests/**',
-        'src/types/**',
-        'src/utils/fields/field-entry.ts',
-        'src/utils/fields/field-set-options.ts',
-        'src/utils/fields/persisted-fields.ts',
-        'src/utils/update/updater-.ts',
-        'src/utils/update/updater-fn.ts',
-      ],
-      thresholds: {
-        statements: 100,
-        branches: 100,
-        functions: 100,
-        lines: 100,
-      },
-    },
-  },
   pack: {
     entry: {
       index: 'export/index.ts',
+      behaviors: 'export/behaviors.ts',
+      presets: 'export/presets.ts',
+      adapter: 'export/adapter.ts',
     },
-    format: ['esm', 'cjs'],
+    format: ['esm'],
     platform: 'browser',
     dts: true,
     sourcemap: true,

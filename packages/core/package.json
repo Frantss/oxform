@@ -9,16 +9,29 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.cts",
   "imports": {
+    "#core": "./export/index.ts",
+    "#core/behaviors": "./export/behaviors.ts",
+    "#core/presets": "./export/presets.ts",
+    "#core/adapter": "./export/adapter.ts",
     "#*": "./src/*.ts"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./behaviors": {
+      "types": "./dist/behaviors.d.ts",
+      "default": "./dist/behaviors.js"
+    },
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "default": "./dist/presets.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "default": "./dist/adapter.js"
     },
     "./package.json": "./package.json"
   },
@@ -31,7 +44,7 @@
     "test:coverage": "vp test --coverage",
     "test:dev": "vp test --watch",
     "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji"
+    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",

@@ -3,12 +3,12 @@ id: TK-003
 title: Core manifest and pack
 phase: 1
 work_package: P1-02
-status: todo
+status: done
 depends_on: [TK-002]
 branch: codex/P1-02-core-manifest
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-003: Core manifest and pack
@@ -48,12 +48,24 @@ modules. `publint --strict` and `attw --profile esm-only` pass.
 
 ## Acceptance
 
-- [ ] `pnpm run build` writes `index`, `behaviors`, `presets` and `adapter` (`.js` and `.d.ts`) to
+- [x] `pnpm run build` writes `index`, `behaviors`, `presets` and `adapter` (`.js` and `.d.ts`) to
       `packages/core/dist`.
-- [ ] `vp run @oxform/core#check:package` runs `publint --strict` and `attw --pack --no-emoji --profile esm-only`,
+- [x] `vp run @oxform/core#check:package` runs `publint --strict` and `attw --pack --no-emoji --profile esm-only`,
       and both pass.
-- [ ] `pnpm run check` passes.
+- [x] `pnpm run check` passes.
 
 ## Evidence
 
-Record the command results, the `dist` file list and any deviation from the plan here.
+- Manifest: ESM only, the `exports` map of `02#Package manifest` with four entries and `./package.json`, the
+  `#core`, `#core/behaviors`, `#core/presets`, `#core/adapter` and `#*` aliases. `main`, `module` and the
+  top-level `types` are deleted. `version` stays `0.6.0`: TK-072 sets `0.7.0` through Changesets.
+- One `pack` configuration with the entries `index`, `behaviors`, `presets` and `adapter`, `format: ['esm']`.
+- Placeholders, with names of the `01` inventory only: `src/main/form.ts` (`defineForm`, `defineExtension`,
+  `slotsOf`, the types `Form` and `Extension`, and a `WeakMap` from a form to its extensions),
+  `src/behaviors/values.ts` (`values`), `src/presets/standard.ts` (`standard`, imports the `#core` barrels
+  only) and `src/internal/paths.ts` (`joinPath`). The later phases replace each one.
+- `pnpm run build` writes `index`, `behaviors`, `presets` and `adapter` (`.js`, `.js.map`, `.d.ts`), plus the
+  shared chunks `form-*.js` and `behaviors-*.js` and their declarations.
+- `vp run @oxform/core#check:package`: `publint --strict` reports "All good!", and `attw --pack --no-emoji
+  --profile esm-only` reports OK for `node16 (from ESM)` and `bundler` on each entry. Exit 0.
+- `pnpm run check` passes.
