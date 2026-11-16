@@ -1,9 +1,16 @@
 import { expect, it } from 'vite-plus/test';
 
+/** The browser globals as the unit project sees them. */
+const setup = () => ({ window: typeof window, document: typeof document, [Symbol.dispose]() {} });
+
 it('runs unit specs with no window', () => {
-  expect(typeof window).toBe('undefined');
+  using environment = setup();
+
+  expect(environment.window).toBe('undefined');
 });
 
 it('runs unit specs with no document', () => {
-  expect(typeof document).toBe('undefined');
+  using environment = setup();
+
+  expect(environment.document).toBe('undefined');
 });

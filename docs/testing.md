@@ -1,74 +1,164 @@
 # Testing Patterns
 
-See [Commands Reference](./commands.md) for test commands.
+See [Commands Reference](./commands.md) for all commands.
+
+## Setup and `using`
+
+Every spec builds its subject through one `setup` function and holds it with `using`. The subject is
+what the case tests: a form, a context, a rendered view, or the input of a pure function.
+
+- Each spec file declares one `const setup = (...) => ...` after its imports.
+- `setup` returns a disposable object. `[Symbol.dispose]` releases what `setup` made: it destroys a
+  context, or unmounts a view and removes its container. When nothing needs to be released,
+  `[Symbol.dispose]` is an empty function.
+- Each case starts with `using subject = setup(...)`. The subject is released when the case ends, also
+  when an assertion fails, so no case needs `afterEach`.
+- `setup` takes what a case changes as parameters, and makes new values at each call. A case cannot
+  see the writes of another case.
+- When the teardown is async, `setup` returns `[Symbol.asyncDispose]` and the case uses
+  `await using`.
+- `setup` returns a new object. It never assigns `[Symbol.dispose]` onto a shared object, such as a
+  module constant or the `page` of `vite-plus/test/browser`.
+
+A stateful subject (`packages/core/src/main/context.spec.ts`):
+
+```ts
+const setup = <Options extends object>(options: Options = {} as Options) => {
+  const controls = createContext(options);
+
+  return Object.assign(controls, { [Symbol.dispose]: controls.destroy });
+};
+
+it('start in the store', () => {
+  using controls = setup();
+  controls.extensionContext('counter', { count: 1 });
+
+  expect(controls.store.state).toEqual({ count: 1 });
+});
+```
+
+The input of a pure function (`packages/core/src/main/path.spec.ts`):
+
+```ts
+const setup = <const Input extends object>(input: Input) => ({
+  ...input,
+  values: { address: { city: 'Lisbon' }, tags: ['a', 'b'] },
+  [Symbol.dispose]() {},
+});
+
+it('writes a dot as a hyphen', () => {
+  using subject = setup({ path: 'tags.0.name' });
+
+  expect(idPart(subject.path)).toBe('tags-0-name');
+});
+```
+
+A rendered Solid view (`examples/solid/src/app.spec.tsx`). React unmounts asynchronously, so
+`examples/react/src/app.spec.tsx` returns `[Symbol.asyncDispose]: screen.unmount` and uses
+`await using screen = await setup(<App />)`.
+
+```ts
+const setup = (view: () => JSX.Element) => {
+  const container = document.body.appendChild(document.createElement('div'));
+  const dispose = render(view, container);
+
+  return Object.assign(page.elementLocator(container), {
+    [Symbol.dispose]: () => {
+      dispose();
+      container.remove();
+    },
+  });
+};
+```
+
+Shared fixtures that several core specs use go in `packages/core/tests/helpers.ts`. A spec's `setup`
+uses them. Type tests (`*.test-d.ts`) run no code, so they have no `setup`.
 
 ## File Placement
 
-- Use `*.spec.ts` for non-JSX tests and `*.spec.tsx` for JSX tests.
-- Core behavior tests live in `packages/core/src/tests/`, grouped by API or
-  operation. Utility tests live in `packages/core/src/utils/tests/`.
-- React and Solid browser tests live in each implementation package's `src/tests/`.
-- Solid server-rendering tests live in `src/server-tests/`.
-- Put example tests alongside the example code, following that workspace's pattern.
+| Files                                                            | What they test                                                             | Runner                                 |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------- |
+| `packages/core/src/**/*.spec.ts`                                 | One module each, beside it (`paths.ts` and `paths.spec.ts`)                | `unit` project, Node, no `window`      |
+| `packages/core/tests/*.spec.ts`                                  | Flows across modules, imported only through the `#core*` barrels           | `integration` project, Node            |
+| `packages/core/tests/package/**/*.spec.ts`                       | The built `dist`: module sharing and no internal channel in an entry point | `package` project, Node, after `build` |
+| `packages/core/tests/types/*.test-d.ts`                          | The public types, through the package names                                | `tsc`, no runtime                      |
+| `packages/core/tests/bundle/`                                    | The tree-shaking tiers                                                     | `check:tree-shaking`                   |
+| `packages/{react,solid-v1,solid-v2}/src/`                        | Adapter specs, beside their module                                         | Browser, Chromium                      |
+| `examples/{react,solid,solid-v2}/src/`                           | The example apps                                                           | Browser, Chromium                      |
+| `examples/{kit,comparison}/src/`, `packages/adapter-parity/src/` | Shared example code and adapter fixtures                                   | Node                                   |
 
-The published `packages/solid` package delegates tests to `solid-v1` and
-`solid-v2`; add adapter tests to the matching private workspace.
+- Use `*.spec.ts` for code without JSX and `*.spec.tsx` for code with JSX.
+- `packages/solid` publishes the build of `solid-v1` and `solid-v2` and has no specs. Put a Solid spec in
+  the private workspace of its runtime.
+- A core module that holds only types (`types.ts`, `*-types.ts`) needs no sibling spec. Its type tests go in
+  `tests/types/`.
 
 ## Runners
 
-Import assertions and test functions from `vite-plus/test`. The root
-`vite.config.ts` configures the Playwright provider with headless Chromium
-at 1280 × 720. Solid 2 adds a 390 × 844 browser instance. Solid SSR configs
-disable browser mode and use Node.
+Import test functions and assertions from `vite-plus/test`. The root `vite.config.ts` runs browser specs
+with Playwright in headless Chromium at 1280 × 720. `solid-v2` also runs a mobile instance at 390 × 844.
+Core runs in Node only: a unit spec asserts that `window` and `document` are `undefined`.
 
-React tests use `render` from `vitest-browser-react`. Browser interactions
-use `userEvent` and page locators from `vite-plus/test/browser`. Await renders
-and interactions, and use `expect.element` for DOM assertions that may need
-to retry.
-
-See `packages/react/src/tests/use-field.spec.tsx` and the Solid adapters'
-`src/tests/` for existing setup and cleanup patterns.
+Browser specs render with `vitest-browser-react` (React) or `render` from `solid-js/web` or `@solidjs/web`
+(Solid). Use locators from `vite-plus/test/browser`, await renders and interactions, and use
+`expect.element` for a DOM assertion that may need to retry.
 
 ## Cases and Assertions
 
-- Keep each file focused on one API or behavior. Use a `setup()` helper for
-  repeated initialization and separate success, failure, and edge cases.
-- Give each case a concrete behavior description. Group related cases with
-  `describe()` when useful.
-- Assert observable values, issues, status, DOM output, and callbacks.
-- Clean up subscriptions, effects, and Solid owners created by a test.
-- Mock only when needed. Existing browser mocks use
-  `vi.mock(module, { spy: true })` with `vi.mocked()`.
+- Keep each file on one module or flow. Group the cases of one function with `describe()`.
+- Give each case a concrete behavior title. A title is unique across the core package.
+- Assert what a user of the code can observe: values, state, issues, DOM output and calls.
+- A case has one runtime `expect()`. To assert several values of one behavior, compare them in one
+  `expect` (for example an array of results), or give the reason in a comment:
 
-Core package validation scans `src/**/*.spec.ts` and `*.spec.tsx`. Every
-`describe`, `it`, and `test` title must be unique across the core package.
-Each case needs a runtime assertion, `expectTypeOf`, or `@ts-expect-error`.
-A case may have one runtime `expect()` unless it includes a justified exception:
+  ```ts
+  // oxform-test-structure: allow-multiple-assertions -- these assertions describe one status transition
+  ```
+
+- Each case has a runtime assertion, an `expectTypeOf`, or a `@ts-expect-error`.
+- Mock only when needed. Use `vi.fn()` for callbacks.
+
+`pnpm --dir packages/core run check:test-structure` and `check:test-duplicates` enforce these rules,
+the setup rule, and the sibling spec of each runtime module in core. The source of the rules is
+`packages/core/scripts/check-test-structure.ts` and `packages/core/scripts/check-test-duplicates.ts`.
+
+## Coverage
+
+The core `unit` project must cover each file of `src/` at 100% (`thresholds: { 100: true, perFile: true }`).
+Integration specs do not count toward it. Run `pnpm run test:coverage`.
+
+## Type Tests
+
+Type tests import by package name (`@oxform/core`, `@oxform/core/behaviors`, ...). Each export has a
+`describe` block that names it, with a positive case (`expectTypeOf`) and a negative case
+(`@ts-expect-error`). `tests/types/exemptions.json` lists the exports that cannot have a negative case,
+with the reason.
+
+Write a negative case as a call, not as an unused `const`: `noUnusedLocals` also reports an unused
+`const`, so `@ts-expect-error` could pass for the wrong reason.
 
 ```ts
-// oxform-test-structure: allow-multiple-assertions -- these assertions describe one status transition
+const accepts = <Type>(value: Type): Type => value;
+
+it('rejects an unknown path', () => {
+  // @ts-expect-error The path is not in the values.
+  accepts<Path<Profile>>('address.country');
+});
 ```
 
-Prefer splitting independent assertions into separate cases. The source of
-these rules is `packages/core/scripts/check-test-duplicates.ts` and
-`packages/core/scripts/check-test-structure.ts`.
-
-## Type Contracts
-
-Use `expectTypeOf` for inferred values, paths, callback arguments, and issue
-levels. Use `@ts-expect-error` for rejected paths or values. Existing
-`create-use-api-type-tests.spec.ts` and `*.spec.tsx` suites cover core and
-adapter creation APIs. Run `pnpm run check:types` to check TypeScript contracts;
-runtime tests alone do not verify them.
+- `pnpm --dir packages/core run check:types` checks the type tests against the source.
+- `check:types:dist` checks them against the built `dist`, through the package `exports`.
+- `check:type-coverage` fails when an export has no type case, or is not in `tests/types/inventory.json`
+  (the inventory of `plans/extension-api/01-public-api.md`).
 
 ## Running Tests
 
 ```bash
-pnpm run test
-pnpm --dir packages/core run test run src/tests/form-core-field/change.spec.ts
-pnpm --dir packages/react run test run src/tests/use-field.spec.tsx
-pnpm --dir packages/solid run test:ssr
+pnpm run test                                                # every workspace
+pnpm run test:coverage                                       # core unit coverage
+pnpm --dir packages/core run test src/main/context.spec.ts  # one core spec
+pnpm --dir packages/core run test:package                    # the dist specs, after pnpm run build
+pnpm --dir packages/solid-v2 run test                        # one adapter, in the browser
 ```
 
-Vite+ runs tests once by default. Use an implementation package's
-`pnpm run test:dev` for watch mode.
+Vite+ runs tests once. Use a package's `pnpm run test:dev` for watch mode.

@@ -201,7 +201,10 @@ describe('derived slices', () => {
 
 describe('contextInternals', () => {
   it('refuses an object that createContext did not make', () => {
-    expect(() => contextInternals({ state: {} })).toThrow('This behavior needs a context created by createContext.');
+    using controls = setup();
+    const copy = { ...controls.extensionContext('test', {}) };
+
+    expect(() => contextInternals(copy)).toThrow('This behavior needs a context created by createContext.');
   });
 });
 

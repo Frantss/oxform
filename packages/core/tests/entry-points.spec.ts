@@ -4,8 +4,13 @@ import { slotsOf } from '#core/adapter';
 import { rootSlots } from '#core/behaviors';
 import { standard } from '#core/presets';
 
-it('builds a form through the main, behaviors, presets and adapter barrels', () => {
-  const form = defineForm().extend(standard);
+const setup = () => ({ form: defineForm().extend(standard), group: rootSlots, [Symbol.dispose]() {} });
 
-  expect({ chain: slotsOf(form), group: rootSlots.name }).toEqual({ chain: ['values'], group: 'rootSlots' });
+it('builds a form through the main, behaviors, presets and adapter barrels', () => {
+  using subject = setup();
+
+  expect({ chain: slotsOf(subject.form), group: subject.group.name }).toEqual({
+    chain: ['values'],
+    group: 'rootSlots',
+  });
 });

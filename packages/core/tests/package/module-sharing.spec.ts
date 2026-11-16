@@ -8,34 +8,49 @@ import { entryPoints, exportedNames, type EntryPoint } from '../../scripts/decla
 const dist = new URL('../../dist/', import.meta.url);
 const entries = Object.keys(entryPoints) as EntryPoint[];
 
-const sourcesOfChunk = (map: string): string[] => (JSON.parse(readFileSync(new URL(map, dist), 'utf8')) as { sources: string[] }).sources;
+/** A form and readers, all from the built package. */
+const setup = () => ({
+  form: () => defineForm().extend(standard),
+  /** The chunks of `dist` that hold each source module, from the source maps. */
+  chunksBySource: () => {
+    const chunks = new Map<string, string[]>();
+    for (const map of readdirSync(dist).filter(name => name.endsWith('.js.map'))) {
+      const { sources } = JSON.parse(readFileSync(new URL(map, dist), 'utf8')) as { sources: string[] };
+      for (const source of sources) chunks.set(source, [...(chunks.get(source) ?? []), map]);
+    }
+
+    return chunks;
+  },
+  load: async (entry: EntryPoint) => (await import(new URL(`${entry}.js`, dist).href)) as Record<string, unknown>,
+  declaredNames: exportedNames,
+  [Symbol.dispose]() {},
+});
 
 describe('built entry points', () => {
   it('share one instance of a module-private channel', () => {
-    const form = defineForm().extend(standard);
+    using built = setup();
+    const form = built.form();
 
     expect(slotsOf(form)).toEqual(['values']);
   });
 
   it('emit each source module in one chunk only', () => {
-    const maps = readdirSync(dist).filter(name => name.endsWith('.js.map'));
-    const chunksBySource = new Map<string, string[]>();
-    for (const map of maps) {
-      for (const source of sourcesOfChunk(map)) chunksBySource.set(source, [...(chunksBySource.get(source) ?? []), map]);
-    }
-    const duplicated = [...chunksBySource].filter(([, chunks]) => chunks.length > 1);
+    using built = setup();
+    const duplicated = [...built.chunksBySource()].filter(([, chunks]) => chunks.length > 1);
 
     expect(duplicated).toEqual([]);
   });
 
   it.each(entries)('export no internal channel from %s at runtime', async entry => {
-    const module = (await import(new URL(`${entry}.js`, dist).href)) as Record<string, unknown>;
+    using built = setup();
+    const module = await built.load(entry);
 
     expect(Object.keys(module).filter(name => name.endsWith('Internals'))).toEqual([]);
   });
 
   it.each(entries)('export no internal channel from %s in declarations', entry => {
-    const names = exportedNames(entry);
+    using built = setup();
+    const names = built.declaredNames(entry);
 
     expect(names.filter(name => name.endsWith('Internals'))).toEqual([]);
   });

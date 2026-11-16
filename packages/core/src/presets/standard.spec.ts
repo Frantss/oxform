@@ -3,15 +3,23 @@ import type { Form } from '#core';
 import { values } from '#core/behaviors';
 import { standard } from '#core/presets';
 
-it('applies the values extension', () => {
+/** A form that records each extension it is given. */
+const setup = () => {
   const applied: unknown[] = [];
   const form: Form = {
     extend: extension => {
       applied.push(extension);
+
       return form;
     },
   };
-  standard(form);
 
-  expect(applied).toEqual([values]);
+  return { form, applied, [Symbol.dispose]() {} };
+};
+
+it('applies the values extension', () => {
+  using recorder = setup();
+  standard(recorder.form);
+
+  expect(recorder.applied).toEqual([values]);
 });
