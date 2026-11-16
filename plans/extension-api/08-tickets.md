@@ -31,22 +31,22 @@ evidence.
 
 ### Phase 1: workspace skeleton and packaging proof
 
-| Id                                                   | Title                                               | Work package | Status  | Depends on     |
-| ---------------------------------------------------- | --------------------------------------------------- | ------------ | ------- | -------------- |
-| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | done    | TK-001         |
-| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | done    | TK-002         |
-| [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | done    | TK-003         |
-| [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | done    | TK-003         |
-| [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | done    | TK-008         |
-| [TK-007](./tickets/TK-007-test-projects.md)          | Test projects                                       | P1-06        | ready   | TK-008         |
-| [TK-008](./tickets/TK-008-skeletons-and-versions.md) | Adapter and example skeletons, and the version plan | P1-07, P1-08 | done    | TK-003         |
-| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | blocked | TK-005, TK-007 |
+| Id                                                   | Title                                               | Work package | Status | Depends on     |
+| ---------------------------------------------------- | --------------------------------------------------- | ------------ | ------ | -------------- |
+| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | done   | TK-001         |
+| [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | done   | TK-002         |
+| [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | done   | TK-003         |
+| [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | done   | TK-003         |
+| [TK-006](./tickets/TK-006-dependency-lint.md)        | Dependency-direction lint                           | P1-05        | done   | TK-008         |
+| [TK-007](./tickets/TK-007-test-projects.md)          | Test projects                                       | P1-06        | done   | TK-008         |
+| [TK-008](./tickets/TK-008-skeletons-and-versions.md) | Adapter and example skeletons, and the version plan | P1-07, P1-08 | done   | TK-003         |
+| [TK-009](./tickets/TK-009-ci.md)                     | CI on the integration branch                        | P1-09        | ready  | TK-005, TK-007 |
 
 ### Phase 2: main APIs
 
 | Id                                                         | Title                        | Work package | Status  | Depends on |
 | ---------------------------------------------------------- | ---------------------------- | ------------ | ------- | ---------- |
-| [TK-010](./tickets/TK-010-paths.md)                        | Paths                        | P2-01        | blocked | TK-007     |
+| [TK-010](./tickets/TK-010-paths.md)                        | Paths                        | P2-01        | ready   | TK-007     |
 | [TK-011](./tickets/TK-011-context.md)                      | Context                      | P2-02        | blocked | TK-010     |
 | [TK-012](./tickets/TK-012-form-builder.md)                 | Form builder                 | P2-03        | blocked | TK-011     |
 | [TK-013](./tickets/TK-013-extensions-and-field-members.md) | Extensions and field members | P2-04        | blocked | TK-012     |

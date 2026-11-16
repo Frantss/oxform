@@ -3,12 +3,12 @@ id: TK-007
 title: Test projects
 phase: 1
 work_package: P1-06
-status: todo
+status: done
 depends_on: [TK-008]
 branch: codex/P1-06-test-projects
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-007: Test projects
@@ -58,15 +58,42 @@ projects (source and `dist`). Deleting the placeholder spec fails the coverage r
 
 ## Acceptance
 
-- [ ] `vp run @oxform/core#test` runs the `unit` and `integration` projects in Node and passes.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] Deleting the placeholder spec fails `test:coverage` and `check:test-structure`.
-- [ ] The `window` spec passes, and fails when the `unit` project runs in the browser.
-- [ ] `vp run @oxform/core#check:types` and `#check:types:dist` pass.
-- [ ] `vp run @oxform/core#check:type-coverage` passes, and fails for an export with no type case.
-- [ ] `pnpm run check:all` passes.
+- [x] `vp run @oxform/core#test` runs the `unit` and `integration` projects in Node and passes.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] Deleting the placeholder spec fails `test:coverage` and `check:test-structure`.
+- [x] The `window` spec passes, and fails when the `unit` project runs in the browser.
+- [x] `vp run @oxform/core#check:types` and `#check:types:dist` pass.
+- [x] `vp run @oxform/core#check:type-coverage` passes, and fails for an export with no type case.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, the R05 result (merged report, or thresholds per project) and any deviation from
-the plan here.
+- `packages/core/vite.config.ts` has three Node projects with browser mode off: `unit` (`src/**/*.spec.ts`),
+  `integration` (`tests/*.spec.ts`) and `package` (TK-003). Coverage is V8, off by default, on `src/**/*.ts`
+  without the specs, with `thresholds: { 100: true, perFile: true }`. No source file is excluded by name.
+- Specs: `src/environment.spec.ts` (`window` and `document` are `undefined`), one sibling spec per placeholder
+  runtime module, and `tests/entry-points.spec.ts` through the four barrels. `tests/helpers.ts` holds `named`.
+  The preset spec checks the composition with a recording form, because `src/presets/**` may not import
+  `#core/adapter` (TK-006).
+- Scripts: `test` and `test:dev` (`unit` and `integration`), `test:coverage` (`unit` with coverage),
+  `check:types` (the package, `scripts/` with Node types, and the source type-test project),
+  `check:types:dist`, `check:type-coverage`, `check:test-duplicates`, `check:test-structure`. `check:package`
+  runs them in the order of `02#Tooling and scripts`. The scripts share `scripts/spec-files.ts` and
+  `scripts/declarations.ts` (also used by the module-sharing spec).
+- Type tests: `tests/types/{main,behaviors,presets,adapter}.test-d.ts` import by package name, with one positive
+  and one `@ts-expect-error` case per `describe` block. `tests/types/tsconfig.json` maps the names to `export/`.
+  `tests/types/tsconfig.dist.json` resolves them through `exports` (`--listFiles` shows `dist/*.d.ts` only).
+  `tests/types/inventory.json` holds the names of `01` sections 2, 3, 4 and 7.2, and
+  `tests/types/exemptions.json` holds `MaybePromise` and `Unsubscribe` with the reason.
+- Failure proofs, each reverted:
+  - Deleting `src/internal/paths.spec.ts`: `test:coverage` prints `Coverage for lines (0%) does not meet global
+    threshold (100%) for src/internal/paths.ts`, and `check:test-structure` prints `The runtime module has no
+    sibling spec src/internal/paths.spec.ts.`
+  - Adding `prefixOf` to `export/adapter.ts` with no type case: `check:type-coverage` prints `which no type test
+    imports`, `no describe block names with a positive case` and `with a @ts-expect-error case`.
+  - Adding `extraName`: also `which is not in the inventory of 01-public-api.md.`
+  - The `window` spec in a Chromium project: `Expected: "undefined"`, `Received: "object"` for both cases.
+- R05: a temporary config with a Chromium project (`main`, `behaviors` and `presets` specs) and a Node project
+  (`internal` specs) gave one V8 report: `No files with missing coverage.`, `5 files fully covered.` at the
+  thresholds. A merged report across projects works, so the adapters can use one report (TK-042).
+- `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.

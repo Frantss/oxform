@@ -1,0 +1,4 @@
+{
+  "MaybePromise": "It accepts every value and every promise, so no input can be rejected.",
+  "Unsubscribe": "It is a function with no parameter and no result that callers use, so no call can be rejected."
+}

@@ -1,11 +1,25 @@
 import { defineConfig } from 'vite-plus';
 import { base } from '../../vite.config';
 
+const node = { environment: 'node', browser: { enabled: false } } as const;
+
 export default defineConfig({
   ...base,
   test: {
     globals: false,
-    projects: [{ test: { name: 'package', include: ['tests/package/**/*.spec.ts'], environment: 'node' } }],
+    coverage: {
+      enabled: false,
+      provider: 'v8',
+      reporter: ['text'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts'],
+      thresholds: { 100: true, perFile: true },
+    },
+    projects: [
+      { test: { name: 'unit', include: ['src/**/*.spec.ts'], ...node } },
+      { test: { name: 'integration', include: ['tests/*.spec.ts'], ...node } },
+      { test: { name: 'package', include: ['tests/package/**/*.spec.ts'], ...node } },
+    ],
   },
   pack: {
     entry: {

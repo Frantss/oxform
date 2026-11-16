@@ -40,15 +40,19 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp test",
-    "test:coverage": "vp test --coverage",
-    "test:dev": "vp test --watch",
-    "check:types": "vp exec tsc --noEmit",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run test:package && pnpm run check:consumers",
+    "test": "vp test --project unit --project integration",
+    "test:coverage": "vp test --project unit --coverage.enabled",
+    "test:dev": "vp test --project unit --project integration --watch",
     "test:package": "vp test --project package",
+    "check:types": "vp exec tsc --noEmit && vp exec tsc --noEmit -p scripts && vp exec tsc --noEmit -p tests/types",
+    "check:types:dist": "vp exec tsc --noEmit -p tests/types/tsconfig.dist.json",
+    "check:type-coverage": "node scripts/check-type-coverage.ts",
+    "check:test-duplicates": "node scripts/check-test-duplicates.ts",
+    "check:test-structure": "node scripts/check-test-structure.ts",
+    "check:consumers": "node scripts/check-consumers.ts",
     "check:tree-shaking": "cd tests/bundle && vp pack && cd ../.. && node scripts/check-tree-shaking.ts",
     "report:size": "cd tests/bundle && vp pack && cd ../.. && node scripts/measure-bundles.ts",
-    "check:consumers": "node scripts/check-consumers.ts"
+    "check:package": "pnpm run check:test-duplicates && pnpm run check:test-structure && publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run test:package && pnpm run check:types:dist && pnpm run check:type-coverage && pnpm run check:consumers"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
