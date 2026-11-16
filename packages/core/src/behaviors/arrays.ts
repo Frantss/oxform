@@ -100,10 +100,18 @@ export const createArrays = <Values>(
     return [...ids];
   };
 
-  /** Writes the array, then moves the ids and the item state, marks the array and validates. A refused write stops. */
+  /**
+   * Moves the ids, writes the array, then moves the item state, marks the array and validates. A store subscriber
+   * reads the ids during the write, so they move first. A refused write puts them back and stops.
+   */
   const commit = (path: string, next: readonly unknown[], options: FieldChangeOptions | undefined, change: Commit) => {
-    if (!deps.values.set(path as never, next as never, { reason: 'array' })) return;
+    const previous = itemIds.get(path);
     itemIds.set(path, [...change.ids]);
+    if (!deps.values.set(path as never, next as never, { reason: 'array' })) {
+      if (previous) itemIds.set(path, previous);
+      else itemIds.delete(path);
+      return;
+    }
     const validation = contextInternals(context).validation();
     if (change.remap) {
       status.remap(path, change.remap);

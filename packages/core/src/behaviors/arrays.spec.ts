@@ -323,6 +323,16 @@ describe('a refused array write', () => {
 });
 
 describe('item ids', () => {
+  it('are moved before a store subscriber hears the write of the array', () => {
+    using subject = setup();
+    const [a, b, c] = subject.ids();
+    const heard: (readonly string[])[] = [];
+    subject.instance.store.subscribe(() => heard.push(subject.ids()));
+    subject.arrays.swap('tags', 0, 2);
+
+    expect(heard[0]).toEqual([c, b, a]);
+  });
+
   it('stay the same between reads', () => {
     using subject = setup();
 
