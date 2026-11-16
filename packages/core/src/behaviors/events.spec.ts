@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import { defineForm } from '#main/form';
 import { reporting, schemaOf } from '../../tests/helpers';
 import { check } from './check';
@@ -94,6 +94,19 @@ describe('focus and blur', () => {
     subject.instance.events.blur('name');
 
     expect([calls, subject.instance.status.at('name')]).toEqual([['focus', 'blur'], expect.objectContaining({ touched: true, blurred: true })]);
+  });
+
+  it('validate once when the DOM event of the element calls the event again', () => {
+    const validate = vi.fn((value: unknown) => ({ value: value as never }));
+    const counting = { '~standard': { version: 1 as const, vendor: 'oxform-test', validate } };
+    using subject = setup({ focus: counting, blur: counting });
+    // As in a browser: moving the element fires its DOM event, and the slot handler calls the event again.
+    const element = { focus: () => subject.instance.events.focus('name'), blur: () => subject.instance.events.blur('name') };
+    subject.instance.events.register('name')(element as unknown as HTMLElement);
+    subject.instance.events.focus('name');
+    subject.instance.events.blur('name');
+
+    expect(validate.mock.calls.length).toBe(2);
   });
 
   it('mark a field without an element', () => {

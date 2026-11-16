@@ -58,6 +58,24 @@ export const createEvents = <Values>(
 ): EventsApi<Values> => {
   const refs = new Map<string, HTMLElement>();
   const status = statusInternals(deps.status);
+  /** The `focus` and `blur` calls that are moving an element (G17). */
+  const moving = new Set<string>();
+
+  /**
+   * Focuses or blurs the registered element. Its DOM event calls the slot handler, which calls this event again:
+   * that inner call does nothing, so status and validation run once. Returns false for the inner call.
+   */
+  const move = (event: 'focus' | 'blur', path: string) => {
+    const call = `${event} ${path}`;
+    if (moving.has(call)) return false;
+    moving.add(call);
+    try {
+      refs.get(path)?.[event]();
+    } finally {
+      moving.delete(call);
+    }
+    return true;
+  };
 
   /** Requests validation of the event when a check has a validator for it, unless `should` decides. */
   const validate = (path: string, event: ValidationEvent, should?: boolean) => {
@@ -75,12 +93,12 @@ export const createEvents = <Values>(
       validate(path, 'change', should.validate);
     },
     focus(path, options) {
-      refs.get(path)?.focus();
+      if (!move('focus', path)) return;
       status.mark(path, { touched: true });
       validate(path, 'focus', options?.should?.validate);
     },
     blur(path, options) {
-      refs.get(path)?.blur();
+      if (!move('blur', path)) return;
       status.mark(path, { blurred: true });
       validate(path, 'blur', options?.should?.validate);
     },
