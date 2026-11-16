@@ -66,7 +66,6 @@ import {
   type ChangeInterceptor,
   type ChangeListener,
   type ChangeReason,
-  type ChangeSource,
   type ValuesApi,
 } from '@oxform/core/behaviors';
 import { describe, expectTypeOf, it } from 'vite-plus/test';
@@ -283,17 +282,6 @@ describe('ChangeDetails, ChangeDetailsInput, ChangeReason', () => {
   it('rejects a reason that is not a string', () => {
     // @ts-expect-error A reason is a string.
     accepts<ChangeReason>(1);
-  });
-});
-
-describe('ChangeSource', () => {
-  it('names the source of a change', () => {
-    expectTypeOf<'keyboard'>().toExtend<ChangeSource>();
-  });
-
-  it('rejects a source that is not in the list', () => {
-    // @ts-expect-error A source is one of the listed names.
-    accepts<ChangeSource>('voice');
   });
 });
 

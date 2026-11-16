@@ -1,8 +1,6 @@
 import type { Path, Unsubscribe } from '#main/path-types';
 
 export type ChangeReason = 'input' | 'programmatic' | 'array' | 'reset' | (string & {});
-/** Kept by `01-public-api.md` (3.3). No details carry it since G15 removed `source`; the owner decides its future. */
-export type ChangeSource = 'mouse' | 'touch' | 'pen' | 'keyboard' | 'virtual' | 'programmatic' | 'agent';
 
 /** What a caller states about a change. `ValuesApi.set` and `ChangeApi.run` take it (G15). */
 export interface ChangeDetailsInput {

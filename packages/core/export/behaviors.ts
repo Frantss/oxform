@@ -8,7 +8,6 @@ export type {
   ChangeInterceptor,
   ChangeListener,
   ChangeReason,
-  ChangeSource,
 } from '#behaviors/change';
 export { check } from '#behaviors/check';
 export type { CheckApi, CheckEntry, CheckOptions, CheckSetMode, CheckState, CheckSugar } from '#behaviors/check';
