@@ -3,12 +3,12 @@ id: TK-001
 title: Reference tag and integration branch
 phase: 0
 work_package: [P0-03, P0-04]
-status: todo
+status: done
 depends_on: []
 branch: codex/P0-03-reference-and-branch
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-001: Reference tag and integration branch
@@ -50,14 +50,26 @@ commit. The integration branch `codex/extension-api-rebuild` exists, and CI runs
 
 ## Acceptance
 
-- [ ] The tag exists on the remote and points to a commit where the spike measure command passes.
-- [ ] `03#Tree-shaking content check` holds the spike gzip size of each measured tier, and agrees with the new
+- [ ] The tag exists on the remote and points to a commit where the spike measure command passes. Local only
+      (see Evidence).
+- [x] `03#Tree-shaking content check` holds the spike gzip size of each measured tier, and agrees with the new
       measurement.
 - [ ] `codex/extension-api-rebuild` exists on the remote and holds `plans/extension-api/` and
-      `explorations/extension-api/`.
-- [ ] CI runs on this ticket's pull request into the integration branch.
+      `explorations/extension-api/`. Local only (see Evidence).
+- [ ] CI runs on this ticket's pull request into the integration branch. Not run (see Evidence).
 
 ## Evidence
 
-Record the tag name and its commit, the measured sizes, how `plans/` and `explorations/` reached the branch,
-the link to the CI run and any deviation from the plan here.
+- Tag: `spike/extension-api` (annotated, name chosen by the owner) on `7f1b012`, the head of
+  `codex/behavior-api-exploration`.
+- Measurement at the tag (`cd explorations/extension-api/spike && pnpm exec vp pack && node measure-bundles.ts`),
+  gzip bytes: values 3538, status and events 4994, values and check 4796, values, check and scopes 5380, lean
+  sign-in 6428, full preset 8586, builder only 3123. Every number agrees with the table of `03`, so the table
+  is unchanged.
+- `codex/extension-api-rebuild` starts from `main` (`6ce8bd7`). A `--no-ff` merge of
+  `codex/behavior-api-exploration` brings `plans/` and `explorations/` (the owner chose this path). The merge
+  was clean: `main` had only two documentation commits (`AGENTS.md`, `ORCHESTRATION.md`).
+- `.github/workflows/ci.yml` runs on `push` and on a `pull_request` into `codex/extension-api-rebuild`.
+- Deviation (owner decision of 2026-11-16): the work is local only. The tag and the branches are not pushed,
+  and no pull request is opened. Each ticket branch is merged into the integration branch with `--no-ff`. The
+  three remote acceptance items stay open until the owner pushes.

@@ -27,13 +27,13 @@ evidence.
 
 | Id                                                 | Title                                | Work package | Status | Depends on |
 | -------------------------------------------------- | ------------------------------------ | ------------ | ------ | ---------- |
-| [TK-001](./tickets/TK-001-reference-and-branch.md) | Reference tag and integration branch | P0-03, P0-04 | ready  | None       |
+| [TK-001](./tickets/TK-001-reference-and-branch.md) | Reference tag and integration branch | P0-03, P0-04 | done   | None       |
 
 ### Phase 1: workspace skeleton and packaging proof
 
 | Id                                                   | Title                                               | Work package | Status  | Depends on     |
 | ---------------------------------------------------- | --------------------------------------------------- | ------------ | ------- | -------------- |
-| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | blocked | TK-001         |
+| [TK-002](./tickets/TK-002-clear-old-sources.md)      | Clear the old sources                               | P1-01        | ready   | TK-001         |
 | [TK-003](./tickets/TK-003-core-manifest.md)          | Core manifest and pack                              | P1-02        | blocked | TK-002         |
 | [TK-004](./tickets/TK-004-module-sharing.md)         | Module-sharing proof                                | P1-03        | blocked | TK-003         |
 | [TK-005](./tickets/TK-005-tree-shaking-proof.md)     | Tree-shaking proof and size report                  | P1-04        | blocked | TK-003         |
