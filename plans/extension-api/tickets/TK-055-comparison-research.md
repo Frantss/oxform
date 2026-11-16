@@ -1,0 +1,52 @@
+---
+id: TK-055
+title: Comparison research closure
+phase: 7
+work_package: P7-08
+status: todo
+depends_on: []
+branch: codex/P7-08-comparison-research
+pr: null
+started: null
+completed: null
+---
+
+# TK-055: Comparison research closure
+
+## Outcome
+
+No cell of the comparison is "Unverified". `examples/comparison/features.json` has one record per matrix cell,
+and each record has a primary source, a version and a read date.
+
+## Scope
+
+- In: each "Unverified" cell of `07#2.2`, `#2.3` and `#3.3`, resolved at a primary source or removed with its
+  row. `examples/comparison/features.json` with the fields of `07#5`.
+- Out: the form versions (TK-056). The size data (TK-057). The page and its generated tables (TK-068).
+
+## Read first
+
+- `07-comparison.md#2.1`: the sources already read.
+- `07-comparison.md#2.2`, `#2.3` and `#3.3`: the cells to resolve.
+- `07-comparison.md#3.1`: the cell vocabulary and the rules for a row.
+- `07-comparison.md#5`: the fields of `features.json`.
+- `07-comparison.md#6.2`: a `readAt` older than 90 days makes the data stale.
+- `07-comparison.md#8` item 7: the list of unverified facts.
+
+## Decisions to apply
+
+- No register decision applies. Apply the vocabulary and row rules of `07#3.1`.
+
+## Acceptance
+
+- [ ] Each fact is read at a primary source: the library's own documentation, repository or the npm
+      registry. No cell comes from memory or from another project's comparison.
+- [ ] Each resolved cell holds one value of the `07#3.1` vocabulary. A row with no value for all four
+      libraries is removed.
+- [ ] `features.json` has no "Unverified" value. Each record has `source`, `version` and `readAt`.
+- [ ] The cells of `07#2.2`, `#2.3` and `#3.3` agree with `features.json`.
+- [ ] `pnpm run check:format` passes.
+
+## Evidence
+
+Record each resolved fact with its source link, version and date, and each removed row with its reason.

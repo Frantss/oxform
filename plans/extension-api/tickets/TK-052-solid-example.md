@@ -1,0 +1,57 @@
+---
+id: TK-052
+title: Solid 1 example app
+phase: 7
+work_package: P7-05
+status: todo
+depends_on: [TK-046, TK-051]
+branch: codex/P7-05-solid-example
+pr: null
+started: null
+completed: null
+---
+
+# TK-052: Solid 1 example app
+
+## Outcome
+
+`examples/solid` renders the same content as the React app with Solid 1 and `@oxform/solid`, and builds its
+playground. Each example has one browser flow that passes in Chromium.
+
+## Scope
+
+- In: `examples/solid/src/examples/`, `src/main.tsx`, `src/playground.tsx`, `index.html`, `playground.html` and
+  `examples/solid/tests/`, with the same examples and flows as `examples/react`.
+- Out: kit code (TK-048, TK-049, TK-050). The React app (TK-051). The Solid 2 app (TK-053). The Solid docs pages
+  (TK-065).
+
+## Read first
+
+- `02-structure.md#Examples`: the app layout.
+- `04-documentation.md#8`: single source, and the Solid snippet rule.
+- `03-testing.md#Integration layer`: I8 and the browser setup.
+- `01-public-api.md#6.1` and `#6.3`: the shared contract and the Solid differences.
+- `examples/react/`: the content to match, from TK-051.
+
+## Decisions to apply
+
+- D37: the rendering code lives in the app. The rest comes from the kit.
+- D33: the Solid hooks keep the `use*` names.
+- D30: parts take the `scope` prop. The hooks take `{ scope }`.
+- D32: `usePart` takes the part's own props.
+- D31: no adapter effect hook. E25 uses the documented Solid pattern.
+
+## Acceptance
+
+- [ ] Each example of `examples/react/src/examples/` has a Solid 1 module, and each has one browser flow.
+- [ ] No file is copied from the spike or from the React app's rendering code.
+- [ ] `vp run example-oxform-solid#test` passes.
+- [ ] `vp run example-oxform-solid#check:types` passes, and the app builds `playground.html`.
+- [ ] The app runs, and each flow works at desktop and mobile sizes with no console error (`AGENTS.md`,
+      "Validation").
+- [ ] `pnpm run check:all` passes.
+
+## Evidence
+
+Record the command results, the browser check and each difference from the React app, with its row of
+`01#6.3`.
