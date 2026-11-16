@@ -309,6 +309,16 @@ describe('stale runs', () => {
     await expect(pending).resolves.toEqual([true, { error: [] }]);
   });
 
+  it('discard a targeted run when the root changes', async () => {
+    const gate = deferred({ message: 'Required', path: ['email'] });
+    using subject = setup({ name: 'error', validators: { blur: gate.schema } });
+    const pending = subject.run('email', { type: 'blur' });
+    subject.instance.values.set('' as never, { ...defaultValues } as never);
+    gate.release();
+
+    await expect(pending).resolves.toEqual([true, { error: [] }]);
+  });
+
   it('keep a targeted run when an unrelated value changes', async () => {
     const gate = deferred({ message: 'Required', path: ['email'] });
     using subject = setup({ name: 'error', validators: { blur: gate.schema } });

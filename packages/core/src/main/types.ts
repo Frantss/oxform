@@ -3,6 +3,7 @@ import type { ReadonlyStore } from '@tanstack/store';
 import type { ArraysApi } from '#behaviors/arrays';
 import type { CheckApi } from '#behaviors/check';
 import type { EventsApi } from '#behaviors/events';
+import type { ResetApi } from '#behaviors/reset';
 import type { StatusApi } from '#behaviors/status';
 import type { ValidationApi } from '#behaviors/validation';
 import type { ValuesApi } from '#behaviors/values';
@@ -165,6 +166,7 @@ export interface BuiltInApis<Values> {
   readonly status: StatusApi<Values>;
   readonly events: EventsApi<Values>;
   readonly arrays: ArraysApi<Values>;
+  readonly reset: ResetApi<Values>;
   /** A stand-in until `handles` (TK-027): the field handle of a path. */
   readonly field: <At extends Path<Values>>(path: At) => FieldOf<PathValue<Values, At>>;
 }

@@ -86,9 +86,11 @@ export const isDiscarded = (result: object) => discarded.has(result);
 export const isInScope = (path: string, targets: readonly string[] | undefined) =>
   targets === undefined || targets.some(target => path === target || path.startsWith(`${target}.`));
 
-/** A change makes a run stale when it writes a target, a descendant or an ancestor of a target. */
+/** A change makes a run stale when it writes a target, a descendant or an ancestor of a target, or the root. */
 const overlaps = (changed: string, targets: readonly string[] | undefined) =>
-  targets === undefined || targets.some(target => isInScope(changed, [target]) || target.startsWith(`${changed}.`));
+  targets === undefined ||
+  changed === '' ||
+  targets.some(target => isInScope(changed, [target]) || target.startsWith(`${changed}.`));
 
 const issuePath = (issue: StandardSchemaV1.Issue) =>
   (issue.path ?? []).map(segment => String(typeof segment === 'object' ? segment.key : segment)).join('.');

@@ -4,10 +4,13 @@ import {
   arrays,
   check,
   events,
+  reset,
   rootSlots,
   type ArrayOperations,
   type ArraysApi,
   type EventsApi,
+  type ResetApi,
+  type ResetOptions,
   type FieldChangeOptions,
   type FieldFocusOptions,
   status,
@@ -501,5 +504,55 @@ describe('ArrayOperations', () => {
     const operations = {} as ArrayOperations<string, string[]>;
     // @ts-expect-error The items are strings.
     operations.append(1);
+  });
+});
+
+describe('reset', () => {
+  const chain = form.extend(values).extend(status).extend(events);
+
+  it('adds the reset api', () => {
+    expectTypeOf(chain.extend(reset).create().reset).toEqualTypeOf<ResetApi<Profile>>();
+  });
+
+  it('needs values', () => {
+    // @ts-expect-error reset needs values.
+    form.extend(reset);
+  });
+
+  it('needs status', () => {
+    // @ts-expect-error reset needs status.
+    form.extend(values).extend(reset);
+  });
+
+  it('needs events', () => {
+    // @ts-expect-error reset needs events.
+    form.extend(values).extend(status).extend(reset);
+  });
+});
+
+describe('ResetApi, ResetOptions', () => {
+  const instance = form.extend(values).extend(status).extend(events).extend(reset).create();
+
+  it('takes the values, a status override and the keep flags', () => {
+    expectTypeOf<NonNullable<ResetOptions<Profile>['keep']>>().toEqualTypeOf<{
+      readonly checks?: boolean | readonly string[];
+      readonly refs?: boolean;
+      readonly fields?: boolean;
+    }>();
+  });
+
+  it('rejects a value of the wrong type for one path', () => {
+    // @ts-expect-error name is a string.
+    instance.reset.at('name', { value: 1 });
+  });
+
+  it('takes no keep flags for one path (01-public-api.md, 8)', () => {
+    // @ts-expect-error reset.at takes a value only.
+    instance.reset.at('name', { keep: { refs: true } });
+  });
+
+  it('rejects values of another shape', () => {
+    // @ts-expect-error The values are a Profile.
+    accepts<ResetOptions<Profile>>({ values: { name: 1 } });
   });
 });
