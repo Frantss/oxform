@@ -60,8 +60,8 @@ evidence.
 
 | Id                                         | Title                | Work package | Status  | Depends on                     |
 | ------------------------------------------ | -------------------- | ------------ | ------- | ------------------------------ |
-| [TK-019](./tickets/TK-019-values.md)       | Values extension     | P3-01        | ready   | TK-013                         |
-| [TK-020](./tickets/TK-020-validation.md)   | Validation extension | P3-02        | blocked | TK-019                         |
+| [TK-019](./tickets/TK-019-values.md)       | Values extension     | P3-01        | done    | TK-013                         |
+| [TK-020](./tickets/TK-020-validation.md)   | Validation extension | P3-02        | ready   | TK-019                         |
 | [TK-021](./tickets/TK-021-check.md)        | Check extension      | P3-03        | blocked | TK-020                         |
 | [TK-022](./tickets/TK-022-status.md)       | Status extension     | P3-04        | blocked | TK-020                         |
 | [TK-023](./tickets/TK-023-events.md)       | Events extension     | P3-05        | blocked | TK-022                         |

@@ -3,12 +3,12 @@ id: TK-019
 title: Values extension
 phase: 3
 work_package: P3-01
-status: todo
+status: done
 depends_on: [TK-013]
 branch: codex/P3-01-values
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-019: Values extension
@@ -50,16 +50,33 @@ through one pipeline: interceptors, the write, then the listeners. `values` need
 
 ## Acceptance
 
-- [ ] Each row of `03#Built-in extensions: rows that every one has` passes for `values`. `values` has no need,
+- [x] Each row of `03#Built-in extensions: rows that every one has` passes for `values`. `values` has no need,
       so the rows about a missing need and a chain with no `validation` do not apply.
-- [ ] Each scenario group of `03#values (createValues, createChange)` has a passing test in
+- [x] Each scenario group of `03#values (createValues, createChange)` has a passing test in
       `src/behaviors/change.spec.ts` or `src/behaviors/values.spec.ts`. Each row that cites `B:` passes.
-- [ ] The specs build the shortest chain and do not import `standard`.
-- [ ] Each export of this ticket has a positive and a negative type case in `tests/types/`.
-- [ ] `export/behaviors.ts` exports no `createX` function.
-- [ ] `vp run @oxform/core#test:coverage` passes at 100 per file.
-- [ ] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
+- [x] The specs build the shortest chain and do not import `standard`.
+- [x] Each export of this ticket has a positive and a negative type case in `tests/types/`.
+- [x] `export/behaviors.ts` exports no `createX` function.
+- [x] `vp run @oxform/core#test:coverage` passes at 100 per file.
+- [x] `vp run @oxform/core#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, the `ChangeSource` answer and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `pnpm run test:coverage`: 100% per file (349 statements, 145 branches).
+- `src/behaviors/change.spec.ts`: write then notify and return `true`, rewrite, chained rewrites, cancel (no write, no
+  notify), no notify without a change, details with the default reason, a cancel seen by later interceptors,
+  unsubscribe.
+- `src/behaviors/values.spec.ts` (chain: `values` alone, no `standard`): exactly the `values` api and state and no
+  option; whole and path reads; a path write that keeps sibling references and leaves `defaultValues` alone; updater;
+  `false` and no notify for an equal value; interceptors before the write; cancel; the reason reaches listeners; two
+  instances stay apart; the store starts from the `defaultValues` of `create`; a later `defaultValues` option does
+  not replace the values; the schema never runs, so a schema transformation never replaces the values.
+- Wrapper rows: the missing-need rows, the "no validation" row and the "internal channels" row do not apply, because
+  `values` has no need and no internal channel.
+- `export/behaviors.ts` exports `values` and the change and values types, and no `createX` function.
+- Type tests: a positive and a negative case for `values`, `ValuesApi`, `Change`, `ChangeInterceptor`,
+  `ChangeListener`, `ChangeApi`, `ChangeDetails`, `ChangeDetailsInput`, `ChangeReason` and `ChangeSource`.
+- G15: `ChangeDetailsInput` holds `reason` only. `source` and `event` are gone from the details.
+- `ChangeSource`: kept as an export with no use, because the owner was not available to answer during this run. It is
+  an open question in the run report.

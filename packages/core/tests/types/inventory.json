@@ -80,6 +80,7 @@
     "ValuesApi",
     "Change",
     "ChangeDetails",
+    "ChangeDetailsInput",
     "ChangeInterceptor",
     "ChangeListener",
     "ChangeReason",
