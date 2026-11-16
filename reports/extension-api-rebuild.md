@@ -31,8 +31,8 @@
   ref of a part (`packages/react/src/part-view.ts`, `mergeRefs`) returns a cleanup, which only React 19 calls.
   React 18 calls the ref with `null` instead, and `attach` returns early for `null`.
 - Why it matters: in React 18 the cleanup of `bind` never runs, so a field that leaves the tree stays
-  registered and keeps its `values.onChange` listener. No test runs React 18. Options: narrow the peer to
-  `^19.0.0`, or detach in the `null` call as well. Owner decision needed.
+  registered and keeps its `values.onChange` listener. No test runs React 18. Resolved on 2026-11-16: the owner
+  chose React 19 only, and the peer is now `^19.0.0`.
 
 ## `check:parity` fails until the Solid adapters catch up
 
