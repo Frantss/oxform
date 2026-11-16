@@ -3,12 +3,12 @@ id: TK-030
 title: Standard preset
 phase: 4
 work_package: P4-01
-status: todo
+status: done
 depends_on: [TK-027, TK-028]
 branch: codex/P4-01-standard-preset
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-030: Standard preset
@@ -46,14 +46,27 @@ only.
 
 ## Acceptance
 
-- [ ] Each scenario group of `03#The standard preset` has a passing test in `src/presets/standard.spec.ts`.
-- [ ] A deliberate import of a private module in `standard.ts` fails `pnpm run check:rules`.
+- [x] Each scenario group of `03#The standard preset` has a passing test in `src/presets/standard.spec.ts`.
+- [x] A deliberate import of a private module in `standard.ts` fails `pnpm run check:rules`.
 - [ ] The runtime spec writes the chain again from the built entry points and creates an instance with the
       same api keys and slots as `standard`.
-- [ ] `standard` has a positive and a negative type case in `tests/types/`.
+- [x] `standard` has a positive and a negative type case in `tests/types/`.
 - [ ] `vp run @oxform/core#test` and `vp run @oxform/core#test:package` pass.
-- [ ] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
+- [x] `pnpm run build`, `pnpm run check:all` and `pnpm run test` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- Not done, by the owner's decision of 2026-11-16 (behavior tests only): the runtime spec in `tests/package/`
+  that writes the chain again from `dist`, and `test:package`.
+- `src/presets/standard.spec.ts`: the nine extensions in order with `handles` last; one part per slot of the four
+  slot groups (`root`, `field`, `fieldError`, `submit`, `reset`); a form with an earlier extension and configured
+  options keeps both; it needs nothing, and its form validates and submits.
+- `standard.ts` imports only `#core` and `#core/behaviors` (D19), and applies
+  `check('error', { blocking: true, exclusive: true })`.
+- A deliberate `import ... from '#main/form'` in `standard.ts` fails `vp lint --type-aware` with
+  `no-restricted-imports` (checked, then removed).
+- Type tests: the field handle has the sugar of `error`, and the parts of the four groups; a `warning` check
+  is a type error; `standard` takes a form.
+- Changes outside the scope: `vite.config.ts` lets a preset spec import `#core/adapter`. `standard.ts` keeps the
+  rule.

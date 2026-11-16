@@ -1,14 +1,22 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineForm } from '@oxform/core';
-import { values } from '@oxform/core/behaviors';
+import { defineForm, type InstanceOf, type PartsOf } from '@oxform/core';
+import type { FieldHandle } from '@oxform/core/behaviors';
 import { standard } from '@oxform/core/presets';
 import { describe, expectTypeOf, it } from 'vite-plus/test';
 
-describe('standard', () => {
-  it('is a function from form to form', () => {
-    const form = defineForm({ schema: {} as StandardSchemaV1<object>, defaultValues: {} });
+type Login = { email: string };
 
-    expectTypeOf(form.extend(standard)).toEqualTypeOf(form.extend(values));
+const form = defineForm({ schema: {} as StandardSchemaV1<Login>, defaultValues: { email: '' } }).extend(standard);
+
+describe('standard', () => {
+  it('gives the field handles the sugar of the error check, and the parts of its slot groups', () => {
+    expectTypeOf<ReturnType<InstanceOf<typeof form>['field']>>().toExtend<FieldHandle<Login, 'email', 'error'>>();
+    expectTypeOf<keyof PartsOf<typeof form>>().toEqualTypeOf<'root' | 'field' | 'fieldError' | 'submit' | 'reset'>();
+  });
+
+  it('has only the error check', () => {
+    // @ts-expect-error The standard chain has no `warning` check.
+    form.create().field('email').warning();
   });
 
   it('takes a form', () => {

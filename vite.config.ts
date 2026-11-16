@@ -51,6 +51,11 @@ export const base = defineConfig({
         ['packages/core/src/presets/**'],
         ['#main/*', '#behaviors/*', '#internal/*', '#core/adapter', './**', '../**'],
       ),
+      // A spec of a preset may read the slots of its form through the adapter entry. It is not shipped.
+      restrictImports(
+        ['packages/core/src/presets/**/*.spec.ts'],
+        ['#main/*', '#behaviors/*', '#internal/*', './**', '../**'],
+      ),
       restrictImports(['packages/core/tests/**'], ['#main/*', '#behaviors/*', '#presets/*', '#internal/*']),
       restrictImports(
         ['packages/{react,solid-v1,solid-v2}/src/**'],

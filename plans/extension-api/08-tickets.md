@@ -74,20 +74,20 @@ evidence.
 
 ### Phase 4: `standard` preset, integration tests and bundle checks
 
-| Id                                                  | Title                 | Work package | Status  | Depends on     |
-| --------------------------------------------------- | --------------------- | ------------ | ------- | -------------- |
-| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | ready   | TK-027, TK-028 |
-| [TK-031](./tickets/TK-031-preset-flows.md)          | Preset flows          | P4-02        | blocked | TK-030         |
-| [TK-032](./tickets/TK-032-cross-extension-flows.md) | Cross-extension flows | P4-03        | ready   | TK-029         |
-| [TK-033](./tickets/TK-033-tiers-and-size-report.md) | Tiers and size report | P4-04        | blocked | TK-030, TK-005 |
-| [TK-034](./tickets/TK-034-type-coverage.md)         | Type coverage         | P4-05        | blocked | TK-030, TK-018 |
-| [TK-035](./tickets/TK-035-benchmark.md)             | Benchmark             | P4-06        | blocked | TK-030         |
+| Id                                                  | Title                 | Work package | Status | Depends on     |
+| --------------------------------------------------- | --------------------- | ------------ | ------ | -------------- |
+| [TK-030](./tickets/TK-030-standard-preset.md)       | Standard preset       | P4-01        | done   | TK-027, TK-028 |
+| [TK-031](./tickets/TK-031-preset-flows.md)          | Preset flows          | P4-02        | ready  | TK-030         |
+| [TK-032](./tickets/TK-032-cross-extension-flows.md) | Cross-extension flows | P4-03        | ready  | TK-029         |
+| [TK-033](./tickets/TK-033-tiers-and-size-report.md) | Tiers and size report | P4-04        | ready  | TK-030, TK-005 |
+| [TK-034](./tickets/TK-034-type-coverage.md)         | Type coverage         | P4-05        | ready  | TK-030, TK-018 |
+| [TK-035](./tickets/TK-035-benchmark.md)             | Benchmark             | P4-06        | ready  | TK-030         |
 
 ### Phase 5: React adapter and the parity suite
 
 | Id                                                   | Title                                | Work package | Status  | Depends on                     |
 | ---------------------------------------------------- | ------------------------------------ | ------------ | ------- | ------------------------------ |
-| [TK-036](./tickets/TK-036-parity-package.md)         | Parity package                       | P5-01        | blocked | TK-030                         |
+| [TK-036](./tickets/TK-036-parity-package.md)         | Parity package                       | P5-01        | ready   | TK-030                         |
 | [TK-037](./tickets/TK-037-create-parts.md)           | React createParts                    | P5-02        | blocked | TK-036, TK-017                 |
 | [TK-038](./tickets/TK-038-react-hooks.md)            | React hooks                          | P5-03        | blocked | TK-037                         |
 | [TK-039](./tickets/TK-039-react-scopes.md)           | React scopes in parts                | P5-04        | blocked | TK-038                         |
@@ -109,7 +109,7 @@ evidence.
 
 | Id                                                     | Title                          | Work package | Status  | Depends on             |
 | ------------------------------------------------------ | ------------------------------ | ------------ | ------- | ---------------------- |
-| [TK-048](./tickets/TK-048-kit-forms.md)                | Kit forms                      | P7-01        | blocked | TK-030                 |
+| [TK-048](./tickets/TK-048-kit-forms.md)                | Kit forms                      | P7-01        | ready   | TK-030                 |
 | [TK-049](./tickets/TK-049-kit-extensions.md)           | Kit extensions                 | P7-02        | blocked | TK-048                 |
 | [TK-050](./tickets/TK-050-kit-behaviors.md)            | Kit behaviors                  | P7-03        | blocked | TK-048, TK-049         |
 | [TK-051](./tickets/TK-051-react-example.md)            | React example app              | P7-04        | blocked | TK-042, TK-050         |
