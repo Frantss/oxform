@@ -1,4 +1,4 @@
-import type { ElementTag, InstanceOf, OptionsOf, PartSpec, PartsOf, ValuesOf } from '@oxform/core';
+import type { ElementTag, InstanceOf, OptionsOf, PartSpec, PartsOf, StateOf, ValuesOf } from '@oxform/core';
 import type { ResolveKeys } from '@oxform/core/adapter';
 import type { ComponentPropsWithRef, HTMLAttributes, JSX, ReactElement, ReactNode, Ref } from 'react';
 
@@ -64,3 +64,21 @@ export type RootProps<F, Elements = {}> = RootDomProps<F, Elements> & { readonly
 
 /** `Root` provides the instance to its parts. With a `root` slot it renders the element of that slot. */
 export type RootComponent<F, Elements = {}> = (props: RootProps<F, Elements>) => JSX.Element;
+
+/**
+ * The hooks of a form. Each needs a `Root` of the same form object above it, returns a plain value, and renders the
+ * component again only when what it reads changes.
+ */
+export interface FormHooks<F> {
+  /** The instance of the nearest `Root`. Throws outside one. */
+  readonly useForm: () => InstanceOf<F>;
+  /** The selected state. It renders again when the result changes, by `===` or by `compare`. */
+  readonly useSelector: <Selected>(
+    selector: (state: StateOf<F>) => Selected,
+    options?: { readonly compare?: (a: Selected, b: Selected) => boolean },
+  ) => Selected;
+  /** `form.field`, and it follows the value and the status of that path only. */
+  readonly useField: InstanceOf<F> extends { readonly field: infer Field } ? Field : never;
+  /** `form.array`, and it follows the array value. */
+  readonly useArray: InstanceOf<F> extends { readonly array: infer ArrayField } ? ArrayField : never;
+}

@@ -3,12 +3,12 @@ id: TK-038
 title: React hooks
 phase: 5
 work_package: P5-03
-status: todo
+status: done
 depends_on: [TK-037]
 branch: codex/P5-03-react-hooks
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-038: React hooks
@@ -45,11 +45,21 @@ re-render the component only when what it reads changes. The parity scenarios P3
 
 ## Acceptance
 
-- [ ] P3 and P7 pass in `packages/react/tests/parity.spec.tsx` in Chromium.
-- [ ] `useForm` outside a `Root` of the same form throws.
-- [ ] No `useFormEffect` export exists.
-- [ ] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
+- [x] P3 and P7 pass in `packages/react/tests/parity.spec.tsx` in Chromium.
+- [x] `useForm` outside a `Root` of the same form throws.
+- [x] No `useFormEffect` export exists.
+- [x] `vp run @oxform/react#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build`, `pnpm run check:all`, `pnpm run test`: pass.
+- `packages/react/src/hooks.ts`: `useForm`, `useSelector`, `useField` and `useArray`, with the `FormHooks` type.
+  `createParts` returns them.
+- `tests/parity.spec.tsx` adds P3 and P7, with the `readers` and `list` views: pass in Chromium. P3 fails
+  (`expected [ 3, 1 ] to deeply equal [ 1, 1 ]`) when a part renders on every store change, checked by a
+  temporary edit.
+- `src/hooks.spec.tsx`: `useForm` throws outside a `Root`, and inside the `Root` of another form object
+  (`form.configure({})`), with the message that names the cause. Inside its `Root` it gives the instance.
+- D31: no `useFormEffect` exists in `packages/react/src` or `export`. No test pins the export list (owner
+  decision of 2026-11-16, behavior tests only).
+- G13: the `useField` and `useArray` rows of `01#6.1` state the state keys that they read.

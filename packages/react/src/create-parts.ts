@@ -1,11 +1,12 @@
 'use client';
 
-import type { AnyForm, InstanceOf, PartsOf } from '@oxform/core';
+import type { AnyForm, PartsOf } from '@oxform/core';
 import { adapterControlsOf, optionKindsOf, slotsOf } from '@oxform/core/adapter';
 import { createElement, useEffect, useId, useLayoutEffect, useState, type ReactNode } from 'react';
-import { contextOf, useInstance } from '#context';
+import { contextOf } from '#context';
+import { createHooks } from '#hooks';
 import { PartView, type Instance, type PartViewProps, type SlotDefinition } from '#part-view';
-import type { PartComponents, PartElements, RootComponent } from '#types';
+import type { FormHooks, PartComponents, PartElements, RootComponent } from '#types';
 
 type FormLike = { create(options?: Record<string, unknown>): Instance };
 
@@ -26,7 +27,8 @@ export const createParts = (<F extends AnyForm, const Elements extends PartEleme
   const tagOf = (name: string) => overrides[name] ?? slots[name]!.element ?? 'div';
   const optionNames = new Set(Object.keys(optionKindsOf(form)));
   const FormContext = contextOf(form);
-  const useForm = () => useInstance(form);
+  const hooks = createHooks(form);
+  const { useForm } = hooks;
 
   const parts: Record<string, unknown> = {};
   for (const [name, slot] of Object.entries(slots)) {
@@ -57,8 +59,8 @@ export const createParts = (<F extends AnyForm, const Elements extends PartEleme
     return createElement(FormContext.Provider, { value: instance }, content);
   };
 
-  return { ...parts, Root, useForm };
+  return { ...parts, Root, ...hooks };
 }) as unknown as <F extends AnyForm, const Elements extends PartElements<PartsOf<F>> = {}>(
   form: F,
   elements?: Elements,
-) => PartComponents<F, Elements> & { readonly Root: RootComponent<F, Elements>; readonly useForm: () => InstanceOf<F> };
+) => PartComponents<F, Elements> & { readonly Root: RootComponent<F, Elements> } & FormHooks<F>;

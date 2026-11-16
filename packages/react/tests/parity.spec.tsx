@@ -3,7 +3,7 @@ import { describe, it } from 'vite-plus/test';
 import { driver } from './driver';
 
 /** The scenarios that the React adapter runs so far. */
-const ids = ['P1', 'P1 bare', 'P2', 'P4', 'P8', 'P9'] as const satisfies readonly (keyof typeof browserScenarios)[];
+const ids = ['P1', 'P1 bare', 'P2', 'P3', 'P4', 'P7', 'P8', 'P9'] as const satisfies readonly (keyof typeof browserScenarios)[];
 
 const setup = () => ({ driver, [Symbol.dispose]() {} });
 

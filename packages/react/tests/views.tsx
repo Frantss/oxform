@@ -1,6 +1,6 @@
 import type { ViewName, ViewProps, Views } from '@oxform/adapter-parity/driver';
 import { fixtures } from '@oxform/adapter-parity/fixtures';
-import { useLayoutEffect, type ComponentType } from 'react';
+import { useLayoutEffect, type ComponentType, type InputHTMLAttributes } from 'react';
 import { createParts } from '../export/index';
 
 const signIn = createParts(fixtures.signIn);
@@ -21,6 +21,33 @@ const exposer = (useForm: () => unknown) => {
 const ExposeSignIn = exposer(signIn.useForm);
 const ExposeBare = exposer(bare.useForm);
 const ExposeProfile = exposer(profile.useForm);
+
+/** A `render` function that counts its calls under `probe`, and renders an `<input>`. */
+const countedInput = (count: ViewProps['count'], probe: string) => (props: object) => {
+  count(probe);
+  return <input {...(props as InputHTMLAttributes<HTMLInputElement>)} />;
+};
+
+const Selected = ({ count }: Pick<ViewProps, 'count'>) => {
+  const name = profile.useSelector(state => state.values.name);
+  count('selector');
+  return <output aria-label='selected'>{name}</output>;
+};
+
+const EmailField = ({ count }: Pick<ViewProps, 'count'>) => {
+  const email = profile.useField('email');
+  count('email field');
+  return <output aria-label='email field'>{email.get()}</output>;
+};
+
+const Items = () => {
+  const items = profile.useArray('items');
+  return items.ids.map((id, index) => (
+    <label key={id}>
+      {`Item ${index}`} <profile.Field name={`items.${index}.label`} />
+    </label>
+  ));
+};
 
 const SignInView = ({ expose, root }: ViewProps & Views['signIn']) => (
   <signIn.Root data-testid='root' {...(root as {})}>
@@ -67,6 +94,25 @@ export const views: { readonly [Name in ViewName]?: ComponentType<ViewProps & Vi
           <profile.Field name='name' className='author' data-author='yes' id='author-id' ref={ref} onInput={onInput} />
         </label>
       )}
+    </profile.Root>
+  ),
+  readers: ({ expose, count }) => (
+    <profile.Root>
+      <ExposeProfile expose={expose} />
+      <label>
+        Name <profile.Field name='name' render={countedInput(count, 'name part')} />
+      </label>
+      <label>
+        Email <profile.Field name='email' render={countedInput(count, 'email part')} />
+      </label>
+      <Selected count={count} />
+      <EmailField count={count} />
+    </profile.Root>
+  ),
+  list: ({ expose }) => (
+    <profile.Root>
+      <ExposeProfile expose={expose} />
+      <Items />
     </profile.Root>
   ),
   inputs: ({ expose }) => (
