@@ -84,3 +84,9 @@
   in `packages/core/src/behaviors/events.ts` (`move`), so every adapter gets it.
 - `reset.all()` on values that were already the defaults discarded no pending validation run, and its issues
   arrived after the reset (`packages/core/src/behaviors/reset.ts`).
+- TK-044: `arrays` set the item ids after it wrote the array (`packages/core/src/behaviors/arrays.ts`, `commit`).
+  A store subscriber of the write read the old ids, so a Solid list keyed by `ids` did not follow a swap. The ids
+  move before the write now, and a refused write puts them back.
+- TK-044: Solid 1 moves both nodes of a swapped list, and Chrome blurs a focused element that moves. The swap
+  then also ran the blur of the field. `storeState` (`packages/solid-v1/src/part-view.ts`) gives the focus back
+  after a store write and drops the slot events of that write (`01#6.3`, "Focus across a list move").
