@@ -9,6 +9,9 @@
   named extension with `Extendable<V, Needs<V, ...>>` is not affected. This matters for the docs and the
   examples, which use inline extensions. Options: document that an inline extension goes before the others
   or lists the form's names, or make `needs` optional when the parameter is a whole `Form`.
+  Resolved on 2026-11-16 (owner): `needs` is optional when the parameter is the whole form. `Extendable` has a
+  `Whole` flag, which `extend` sets for the form it gives an extension (`packages/core/src/main/types.ts`,
+  `NeedsMember`). A listed need must still be a name of the form.
 - `packages/core/src/main/types.ts` (`Form.extend`): D18 was checked. With the preset overload first, a
   rejected extension reports the extension overload's error, which reads better, but an inline extension then
   fails with TS2769, because TypeScript types its parameter from the first overload. The spike order stays.

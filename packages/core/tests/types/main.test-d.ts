@@ -318,6 +318,19 @@ describe('defineExtension', () => {
     );
   });
 
+  it('takes an inline extension without needs, with the api of the form so far', () => {
+    const inline = masked.extend(form =>
+      defineExtension(form, { name: 'inline', api: (_context, deps) => ({ first: () => deps.field }) }),
+    );
+
+    expectTypeOf(inline.create().first()).toEqualTypeOf<BuiltInApis<Login>['field']>();
+  });
+
+  it('rejects a need of an inline extension that the form does not have', () => {
+    // @ts-expect-error The form has no `nope` api.
+    masked.extend(form => defineExtension(form, { name: 'inline', needs: { api: ['nope'] }, api: () => ({}) }));
+  });
+
   it('rejects a definition without needs when the parameter states one', () => {
     accepts(<Values>(form: Extendable<Values, Needs<Values, 'field'>>) =>
       // @ts-expect-error `needs` is required.

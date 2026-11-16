@@ -205,6 +205,7 @@ export const defineExtension = <
   Values,
   Provides,
   NeedState,
+  Whole extends boolean,
   const ApiNames extends readonly (keyof Provides & string)[] = [],
   const StateNames extends readonly (keyof NeedState & string)[] = [],
   Options extends object = {},
@@ -213,7 +214,7 @@ export const defineExtension = <
   Slots extends PublicSlotRecord = {},
   Fields = never,
 >(
-  _form: Extendable<Values, Provides, NeedState>,
+  _form: Extendable<Values, Provides, NeedState, Whole>,
   definition: {
     readonly name: string;
     /** The types of the options of the extension, from `optionTypes`. */
@@ -226,7 +227,7 @@ export const defineExtension = <
     readonly slots?: (slot: SlotFactory<Provides & Api, NeedState & State>) => Slots;
     /** Members for field handles, built with `on`. */
     readonly fields?: Fields;
-  } & NeedsMember<Provides, NeedState, ApiNames, StateNames>,
+  } & NeedsMember<Provides, NeedState, ApiNames, StateNames, Whole>,
 ): Extension<Partial<Options>, State, Api, Slots, Fields> => definition as never;
 
 /**

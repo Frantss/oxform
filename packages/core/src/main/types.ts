@@ -93,10 +93,16 @@ declare const extendable: unique symbol;
 
 /**
  * The input of an extension: the form so far. `Provides` is the api it needs and `State` the state it needs. A form
- * is assignable when its api and state cover both. At runtime it is the form.
+ * is assignable when its api and state cover both. `Whole` is `true` for the whole form, which `extend` gives an
+ * inline extension, and `boolean` for the parameter of a named extension. At runtime it is the form.
  */
-export interface Extendable<Values, Provides = {}, State = {}> {
-  readonly [extendable]: { readonly values: Values; readonly provides: Provides; readonly state: State };
+export interface Extendable<Values, Provides = {}, State = {}, Whole extends boolean = boolean> {
+  readonly [extendable]: {
+    readonly values: Values;
+    readonly provides: Provides;
+    readonly state: State;
+    readonly whole: Whole;
+  };
 }
 
 /** The names that `needs` lists at runtime. */
@@ -111,20 +117,27 @@ type Covering<Listed extends readonly string[], All> = Listed &
 
 /**
  * The `needs` member of a definition. It lists every api name and state key of the `Extendable` parameter, and no
- * other name. It is required when the parameter states a need (D51).
+ * other name. It is required when the parameter states a need (D51). It is optional for the whole form, which has
+ * every name already.
  */
-export type NeedsMember<Provides, State, ApiNames extends readonly string[], StateNames extends readonly string[]> = [
-  keyof Provides | keyof State,
-] extends [never]
-  ? { readonly needs?: { readonly api?: readonly []; readonly state?: readonly [] } }
-  : {
-      readonly needs: ([keyof Provides] extends [never]
-        ? { readonly api?: readonly [] }
-        : { readonly api: Covering<ApiNames, keyof Provides> }) &
-        ([keyof State] extends [never]
-          ? { readonly state?: readonly [] }
-          : { readonly state: Covering<StateNames, keyof State> });
-    };
+export type NeedsMember<
+  Provides,
+  State,
+  ApiNames extends readonly string[],
+  StateNames extends readonly string[],
+  Whole extends boolean = boolean,
+> = [Whole] extends [true]
+  ? { readonly needs?: { readonly api?: ApiNames; readonly state?: StateNames } }
+  : [keyof Provides | keyof State] extends [never]
+    ? { readonly needs?: { readonly api?: readonly []; readonly state?: readonly [] } }
+    : {
+        readonly needs: ([keyof Provides] extends [never]
+          ? { readonly api?: readonly [] }
+          : { readonly api: Covering<ApiNames, keyof Provides> }) &
+          ([keyof State] extends [never]
+            ? { readonly state?: readonly [] }
+            : { readonly state: Covering<StateNames, keyof State> });
+      };
 
 /** A field handle as a field-members builder sees it, with its value typed `Value`. */
 export interface FieldOf<Value> {
@@ -365,17 +378,18 @@ type CreateOptions<Values, Api, Options, State, Fields> = Partial<
 export interface Form<Values, Api = {}, Options = {}, State = {}, Slots = {}, Fields = never> extends Extendable<
   Values,
   Api,
-  State
+  State,
+  true
 > {
   readonly [formTypes]: FormTypes<Values, Api, Options, State, Slots, Fields>;
   readonly name: string;
   /**
    * Applies an extension: a function of the form so far that returns `defineExtension(form, {...})`. A missing need
-   * is a type error here, and a runtime error at `create`. A duplicate option name throws here.
+   * is a type error here, and a runtime error at `create`. A duplicate option name is a type error here.
    */
   extend<NextOptions, NextState, NextApi, NextSlots, NextFields>(
     extension: (
-      form: Extendable<Values, Api, State>,
+      form: Extendable<Values, Api, State, true>,
     ) => Extension<NextOptions, NextState, NextApi, NextSlots, NextFields>,
   ): [ClashingOptions<BaseOptions<Values> & Options, NextOptions>] extends [never]
     ? Form<
