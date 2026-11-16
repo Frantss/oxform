@@ -18,7 +18,7 @@ export { handles } from '#behaviors/handles';
 export type { ArrayHandle, FieldHandle, FieldState } from '#behaviors/handles';
 export { reset } from '#behaviors/reset';
 export type { ResetApi, ResetOptions } from '#behaviors/reset';
-export { rootSlots } from '#behaviors/slots';
+export { fieldErrorSlots, fieldSlots, resetSlots, rootSlots, submitSlots } from '#behaviors/slots';
 export { status } from '#behaviors/status';
 export type {
   FieldStatus,

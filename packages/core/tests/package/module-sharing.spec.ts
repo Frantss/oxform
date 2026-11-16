@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { defineForm, slots } from '@oxform/core';
 import { adapterControlsOf, prefixOf, slotsOf } from '@oxform/core/adapter';
-import { arrays, events, handles, reset, rootSlots, status } from '@oxform/core/behaviors';
+import { arrays, events, handles, reset, status, submitSlots } from '@oxform/core/behaviors';
 import { standard } from '@oxform/core/presets';
 import { describe, expect, it } from 'vite-plus/test';
 import { entryPoints, exportedNames, type EntryPoint } from '../../scripts/declarations.ts';
@@ -34,7 +34,7 @@ describe('built entry points', () => {
     using built = setup();
     const form = built.form();
 
-    expect(Object.keys(slotsOf(form.extend(slots(slot => ({ ...rootSlots(slot) })))))).toEqual(['root']);
+    expect(Object.keys(slotsOf(form.extend(status).extend(slots(slot => ({ ...submitSlots(slot) })))))).toEqual(['submit']);
   });
 
   it('know an instance of @oxform/core in @oxform/core/adapter', () => {

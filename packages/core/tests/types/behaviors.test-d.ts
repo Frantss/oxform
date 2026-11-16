@@ -1,5 +1,13 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import { defineExtension, defineForm, type Scope, type Slot, type Updater } from '@oxform/core';
+import {
+  defineExtension,
+  defineForm,
+  slots,
+  type Extendable,
+  type PartsOf,
+  type Scope,
+  type Updater,
+} from '@oxform/core';
 import {
   arrays,
   check,
@@ -9,7 +17,11 @@ import {
   type ArrayHandle,
   type FieldHandle,
   type FieldState,
+  fieldErrorSlots,
+  fieldSlots,
+  resetSlots,
   rootSlots,
+  submitSlots,
   type ArrayOperations,
   type ArraysApi,
   type EventsApi,
@@ -80,14 +92,124 @@ describe('values', () => {
   });
 });
 
-describe('rootSlots', () => {
-  it('is a slot group', () => {
-    expectTypeOf(rootSlots).returns.toHaveProperty('root').toExtend<Slot<{}, {}, 'form'>>();
+/** An extension that gives the api `Api` and the state `State`, as stand-ins. */
+const provider =
+  <Api extends object, State extends object>() =>
+  <Values>(form: Extendable<Values>) =>
+    defineExtension(form, { name: 'provider', state: () => ({}) as State, api: () => ({}) as Api });
+
+type FieldNeedsApi = { events: EventsApi<Profile>; values: ValuesApi<Profile> };
+type FieldNeedsState = { values: Profile; status: StatusState };
+
+describe('rootSlots, fieldSlots, fieldErrorSlots, submitSlots, resetSlots', () => {
+  const lean = form
+    .extend(values)
+    .extend(validation)
+    .extend(check('error'))
+    .extend(status)
+    .extend(events)
+    .extend(submit)
+    .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })));
+  const filter = form
+    .extend(values)
+    .extend(status)
+    .extend(events)
+    .extend(slots(slot => ({ ...fieldSlots(slot) })));
+  const resettable = form
+    .extend(values)
+    .extend(status)
+    .extend(events)
+    .extend(reset)
+    .extend(slots(slot => ({ ...resetSlots(slot) })));
+
+  it('give the lean sign-in its parts, with rootSlots and no reset', () => {
+    expectTypeOf<keyof PartsOf<typeof lean>>().toEqualTypeOf<'root' | 'field' | 'fieldError' | 'submit'>();
+    expectTypeOf<PartsOf<typeof lean>['root']['element']>().toEqualTypeOf<'form'>();
+    expectTypeOf<PartsOf<typeof lean>['fieldError']['element']>().toEqualTypeOf<'p'>();
+    expectTypeOf<PartsOf<typeof lean>['submit']['element']>().toEqualTypeOf<'button'>();
   });
 
-  it('takes a slot factory', () => {
+  it('give the member filter the field part, with no check', () => {
+    expectTypeOf<keyof PartsOf<typeof filter>>().toEqualTypeOf<'field'>();
+    expectTypeOf<PartsOf<typeof filter>['field']['element']>().toEqualTypeOf<'input'>();
+  });
+
+  it('give a form with reset the reset part', () => {
+    expectTypeOf<PartsOf<typeof resettable>['reset']['element']>().toEqualTypeOf<'button'>();
+  });
+
+  it('take a slot factory', () => {
     // @ts-expect-error A slot group takes a slot factory.
     rootSlots({});
+  });
+
+  it('rootSlots needs submit', () => {
+    // @ts-expect-error rootSlots needs submit.
+    form.extend(values).extend(slots(slot => ({ ...rootSlots(slot) })));
+  });
+
+  it('resetSlots needs reset', () => {
+    // @ts-expect-error resetSlots needs reset.
+    form.extend(values).extend(slots(slot => ({ ...resetSlots(slot) })));
+  });
+
+  it('submitSlots needs the status state', () => {
+    // @ts-expect-error submitSlots needs the status state.
+    form.extend(values).extend(slots(slot => ({ ...submitSlots(slot) })));
+  });
+
+  it('fieldSlots needs events', () => {
+    const lacking = form.extend(values).extend(status);
+    // @ts-expect-error fieldSlots needs events.
+    lacking.extend(slots(slot => ({ ...fieldSlots(slot) })));
+  });
+
+  it('fieldSlots needs the values api', () => {
+    const lacking = form.extend(provider<Omit<FieldNeedsApi, 'values'>, FieldNeedsState>());
+    // @ts-expect-error fieldSlots needs the values api.
+    lacking.extend(slots(slot => ({ ...fieldSlots(slot) })));
+  });
+
+  it('fieldSlots needs the values state', () => {
+    const lacking = form.extend(provider<FieldNeedsApi, Omit<FieldNeedsState, 'values'>>());
+    // @ts-expect-error fieldSlots needs the values state.
+    lacking.extend(slots(slot => ({ ...fieldSlots(slot) })));
+  });
+
+  it('fieldSlots needs the status state', () => {
+    const lacking = form.extend(provider<FieldNeedsApi, Omit<FieldNeedsState, 'status'>>());
+    // @ts-expect-error fieldSlots needs the status state.
+    lacking.extend(slots(slot => ({ ...fieldSlots(slot) })));
+  });
+
+  it('fieldErrorSlots needs events', () => {
+    const lacking = form.extend(provider<Omit<FieldNeedsApi, 'events'>, FieldNeedsState & { error: CheckState }>());
+    // @ts-expect-error fieldErrorSlots needs events.
+    lacking.extend(slots(slot => ({ ...fieldErrorSlots(slot) })));
+  });
+
+  it('fieldErrorSlots needs the values api', () => {
+    const lacking = form.extend(provider<Omit<FieldNeedsApi, 'values'>, FieldNeedsState & { error: CheckState }>());
+    // @ts-expect-error fieldErrorSlots needs the values api.
+    lacking.extend(slots(slot => ({ ...fieldErrorSlots(slot) })));
+  });
+
+  it('fieldErrorSlots needs the values state', () => {
+    const lacking = form.extend(provider<FieldNeedsApi, { status: StatusState; error: CheckState }>());
+    // @ts-expect-error fieldErrorSlots needs the values state.
+    lacking.extend(slots(slot => ({ ...fieldErrorSlots(slot) })));
+  });
+
+  it('fieldErrorSlots needs the status state', () => {
+    const lacking = form.extend(provider<FieldNeedsApi, { values: Profile; error: CheckState }>());
+    // @ts-expect-error fieldErrorSlots needs the status state.
+    lacking.extend(slots(slot => ({ ...fieldErrorSlots(slot) })));
+  });
+
+  it('fieldErrorSlots needs the error state', () => {
+    const lacking = form.extend(values).extend(status).extend(events);
+    // @ts-expect-error fieldErrorSlots needs the error state.
+    lacking.extend(slots(slot => ({ ...fieldErrorSlots(slot) })));
   });
 });
 
