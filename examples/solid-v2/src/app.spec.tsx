@@ -1,18 +1,22 @@
-import { render } from '@solidjs/web';
-import { afterEach, expect, it } from 'vite-plus/test';
+import { render, type JSX } from '@solidjs/web';
+import { expect, it } from 'vite-plus/test';
 import { page } from 'vite-plus/test/browser';
 import { App } from './app';
 
-const container = document.createElement('div');
-let dispose: (() => void) | undefined;
-afterEach(() => {
-  dispose?.();
-  container.remove();
-});
+const setup = (view: () => JSX.Element) => {
+  const container = document.body.appendChild(document.createElement('div'));
+  const dispose = render(view, container);
+
+  return Object.assign(page.elementLocator(container), {
+    [Symbol.dispose]: () => {
+      dispose();
+      container.remove();
+    },
+  });
+};
 
 it('renders the placeholder text', async () => {
-  document.body.append(container);
-  dispose = render(() => <App />, container);
+  using screen = setup(() => <App />);
 
-  await expect.element(page.getByRole('main')).toHaveTextContent('The examples are being rewritten for Oxform 0.7.0.');
+  await expect.element(screen.getByRole('main')).toHaveTextContent('The examples are being rewritten for Oxform 0.7.0.');
 });
