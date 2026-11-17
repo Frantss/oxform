@@ -106,3 +106,20 @@
   `packages/core/src/behaviors/status.ts:14`).
 - Why it matters: the button would stay after the user clears the filters. The kit reads the `default` flag
   of each filter (`examples/kit/src/member-filter.ts`, `hasFilters`). The docs pages (TK-061) must describe that.
+
+## A preset that uses `standard` could not emit declarations
+
+- What: the form types use `CheckNamesOf` (`packages/core/src/main/types.ts:437`), and no public entry exported
+  it. A preset in a project with `declaration: true` failed with TS2883: "cannot be named without a reference to
+  'CheckNamesOf'" (`examples/kit/src/house-form.ts`).
+- Why it matters: a team that publishes its preset as a package (E04) could not build it. Fixed: `@oxform/core`
+  exports the type, with type cases in `packages/core/tests/types/main.test-d.ts`.
+
+## A generic preset that adds an option needs the casts of `standard`
+
+- What: in a preset with a generic `Options`, `extend(check('warning'))` returns the undecided
+  `DuplicateOption` conditional, so the next `.extend` is a type error. `standard` avoids it with two casts
+  (`packages/core/src/presets/standard.ts`). The spike's `warnings` preset had no option-name check.
+- Why it matters: E14 cannot be the one-line preset of the catalogue. The kit exports `warnings` (the check) and
+  `warningSlots` (the group), and a form spreads both (`examples/kit/src/warnings.ts`). The compose and extend
+  guide (TK-063) must state the limit, or core must give a helper for an option-adding preset.

@@ -3,12 +3,12 @@ id: TK-049
 title: Kit extensions
 phase: 7
 work_package: P7-02
-status: todo
+status: done
 depends_on: [TK-048]
 branch: codex/P7-02-kit-extensions
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-049: Kit extensions
@@ -49,14 +49,31 @@ of its row on its domain form, and each has a passing spec.
 
 ## Acceptance
 
-- [ ] Each of E04 and E06 to E14 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
-- [ ] `autosave` is inert at creation: its timer starts on a change (E06).
-- [ ] `masks` adds `unmasked()` only to string fields (E11). `confirmExternal` cancels before validation
+- [x] Each of E04 and E06 to E14 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
+- [x] `autosave` is inert at creation: its timer starts on a change (E06).
+- [x] `masks` adds `unmasked()` only to string fields (E11). `confirmExternal` cancels before validation
       (E10).
-- [ ] No file is copied from the spike.
-- [ ] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
-- [ ] `pnpm run check:all` passes.
+- [x] No file is copied from the spike.
+- [x] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. The kit has 37 specs, all pass, and its type
+  check passes.
+- Modules, each with a sibling spec: E04 `house-form.ts`, E06 and E07 `autosave.ts`, E08 `normalize-email.ts`, E09
+  `funnel.ts`, E10 `confirm-external.ts`, E11 `masks.ts`, E12 `form-error-slots.ts`, E13
+  `strict-submit-slots.ts`, E14 `warnings.ts`. `testing.ts` reads a part from its slot in Node, for the slot specs.
+- `autosave` starts its timer on a change: a new instance saves nothing after every timer ran. `onSaveError` gets
+  the instance, and the spec sets a warning on `title` through it (E07).
+- `masks` adds `unmasked()` to string fields only: a `@ts-expect-error` case and a runtime case on `billing`.
+  `confirmExternal` cancels before validation: a canceled submit of an invalid team sets no error.
+- The extensions use the behaviors through `needs`, `deps` and the hooks. They import no `createX` function and no
+  spike file.
+- Deviation in E14: a generic preset that adds an option needs the casts of `standard`, so `warnings` is the check
+  and `warningSlots` is the group, and a form spreads both. Reported.
+- Deviation in E12: E01 stays a lean chain of built-in groups (TK-048). The spec of `formErrorSlots` shows the
+  sign-in form with it.
+- Core fix: `@oxform/core` exports `CheckNamesOf`. Without it, `houseForm` failed with TS2883 in a project that emits
+  declarations. Reported, with type cases.
+- Limit of E08: `normalizeEmail` sees the path of a write. A write of a whole `members` array is not cleaned.
