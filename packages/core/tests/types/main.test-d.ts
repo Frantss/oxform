@@ -12,6 +12,7 @@ import {
   type Attributes,
   type BaseOptions,
   type BuiltInApis,
+  type CheckNamesOf,
   type ElementTag,
   type Extendable,
   type Extension,
@@ -44,6 +45,7 @@ import {
   type StateSlice,
   type ValuesOf,
 } from '@oxform/core';
+import type { CheckApi } from '@oxform/core/behaviors';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import { describe, expectTypeOf, it } from 'vite-plus/test';
 
@@ -377,6 +379,22 @@ describe('Needs, BuiltInApis', () => {
     const field = {} as BuiltInApis<Login>['field'];
     // @ts-expect-error Login has no name.
     field('name');
+  });
+});
+
+describe('CheckNamesOf', () => {
+  it('gives the names of the members that are a check under their own name', () => {
+    type Api = { error: CheckApi<Login, 'error'>; warning: CheckApi<Login, 'warning'>; values: object };
+    expectTypeOf<CheckNamesOf<Api>>().toEqualTypeOf<'error' | 'warning'>();
+  });
+
+  it('leaves out a member that is not a check', () => {
+    // @ts-expect-error `values` is not a check.
+    accepts<CheckNamesOf<{ error: CheckApi<Login, 'error'>; values: object }>>('values');
+  });
+
+  it('leaves out a check under another name', () => {
+    expectTypeOf<CheckNamesOf<{ error: CheckApi<Login, 'warning'> }>>().toEqualTypeOf<never>();
   });
 });
 

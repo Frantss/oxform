@@ -6,6 +6,7 @@ export type {
   Attributes,
   BaseOptions,
   BuiltInApis,
+  CheckNamesOf,
   ElementTag,
   Extendable,
   Extension,

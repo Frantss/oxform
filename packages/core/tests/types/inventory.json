@@ -8,6 +8,7 @@
     "Attributes",
     "BaseOptions",
     "BuiltInApis",
+    "CheckNamesOf",
     "createEffect",
     "DeepPartial",
     "defineExtension",
