@@ -3,12 +3,12 @@ id: TK-054
 title: Comparison form specifications
 phase: 7
 work_package: P7-07
-status: todo
+status: done
 depends_on: [TK-008]
 branch: codex/P7-07-comparison-specification
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-054: Comparison form specifications
@@ -41,12 +41,25 @@ fails.
 
 ## Acceptance
 
-- [ ] The specification states every field, rule and behavior of each form in `07#4.2`, and nothing more.
-- [ ] Each form has one Valibot schema module, which every version will import.
-- [ ] Each shared browser test runs against a stub and fails, with the failure output under Evidence.
-- [ ] `vp run example-oxform-comparison#check:types` passes.
-- [ ] `pnpm run check:all` passes.
+- [x] The specification states every field, rule and behavior of each form in `07#4.2`, and nothing more.
+- [x] Each form has one Valibot schema module, which every version will import.
+- [x] Each shared browser test runs against a stub and fails, with the failure output under Evidence.
+- [x] `vp run example-oxform-comparison#check:types` passes.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, the path of the written specification and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. `example-oxform-comparison#check:types` passes.
+- `src/sign-in/specification.md` and `src/team-invites/specification.md` state the fields, rules and behavior of
+  `07#4.2`, numbered. `schema.ts` per form is the one Valibot module (valibot 1.5.0, pinned with React 19.3.1).
+  `src/server.ts` is the shared server that the tests replace.
+- `src/stub.spec.tsx` runs each suite against its stub (the markup with no behavior), with `it.fails`:
+  `1 passed | 9 expected fail (10)`. The failure of each case when the stub runs as a normal version:
+  - Sign-in 1, 2: `expect(element).toHaveAccessibleDescription()` (no message on submit).
+  - Sign-in 3: `expect.poll() function didn't resolve in time` (no message after the first submit).
+  - Sign-in 4: `expect(element).toBeDisabled()`.
+  - Sign-in 5: `expect(element).toHaveAccessibleDescription()` (no refusal on the password).
+  - Team invites 1 to 4: `locator.fill: Timeout` (no row after "Add member").
+  - Team invites 5: `Cannot find element with locator: getByText('Enter an email address.')`.
+- A throwaway plain React version of each form, not committed, passed all nine cases. So no case asks for
+  something that a correct version cannot do.
