@@ -101,8 +101,8 @@ evidence.
 | ---------------------------------------------- | ------------------------- | ------------ | ------- | -------------- |
 | [TK-043](./tickets/TK-043-solid-risk-probe.md) | Solid 1 risk probe        | P6-01        | done    | TK-036, TK-037 |
 | [TK-044](./tickets/TK-044-solid-v1-adapter.md) | Solid 1 adapter           | P6-02        | done    | TK-043, TK-042 |
-| [TK-045](./tickets/TK-045-solid-v2-adapter.md) | Solid 2 adapter           | P6-03        | ready   | TK-043, TK-042 |
-| [TK-046](./tickets/TK-046-solid-package.md)    | The @oxform/solid package | P6-04        | blocked | TK-044, TK-045 |
+| [TK-045](./tickets/TK-045-solid-v2-adapter.md) | Solid 2 adapter           | P6-03        | done    | TK-043, TK-042 |
+| [TK-046](./tickets/TK-046-solid-package.md)    | The @oxform/solid package | P6-04        | ready   | TK-044, TK-045 |
 | [TK-047](./tickets/TK-047-parity-closure.md)   | Parity closure            | P6-05        | blocked | TK-046         |
 
 ### Phase 7: example kit, example apps and comparison workspace

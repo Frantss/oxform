@@ -1,0 +1,12 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
+    "paths": {
+      "@oxform/solid-v2": ["../../export/index.ts"]
+    }
+  },
+  "include": ["./*.test-d.tsx"]
+}

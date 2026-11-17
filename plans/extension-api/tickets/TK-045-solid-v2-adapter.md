@@ -3,12 +3,12 @@ id: TK-045
 title: Solid 2 adapter
 phase: 6
 work_package: P6-03
-status: todo
+status: done
 depends_on: [TK-043, TK-042]
 branch: codex/P6-03-solid-v2-adapter
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-045: Solid 2 adapter
@@ -53,15 +53,44 @@ desktop and a mobile viewport, with hydration.
 
 ## Acceptance
 
-- [ ] P1 to P14 pass: the Chromium rows in `tests/parity.spec.tsx` in a desktop and a mobile viewport, P10,
+- [x] P1 to P14 pass: the Chromium rows in `tests/parity.spec.tsx` in a desktop and a mobile viewport, P10,
       P12 and P13 in Node through `vp run @oxform/solid-v2#test:ssr`.
-- [ ] P11 hydrates the server HTML with no console warning or error.
-- [ ] Every difference from React is a row of `01#6.3`. The public types equal those of Solid 1.
-- [ ] Each export has a positive and a negative type case in `tests/types/`. Every `ElementTag` is a key of
+- [x] P11 hydrates the server HTML with no console warning or error.
+- [x] Every difference from React is a row of `01#6.3`. The public types equal those of Solid 1.
+- [x] Each export has a positive and a negative type case in `tests/types/`. Every `ElementTag` is a key of
       Solid's intrinsic elements.
 - [ ] `vp run @oxform/solid-v2#test:coverage` passes at the thresholds of `03#Coverage`.
-- [ ] `vp run @oxform/solid-v2#check:types` and `pnpm run check:all` pass.
+- [x] `vp run @oxform/solid-v2#check:types` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the command results, any new parity row and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. `@oxform/solid-v2`: 58 browser tests (P1 to
+  P14 and the sibling specs of `create-parts`, `hooks` and `use-part`, in the `desktop` and `mobile` viewports),
+  and 3 server tests (P10, P12 and P13 in Node, `test:ssr`). Solid 1 and React still pass.
+- P11 hydrates the server HTML with no console warning or error, in both viewports.
+- `check:package` of `@oxform/solid-v2`: `publint --strict`, `attw`, `check:types:dist` and
+  `check:type-coverage` pass. With the `@ts-expect-error` lines removed, each of the 11 negative cases fails for
+  its own reason. The built `dist/index.d.ts` equals the one of Solid 1, apart from the import source of `JSX`
+  and `ComponentProps` (`01#6.3`, last paragraph).
+- New parity behavior, under R17, in `adapter-parity` first (`test: remove the solid 2 hydration attribute and
+  match the form id as a word`): `normalizeHtml` removes `_hk`, whose value has no quotes. The form id is
+  replaced only where it starts a word of an attribute value, because the Solid 2 server id is `2`. Solid 1 and
+  React match the same snapshots.
+- New `01#6.3` row: boolean `aria-*` value. Solid 2 writes a boolean as presence, so `aria-invalid` was `""`,
+  which ARIA reads as false. The part writes the boolean as a string. A sibling case fails without it.
+- Solid 2 behavior that the port handles, with no difference from React in what a consumer sees:
+  - Updates are batched. `storeState` applies each store write with `flush`, so the DOM follows a write at once.
+  - A ref runs with no owner, before the element is attached. The part creates its render effect and its
+    cleanup in the owner of the render, and the ref only attaches.
+  - `merge` keeps a key whose value is `undefined`. A part gives no `value` that the slot left undefined, so the
+    `value` of the author stays (P2). Solid 1 has the same code now.
+  - A computation that only the client makes is `transparent`, so it takes no hydration key.
+  - A read of props outside a tracking scope warns. `Root` reads `form` and `options` once, and the ref reads
+    the part, in `untrack`.
+- Vitest compiles client code non-hydratable in test mode (`@solidjs/vite-plugin`, `getSolidOptions`), so
+  `vite.config.ts` sets `solid: { hydratable: true }`. The server render merges its props from a function, as the
+  browser driver does, so the two make the same owners and the hydration keys match.
+- Deviations: an uncaught render error halts Solid 2 for every later test. The cases that expect a throw render
+  in an `<Errored>` boundary and compare the caught error. The parity spec is `tests/parity.spec.ts`.
+- Not done: `test:coverage`. The owner dropped coverage gates, so the box stays open.
+- G18 for Solid 2: HTML attribute names, and a boolean `aria-*` value as a string.
