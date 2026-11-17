@@ -1,0 +1,758 @@
+[
+  {
+    "row": "Frameworks",
+    "library": "Oxform",
+    "value": "React, Solid 1, Solid 2",
+    "note": "(planned)",
+    "source": "plans/extension-api/00-direction.md#packages-and-entry-points",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Frameworks",
+    "library": "TanStack Form",
+    "value": "React, Preact, Vue, Angular, Solid, Lit, Svelte",
+    "note": "One npm adapter each. @tanstack/preact-form is 1.30.5 and @tanstack/lit-form 1.25.5; the others 1.33.5. The overview page does not list Preact; llms.txt does",
+    "source": "https://tanstack.com/form/latest/llms.txt",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Frameworks",
+    "library": "React Hook Form",
+    "value": "React, React Native",
+    "note": "Peer react ^16.8.0 || ^17 || ^18 || ^19. Repository description: \"(Web + React Native)\"",
+    "source": "https://registry.npmjs.org/react-hook-form",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Frameworks",
+    "library": "Formisch",
+    "value": "Angular, HonoX, Preact, Qwik, React, React Native, SolidJS, Svelte, Vue",
+    "note": "One npm package each in @formisch. @formisch/honox is 0.2.0 (no 1.x)",
+    "source": "https://github.com/open-circle/formisch",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Uncontrolled inputs",
+    "library": "Oxform",
+    "value": "Not available",
+    "note": "(planned) Values live in the store",
+    "source": "plans/extension-api/01-public-api.md#3.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Uncontrolled inputs",
+    "library": "TanStack Form",
+    "value": "Not available",
+    "note": "\"TanStack Form is firmly in the controlled camp\"",
+    "source": "https://tanstack.com/form/latest/docs/philosophy.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Uncontrolled inputs",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "\"This library embraces uncontrolled components and native HTML inputs\"",
+    "source": "https://react-hook-form.com/get-started.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Uncontrolled inputs",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "\"By default, all form fields are uncontrolled\"",
+    "source": "https://formisch.dev/react/guides/controlled-fields.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Types without a hand-written generic",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) From the schema and the chain",
+    "source": "plans/extension-api/00-direction.md#principles",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Types without a hand-written generic",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "Inferred from defaultValues: \"You should never need to pass a generic\"",
+    "source": "https://tanstack.com/form/latest/docs/philosophy.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Types without a hand-written generic",
+    "library": "React Hook Form",
+    "value": "Add-on",
+    "note": "From a resolver schema in @hookform/resolvers 7.0.6: \"Most of the resolvers can infer the output type from the schema\"",
+    "source": "https://github.com/react-hook-form/resolvers",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Types without a hand-written generic",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "Inferred from the Valibot schema",
+    "source": "https://formisch.dev/react/guides/typescript.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "The schema validates without more setup",
+    "library": "Oxform",
+    "value": "Not available",
+    "note": "(planned) A schema only types Values",
+    "source": "plans/extension-api/04-documentation.md#5.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "The schema validates without more setup",
+    "library": "TanStack Form",
+    "value": "User code",
+    "note": "Pass the schema to validators",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "The schema validates without more setup",
+    "library": "React Hook Form",
+    "value": "Add-on",
+    "note": "resolver option with @hookform/resolvers",
+    "source": "https://react-hook-form.com/docs/useform.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "The schema validates without more setup",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "\"Formisch validates your form against your Valibot schema\"",
+    "source": "https://formisch.dev/react/guides/validation.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Schema libraries",
+    "library": "Oxform",
+    "value": "Standard Schema",
+    "note": "(planned)",
+    "source": "plans/extension-api/02-structure.md#package-manifest",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Schema libraries",
+    "library": "TanStack Form",
+    "value": "Standard Schema",
+    "note": "",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Schema libraries",
+    "library": "React Hook Form",
+    "value": "20 resolvers",
+    "note": "@hookform/resolvers 7.0.6 readme, Standard Schema among them",
+    "source": "https://github.com/react-hook-form/resolvers",
+    "version": "7.0.6",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Schema libraries",
+    "library": "Formisch",
+    "value": "Valibot only",
+    "note": "\"Formisch currently supports only Valibot as the schema library\"",
+    "source": "https://formisch.dev/react/guides/comparison.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation without a schema library",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) Validator functions per check",
+    "source": "plans/extension-api/01-public-api.md#3.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation without a schema library",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "Function validators per event",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation without a schema library",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "required, min, max, minLength, maxLength, pattern, validate",
+    "source": "https://react-hook-form.com/docs/useform/register.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation without a schema library",
+    "library": "Formisch",
+    "value": "Not available",
+    "note": "The Valibot schema is the only place of validation",
+    "source": "https://formisch.dev/react/guides/comparison.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation timing per validator",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) Per event in each check",
+    "source": "plans/extension-api/04-documentation.md#4.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation timing per validator",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "onChange, onBlur, onSubmit and their Async forms",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation timing per validator",
+    "library": "React Hook Form",
+    "value": "Not available",
+    "note": "One form-wide mode and reValidateMode",
+    "source": "https://react-hook-form.com/docs/useform.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Validation timing per validator",
+    "library": "Formisch",
+    "value": "Not available",
+    "note": "Form-wide validate and revalidate",
+    "source": "https://formisch.dev/react/guides/validation.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Async validation",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) A newer run discards a stale one",
+    "source": "plans/extension-api/03-testing.md#integration-layer",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Async validation",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "onChangeAsync, onBlurAsync",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Async validation",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "Async validate function; formState.validatingFields",
+    "source": "https://react-hook-form.com/docs/useform/register.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Async validation",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "In the schema, through Valibot's async API; isValidating",
+    "source": "https://formisch.dev/react/guides/validation.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Debounce of async validation",
+    "library": "Oxform",
+    "value": "User code",
+    "note": "(planned) No option in the plan",
+    "source": "plans/extension-api/01-public-api.md#3.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Debounce of async validation",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "asyncDebounceMs, onChangeAsyncDebounceMs",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/validation.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Debounce of async validation",
+    "library": "React Hook Form",
+    "value": "User code",
+    "note": "No debounce option among the useForm options. delayError delays only the display of an error",
+    "source": "https://react-hook-form.com/docs/useform.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Debounce of async validation",
+    "library": "Formisch",
+    "value": "User code",
+    "note": "\"Formisch has no built-in debounce option. Async rules live in the schema via v.pipeAsync and v.checkAsync\"",
+    "source": "https://formisch.dev/react/guides/migrate-from-tanstack-form.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "More than one named set of issues (warnings)",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) check(name)",
+    "source": "plans/extension-api/01-public-api.md#3.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "More than one named set of issues (warnings)",
+    "library": "TanStack Form",
+    "value": "Not available",
+    "note": "\"any truthy value is considered an error and will mark the form or field as invalid\". errorMap groups errors by trigger, not by name",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/custom-errors.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "More than one named set of issues (warnings)",
+    "library": "React Hook Form",
+    "value": "Not available",
+    "note": "validate returns true or undefined (valid), or a string or false (invalid). One errors object",
+    "source": "https://react-hook-form.com/docs/useform/register.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "More than one named set of issues (warnings)",
+    "library": "Formisch",
+    "value": "Not available",
+    "note": "\"every field with an issue receives its error messages ... A field is valid when it has no errors\"",
+    "source": "https://formisch.dev/react/guides/validation.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Array fields",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) arrays",
+    "source": "plans/extension-api/01-public-api.md#3.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Array fields",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "mode=\"array\" and pushValue, insertValue, removeValue, swapValues, moveValue",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/arrays.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Array fields",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "useFieldArray. \"Does not support flat field arrays\"",
+    "source": "https://react-hook-form.com/docs/usefieldarray.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Array fields",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "FieldArray, useFieldArray, insert, move, remove, replace, swap",
+    "source": "https://formisch.dev/react/guides/field-arrays.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Reusable field group at more than one path",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) defineScope",
+    "source": "plans/extension-api/04-documentation.md#4.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Reusable field group at more than one path",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "withFieldGroup",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/form-composition.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Reusable field group at more than one path",
+    "library": "React Hook Form",
+    "value": "User code",
+    "note": "No field-group API. Nested components reach the form through FormProvider and useFormContext",
+    "source": "https://react-hook-form.com/docs/formprovider.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Reusable field group at more than one path",
+    "library": "Formisch",
+    "value": "User code",
+    "note": "No field-group API. Generic components take FormStore<v.GenericSchema<...>>; the documented example binds a fixed path",
+    "source": "https://formisch.dev/react/guides/typescript.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Shared form set-up for a team",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) A preset",
+    "source": "plans/extension-api/04-documentation.md#4.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Shared form set-up for a team",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "createFormHook, useAppForm, extendForm",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/form-composition.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Shared form set-up for a team",
+    "library": "React Hook Form",
+    "value": "User code",
+    "note": "No pre-bound form hook. The \"Smart form component\" guide shows an application Form component",
+    "source": "https://react-hook-form.com/advanced-usage.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Shared form set-up for a team",
+    "library": "Formisch",
+    "value": "User code",
+    "note": "createFormHook: \"No equivalent needed\". \"The role of pre-bound field components is filled by regular input components\"",
+    "source": "https://formisch.dev/react/guides/migrate-from-tanstack-form.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Server rendering with a meta-framework",
+    "library": "Oxform",
+    "value": "User code",
+    "note": "(planned) The rules are documented. No integration package",
+    "source": "plans/extension-api/04-documentation.md#4.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Server rendering with a meta-framework",
+    "library": "TanStack Form",
+    "value": "Add-on",
+    "note": "@tanstack/react-form-start, -nextjs, -remix",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/ssr.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Server rendering with a meta-framework",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "Form component, \"currently in BETA\". progressive: true is \"only applicable to SSR frameworks\"",
+    "source": "https://react-hook-form.com/docs/useform/form.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Server rendering with a meta-framework",
+    "library": "Formisch",
+    "value": "Not available",
+    "note": "\"Meta-framework support\" is listed under \"What's next?\" after v1 (issue #140)",
+    "source": "https://formisch.dev/blog/formisch-v1.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Devtools",
+    "library": "Oxform",
+    "value": "Not available",
+    "note": "(planned) Not in the plan",
+    "source": "plans/extension-api/07-comparison.md#3.3",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Devtools",
+    "library": "TanStack Form",
+    "value": "Add-on",
+    "note": "@tanstack/react-form-devtools 0.2.34, a plugin of @tanstack/react-devtools",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/devtools.md",
+    "version": "0.2.34",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Devtools",
+    "library": "React Hook Form",
+    "value": "Add-on",
+    "note": "@hookform/devtools 4.4.0, published 2025-04-06",
+    "source": "https://registry.npmjs.org/@hookform%2fdevtools",
+    "version": "4.4.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Devtools",
+    "library": "Formisch",
+    "value": "Not available",
+    "note": "No devtools package: the @formisch npm organisation has only the nine framework packages, and the repository has none. The documentation does not state it",
+    "source": "https://registry.npmjs.org/-/org/formisch/package",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Runtime dependencies",
+    "library": "Oxform",
+    "value": "@tanstack/store",
+    "note": "(planned)",
+    "source": "plans/extension-api/02-structure.md#package-manifest",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Runtime dependencies",
+    "library": "TanStack Form",
+    "value": "@tanstack/store, @tanstack/pacer-lite, @tanstack/devtools-event-client",
+    "note": "In @tanstack/form-core. @tanstack/react-form adds @tanstack/react-store",
+    "source": "https://registry.npmjs.org/@tanstack%2fform-core",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Runtime dependencies",
+    "library": "React Hook Form",
+    "value": "None",
+    "note": "No dependencies field. Peer: react",
+    "source": "https://registry.npmjs.org/react-hook-form",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Runtime dependencies",
+    "library": "Formisch",
+    "value": "None",
+    "note": "No dependencies field in any @formisch package. Peers: the framework, valibot >=1.4.1 <2, typescript",
+    "source": "https://registry.npmjs.org/@formisch%2freact",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Extension mechanism for new behavior",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) defineExtension",
+    "source": "plans/extension-api/01-public-api.md#2.1",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Extension mechanism for new behavior",
+    "library": "TanStack Form",
+    "value": "User code",
+    "note": "No plugin API in the documentation. Side effects through the listeners API, components through createFormHook and extendForm",
+    "source": "https://tanstack.com/form/latest/docs/framework/react/guides/listeners.md",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Extension mechanism for new behavior",
+    "library": "React Hook Form",
+    "value": "User code",
+    "note": "No plugin API. The resolver is the documented extension point, for validation only (custom resolver guide)",
+    "source": "https://react-hook-form.com/advanced-usage.md",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Extension mechanism for new behavior",
+    "library": "Formisch",
+    "value": "User code",
+    "note": "@formisch/react/internals, \"not covered by Formisch's semantic versioning guarantees\"",
+    "source": "https://formisch.dev/react/guides/internals.md",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "First stable major release",
+    "library": "Oxform",
+    "value": "None",
+    "note": "(planned) 0.7.0 is a breaking 0.x release",
+    "source": "plans/extension-api/00-direction.md#owner-decisions",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "First stable major release",
+    "library": "TanStack Form",
+    "value": "2025-03-02",
+    "note": "1.0.0 of @tanstack/form-core and @tanstack/react-form (registry time[\"1.0.0\"]). Latest 1.33.5",
+    "source": "https://registry.npmjs.org/@tanstack%2freact-form",
+    "version": "1.0.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "First stable major release",
+    "library": "React Hook Form",
+    "value": "2019-03-27",
+    "note": "1.0.0 (registry time[\"1.0.0\"]); earlier versions were 0.0.x. Current major 7.0.0 on 2021-04-02. Latest 7.92.0",
+    "source": "https://registry.npmjs.org/react-hook-form",
+    "version": "1.0.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "First stable major release",
+    "library": "Formisch",
+    "value": "2026-08-20",
+    "note": "1.0.0 of @formisch/react and @formisch/solid (registry time[\"1.0.0\"]). Latest 1.2.0 and 1.3.0",
+    "source": "https://registry.npmjs.org/@formisch%2freact",
+    "version": "1.0.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "npm downloads in one week",
+    "library": "Oxform",
+    "value": "To be read at release",
+    "note": "(planned)",
+    "source": "plans/extension-api/07-comparison.md#3.3",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "npm downloads in one week",
+    "library": "TanStack Form",
+    "value": "7,175,402",
+    "note": "@tanstack/react-form, 2026-11-09 to 2026-11-15",
+    "source": "https://api.npmjs.org/downloads/point/last-week/@tanstack/react-form",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "npm downloads in one week",
+    "library": "React Hook Form",
+    "value": "63,860,985",
+    "note": "react-hook-form, 2026-11-09 to 2026-11-15",
+    "source": "https://api.npmjs.org/downloads/point/last-week/react-hook-form",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "npm downloads in one week",
+    "library": "Formisch",
+    "value": "15,131",
+    "note": "@formisch/react, 2026-11-09 to 2026-11-15",
+    "source": "https://api.npmjs.org/downloads/point/last-week/@formisch/react",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Documentation for coding agents",
+    "library": "Oxform",
+    "value": "Built-in",
+    "note": "(planned) llms.txt, page Markdown",
+    "source": "plans/extension-api/04-documentation.md#7.2",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Documentation for coding agents",
+    "library": "TanStack Form",
+    "value": "Built-in",
+    "note": "llms.txt and a Markdown form of each page",
+    "source": "https://tanstack.com/form/latest/llms.txt",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Documentation for coding agents",
+    "library": "React Hook Form",
+    "value": "Built-in",
+    "note": "llms.txt, llms-full.txt and a Markdown form of each page",
+    "source": "https://react-hook-form.com/llms.txt",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Documentation for coding agents",
+    "library": "Formisch",
+    "value": "Built-in",
+    "note": "llms.txt, a Markdown form of each page, one full-text file per framework, an MCP server, an agent skill",
+    "source": "https://formisch.dev/llms.txt",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Licence",
+    "library": "Oxform",
+    "value": "MIT",
+    "note": "(planned) Licence field of the package manifest",
+    "source": "packages/core/package.json",
+    "version": "0.7.0 (planned)",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Licence",
+    "library": "TanStack Form",
+    "value": "MIT",
+    "note": "",
+    "source": "https://registry.npmjs.org/@tanstack%2fform-core",
+    "version": "1.33.5",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Licence",
+    "library": "React Hook Form",
+    "value": "MIT",
+    "note": "",
+    "source": "https://registry.npmjs.org/react-hook-form",
+    "version": "7.92.0",
+    "readAt": "2026-11-16"
+  },
+  {
+    "row": "Licence",
+    "library": "Formisch",
+    "value": "MIT",
+    "note": "",
+    "source": "https://registry.npmjs.org/@formisch%2freact",
+    "version": "1.2.0",
+    "readAt": "2026-11-16"
+  }
+]

@@ -8,7 +8,8 @@ the tiers of Oxform's own size check in [03-testing.md](./03-testing.md) and the
 [06-roadmap.md](./06-roadmap.md).
 
 Nothing is built. Every statement about Oxform is a plan. Every statement about another library was read on
-2026-11-15 at the source that the row names.
+2026-11-15 and read again on 2026-11-16 (P7-08) at the source that the row names. `examples/comparison/features.json`
+holds each cell of 3.3 with its source, version and date.
 
 ## 1. Purpose and reader
 
@@ -31,42 +32,47 @@ What the page must not be:
 
 ## 2. Research findings
 
-Read on 2026-11-15. "Unverified" means that no primary source was read for the fact. It is not a "no".
+Read on 2026-11-15, and read again on 2026-11-16. No fact is left unverified.
 
 ### 2.1 Sources
 
-| Id  | Source                                                                                                                        |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- |
-| T1  | <https://tanstack.com/form/latest/docs/overview>                                                                              |
-| T2  | <https://tanstack.com/form/latest/docs/philosophy>                                                                            |
-| T3  | <https://tanstack.com/form/latest/docs/framework/react/guides/validation>                                                     |
-| T4  | <https://tanstack.com/form/latest/docs/framework/react/guides/arrays> and `/docs/reference/classes/FieldApi`                  |
-| T5  | <https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling>                                            |
-| T6  | <https://tanstack.com/form/latest/docs/framework/react/guides/ssr>                                                            |
-| T7  | <https://tanstack.com/form/latest/docs/framework/react/guides/devtools>                                                       |
-| T8  | <https://tanstack.com/form/latest/docs/framework/react/guides/form-composition>                                               |
-| T9  | <https://tanstack.com/form/latest/docs/comparison>                                                                            |
-| T10 | npm registry: `https://registry.npmjs.org/@tanstack%2fform-core` and the adapter packages                                     |
-| R1  | <https://react-hook-form.com/>                                                                                                |
-| R2  | <https://github.com/react-hook-form/react-hook-form> (readme)                                                                 |
-| R3  | <https://react-hook-form.com/docs/useform>                                                                                    |
-| R4  | <https://react-hook-form.com/docs/useform/register>                                                                           |
-| R5  | <https://react-hook-form.com/docs/usefieldarray>                                                                              |
-| R6  | <https://react-hook-form.com/docs/useform/form>                                                                               |
-| R7  | <https://github.com/react-hook-form/resolvers> (readme, `master`)                                                             |
-| R8  | npm registry: `react-hook-form`, `@hookform/resolvers`, `@hookform/devtools`                                                  |
-| F1  | <https://github.com/open-circle/formisch> (readme, `main`)                                                                    |
-| F2  | <https://formisch.dev/react/guides/comparison/>                                                                               |
-| F3  | <https://formisch.dev/react/guides/validation.md>                                                                             |
-| F4  | <https://formisch.dev/react/guides/field-arrays.md>                                                                           |
-| F5  | <https://formisch.dev/react/guides/handle-submission.md>                                                                      |
-| F6  | <https://formisch.dev/react/guides/architecture.md>                                                                           |
-| F7  | <https://formisch.dev/solid/guides/migrate-from-modular-forms.md>                                                             |
-| F8  | <https://formisch.dev/blog/formisch-v1.md> (2026-08-20) and `/blog/react-form-library-comparison.md` (2026-04-09)             |
-| F9  | <https://formisch.dev/llms.txt>                                                                                               |
-| F10 | npm registry: `@formisch/react`, `@formisch/solid`, `@formisch/vue`, `@formisch/svelte`, `@formisch/preact`, `@formisch/qwik` |
-| G   | GitHub API: `https://api.github.com/repos/<owner>/<repo>` for the three repositories                                          |
-| N   | npm downloads API: `https://api.npmjs.org/downloads/point/last-week/<package>`, week 2026-11-07 to 2026-11-13                 |
+| Id  | Source                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------- |
+| T1  | <https://tanstack.com/form/latest/docs/overview>                                                                  |
+| T2  | <https://tanstack.com/form/latest/docs/philosophy>                                                                |
+| T3  | <https://tanstack.com/form/latest/docs/framework/react/guides/validation>                                         |
+| T4  | <https://tanstack.com/form/latest/docs/framework/react/guides/arrays> and `/docs/reference/classes/FieldApi`      |
+| T5  | <https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling>                                |
+| T6  | <https://tanstack.com/form/latest/docs/framework/react/guides/ssr>                                                |
+| T7  | <https://tanstack.com/form/latest/docs/framework/react/guides/devtools>                                           |
+| T8  | <https://tanstack.com/form/latest/docs/framework/react/guides/form-composition>                                   |
+| T9  | <https://tanstack.com/form/latest/docs/comparison>                                                                |
+| T10 | npm registry: `https://registry.npmjs.org/@tanstack%2fform-core` and the adapter packages                         |
+| T11 | <https://tanstack.com/form/latest/llms.txt>                                                                       |
+| T12 | <https://tanstack.com/form/latest/docs/framework/react/guides/custom-errors> and `/guides/listeners`              |
+| R1  | <https://react-hook-form.com/>                                                                                    |
+| R2  | <https://github.com/react-hook-form/react-hook-form> (readme)                                                     |
+| R3  | <https://react-hook-form.com/docs/useform>                                                                        |
+| R4  | <https://react-hook-form.com/docs/useform/register>                                                               |
+| R5  | <https://react-hook-form.com/docs/usefieldarray>                                                                  |
+| R6  | <https://react-hook-form.com/docs/useform/form>                                                                   |
+| R7  | <https://github.com/react-hook-form/resolvers> (readme, `master`)                                                 |
+| R8  | npm registry: `react-hook-form`, `@hookform/resolvers`, `@hookform/devtools`                                      |
+| R9  | <https://react-hook-form.com/llms.txt>, `/docs/useform.md`, `/docs/formprovider.md` and `/advanced-usage`         |
+| F1  | <https://github.com/open-circle/formisch> (readme, `main`)                                                        |
+| F2  | <https://formisch.dev/react/guides/comparison/>                                                                   |
+| F3  | <https://formisch.dev/react/guides/validation.md>                                                                 |
+| F4  | <https://formisch.dev/react/guides/field-arrays.md>                                                               |
+| F5  | <https://formisch.dev/react/guides/handle-submission.md>                                                          |
+| F6  | <https://formisch.dev/react/guides/architecture.md>                                                               |
+| F7  | <https://formisch.dev/solid/guides/migrate-from-modular-forms.md>                                                 |
+| F8  | <https://formisch.dev/blog/formisch-v1.md> (2026-08-20) and `/blog/react-form-library-comparison.md` (2026-04-09) |
+| F9  | <https://formisch.dev/llms.txt>                                                                                   |
+| F10 | npm registry: the nine packages of `https://registry.npmjs.org/-/org/formisch/package`                            |
+| F11 | <https://formisch.dev/react/guides/controlled-fields.md> and `/guides/typescript.md`                              |
+| F12 | <https://formisch.dev/react/guides/migrate-from-tanstack-form.md>                                                 |
+| G   | GitHub API: `https://api.github.com/repos/<owner>/<repo>` for the three repositories                              |
+| N   | npm downloads API: `https://api.npmjs.org/downloads/point/last-week/<package>`, week 2026-11-09 to 2026-11-15     |
 
 ### 2.2 Identity and maturity
 
@@ -76,35 +82,35 @@ Read on 2026-11-15. "Unverified" means that no primary source was read for the f
 | Published               | 2026-08-11 (T10)                                                                                                                           | 2026-11-11 (R8)                                                          | 2026-10-31 (F10)                                                                                                                                           |
 | Prerelease line         | `alpha`: 2.0.0-alpha.3 (T10)                                                                                                               | `beta`: 8.0.0-beta.0 (R8)                                                | None. `rc` tag is the old 1.0.0-rc.0 (F10)                                                                                                                 |
 | First publish on npm    | 2023-04-25 (T10)                                                                                                                           | 2019-03-20 (R8)                                                          | `@formisch/solid` 2025-07-15, `@formisch/react` 2025-12-04 (F10)                                                                                           |
-| First stable major      | Unverified (date of 1.0.0 not read)                                                                                                        | Unverified                                                               | 1.0.0 on 2026-08-20. "Stable and ready for usage in production" (F8, F10)                                                                                  |
+| First stable major      | 1.0.0 on 2025-03-02 (T10)                                                                                                                  | 1.0.0 on 2019-03-27. Current major 7.0.0 on 2021-04-02 (R8)              | 1.0.0 on 2026-08-20. "Stable and ready for usage in production" (F8, F10)                                                                                  |
 | Maker                   | The TanStack organisation (G)                                                                                                              | The `react-hook-form` organisation (G)                                   | Fabian Hiller: npm author and maintainer (F10). Repository in `open-circle`, which also holds Valibot (npm `valibot` repository field)                     |
-| Lineage                 | Not read                                                                                                                                   | Not read                                                                 | "The official successor of Modular Forms, built by the same author". Modular Forms is "in maintenance mode" (F7)                                           |
+| Lineage                 | The `react-form` repository of Tanner Linsley, now `TanStack/form` (G, npm `react-form`)                                                   | No predecessor stated (R8)                                               | "The official successor of Modular Forms, built by the same author". Modular Forms is "in maintenance mode" (F7)                                           |
 | Licence                 | MIT (T10)                                                                                                                                  | MIT (R8)                                                                 | MIT (F1, F10)                                                                                                                                              |
-| GitHub stars            | 6,770 (G)                                                                                                                                  | 44,917 (G)                                                               | 1,224 (G)                                                                                                                                                  |
-| npm downloads, one week | `@tanstack/react-form`: 7,197,981 (N)                                                                                                      | 63,064,521 (N)                                                           | `@formisch/react`: 12,706 (N)                                                                                                                              |
+| GitHub stars            | 6,769 (G)                                                                                                                                  | 44,919 (G)                                                               | 1,226 (G)                                                                                                                                                  |
+| npm downloads, one week | `@tanstack/react-form`: 7,175,402 (N)                                                                                                      | 63,860,985 (N)                                                           | `@formisch/react`: 15,131 (N)                                                                                                                              |
 | Runtime dependencies    | `@tanstack/store`, `@tanstack/pacer-lite`, `@tanstack/devtools-event-client` in core. The React adapter adds `@tanstack/react-store` (T10) | None. Peer: `react` (R8). "A tiny library without any dependencies" (R1) | None listed. Peers: the framework and `valibot >=1.4.1 <2` (F10). `@formisch/core` is not on npm: each framework package is "a self-contained bundle" (F6) |
-| Size stated by project  | No figure in the text of T1 or T9. T9 shows a badge image                                                                                  | No figure. "Small size and no dependencies" (R2)                         | "Small bundle size starting at 2.5 kB" (F1). Method, version and date are not stated (F2)                                                                  |
+| Size stated by project  | No figure in the text of T1 or T9. T9 shows a badge image                                                                                  | No figure. "Small size and no dependencies" (R2)                         | "Small bundle size starting at 2.5 kB" (F1). "min+gzip", with no version or date (F2)                                                                      |
 
 Formisch also states sizes for the other two: "~12 kB" for React Hook Form and "~15 kB" for TanStack Form,
-minified and gzipped, with no method, version or date (F2). The Oxform page does not reuse these figures.
+minified and gzipped, with no version or date (F2). The Oxform page does not reuse these figures.
 
 ### 2.3 Model and features
 
 | Topic                    | TanStack Form                                                                                                                              | React Hook Form                                                                                                                                                                                            | Formisch                                                                                                                                   |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Model                    | Headless, "framework-agnostic design" (T1). "Firmly in the controlled camp" (T2)                                                           | `register` returns `ref`, `onChange`, `onBlur`, `name`. The value is read through the ref (R4). The home page labels it "uncontrolled" (R1). `useController` for controlled components (R4)                | "A schema-based, headless form library for JS frameworks" (F1). The core is built once per framework with that framework's reactivity (F6) |
-| Frameworks               | React, Vue, Angular, Solid, Svelte, Lit (T1). One npm package each (T10)                                                                   | React. Peer `react ^16.8 \|\| ^17 \|\| ^18 \|\| ^19` (R8). The repository names React Native (G)                                                                                                           | Angular, HonoX, Preact, Qwik, React, React Native, SolidJS, Svelte, Vue (F1). npm packages for Angular, HonoX and React Native: unverified |
+| Frameworks               | React, Preact, Vue, Angular, Solid, Lit, Svelte (T11). One npm package each (T10)                                                          | React. Peer `react ^16.8 \|\| ^17 \|\| ^18 \|\| ^19` (R8). The repository names React Native (G)                                                                                                           | Angular, HonoX, Preact, Qwik, React, React Native, SolidJS, Svelte, Vue (F1). One npm package each. `@formisch/honox` is 0.2.0 (F10)       |
 | Schema and validation    | Validators per event, on a field or on the form. "Natively supports all libraries following the Standard Schema specification" (T3)        | Built-in rules (`required`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `validate`) (R4), or a `resolver` (R3). `@hookform/resolvers` 7.0.6 lists 20 resolvers, Standard Schema among them (R7, R8) | The Valibot schema is the only place. "Currently supports only Valibot" (F2). Standard Schema is on the roadmap (F8)                       |
 | Validation timing        | Per validator: `onChange`, `onBlur`, `onSubmit` and their `Async` forms (T3)                                                               | One form-wide `mode`: `onSubmit`, `onBlur`, `onChange`, `onTouched`, `all`. `reValidateMode` (R3)                                                                                                          | Form-wide `validate` and `revalidate`: `initial`, `touch`, `input`, `change`, `blur`, `submit`. The whole schema runs each time (F3)       |
 | Type inference           | "Infer everything from runtime defaults". "You should never need to pass a generic" (T2)                                                   | A generic on `useForm<FormValues>` (R3), or "most of the resolvers can infer the output type from the schema" (R7)                                                                                         | Inferred from the schema (F1, F2). Paths are typed arrays (F7)                                                                             |
 | Array fields             | `mode="array"` and `pushValue`, `insertValue`, `replaceValue`, `removeValue`, `swapValues`, `moveValue`, `clearValues` (T4)                | `useFieldArray`: `append`, `prepend`, `insert`, `swap`, `move`, `update`, `replace`, `remove`. "Does not support flat field arrays" (R5)                                                                   | `FieldArray` and the methods `insert`, `move`, `remove`, `replace`, `swap`. Nesting is supported (F4)                                      |
-| Async validation         | `onChangeAsync`, `onBlurAsync`. The async validator runs only if the sync one succeeds. `asyncDebounceMs` (T3)                             | An async `validate` function (R4). Resolvers run in `async` mode by default (R7). Debounce and cancellation: unverified                                                                                    | Through Valibot's async API (`objectAsync`, `pipeAsync`, `checkAsync`). `isValidating` (F3). Debounce and cancellation: unverified         |
+| Async validation         | `onChangeAsync`, `onBlurAsync`. The async validator runs only if the sync one succeeds. `asyncDebounceMs` (T3)                             | An async `validate` function (R4). Resolvers run in `async` mode by default (R7). No debounce option. Cancellation is not documented (R9)                                                                  | Through Valibot's async API (`objectAsync`, `pipeAsync`, `checkAsync`). `isValidating` (F3). No debounce option (F12)                      |
 | Submission               | `onSubmit` option and `form.handleSubmit()`. `onSubmitMeta`. `onSubmit` "will always be the input data" of a schema (T5). `canSubmit` (T3) | `handleSubmit`. The `Form` component posts `FormData` to a URL or a Server Action. It is "currently in BETA" (R6)                                                                                          | `Form` with `onSubmit` receives "the validated form values". `handleSubmit`, `submit`, `isSubmitting` (F5)                                 |
-| Server rendering         | TanStack Start, Next.js App Router and Remix, through `@tanstack/react-form-start`, `-nextjs` and `-remix` (T6)                            | `progressive: true` on `Form` renders `action`, `method` and native rules. "Only applicable to SSR frameworks" (R6)                                                                                        | Unverified. No page read covers it. "Meta-framework support" is on the roadmap (F8)                                                        |
-| Devtools                 | `@tanstack/react-form-devtools` 0.2.34 as a plugin of `@tanstack/react-devtools` (T7, T10). T9 still says "planned"                        | `@hookform/devtools` 4.4.0, published 2025-04-06 (R8)                                                                                                                                                      | Unverified. None found in F1, F6 or F9                                                                                                     |
-| Extension mechanism      | No plugin system found in the pages read: unverified                                                                                       | Resolvers are the documented extension point (R3, R7). Others: unverified                                                                                                                                  | No plugin system. `@formisch/react/internals` gives the core for custom methods (F6)                                                       |
-| Composition and reuse    | `createFormHook`, `createFormHookContexts`, `useAppForm`, `withForm`, `withFieldGroup`, `formOptions`, `extendForm` (T8)                   | `useFormContext` and `FormProvider`: unverified (not read)                                                                                                                                                 | Methods are standalone, tree-shakeable functions (F6). A reuse API for field groups: unverified                                            |
-| Documentation for agents | Unverified                                                                                                                                 | Unverified                                                                                                                                                                                                 | `llms.txt`, a Markdown form of each page, one full-text file per framework, an MCP server (F9)                                             |
+| Server rendering         | TanStack Start, Next.js App Router and Remix, through `@tanstack/react-form-start`, `-nextjs` and `-remix` (T6)                            | `progressive: true` on `Form` renders `action`, `method` and native rules. "Only applicable to SSR frameworks" (R6)                                                                                        | None. "Meta-framework support" is planned after v1 (F8)                                                                                    |
+| Devtools                 | `@tanstack/react-form-devtools` 0.2.34 as a plugin of `@tanstack/react-devtools` (T7, T10). T9 still says "planned"                        | `@hookform/devtools` 4.4.0, published 2025-04-06 (R8)                                                                                                                                                      | None. The npm organisation has no devtools package, and F9 names none (F10, F9)                                                            |
+| Extension mechanism      | No plugin API. Side effects through listeners, components through `createFormHook` (T12, T8)                                               | No plugin API. Resolvers are the documented extension point, for validation only (R3, R7, R9)                                                                                                              | No plugin system. `@formisch/react/internals` gives the core for custom methods (F6)                                                       |
+| Composition and reuse    | `createFormHook`, `createFormHookContexts`, `useAppForm`, `withForm`, `withFieldGroup`, `formOptions`, `extendForm` (T8)                   | `FormProvider` and `useFormContext` share the methods of `useForm`. No field-group API (R9)                                                                                                                | Methods are standalone, tree-shakeable functions (F6). No field-group API. For `createFormHook`: "No equivalent needed" (F11, F12)         |
+| Documentation for agents | `llms.txt` and a Markdown form of each page (T11)                                                                                          | `llms.txt`, `llms-full.txt` and a Markdown form of each page (R9)                                                                                                                                          | `llms.txt`, a Markdown form of each page, one full-text file per framework, an MCP server (F9)                                             |
 
 Notes for the page author:
 
@@ -146,36 +152,37 @@ The rows are chosen so that each library has rows where it is the strongest. In 
 
 `00`, `01` and `04` are the plan files. Oxform cells are plans. The other cells cite section 2.1.
 
-| #   | Row                                          | Oxform (planned)                                                                 | TanStack Form                                | React Hook Form                      | Formisch                           |
-| --- | -------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------ | ---------------------------------- |
-| 1   | Frameworks                                   | React, Solid 1, Solid 2 (`00#Packages and entry points`)                         | React, Vue, Angular, Solid, Svelte, Lit (T1) | React, React Native (R8, G)          | Nine (F1). See 2.3                 |
-| 2   | Uncontrolled inputs                          | Not available. Values live in the store (`01#3.1`, `values`)                     | Not available (T2)                           | Built-in (R1, R4)                    | Unverified                         |
-| 3   | Types without a hand-written generic         | Built-in, from the schema and the chain (`00#Principles` 4)                      | Built-in, from `defaultValues` (T2)          | Add-on, from a resolver schema (R7)  | Built-in, from the schema (F2)     |
-| 4   | The schema validates without more setup      | Not available. A schema only types `Values` (`04#5.2`, row 1)                    | User code: pass it to `validators` (T3)      | Add-on: `resolver` (R3, R7)          | Built-in (F3)                      |
-| 5   | Schema libraries                             | Standard Schema (`02#Package manifest`)                                          | Standard Schema (T3)                         | 20 resolvers (R7)                    | Valibot only (F2)                  |
-| 6   | Validation without a schema library          | Built-in: validator functions per check (`01#3.1`, `check`)                      | Built-in (T3)                                | Built-in (R4)                        | Not available (F2, F3)             |
-| 7   | Validation timing per validator              | Built-in: per event in each check (`04#4.2`, E18)                                | Built-in (T3)                                | Not available: form-wide `mode` (R3) | Not available: form-wide (F3)      |
-| 8   | Async validation                             | Built-in. A newer run discards a stale one (`03#Integration layer`, I2)          | Built-in (T3)                                | Built-in (R4, R7)                    | Built-in, in the schema (F3)       |
-| 9   | Debounce of async validation                 | User code (no option in `01#3.1`)                                                | Built-in: `asyncDebounceMs` (T3)             | Unverified                           | Unverified                         |
-| 10  | More than one named set of issues (warnings) | Built-in: `check(name)` (`01#3.1`)                                               | Unverified                                   | Unverified                           | Unverified                         |
-| 11  | Array fields                                 | Built-in: `arrays` (`01#3.1`)                                                    | Built-in (T4)                                | Built-in (R5)                        | Built-in (F4)                      |
-| 12  | Reusable field group at more than one path   | Built-in: `defineScope` (`04#4.2`, E15)                                          | Built-in: `withFieldGroup` (T8)              | Unverified                           | Unverified                         |
-| 13  | Shared form set-up for a team                | Built-in: a preset (`04#4.2`, E04)                                               | Built-in: `createFormHook` (T8)              | Unverified                           | Unverified                         |
-| 14  | Server rendering with a meta-framework       | User code. The rules are documented (`04#4.2`, E26, E27). No integration package | Add-on: Start, Next.js, Remix (T6)           | Built-in, beta: `Form` (R6)          | Unverified                         |
-| 15  | Devtools                                     | Not available (not in the plan)                                                  | Add-on (T7)                                  | Add-on (R8)                          | Unverified                         |
-| 16  | Runtime dependencies                         | `@tanstack/store` (`02#Package manifest`)                                        | Three in core (T10)                          | None (R8)                            | None listed (F10)                  |
-| 17  | Extension mechanism for new behavior         | Built-in: `defineExtension` (`01#2.1`)                                           | Unverified                                   | Unverified                           | User code through `internals` (F6) |
-| 18  | First stable major release                   | None. 0.7.0 is a breaking 0.x release (`00#Owner decisions` 2)                   | Unverified date. 1.33.5 today (T10)          | Unverified date. 7.92.0 today (R8)   | 2026-08-20 (F8)                    |
-| 19  | npm downloads in one week                    | To be read at release                                                            | 7,197,981 (N)                                | 63,064,521 (N)                       | 12,706 (N)                         |
-| 20  | Documentation for coding agents              | Built-in (planned): `llms.txt`, page Markdown (`04#7.2`)                         | Unverified                                   | Unverified                           | Built-in (F9)                      |
-| 21  | A form pays only for the features it imports | Built-in: the chain (`00#Principles` 5)                                          | Unverified                                   | Unverified                           | Built-in: methods (F6)             |
-| 22  | Licence                                      | MIT (`packages/core/package.json`)                                               | MIT (T10)                                    | MIT (R8)                             | MIT (F10)                          |
+| #   | Row                                          | Oxform (planned)                                                                 | TanStack Form                           | React Hook Form                      | Formisch                           |
+| --- | -------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------ | ---------------------------------- |
+| 1   | Frameworks                                   | React, Solid 1, Solid 2 (`00#Packages and entry points`)                         | Seven, with Preact (T11)                | React, React Native (R8, G)          | Nine (F1). See 2.3                 |
+| 2   | Uncontrolled inputs                          | Not available. Values live in the store (`01#3.1`, `values`)                     | Not available (T2)                      | Built-in (R1, R4)                    | Built-in (F11)                     |
+| 3   | Types without a hand-written generic         | Built-in, from the schema and the chain (`00#Principles` 4)                      | Built-in, from `defaultValues` (T2)     | Add-on, from a resolver schema (R7)  | Built-in, from the schema (F2)     |
+| 4   | The schema validates without more setup      | Not available. A schema only types `Values` (`04#5.2`, row 1)                    | User code: pass it to `validators` (T3) | Add-on: `resolver` (R3, R7)          | Built-in (F3)                      |
+| 5   | Schema libraries                             | Standard Schema (`02#Package manifest`)                                          | Standard Schema (T3)                    | 20 resolvers (R7)                    | Valibot only (F2)                  |
+| 6   | Validation without a schema library          | Built-in: validator functions per check (`01#3.1`, `check`)                      | Built-in (T3)                           | Built-in (R4)                        | Not available (F2, F3)             |
+| 7   | Validation timing per validator              | Built-in: per event in each check (`04#4.2`, E18)                                | Built-in (T3)                           | Not available: form-wide `mode` (R3) | Not available: form-wide (F3)      |
+| 8   | Async validation                             | Built-in. A newer run discards a stale one (`03#Integration layer`, I2)          | Built-in (T3)                           | Built-in (R4, R7)                    | Built-in, in the schema (F3)       |
+| 9   | Debounce of async validation                 | User code (no option in `01#3.1`)                                                | Built-in: `asyncDebounceMs` (T3)        | User code (R9)                       | User code (F12)                    |
+| 10  | More than one named set of issues (warnings) | Built-in: `check(name)` (`01#3.1`)                                               | Not available: one set (T12)            | Not available: one set (R4)          | Not available: one set (F3)        |
+| 11  | Array fields                                 | Built-in: `arrays` (`01#3.1`)                                                    | Built-in (T4)                           | Built-in (R5)                        | Built-in (F4)                      |
+| 12  | Reusable field group at more than one path   | Built-in: `defineScope` (`04#4.2`, E15)                                          | Built-in: `withFieldGroup` (T8)         | User code (R9)                       | User code (F11)                    |
+| 13  | Shared form set-up for a team                | Built-in: a preset (`04#4.2`, E04)                                               | Built-in: `createFormHook` (T8)         | User code (R9)                       | User code (F12)                    |
+| 14  | Server rendering with a meta-framework       | User code. The rules are documented (`04#4.2`, E26, E27). No integration package | Add-on: Start, Next.js, Remix (T6)      | Built-in, beta: `Form` (R6)          | Not available (F8)                 |
+| 15  | Devtools                                     | Not available (not in the plan)                                                  | Add-on (T7)                             | Add-on (R8)                          | Not available (F10)                |
+| 16  | Runtime dependencies                         | `@tanstack/store` (`02#Package manifest`)                                        | Three in core (T10)                     | None (R8)                            | None (F10)                         |
+| 17  | Extension mechanism for new behavior         | Built-in: `defineExtension` (`01#2.1`)                                           | User code: listeners (T12)              | User code: resolvers (R9)            | User code through `internals` (F6) |
+| 18  | First stable major release                   | None. 0.7.0 is a breaking 0.x release (`00#Owner decisions` 2)                   | 2025-03-02. 1.33.5 today (T10)          | 2019-03-27. 7.92.0 today (R8)        | 2026-08-20 (F8)                    |
+| 19  | npm downloads in one week                    | To be read at release                                                            | 7,175,402 (N)                           | 63,860,985 (N)                       | 15,131 (N)                         |
+| 20  | Documentation for coding agents              | Built-in (planned): `llms.txt`, page Markdown (`04#7.2`)                         | Built-in (T11)                          | Built-in (R9)                        | Built-in (F9)                      |
+| 21  | Licence                                      | MIT (`packages/core/package.json`)                                               | MIT (T10)                               | MIT (R8)                             | MIT (F10)                          |
 
 Oxform's own limits that the page repeats from `04#5.2`: row 4 (the schema is type-only), a form without
 `handles` has no `field(path)`, a slot cannot be wrapped, and the cost of derived status is linear in the
 number of fields. The page links `limits.mdx` and does not restate the rest.
 
-Each "Unverified" cell is resolved in work package P7-08 (section 6.3) or its row is removed.
+P7-08 resolved each "Unverified" cell. It removed the row "A form pays only for the features it imports": TanStack
+Form and React Hook Form state nothing about it at a primary source, and the size table measures it. Row 15 for
+Formisch rests on the absence of a package (F10), because the documentation does not mention devtools.
 
 ## 4. Size comparison method
 
@@ -384,7 +391,7 @@ Every item is decided or is a verification task of a work package. `06-roadmap.m
    feature (R1). The page has no render-count row and states the omission (4.6, rule 7).
 6. **The location of the result files.** Decided by `02#Comparison workspace`: `examples/comparison/results/`,
    next to its source.
-7. **Unverified facts.** Verification task of P7-08. TanStack Form: date of 1.0.0, a plugin mechanism, named sets of
+7. **Unverified facts.** Resolved by P7-08 (2026-11-16), in 2.2, 2.3 and 3.3. TanStack Form: date of 1.0.0, a plugin mechanism, named sets of
    issues, agent documentation. React Hook Form: date of the first stable major, debounce and cancellation of
    async validation, `FormProvider` as a reuse API, agent documentation. Formisch: server rendering, devtools,
    uncontrolled inputs, debounce and cancellation, npm package names for Angular, HonoX and React Native, how

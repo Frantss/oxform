@@ -141,3 +141,20 @@
 - Why it matters: a consumer has one `solid-js` and is not affected, but each Solid 1 workspace that type-checks
   against the built package is. `examples/solid/tsconfig.json` maps `solid-js` to its own copy with `paths`. The
   Solid 1 type tests of `packages/solid-v1` do not catch it.
+
+## Comparison cells that rest on a judgement (TK-055)
+
+- Where: `plans/extension-api/07-comparison.md` 3.3, rows 9, 10, 12, 13 and 15, and `examples/comparison/features.json`.
+- Finding: these cells come from what the documentation leaves out, not from a direct statement:
+  - Row 15, Formisch: "Not available". The docs do not mention devtools. The `@formisch` npm organisation
+    publishes no devtools package, so "Built-in" and "Add-on" are both excluded. 3.1 asks for a statement or the
+    model, and this cell has neither.
+  - Row 10: "Not available" for the other three libraries. Their models have one set of issues that makes a
+    field invalid. None of them says that warnings are absent.
+  - Rows 9, 12 and 13: "User code" where a library documents no option or API, and the docs show the parts that
+    the application uses.
+  - Row 21 ("A form pays only for the features it imports") is removed. No primary source states it for
+    TanStack Form or React Hook Form, and the size table measures it.
+- Why it matters: a maintainer of another library can contest these cells. The page review (P8-11) or a
+  correction (4.6, rule 6) decides them. Removing row 15 would also remove a row where two other libraries
+  are ahead of Oxform (3.2).
