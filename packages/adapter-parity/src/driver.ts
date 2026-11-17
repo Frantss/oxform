@@ -1,5 +1,5 @@
 import type { InstanceOf } from '@oxform/core';
-import type { profile, signIn } from './fixtures';
+import type { fixtures, profile, signIn } from './fixtures';
 
 export type SignInInstance = InstanceOf<typeof signIn>;
 export type ProfileInstance = InstanceOf<typeof profile>;
@@ -107,8 +107,12 @@ type InstanceOfView<Name extends ViewName> = Name extends 'signIn' | 'twoSignIns
     ? unknown
     : ProfileInstance;
 
+export type FixtureName = keyof typeof fixtures;
+
 /** What an adapter gives the scenarios. */
 export interface Driver {
+  /** The member names of `createParts` for a fixture. */
+  parts(fixture: FixtureName): readonly string[];
   mount<Name extends ViewName>(
     view: Name,
     props?: Views[Name],

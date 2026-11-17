@@ -1,6 +1,7 @@
 import { expect, vi } from 'vite-plus/test';
 import { page, userEvent } from 'vite-plus/test/browser';
-import { profile } from './fixtures';
+import { slotsOf } from '@oxform/core/adapter';
+import { fixtures, profile } from './fixtures';
 import type { Scenario } from './scenario';
 
 let mounts = 0;
@@ -13,6 +14,8 @@ const screenOf = (container: HTMLElement) => {
   container.dataset.testid ??= `parity-mount-${++mounts}`;
   return page.getByTestId(container.dataset.testid);
 };
+
+const capitalize = (name: string) => `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 
 /** The parity scenarios that run in a browser, by id (`03-testing.md#Adapter tests: the parity suite`). */
 export const browserScenarios = {
@@ -255,6 +258,27 @@ export const browserScenarios = {
         strict.instance.field('name').state.ref,
         strict.instance.values.get('name'),
       ]).toEqual([before + 1, null, 'after']);
+    },
+  },
+  P15: {
+    title: 'createParts gives Root, one component per slot except root, and the five hooks, for each fixture',
+    run: async driver => {
+      const expected = Object.values(fixtures).map(form => [
+        'Root',
+        ...Object.keys(slotsOf(form))
+          .filter(name => name !== 'root')
+          .map(capitalize),
+        'useArray',
+        'useField',
+        'useForm',
+        'useScope',
+        'useSelector',
+      ]);
+      const sorted = (names: readonly string[]) => [...names].sort();
+
+      expect((Object.keys(fixtures) as (keyof typeof fixtures)[]).map(name => sorted(driver.parts(name)))).toEqual(
+        expected.map(sorted),
+      );
     },
   },
 } satisfies Record<string, Scenario>;

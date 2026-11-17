@@ -485,6 +485,7 @@ React, Solid 1 and Solid 2 must each pass every scenario. The spike has only the
 | P12 | Two concurrent server renders of one form share no state                                                                                                  | Node     | `explorations/behavior-api/proposal.md:286`, `packages/solid-v2/src/server-tests/ssr.spec.ts:9` |
 | P13 | A server render leaves no subscription, validation, timer or effect running. The timer of a framework that ends its render runs, and none is left.        | Node     | `packages/solid-v2/src/server-tests/ssr.spec.ts:24`                                             |
 | P14 | An existing instance given to `Root`; unmount stops the work; a double mount still works                                                                  | Chromium | `X/react/parts.spec.tsx:94-112`, `X/react/parts-core.spec.tsx:112`                              |
+| P15 | `createParts` gives `Root`, one component per slot except `root`, and the five hooks, for each fixture                                                    | Chromium | `01-public-api.md#6.4`, item 2                                                                  |
 
 P14's double mount is React strict mode; Solid runs the same scenario as mount, dispose, mount.
 

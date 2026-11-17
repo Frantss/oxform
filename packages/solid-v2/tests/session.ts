@@ -1,5 +1,7 @@
-import type { ViewName, ViewProps } from '@oxform/adapter-parity/driver';
+import type { FixtureName, ViewName, ViewProps } from '@oxform/adapter-parity/driver';
 import type { Component } from 'solid-js';
+import { fixtures } from '@oxform/adapter-parity/fixtures';
+import { createParts } from '../export/index';
 import { views } from './views';
 
 /** What the views of one mount report: the instance they expose and the renders they count. */
@@ -21,3 +23,6 @@ export const viewOf = (view: ViewName) => {
   if (!View) throw new Error(`The Solid 2 parity driver has no "${view}" view.`);
   return View;
 };
+
+/** The member names of `createParts` for a fixture. */
+export const partsOf = (fixture: FixtureName) => Object.keys(createParts(fixtures[fixture]));

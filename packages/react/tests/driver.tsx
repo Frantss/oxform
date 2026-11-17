@@ -1,7 +1,9 @@
 import type { Driver, Mounted, ViewName, ViewProps } from '@oxform/adapter-parity/driver';
+import { fixtures } from '@oxform/adapter-parity/fixtures';
 import { StrictMode, useEffect, type ReactNode } from 'react';
 import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
+import { createParts } from '../export/index';
 import { views } from './views';
 
 /** Calls `onCommit` after each commit of the tree. It renders no element, so the server HTML does not change. */
@@ -65,6 +67,7 @@ const mountedOf = (
 
 /** The React driver of the parity scenarios. */
 export const driver: Driver = {
+  parts: fixture => Object.keys(createParts(fixtures[fixture])),
   mount: async (view, props = {} as never, options = {}) => {
     const state = session();
     const container = document.body.appendChild(document.createElement('div'));

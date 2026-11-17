@@ -2,7 +2,7 @@ import type { Driver, Mounted, ViewName } from '@oxform/adapter-parity/driver';
 import { createSignal, mergeProps, type JSX } from 'solid-js';
 import { createComponent, hydrate, render } from 'solid-js/web';
 import { commands } from 'vite-plus/test/browser';
-import { session, viewOf } from './session';
+import { partsOf, session, viewOf } from './session';
 
 /** The command of `vite.config.ts` that renders a view on the server: Solid renders no string in a browser. */
 const server = commands as unknown as { renderView(view: ViewName, props: object): Promise<string> };
@@ -46,6 +46,7 @@ const start = (
 
 /** The Solid 1 driver of the parity scenarios in the browser. */
 export const driver: Driver = {
+  parts: partsOf,
   mount: async (view, props = {} as never, options = {}) =>
     start(view, props, document.body.appendChild(document.createElement('div')), render, options.strict),
   renderToString: async (view, props = {} as never) => ({
