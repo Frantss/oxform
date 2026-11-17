@@ -4,9 +4,10 @@ import type { articleEditor } from './article-editor';
 
 /**
  * E23. "Discard" must return to the last saved text, not to the text that the page first loaded. `reset.all`
- * takes the values to start from, and the default values of the form stay, so this keeps the last saved values.
+ * takes the values to start from, and the default values of the form stay, so this keeps the last saved values. It
+ * takes only the members it uses, so a form that adds to the editor fits too.
  */
-export const createDrafts = (form: InstanceOf<typeof articleEditor>) => {
+export const createDrafts = (form: Pick<InstanceOf<typeof articleEditor>, 'values' | 'reset'>) => {
   let saved: Article = form.values.get();
   return {
     /** After a save: the saved values are the new baseline, and the form is clean. */

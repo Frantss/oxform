@@ -3,12 +3,12 @@ id: TK-051
 title: React example app
 phase: 7
 work_package: P7-04
-status: todo
+status: done
 depends_on: [TK-042, TK-050]
 branch: codex/P7-04-react-example
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-051: React example app
@@ -50,16 +50,35 @@ example has one browser flow that passes in Chromium.
 
 ## Acceptance
 
-- [ ] Each of E29 to E33 has a rendering module that matches its row of `04#4.2`.
-- [ ] The five domain forms render from kit code. No file is copied from the spike.
-- [ ] Each example module has one browser flow. Together they validate, submit, reorder an array and reset
+- [x] Each of E29 to E33 has a rendering module that matches its row of `04#4.2`.
+- [x] The five domain forms render from kit code. No file is copied from the spike.
+- [x] Each example module has one browser flow. Together they validate, submit, reorder an array and reset
       (I8).
-- [ ] `vp run example-oxform-react#test` passes.
-- [ ] `vp run example-oxform-react#check:types` passes, and the app builds `playground.html`.
-- [ ] The app runs, and each flow works at desktop and mobile sizes with no console error (`AGENTS.md`,
+- [x] `vp run example-oxform-react#test` passes.
+- [x] `vp run example-oxform-react#check:types` passes, and the app builds `playground.html`.
+- [x] The app runs, and each flow works at desktop and mobile sizes with no console error (`AGENTS.md`,
       "Validation").
-- [ ] `pnpm run check:all` passes.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, the browser check and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. `example-oxform-react` runs 19 browser cases in
+  Chromium, all pass. Its type check covers `src` and `tests`. Its build writes `index.html` and
+  `playground.html`.
+- Rendering modules in `src/examples/`: the five domain forms (`sign-in.tsx` with E29, `checkout.tsx`,
+  `team-invites.tsx`, `article-editor.tsx`, `member-filter.tsx`), E30 `country-select.tsx`, E31
+  `address-fields.tsx`, E32 `order-summary.tsx`, E33 `member-list.tsx`, and `member-row.tsx` (E16 and E24). Each has
+  one flow in `tests/`. Together they validate, submit, reorder an array and reset (I8). Every form comes from
+  the kit. The app and the playground list the five forms. The playground reads `?example=`.
+- Browser check: the dev server, every form at 1280 × 720 and 390 × 844, after a submit. No page overflows.
+  The only console message is the version notice of the React Scan script that `index.html` already loaded.
+  The playground page logs nothing.
+- Fix: the alias `@oxform/core` also matched `@oxform/core/behaviors`, so no kit module loaded. The aliases now
+  match each entry point whole. The Solid apps have the same alias (TK-052, TK-053).
+- Kit changes for the app: `countries` and `articles.saveDraft` for the forms, and the autosave text "Draft not
+  saved", which no longer repeats the "Unsaved changes" label of E22. `createDrafts` and `warnBeforeUnload` take
+  only the members they use (`01-public-api.md`, the "any form" row), so the editor with `warnings` fits.
+- E22: a slot attribute wins over a prop of the author, so `Submit` cannot take `disabled` from the page. "Publish"
+  is a plain submit button that takes `disabled` from the `articleStatus` selector. That is the limit that E13
+  shows.
+- E25 uses `useEffect` around `warnBeforeUnload` (D31).

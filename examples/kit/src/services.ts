@@ -6,8 +6,12 @@ import type { SignIn } from './schemas/sign-in';
 /** The servers of the examples: in-memory stand-ins with the calls that the forms make. */
 export const articles = {
   saved: new Map<string, Article>(),
+  drafts: [] as Article[],
   async publish(id: string, article: Article) {
     articles.saved.set(id, article);
+  },
+  async saveDraft(draft: Article) {
+    articles.drafts.push(draft);
   },
 };
 

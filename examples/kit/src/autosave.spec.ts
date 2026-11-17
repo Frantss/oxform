@@ -94,6 +94,6 @@ describe('autosave', () => {
     const changed = status();
     await vi.advanceTimersByTimeAsync(500);
 
-    expect([before, changed, status()]).toEqual([undefined, 'Unsaved changes', 'Draft saved']);
+    expect([before, changed, status()]).toEqual([undefined, 'Draft not saved', 'Draft saved']);
   });
 });

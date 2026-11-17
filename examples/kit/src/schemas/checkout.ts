@@ -25,3 +25,11 @@ export const emptyAddress: Address = { street: '', city: '', postalCode: '' };
 export const emptyOrder: Order = { email: '', country: '', region: '', card: { number: '' } };
 
 export const emptyCheckout: Checkout = { ...emptyOrder, billing: emptyAddress, shipping: emptyAddress };
+
+/** The countries that the shop ships to, with their regions and the shipping price. */
+export const countries = [
+  { code: 'GB', name: 'United Kingdom', shipping: 0, regions: ['England', 'Northern Ireland', 'Scotland', 'Wales'] },
+  { code: 'FR', name: 'France', shipping: 12, regions: ['Bretagne', 'Normandie', 'Occitanie'] },
+] as const;
+
+export const countryOf = (code: string) => countries.find(country => country.code === code);

@@ -50,7 +50,7 @@ export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values'
         element: 'p',
         state: state => state.autosave,
         text: ({ saving, dirty, savedAt }) =>
-          saving ? 'Saving…' : dirty ? 'Unsaved changes' : savedAt ? 'Draft saved' : undefined,
+          saving ? 'Saving the draft…' : dirty ? 'Draft not saved' : savedAt ? 'Draft saved' : undefined,
         attrs: () => ({ role: 'status' }),
       }),
     }),
