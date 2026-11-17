@@ -17,9 +17,15 @@ describe('normalizeHtml', () => {
   });
 
   it('removes the comments and the hydration attributes of a framework', () => {
-    using subject = setup('<form data-hk="0-0"><!--$-->Sign in<!--/--><!-- --></form>');
+    using subject = setup('<form data-hk="0-0"><!--$-->Sign in<!--/--><!-- --></form><p _hk=20230>Hi</p>');
 
-    expect(subject.normalized).toBe('<form>Sign in</form>');
+    expect(subject.normalized).toBe('<form>Sign in</form><p>Hi</p>');
+  });
+
+  it('replaces a short form id only where it starts a word of an attribute value', () => {
+    using subject = setup('<input id="2-email" aria-describedby="a 2-email-error" value="12">2-x', '2');
+
+    expect(subject.normalized).toBe('<input aria-describedby="a FORM-email-error" id="FORM-email" value="12">2-x');
   });
 
   it('keeps an id that is not the form id', () => {
