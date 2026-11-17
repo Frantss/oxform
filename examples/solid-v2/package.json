@@ -13,6 +13,7 @@
     "@oxform/core": "workspace:*",
     "@oxform/solid": "workspace:*",
     "@solidjs/web": "2.0.0-rc.19",
+    "example-oxform-kit": "workspace:*",
     "solid-js": "2.0.0-rc.19"
   },
   "devDependencies": {

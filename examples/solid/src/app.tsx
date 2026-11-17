@@ -16,7 +16,11 @@ export const App = () => {
       <nav aria-label='Examples'>
         <For each={examples}>
           {example => (
-            <button type='button' aria-current={example === shown() || undefined} onClick={() => show(example.id)}>
+            <button
+              type='button'
+              aria-current={example === shown() ? 'page' : undefined}
+              onClick={() => show(example.id)}
+            >
               {example.label}
             </button>
           )}

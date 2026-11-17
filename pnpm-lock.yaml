@@ -382,6 +382,9 @@ importers:
       '@solidjs/web':
         specifier: 2.0.0-rc.19
         version: 2.0.0-rc.19(solid-js@2.0.0-rc.19)
+      example-oxform-kit:
+        specifier: workspace:*
+        version: link:../kit
       solid-js:
         specifier: 2.0.0-rc.19
         version: 2.0.0-rc.19

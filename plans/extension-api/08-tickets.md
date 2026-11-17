@@ -114,7 +114,7 @@ evidence.
 | [TK-050](./tickets/TK-050-kit-behaviors.md)            | Kit behaviors                  | P7-03        | done    | TK-048, TK-049         |
 | [TK-051](./tickets/TK-051-react-example.md)            | React example app              | P7-04        | done    | TK-042, TK-050         |
 | [TK-052](./tickets/TK-052-solid-example.md)            | Solid 1 example app            | P7-05        | done    | TK-046, TK-051         |
-| [TK-053](./tickets/TK-053-solid-v2-example.md)         | Solid 2 example app            | P7-06        | ready   | TK-046, TK-051         |
+| [TK-053](./tickets/TK-053-solid-v2-example.md)         | Solid 2 example app            | P7-06        | done    | TK-046, TK-051         |
 | [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | ready   | TK-008                 |
 | [TK-055](./tickets/TK-055-comparison-research.md)      | Comparison research closure    | P7-08        | ready   | None                   |
 | [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | blocked | TK-054, TK-042, TK-050 |

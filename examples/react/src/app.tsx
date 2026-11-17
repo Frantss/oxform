@@ -17,7 +17,7 @@ export const App = () => {
           <button
             key={example.id}
             type='button'
-            aria-current={example.label === label || undefined}
+            aria-current={example.label === label ? 'page' : undefined}
             onClick={() => show(example.id)}
           >
             {example.label}

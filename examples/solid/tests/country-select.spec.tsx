@@ -9,7 +9,7 @@ const { Root, FieldError } = checkoutParts;
 describe('CountrySelect', () => {
   it('renders the field slot in a select, with its error', async () => {
     using screen = setup(() => (
-      <Root noValidate>
+      <Root novalidate>
         <CountrySelect aria-label='Country' />
         <FieldError name='country' />
         <button type='submit'>Pay</button>
