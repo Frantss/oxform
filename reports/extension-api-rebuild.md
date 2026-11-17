@@ -123,3 +123,12 @@
 - Why it matters: E14 cannot be the one-line preset of the catalogue. The kit exports `warnings` (the check) and
   `warningSlots` (the group), and a form spreads both (`examples/kit/src/warnings.ts`). The compose and extend
   guide (TK-063) must state the limit, or core must give a helper for an option-adding preset.
+
+## Catalogue row E23 expects a reset baseline that core does not keep
+
+- What: `04-documentation.md#4.2`, E23, resets "with the saved values as the new baseline". `reset.all({ values })`
+  starts from those values, but the default values stay (`packages/core/src/behaviors/reset.ts:11`), so a later
+  `reset.all()` goes back to the first loaded text.
+- Why it matters: "Discard" after a save would lose the save. The kit keeps the last saved values and passes them
+  to each reset (`examples/kit/src/article-drafts.ts`). The reset page (TK-061) must state it, or core must give
+  a way to move the baseline.

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const roles = ['member', 'admin'] as const;
 
+export type Role = (typeof roles)[number];
+
 export const memberSchema = z.object({ email: z.email('Enter an email address.'), role: z.enum(roles) });
 
 export type Member = z.infer<typeof memberSchema>;

@@ -12,6 +12,7 @@
     "check:types": "vp exec tsc --noEmit"
   },
   "dependencies": {
+    "@standard-schema/spec": "^1.1.0",
     "zod": "4.6.7"
   },
   "devDependencies": {

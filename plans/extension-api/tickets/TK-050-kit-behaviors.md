@@ -3,12 +3,12 @@ id: TK-050
 title: Kit behaviors
 phase: 7
 work_package: P7-03
-status: todo
+status: done
 depends_on: [TK-048, TK-049]
 branch: codex/P7-03-kit-behaviors
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-050: Kit behaviors
@@ -53,12 +53,28 @@ passing spec on its domain form.
 
 ## Acceptance
 
-- [ ] Each of E15 to E28 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
-- [ ] E18: a newer run discards a stale lookup result. E27: two concurrent requests share nothing.
-- [ ] No kit module imports an adapter or renders. No file is copied from the spike.
-- [ ] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
-- [ ] `pnpm run check:all` passes.
+- [x] Each of E15 to E28 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
+- [x] E18: a newer run discards a stale lookup result. E27: two concurrent requests share nothing.
+- [x] No kit module imports an adapter or renders. No file is copied from the spike.
+- [x] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0, with the two lint warnings of the first run
+  fixed and `check:all` run again (exit 0, no warning). The kit has 66 specs, all pass.
+- Modules, each with a sibling spec: E15 `address.ts`, E16 `member-row.ts`, E17 `member-list.ts`, E18
+  `team-invites.ts`, E19 `sign-in-submit.ts`, E20 `payment-issues.ts`, E21 `region.ts`, E22 `article-status.ts`,
+  E23 `article-drafts.ts`, E24 `role-select.ts`, E25 `unsaved-warning.ts`, E26 `sign-in-page.ts`, E27
+  `sign-in-handler.ts`, E28 `draft-form.ts`. `services.ts` holds the in-memory servers.
+- E18: a lookup that a newer change made stale is dropped. With the newer change removed from the spec, it fails.
+  E27: two concurrent requests answer in the reverse order, and each page shows only its own values and errors.
+- E03 now places the `address` scope at `billing` and `shipping` (E15), so the catalogue has one checkout.
+- Deviation in E16: the row types the row as `Scope<Member>`. The default check list of `Scope` is `never`, so
+  the kit uses `Scope<Member, 'error'>`, as `01-public-api.md` (the "any form" row) decides.
+- Deviation in E23: `reset.all({ values })` keeps the default values, so the kit keeps the last saved values.
+  Reported.
+- Deviation in E27: the handler runs `submit.run()`, which validates and calls the server, in place of
+  `validation.run()` alone, so a valid post signs in.
+- E24 types the role field as `Role | undefined`: an item path reads `undefined` when the index has no item.
+- No module imports an adapter or renders. `testing.ts` reads slots through `@oxform/core/adapter` for the specs.

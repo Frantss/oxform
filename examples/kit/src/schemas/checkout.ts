@@ -8,24 +8,20 @@ export const addressSchema = z.object({
 
 export type Address = z.infer<typeof addressSchema>;
 
-export const checkoutSchema = z.object({
+/** The own fields of the checkout. The billing and the shipping address are scopes (E15). */
+export const orderSchema = z.object({
   email: z.email('Enter an email address.'),
   country: z.string().min(1, 'Choose a country.'),
   region: z.string().min(1, 'Choose a region.'),
   card: z.object({ number: z.string().regex(/^[\d ]{12,23}$/u, 'Enter a card number.') }),
-  billing: addressSchema,
-  shipping: addressSchema,
 });
 
-export type Checkout = z.infer<typeof checkoutSchema>;
+export type Order = z.infer<typeof orderSchema>;
+
+export type Checkout = Order & { billing: Address; shipping: Address };
 
 export const emptyAddress: Address = { street: '', city: '', postalCode: '' };
 
-export const emptyCheckout: Checkout = {
-  email: '',
-  country: '',
-  region: '',
-  card: { number: '' },
-  billing: emptyAddress,
-  shipping: emptyAddress,
-};
+export const emptyOrder: Order = { email: '', country: '', region: '', card: { number: '' } };
+
+export const emptyCheckout: Checkout = { ...emptyOrder, billing: emptyAddress, shipping: emptyAddress };
