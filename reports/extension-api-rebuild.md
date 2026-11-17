@@ -132,3 +132,12 @@
 - Why it matters: "Discard" after a save would lose the save. The kit keeps the last saved values and passes them
   to each reset (`examples/kit/src/article-drafts.ts`). The reset page (TK-061) must state it, or core must give
   a way to move the baseline.
+
+## In the workspace, `@oxform/solid` types resolve the Solid 2 of its dev dependencies
+
+- What: `packages/solid/package.json` has `solid-js` 2.0.0-rc.19 as a dev dependency. Its built declarations
+  import `solid-js`, which the workspace link resolves from `packages/solid/node_modules`. A Solid 1 app of the
+  workspace (`examples/solid`) then typed the element of every part as `never`.
+- Why it matters: a consumer has one `solid-js` and is not affected, but each Solid 1 workspace that type-checks
+  against the built package is. `examples/solid/tsconfig.json` maps `solid-js` to its own copy with `paths`. The
+  Solid 1 type tests of `packages/solid-v1` do not catch it.

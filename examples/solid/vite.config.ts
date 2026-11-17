@@ -3,6 +3,8 @@ import { defineConfig } from 'vite-plus';
 import solid from 'vite-plugin-solid';
 import { base } from '../../vite.config';
 
+const source = (path: string) => fileURLToPath(new URL(`../../packages/${path}`, import.meta.url));
+
 export default defineConfig({
   ...base,
   base: './',
@@ -18,9 +20,11 @@ export default defineConfig({
   optimizeDeps: { include: ['solid-js', 'solid-js/web', 'vite-plus/test/browser'] },
   test: { ...base.test, environment: 'node' },
   resolve: {
-    alias: {
-      '@oxform/core': fileURLToPath(new URL('../../packages/core/export/index.ts', import.meta.url)),
-      '@oxform/solid': fileURLToPath(new URL('../../packages/solid-v1/export/index.ts', import.meta.url)),
-    },
+    // The sources of the packages, so the app needs no build of them. Each entry point is matched whole.
+    alias: [
+      { find: /^@oxform\/core$/u, replacement: source('core/export/index.ts') },
+      { find: /^@oxform\/core\/(adapter|behaviors|presets)$/u, replacement: source('core/export/$1.ts') },
+      { find: /^@oxform\/solid$/u, replacement: source('solid-v1/export/index.ts') },
+    ],
   },
 });

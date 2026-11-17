@@ -357,6 +357,9 @@ importers:
       '@oxform/solid':
         specifier: workspace:*
         version: link:../../packages/solid
+      example-oxform-kit:
+        specifier: workspace:*
+        version: link:../kit
       solid-js:
         specifier: ^1.9.17
         version: 1.9.17

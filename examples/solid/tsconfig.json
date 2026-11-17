@@ -4,7 +4,13 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "noEmit": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    // In the workspace, the built `@oxform/solid` finds the Solid 2 of its own dev dependencies. A consumer has one
+    // `solid-js`, so this points every import of it to the Solid 1 of this app.
+    "paths": {
+      "solid-js": ["./node_modules/solid-js"],
+      "solid-js/*": ["./node_modules/solid-js/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }

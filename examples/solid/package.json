@@ -12,6 +12,7 @@
   "dependencies": {
     "@oxform/core": "workspace:*",
     "@oxform/solid": "workspace:*",
+    "example-oxform-kit": "workspace:*",
     "solid-js": "^1.9.17"
   },
   "devDependencies": {

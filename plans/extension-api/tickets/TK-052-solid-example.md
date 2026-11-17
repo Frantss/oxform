@@ -3,12 +3,12 @@ id: TK-052
 title: Solid 1 example app
 phase: 7
 work_package: P7-05
-status: todo
+status: done
 depends_on: [TK-046, TK-051]
 branch: codex/P7-05-solid-example
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-052: Solid 1 example app
@@ -43,15 +43,33 @@ playground. Each example has one browser flow that passes in Chromium.
 
 ## Acceptance
 
-- [ ] Each example of `examples/react/src/examples/` has a Solid 1 module, and each has one browser flow.
-- [ ] No file is copied from the spike or from the React app's rendering code.
-- [ ] `vp run example-oxform-solid#test` passes.
-- [ ] `vp run example-oxform-solid#check:types` passes, and the app builds `playground.html`.
-- [ ] The app runs, and each flow works at desktop and mobile sizes with no console error (`AGENTS.md`,
+- [x] Each example of `examples/react/src/examples/` has a Solid 1 module, and each has one browser flow.
+- [x] No file is copied from the spike or from the React app's rendering code.
+- [x] `vp run example-oxform-solid#test` passes.
+- [x] `vp run example-oxform-solid#check:types` passes, and the app builds `playground.html`.
+- [x] The app runs, and each flow works at desktop and mobile sizes with no console error (`AGENTS.md`,
       "Validation").
-- [ ] `pnpm run check:all` passes.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, the browser check and each difference from the React app, with its row of
-`01#6.3`.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. `example-oxform-solid` runs 19 browser cases in
+  Chromium, the same flows as React, all pass. Its type check covers `src` and `tests`. Its build writes
+  `playground.html`.
+- `src/examples/` has a Solid 1 module for each module of `examples/react/src/examples/`, and `tests/` has the same
+  flows. The modules are written for Solid, not copied: no destructured props, accessors in reactive scopes.
+- Browser check: the dev server, every form at 1280 × 720 and 390 × 844, after a submit, and the playground. No
+  console message, no page overflow.
+- Differences from the React app, with their row of `01#6.3`:
+  - "`useSelector` result": each selector is an accessor. The member filter selects `hasFilters(form)`, because a
+    Solid component does not run again.
+  - "`children` as function": `Submit` reads `state()`.
+  - "`render`": a function only. The body of the article is `render={props => <textarea {...props} />}`.
+  - "Hook path arguments": a row of the member list is not rendered again when it moves, so its scope is
+    `useScope(() => \`members.${index()}\`)`. The `{ scope }` option of a hook is read once.
+  - "Cleanup": E21, E23 and E25 stop through `onCleanup` (D31).
+  - Attribute names: Solid takes the HTML names (`novalidate`, `autocomplete`, `inputmode`).
+- Fix: the alias `@oxform/core` also matched its other entry points. The aliases now match each one whole.
+- Workspace limit: the built `@oxform/solid` declarations resolve `solid-js` from `packages/solid`, whose dev
+  dependency is Solid 2, so every part typed its element as `never`. `tsconfig.json` points `solid-js` to the Solid
+  1 of the app with `paths`. A consumer has one `solid-js`. Reported.
