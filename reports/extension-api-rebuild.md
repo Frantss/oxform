@@ -98,3 +98,11 @@
   showed it.
 - TK-045: `@solidjs/vite-plugin` compiles client code non-hydratable when Vitest runs, whatever `ssr` says. A
   hydration test needs `solid: { hydratable: true }` (`packages/solid-v2/vite.config.ts`).
+
+## Catalogue row E02 asks for a flag that does not clear
+
+- What: `04-documentation.md#4.2`, E02, shows "Clear filters" while the form is dirty. `dirty` records an
+  interaction and stays set when a value returns to its default (`docs/form-core-behaviors.md:277`,
+  `packages/core/src/behaviors/status.ts:14`).
+- Why it matters: the button would stay after the user clears the filters. The kit reads the `default` flag
+  of each filter (`examples/kit/src/member-filter.ts`, `hasFilters`). The docs pages (TK-061) must describe that.

@@ -109,8 +109,8 @@ evidence.
 
 | Id                                                     | Title                          | Work package | Status  | Depends on             |
 | ------------------------------------------------------ | ------------------------------ | ------------ | ------- | ---------------------- |
-| [TK-048](./tickets/TK-048-kit-forms.md)                | Kit forms                      | P7-01        | ready   | TK-030                 |
-| [TK-049](./tickets/TK-049-kit-extensions.md)           | Kit extensions                 | P7-02        | blocked | TK-048                 |
+| [TK-048](./tickets/TK-048-kit-forms.md)                | Kit forms                      | P7-01        | done    | TK-030                 |
+| [TK-049](./tickets/TK-049-kit-extensions.md)           | Kit extensions                 | P7-02        | ready   | TK-048                 |
 | [TK-050](./tickets/TK-050-kit-behaviors.md)            | Kit behaviors                  | P7-03        | blocked | TK-048, TK-049         |
 | [TK-051](./tickets/TK-051-react-example.md)            | React example app              | P7-04        | blocked | TK-042, TK-050         |
 | [TK-052](./tickets/TK-052-solid-example.md)            | Solid 1 example app            | P7-05        | blocked | TK-046, TK-051         |

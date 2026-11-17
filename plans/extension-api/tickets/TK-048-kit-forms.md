@@ -3,12 +3,12 @@ id: TK-048
 title: Kit forms
 phase: 7
 work_package: P7-01
-status: todo
+status: done
 depends_on: [TK-030]
 branch: codex/P7-01-kit-forms
 pr: null
-started: null
-completed: null
+started: 2026-11-16
+completed: 2026-11-16
 ---
 
 # TK-048: Kit forms
@@ -49,14 +49,29 @@ passing spec, and the kit type-checks. E01 and E02 use only built-in slot groups
 
 ## Acceptance
 
-- [ ] Each of E01 to E03 and E05 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
-- [ ] E01 and E02 spread only built-in slot groups, and each need of the chain and the groups is met.
-- [ ] The kit imports no adapter and no spike file. No file is copied from the spike.
-- [ ] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
-- [ ] `pnpm run test` runs the kit specs. If the root `test` chain does not include the kit, the core track
+- [x] Each of E01 to E03 and E05 is one kit module that matches its row of `04#4.2`, with a passing sibling spec.
+- [x] E01 and E02 spread only built-in slot groups, and each need of the chain and the groups is met.
+- [x] The kit imports no adapter and no spike file. No file is copied from the spike.
+- [x] `vp run example-oxform-kit#test` and `vp run example-oxform-kit#check:types` pass.
+- [x] `pnpm run test` runs the kit specs. If the root `test` chain does not include the kit, the core track
       adds it in a separate pull request (`06-roadmap.md#Phases`).
-- [ ] `pnpm run check:all` passes.
+- [x] `pnpm run check:all` passes.
 
 ## Evidence
 
-Record the command results, and any deviation from the plan here.
+- `pnpm run build && pnpm run check:all && pnpm run test`: exit 0. The root `test` runs the kit: 10 specs pass.
+  `vp run example-oxform-kit#check:types` passes.
+- Modules: `src/schemas/` holds one Zod schema module per domain of `04#4.1` (sign-in, checkout, team invites,
+  article, member filter). E01 `sign-in.ts`, E02 `member-filter.ts`, E03 `checkout.ts` and E05
+  `article-editor.ts` each have a sibling spec. `services.ts` is the in-memory server of the examples.
+- E01 spreads `rootSlots`, `fieldErrorSlots` and `submitSlots`. E02 spreads `fieldSlots` and has no
+  `validation` and no `submit`. The type check proves each need of the chains and the groups is met.
+- The kit imports only `@oxform/core`, `@oxform/core/behaviors`, `@oxform/core/presets` and `zod` (4.6.7, already
+  in the lockfile). No spike file is imported or copied.
+- Deviation in E02: the catalogue says "Clear filters" shows while the form is dirty. `dirty` records an
+  interaction and does not clear when the value comes back (`docs/form-core-behaviors.md:277`), so the kit
+  exports `hasFilters(form)`, which reads the `default` flag of each filter. Reported in
+  `reports/extension-api-rebuild.md`.
+- E05 configures the validators and the publish call. The `saveDraft` option of the row comes with `autosave`
+  (E06, TK-049).
+- The schema modules have no spec of their own. The form specs test them.
