@@ -19,7 +19,7 @@
     "check:rules": "vp lint --type-aware",
     "check:format": "vp fmt --check",
     "check": "vp lint --type-aware && vp fmt --check && vp run -r check:types",
-    "check:all": "vp run -w check && vp run -w check:package",
+    "check:all": "vp run -w check && vp run -w check:package && vp run -w check:parity",
     "fix:rules": "vp lint --fix --fix-suggestions",
     "fix:format": "vp fmt --write",
     "fix:all": "vp lint --fix --fix-suggestions && vp fmt --write",
@@ -28,7 +28,8 @@
     "publish": "changeset publish",
     "prepublish": "vp run -w build && vp run -w check:all",
     "prepare": "lefthook install",
-    "test:coverage": "vp run @oxform/core#test:coverage"
+    "test:coverage": "vp run @oxform/core#test:coverage",
+    "check:parity": "vp run @oxform/adapter-parity#check:parity"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

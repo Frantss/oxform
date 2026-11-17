@@ -49,6 +49,8 @@
   same names. `@oxform/react` now exports 10 names, and the Solid stubs export `createParts` only.
 - Why it matters: the script is not in `check:all` (02 puts it there), so it does not block now. TK-047 adds it
   once Solid (TK-043 to TK-047, out of scope here) has the same exports.
+- Resolved on 2026-11-16: both Solid adapters export the 10 names, and `check:all` runs `pnpm run check:parity`
+  (TK-047).
 
 ## Option kinds have no effect in an adapter (D34)
 

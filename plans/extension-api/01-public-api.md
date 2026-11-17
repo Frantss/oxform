@@ -320,7 +320,7 @@ where they live: `@oxform/core/adapter`.
 - `render` is an element (cloned) or a function `(props, state) => node` (`api.ts:859-861`).
 - The id comes from `useId`. The module has `'use client'` (`create-parts.tsx:1`).
 
-### 6.3 `@oxform/solid` and `@oxform/solid/v2` (not built)
+### 6.3 `@oxform/solid` and `@oxform/solid/v2`
 
 Export names are the same as in 6.2. The table lists what must differ, and why.
 

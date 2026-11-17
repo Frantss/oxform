@@ -74,12 +74,12 @@ See [Testing Patterns](./testing.md) for file placement, assertions, and type te
 
 - Build before running `pnpm run check:package`; it validates generated
   package exports with `publint --strict` and `attw --pack --no-emoji`.
-- Core and React package validation also type-checks the type tests against
-  the built `dist` (`check:types:dist`) and fails when an export has no type
-  test (`check:type-coverage`).
-- `pnpm --dir packages/adapter-parity run check:parity` fails when the adapters
-  do not export the same names. It is not in `check:all` until the Solid
-  adapters catch up.
+- Core, React and Solid package validation also type-checks the type tests
+  against the built `dist` (`check:types:dist`) and fails when an export has no
+  type test (`check:type-coverage`). The Solid package runs these checks in both
+  private adapters.
+- `pnpm run check:parity` fails when the built adapters do not export the same
+  names. `check:all` runs it after the package checks.
 - Run `pnpm run check:all` to run lint, format, types, and package checks together.
 
 ## Before Finishing
