@@ -136,7 +136,8 @@ export const PartView = (input: {
   const listValue = () => view()?.attrs.value;
   const attrs = () => {
     const { value, ...rest } = view()?.attrs ?? {};
-    return Array.isArray(value) ? rest : { ...rest, value };
+    // A list goes to the options. With no value, the `value` of the author stays.
+    return Array.isArray(value) || value === undefined ? rest : { ...rest, value };
   };
 
   /** The listeners and `bind` of one element. They read the current part at each event. */
