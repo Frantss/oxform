@@ -90,3 +90,9 @@
 - TK-044: Solid 1 moves both nodes of a swapped list, and Chrome blurs a focused element that moves. The swap
   then also ran the blur of the field. `storeState` (`packages/solid-v1/src/part-view.ts`) gives the focus back
   after a store write and drops the slot events of that write (`01#6.3`, "Focus across a list move").
+- TK-045: the Solid 2 port wrote `aria-invalid=""` for an invalid field, which ARIA reads as false. Solid 2 writes a
+  boolean as presence. `packages/solid-v2/src/part-view.ts` (`attrs`) writes a boolean `aria-*` value as a string
+  (`01#6.3`, "Boolean `aria-*` value"). No parity scenario reads the value of `aria-invalid`; the P10 snapshot
+  showed it.
+- TK-045: `@solidjs/vite-plugin` compiles client code non-hydratable when Vitest runs, whatever `ssr` says. A
+  hydration test needs `solid: { hydratable: true }` (`packages/solid-v2/vite.config.ts`).
