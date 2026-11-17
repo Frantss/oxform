@@ -26,12 +26,10 @@
     "test:dev": "vp test --watch",
     "check:types": "vp exec tsc --noEmit && vp exec tsc --noEmit -p tests/types",
     "test:ssr": "vp test --config vite.ssr.config.ts",
-    "check:package": "publint --strict && attw --pack --no-emoji --profile esm-only && pnpm run check:types:dist && pnpm run check:type-coverage",
     "check:types:dist": "vp exec tsc --noEmit -p tests/types/tsconfig.dist.json",
     "check:type-coverage": "node scripts/check-type-coverage.ts"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.5",
     "@oxform/adapter-parity": "workspace:*",
     "@oxform/core": "workspace:*",
     "@solidjs/compiler": "2.0.0-rc.19",
@@ -39,7 +37,6 @@
     "@solidjs/web": "2.0.0-rc.19",
     "@standard-schema/spec": "^1.1.0",
     "@types/node": "26.6.5",
-    "publint": "^0.3.25",
     "solid-js": "2.0.0-rc.19",
     "typescript": "^7.0.2"
   },

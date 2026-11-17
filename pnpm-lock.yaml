@@ -495,9 +495,6 @@ importers:
 
   packages/solid-v1:
     devDependencies:
-      '@arethetypeswrong/cli':
-        specifier: ^0.18.5
-        version: 0.18.5
       '@oxform/adapter-parity':
         specifier: workspace:*
         version: link:../adapter-parity
@@ -507,9 +504,6 @@ importers:
       '@standard-schema/spec':
         specifier: ^1.1.0
         version: 1.1.0
-      publint:
-        specifier: ^0.3.25
-        version: 0.3.25
       solid-js:
         specifier: ^1.9.17
         version: 1.9.17
@@ -522,9 +516,6 @@ importers:
 
   packages/solid-v2:
     devDependencies:
-      '@arethetypeswrong/cli':
-        specifier: ^0.18.5
-        version: 0.18.5
       '@oxform/adapter-parity':
         specifier: workspace:*
         version: link:../adapter-parity
@@ -546,9 +537,6 @@ importers:
       '@types/node':
         specifier: 26.6.5
         version: 26.6.5
-      publint:
-        specifier: ^0.3.25
-        version: 0.3.25
       solid-js:
         specifier: 2.0.0-rc.19
         version: 2.0.0-rc.19
