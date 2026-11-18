@@ -26,7 +26,7 @@ export type ScopedValues<Scopes> = {
 const isPlainObject = (value: unknown): value is Options =>
   typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
 
-/** Plain objects merge key by key. A later value of another kind, an array too, replaces the earlier one. */
+/** Plain objects merge key by key. A later value of another type, an array too, replaces the earlier one. */
 const deepMerge = (base: unknown, over: unknown): unknown => {
   if (over === undefined) return base;
   if (!isPlainObject(base) || !isPlainObject(over)) return over;

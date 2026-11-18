@@ -29,7 +29,7 @@ describe('joinPath', () => {
 });
 
 describe('isDeepEqual', () => {
-  it('compares primitives with Object.is', () => {
+  it('compares values that are not objects with Object.is', () => {
     using subject = setup({
       pairs: [
         [1, 1],
@@ -65,7 +65,7 @@ describe('isDeepEqual', () => {
     expect(isDeepEqual(subject.left, subject.right)).toBe(false);
   });
 
-  it('does not hold for an object and a primitive', () => {
+  it('does not hold for an object and a number', () => {
     using subject = setup({
       pairs: [
         [{}, 'a'],

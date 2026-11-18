@@ -90,7 +90,7 @@ export type Profile = {
   items: { label: string }[];
 };
 
-/** The `standard` preset with every kind of input, an array, a placed scope and the probe. */
+/** The `standard` preset with every type of input, an array, a placed scope and the probe. */
 export const profile = defineForm({
   schema: schemaOf<Profile>(),
   defaultValues: {

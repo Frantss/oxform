@@ -571,7 +571,7 @@ describe('PartHandle, PartEventContext, PartDomProps, PropKind, PropsOf, KeyProp
   });
 
   it('rejects an unknown prop kind', () => {
-    // @ts-expect-error There is no `date` kind.
+    // @ts-expect-error There is no `date` prop kind.
     accepts<PropKind>('date');
   });
 

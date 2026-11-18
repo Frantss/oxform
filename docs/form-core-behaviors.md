@@ -394,7 +394,7 @@ These decisions concern public contracts only.
 
 Private classes and helpers, data structures, validation scheduling algorithms,
 store construction, generated identifiers' format, undocumented subpath
-imports, plugin execution, behavior improvements, and package replacement.
+imports, extension execution, behavior improvements, and package replacement.
 
 ### Further Notes
 

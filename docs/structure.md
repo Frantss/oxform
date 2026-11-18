@@ -57,7 +57,7 @@ See [Commands Reference](./commands.md) for navigation commands.
 
 **Solid implementations (`packages/solid-v1/src/`, `packages/solid-v2/src/`):**
 
-- `create-*.ts` - Owned reactive primitives and core bindings
+- `create-*.ts` - Owned reactive values and core bindings
 - `field.ts`, `array-field.ts`, `subscribe.ts` - Render-function components
 - `internal/` - Store subscriptions, field rebinding, and reactive property selection
 - `tests/` - Browser behavior and public type contracts
