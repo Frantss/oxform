@@ -122,19 +122,19 @@ evidence.
 
 ### Phase 8: documentation
 
-| Id                                                  | Title                     | Work package | Status  | Depends on             |
-| --------------------------------------------------- | ------------------------- | ------------ | ------- | ---------------------- |
-| [TK-058](./tickets/TK-058-site-skeleton.md)         | Site skeleton             | P8-01        | ready   | TK-002                 |
-| [TK-059](./tickets/TK-059-agent-outputs.md)         | Agent outputs             | P8-02        | blocked | TK-058                 |
-| [TK-060](./tickets/TK-060-prose-pages.md)           | Prose with no code        | P8-03        | blocked | TK-059                 |
-| [TK-061](./tickets/TK-061-main-api-pages.md)        | Main API pages            | P8-04        | blocked | TK-050, TK-059         |
-| [TK-062](./tickets/TK-062-behavior-pages.md)        | Behavior and preset pages | P8-05        | blocked | TK-050, TK-059, TK-033 |
-| [TK-063](./tickets/TK-063-compose-extend-guides.md) | Compose and extend guides | P8-06        | blocked | TK-050, TK-059, TK-033 |
-| [TK-064](./tickets/TK-064-react-pages.md)           | React pages               | P8-07        | blocked | TK-051, TK-059, TK-033 |
-| [TK-065](./tickets/TK-065-solid-pages.md)           | Solid pages               | P8-08        | blocked | TK-052, TK-053, TK-059 |
-| [TK-066](./tickets/TK-066-migration-guide.md)       | Migration guide           | P8-09        | blocked | TK-042, TK-046, TK-059 |
-| [TK-067](./tickets/TK-067-contributor-docs.md)      | Contributor documents     | P8-10        | blocked | TK-047, TK-059         |
-| [TK-068](./tickets/TK-068-comparison-page.md)       | Comparison page           | P8-11        | blocked | TK-055, TK-059         |
+| Id                                                  | Title                     | Work package | Status      | Depends on             |
+| --------------------------------------------------- | ------------------------- | ------------ | ----------- | ---------------------- |
+| [TK-058](./tickets/TK-058-site-skeleton.md)         | Site skeleton             | P8-01        | done        | TK-002                 |
+| [TK-059](./tickets/TK-059-agent-outputs.md)         | Agent outputs             | P8-02        | done        | TK-058                 |
+| [TK-060](./tickets/TK-060-prose-pages.md)           | Prose with no code        | P8-03        | ready       | TK-059                 |
+| [TK-061](./tickets/TK-061-main-api-pages.md)        | Main API pages            | P8-04        | ready       | TK-050, TK-059         |
+| [TK-062](./tickets/TK-062-behavior-pages.md)        | Behavior and preset pages | P8-05        | blocked     | TK-050, TK-059, TK-033 |
+| [TK-063](./tickets/TK-063-compose-extend-guides.md) | Compose and extend guides | P8-06        | blocked     | TK-050, TK-059, TK-033 |
+| [TK-064](./tickets/TK-064-react-pages.md)           | React pages               | P8-07        | blocked     | TK-051, TK-059, TK-033 |
+| [TK-065](./tickets/TK-065-solid-pages.md)           | Solid pages               | P8-08        | ready       | TK-052, TK-053, TK-059 |
+| [TK-066](./tickets/TK-066-migration-guide.md)       | Migration guide           | P8-09        | in-progress | TK-042, TK-046, TK-059 |
+| [TK-067](./tickets/TK-067-contributor-docs.md)      | Contributor documents     | P8-10        | ready       | TK-047, TK-059         |
+| [TK-068](./tickets/TK-068-comparison-page.md)       | Comparison page           | P8-11        | ready       | TK-055, TK-059         |
 
 ### Phase 9: release 0.7.0 and cleanup
 
