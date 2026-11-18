@@ -18,6 +18,11 @@ export default defineConfig({
   server: {
     port: 3002,
   },
+  // Prerender fetches the preview server. On `localhost` it listens on `::1` only, and a render that blocks the
+  // event loop for 250 ms fails a pending connection with ETIMEDOUT and a refused IPv4 fallback.
+  preview: {
+    host: '127.0.0.1',
+  },
   plugins: [
     playgroundAssets(),
     mdx(await import('./source.config')),
