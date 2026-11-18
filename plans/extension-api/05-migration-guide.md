@@ -1,7 +1,8 @@
 # Migration guide: draft
 
-Status: complete, revision 4. This file agrees with [00-direction.md](./00-direction.md), revision 4. The
-"after" side is `explorations/extension-api/`. Part A is for the plan's readers. Part B is the guide itself.
+Status: complete, revision 5. This file agrees with [00-direction.md](./00-direction.md), revision 4. The
+"after" side is the built packages of `0.7.0` (P8-09 checked each fact on them). Part A is for the plan's readers.
+Part B is the guide itself.
 
 ## Part A: about this guide
 
@@ -14,30 +15,47 @@ Status: complete, revision 4. This file agrees with [00-direction.md](./00-direc
   ([04-documentation.md](./04-documentation.md), section 4.1), chosen, not copied from a spike sketch. It is
   representative because it has what real 0.x forms have, and each piece meets one dangerous change: submit validation through
   the root `schema`, a field error list, a server error after submit, a number input, and a status-driven button.
-- **Verification tasks of P8-09.** The packages do not exist. P8-09 checks each fact below against the built
-  packages before the guide is published, and removes each `†`. Rows marked `†` in Part B depend on them.
-  1. Solid: not built. The guide assumes the `createParts` surface of `01-public-api.md`, section 6.3.
-  2. The entry points `@oxform/core/behaviors` and `@oxform/core/presets`. The spike has a flat core and
-     `@oxform/core/standard`.
-  3. `createParts(form)` with no element map renders each part in the element its slot declares.
-  4. The `useFormEffect` pattern and the empty path `''` for root issues (`01-public-api.md`, sections 7.4 and 7.7).
-  5. A discarded validation run resolves `[true, issues]` with an empty list per check (`01-public-api.md`, G3,
-     decided in D23). The spike resolves `[true, {}]`.
-  6. `useField` re-renders on the value and status of its path only, not on check entries.
-  7. The `field` part converts the value by the input `type`. An empty number input writes `undefined`.
-  8. An instance from `form.create()` with no `id` takes one from a module counter, `form-1` (`01-public-api.md`,
-     section 7.7, decided in D15). The spike gives `''`. A field id is `<form id>-<path>`.
-  9. `field.setError(...)` entries go at the next change of the field. `form.error.set(...)` entries stay.
-  10. `Root` prevents the default of the `submit` and `reset` DOM events and runs submit. The `Reset` part calls
-      `reset.all()` on click (`01-public-api.md`, section 3.2).
-  11. A non-exclusive check keeps the entries of an event that has no validator (`01-public-api.md`, section 8).
+- **Verification of P8-09 (TK-066, 2026-11-18).** Each fact of Part B was checked on the built packages: the
+  `dist` output and declarations of `@oxform/core`, `@oxform/react` and `@oxform/solid` (`.` and `./v2`), through
+  type probes compiled with `tsc --noEmit`, a Node script and browser tests in Chromium. The probes are not kept.
+  The ticket ([TK-066](./tickets/TK-066-migration-guide.md), "Evidence") records the outputs.
+  1. Solid: built. `@oxform/solid` and `@oxform/solid/v2` export `createParts` and `usePart`, with the surface of
+     `01-public-api.md`, section 6.3: the same members as React, `useSelector` returns an accessor, a hook path
+     can be an accessor. The parts render and submit in Solid 1 and Solid 2.
+  2. The entry points `@oxform/core`, `@oxform/core/behaviors`, `@oxform/core/presets` and `@oxform/core/adapter`
+     exist, ESM only, with the exports of the import table. No 0.x name (`formOptions`, `createForm`) is left.
+  3. Holds. With no element map, `Root` is a `<form>`, `Field` an `<input>`, `FieldError` a `<p>`, `Submit` and
+     `Reset` a `<button>`, in React, Solid 1 and Solid 2.
+  4. Holds. `createEffect(useForm(), selector, fn)` in a `useEffect`, with `unsubscribe` as the cleanup, runs on
+     each change after the first selection and stops at unmount. `error.set('', entries)`, `error.at('')` and
+     `state.error['']` hold the root entries.
+  5. Holds. A discarded run resolves `[true, { error: [], warning: [] }]`: an empty list per check.
+  6. Holds, with one detail: `useField` re-renders when an entry changes the `valid` flag of its path (a status
+     flag). A second entry, or another field, does not re-render it.
+  7. Holds. `type='number'` writes a number and an empty input `undefined`, a checkbox writes a boolean, a text
+     input a string. The built code also writes a `File` (or a list with `multiple`) and a list for a multiple
+     `<select>`.
+  8. Holds. Two `form.create()` give `form-1` and `form-2`. A field id is `<form id>-<path>`, with the path made
+     safe for an id (`address.city` gives `form-1-address-city`). Under `Root`, the form id is the framework id
+     (`useId`, `createUniqueId`).
+  9. Holds for `field.setError`: its entries go at the next change of that field, not of another one. "Stay" is
+     narrower for `instance.error.set`: its entries stay through changes and runs that have no `error` validator
+     for the path. A run with a validator for the path (`error` is exclusive), a reset or `clear` removes them.
+  10. Holds. `Root` prevents the default of `submit` and `reset`, and a submit runs `onSubmit` or `onInvalid`
+      with no reload. The `Reset` part calls `reset.all()`. A hand-written `type='reset'` button changes nothing.
+  11. Holds. A non-exclusive check keeps entries set by hand, and those of an event with no validator, through
+      blur, change and full runs, until `clear`.
+
+  Facts outside the marked rows that differed, now corrected in Part B: `Root` takes the options in its `options`
+  prop (`onSubmit` on `Root` is the DOM handler of the `<form>`), and the state of `FieldError` children is
+  `any` in the built types, so the example types `message`.
 
   The renames are approved (direction, owner decision 10). The guide uses the names of the plan: `useArray`
   where the spike has `useArrayField`.
 
 ## Part B: migrate from Oxform 0.x to 0.7.0 (the extension API)
 
-For a coding agent. Follow the sections in order. Change no code before section 2 is complete. `†` = not yet verified on the built packages (P8-09 removes each mark).
+For a coding agent. Follow the sections in order. Change no code before section 2 is complete.
 
 ### 1. Preconditions and packages
 
@@ -46,7 +64,7 @@ For a coding agent. Follow the sections in order. Change no code before section 
 3. Replace the packages. Add `@oxform/core` to `dependencies`: it is now a peer dependency of each adapter.
 
    ```bash
-   pnpm add @oxform/core@0.7.0 @oxform/react@0.7.0   # Solid: @oxform/solid@0.7.0 †
+   pnpm add @oxform/core@0.7.0 @oxform/react@0.7.0   # Solid: @oxform/solid@0.7.0
    ```
 
 4. Import by category. An adapter no longer re-exports `formOptions` or core types.
@@ -57,7 +75,7 @@ For a coding agent. Follow the sections in order. Change no code before section 
 | `@oxform/core/behaviors` | `check` and the other built-in extensions, and types: `FieldHandle`, `ArrayHandle`, `FormStatus`, `CheckEntry`                          |
 | `@oxform/core/presets`   | `standard`                                                                                                                              |
 | `@oxform/react`          | `createParts`, `usePart`                                                                                                                |
-| `@oxform/solid`, `/v2`   | `createParts`, `usePart` †                                                                                                              |
+| `@oxform/solid`, `/v2`   | `createParts`, `usePart`                                                                                                                |
 
 ### 2. Detect 0.x usage
 
@@ -75,36 +93,36 @@ grep -rnE "from '@oxform/|useField\(|<Field|createEffect\(|\.reset\(|\.status\.|
 
 Core (`@oxform/core` 0.x). `form` is the form, `instance` is one live form from `form.create()`.
 
-| 0.x                                                                       | New                                                                                                                                           |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `formOptions(options)`                                                    | `defineForm({ schema, defaultValues }).extend(standard).configure(otherOptions)` at module level                                              |
-| `createForm(options)`                                                     | The same chain, then `form.create(options?)`. With no adapter and no `id`, the id comes from a counter. †                                     |
-| `FormApi`, `new FormApi(options)`, `AnyFormApi`                           | Removed. Types: `InstanceOf<typeof form>`, and `AnyForm` for any form.                                                                        |
-| `createField(...)`, `FieldApi`, `createArrayField(...)`, `ArrayFieldApi`  | `instance.field(name)` (`FieldHandle`), `instance.array(name)` (`ArrayHandle`)                                                                |
-| `createEffect(api, selector, fn)`                                         | `createEffect(instance, selector, fn)`. Only the instance has a `store`: select from its state.                                               |
-| `FieldPlugin`, `FieldExtra`, `FieldPluginsInput`, `FormWithOptions`       | Removed (never wired in 0.x). Use `fields: on<T>(guard)(build)` in `defineExtension`.                                                         |
-| options `schema`, `defaultValues`, `id`                                   | Arguments of `defineForm`. `schema` no longer validates (section 4).                                                                          |
-| option `checks.error.validate`                                            | option `error` (`{ change, blur, focus, submit }`) in `.configure`                                                                            |
-| option `checks.<level>` with `blocking`                                   | `.extend(check('<level>', { blocking }))` after `standard`, and the option `<level>`                                                          |
-| options `defaultStatus`, `defaultFieldStatus`                             | Same, in `.configure`. `defaultStatus` accepts only `dirty`, `submits`, `successful`.                                                         |
-| `form.values`, `form.field.get(name)`, `form.state`                       | `instance.values.get()`, `instance.values.get(name)`, `instance.store.state`                                                                  |
-| `form.status`, `form.field.status(name)`                                  | `instance.status.form`, `instance.status.at(name)`                                                                                            |
-| `form.validate(fields?, options?)`                                        | `instance.validation.run(fields?, options?)`                                                                                                  |
-| `form.submit(onSuccess, onError)()`                                       | `instance.submit.run()`. Move the callbacks to the `onSubmit` and `onInvalid` options.                                                        |
-| `form.reset(options?)`, `keep.issues`                                     | `instance.reset.all(options?)`, `keep.checks`                                                                                                 |
-| `form.field.reset(name, { value })`                                       | `instance.reset.at(name, { value })`. The `status` and `keep` options are removed.                                                            |
-| `form.field.change / focus / blur / register / unregister(name, ...)`     | `instance.field(name).change(...)` and so on, or `instance.events.change(name, ...)`                                                          |
-| `form.field.issues(name, options?)`                                       | `instance.error.at(name, options?)` per check, or `instance.validation.issues(name)` for all                                                  |
-| `form.field.setIssues(name, { error: [...] }, { mode })`                  | `instance.error.set(name, entries, { mode })`                                                                                                 |
-| `form.array.append(name, ...)` and the other 7 operations                 | `instance.array(name).append(...)`, or `instance.arrays.append(name, ...)`                                                                    |
-| `field.value`, `field.id`                                                 | `field.get()` or `field.state.value`, `field.state.id`                                                                                        |
-| `field.issues()`, `field.state.issues.error`                              | `field.error()`. For a custom level: `instance.<level>.at(name)`.                                                                             |
-| `field.setIssues({ error: [...] })`                                       | `field.setError(entries)` for a server error, else `instance.error.set(name, entries)` †                                                      |
-| `field.store`, `field.options`, `array.store`, `array.state`              | Removed. Read `instance.store` with a selector, and the array with `array.get()`.                                                             |
-| entry `{ type, level, issue: { message, path } }`                         | `CheckEntry`: `{ type, message, path }`. The check name is the key that holds the entry.                                                      |
-| state `status.<flag>`, `fields[path].status`, `fields[path].issues.error` | `status.form.<flag>`, `status.fields[path]`, `error[path]`                                                                                    |
-| `form.issues()`, `form.setIssues()`, `state.issues` (root)                | Read all entries: `instance.validation.issues()`. Root only: the empty path, `instance.error.at('')` and `instance.error.set('', entries)`. † |
-| `form.options`                                                            | No replacement. See "Deviations and decisions".                                                                                               |
+| 0.x                                                                       | New                                                                                                                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `formOptions(options)`                                                    | `defineForm({ schema, defaultValues }).extend(standard).configure(otherOptions)` at module level                                            |
+| `createForm(options)`                                                     | The same chain, then `form.create(options?)`. With no adapter and no `id`, the id comes from a counter (`form-1`).                          |
+| `FormApi`, `new FormApi(options)`, `AnyFormApi`                           | Removed. Types: `InstanceOf<typeof form>`, and `AnyForm` for any form.                                                                      |
+| `createField(...)`, `FieldApi`, `createArrayField(...)`, `ArrayFieldApi`  | `instance.field(name)` (`FieldHandle`), `instance.array(name)` (`ArrayHandle`)                                                              |
+| `createEffect(api, selector, fn)`                                         | `createEffect(instance, selector, fn)`. Only the instance has a `store`: select from its state.                                             |
+| `FieldPlugin`, `FieldExtra`, `FieldPluginsInput`, `FormWithOptions`       | Removed (never wired in 0.x). Use `fields: on<T>(guard)(build)` in `defineExtension`.                                                       |
+| options `schema`, `defaultValues`, `id`                                   | Arguments of `defineForm`. `schema` no longer validates (section 4).                                                                        |
+| option `checks.error.validate`                                            | option `error` (`{ change, blur, focus, submit }`) in `.configure`                                                                          |
+| option `checks.<level>` with `blocking`                                   | `.extend(check('<level>', { blocking }))` after `standard`, and the option `<level>`                                                        |
+| options `defaultStatus`, `defaultFieldStatus`                             | Same, in `.configure`. `defaultStatus` accepts only `dirty`, `submits`, `successful`.                                                       |
+| `form.values`, `form.field.get(name)`, `form.state`                       | `instance.values.get()`, `instance.values.get(name)`, `instance.store.state`                                                                |
+| `form.status`, `form.field.status(name)`                                  | `instance.status.form`, `instance.status.at(name)`                                                                                          |
+| `form.validate(fields?, options?)`                                        | `instance.validation.run(fields?, options?)`                                                                                                |
+| `form.submit(onSuccess, onError)()`                                       | `instance.submit.run()`. Move the callbacks to the `onSubmit` and `onInvalid` options.                                                      |
+| `form.reset(options?)`, `keep.issues`                                     | `instance.reset.all(options?)`, `keep.checks`                                                                                               |
+| `form.field.reset(name, { value })`                                       | `instance.reset.at(name, { value })`. The `status` and `keep` options are removed.                                                          |
+| `form.field.change / focus / blur / register / unregister(name, ...)`     | `instance.field(name).change(...)` and so on, or `instance.events.change(name, ...)`                                                        |
+| `form.field.issues(name, options?)`                                       | `instance.error.at(name, options?)` per check, or `instance.validation.issues(name)` for all                                                |
+| `form.field.setIssues(name, { error: [...] }, { mode })`                  | `instance.error.set(name, entries, { mode })`                                                                                               |
+| `form.array.append(name, ...)` and the other 7 operations                 | `instance.array(name).append(...)`, or `instance.arrays.append(name, ...)`                                                                  |
+| `field.value`, `field.id`                                                 | `field.get()` or `field.state.value`, `field.state.id`                                                                                      |
+| `field.issues()`, `field.state.issues.error`                              | `field.error()`. For a custom level: `instance.<level>.at(name)`.                                                                           |
+| `field.setIssues({ error: [...] })`                                       | `field.setError(entries)` for a server error, else `instance.error.set(name, entries)`                                                      |
+| `field.store`, `field.options`, `array.store`, `array.state`              | Removed. Read `instance.store` with a selector, and the array with `array.get()`.                                                           |
+| entry `{ type, level, issue: { message, path } }`                         | `CheckEntry`: `{ type, message, path }`. The check name is the key that holds the entry.                                                    |
+| state `status.<flag>`, `fields[path].status`, `fields[path].issues.error` | `status.form.<flag>`, `status.fields[path]`, `error[path]`                                                                                  |
+| `form.issues()`, `form.setIssues()`, `state.issues` (root)                | Read all entries: `instance.validation.issues()`. Root only: the empty path, `instance.error.at('')` and `instance.error.set('', entries)`. |
+| `form.options`                                                            | No replacement. See "Deviations and decisions".                                                                                             |
 
 Types: `FormOptions` → `OptionsOf<typeof form>`, `FormStore` → `StateOf<typeof form>`, `FormValues` →
 `ValuesOf<typeof form>`, `FormFields` → `Path`, `FormArrayFields` → `ArrayPath`, `FormFieldValue` and `DeepValue` →
@@ -115,43 +133,47 @@ Types: `FormOptions` → `OptionsOf<typeof form>`, `FormStore` → `StateOf<type
 
 React (`@oxform/react` 0.x). The new parts and hooks come from `createParts(form)`, not from the package.
 
-| 0.x                                | New                                                                                                  |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `useForm(options)`                 | The module-level form, then `<Root>` with changing options as props. Inside it: `useForm()`.         |
-| `useField({ form, name })`         | `useField(name)`. `field.props` is removed: `<Field name>` binds value, ref and events.              |
-| `useFieldApi({ form, name })`      | `useForm().field(name)`                                                                              |
-| `useArrayField({ form, name })`    | `useArray(name)`. Read items with `get()` and keys with `ids`.                                       |
-| `useFormStatus({ form })`          | `useSelector(state => state.status.form)`                                                            |
-| `useSubscribe(api, selector)`      | `useSelector(selector)` on the form state                                                            |
-| `useFormEffect(api, selector, fn)` | Removed. Call `createEffect(useForm(), selector, fn)` in a `useEffect` and unsubscribe. †            |
-| `<Field form name>{field => …}`    | `<Field name />` renders the `<input>`. Another element: `render={<select>…</select>}` or `usePart`. |
-| `<ArrayField form name>`           | `useArray(name)` in a component                                                                      |
-| `<Subscribe api selector>`         | `useSelector(selector)` in a component. For submit state: `<Submit>{state => …}</Submit>`.           |
-| error markup from `state.issues`   | `<FieldError name />` shows the first message. All: `{({ messages }) => …}` as children.             |
+| 0.x                                | New                                                                                                   |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `useForm(options)`                 | The module-level form, then `<Root options={…}>` with the changing options. Inside it: `useForm()`.   |
+| `useField({ form, name })`         | `useField(name)`. `field.props` is removed: `<Field name>` binds value, ref and events.               |
+| `useFieldApi({ form, name })`      | `useForm().field(name)`                                                                               |
+| `useArrayField({ form, name })`    | `useArray(name)`. Read items with `get()` and keys with `ids`.                                        |
+| `useFormStatus({ form })`          | `useSelector(state => state.status.form)`                                                             |
+| `useSubscribe(api, selector)`      | `useSelector(selector)` on the form state                                                             |
+| `useFormEffect(api, selector, fn)` | Removed. Call `createEffect(useForm(), selector, fn)` in a `useEffect`, and return its `unsubscribe`. |
+| `<Field form name>{field => …}`    | `<Field name />` renders the `<input>`. Another element: `render={<select>…</select>}` or `usePart`.  |
+| `<ArrayField form name>`           | `useArray(name)` in a component                                                                       |
+| `<Subscribe api selector>`         | `useSelector(selector)` in a component. For submit state: `<Submit>{state => …}</Submit>`.            |
+| error markup from `state.issues`   | `<FieldError name />` shows the first message. All: `{({ messages }) => …}` as children.              |
 
-Solid 0.x (`@oxform/solid`, `/v2`): `createForm`, `createField`, `createFieldApi`, `createArrayField`, `createFormStatus`,
-`createSubscribe`, `createFormEffect`, `Field`, `ArrayField`, `Subscribe` → the same rows with `createParts` from the Solid entry. †
+Solid 0.x (`@oxform/solid`, `/v2`): `createForm`, `createField`, `createFieldApi`, `createArrayField`,
+`createFormStatus`, `createSubscribe`, `Field`, `ArrayField` and `Subscribe` take the React rows of `useForm`,
+`useField`, `useFieldApi`, `useArrayField`, `useFormStatus`, `useSubscribe`, `<Field>`, `<ArrayField>` and
+`<Subscribe>`, with `createParts` from the Solid entry. `createFormEffect` becomes `useSelector` and Solid's own
+`createEffect`. The Solid differences: `useSelector` returns an accessor, a hook path can be an accessor, `render` is
+a function only, and function `children` get the state as an accessor.
 
 ### 4. Behavior changes that compile but act differently
 
-| Change                                                                                                                                                 | Detect                                                      | Do                                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| The `schema` only types the values. Submit and `validation.run()` do not use it.                                                                       | A form with no `checks.error.validate.submit`               | Add `error: { submit: schema }`.                                                                  |
-| The `checks` map is gone. An unknown `checks` option can pass when options are not a literal.                                                          | `checks:`                                                   | Move `checks.error.validate` to `error`. Add one `check(...)` and one option per other level.     |
-| Submit callbacks are options. `<Root onSubmit>` is the option `(values, instance) => …`, not the DOM handler.                                          | `onSubmit={event`, `.submit(`                               | Pass `onSubmit` and `onInvalid` to `Root`, `create(options)` or `.configure`.                     |
-| `Root` prevents the default of `submit` and `reset`. The `Reset` part restores the defaults. A hand-written `type='reset'` button does nothing. †      | `preventDefault()`, `type='reset'`, `action=`               | Delete the DOM handler. Use `<Reset>`. Do not depend on native submission.                        |
-| `validation.run` resolves `[valid, issues]` by check name with flat entries. A discarded run resolves `[true, issues]` with an empty list per check. † | `.validate(`, `.issue.message`                              | Read `entry.message`.                                                                             |
-| `'~mount'` and `'~update'` are removed. `Root` props are the options, and a change never resets values.                                                | `'~mount'`, `'~update'`                                     | Pass changing options as `Root` props.                                                            |
-| The adapter supplies the form id. `form.create()` alone gives a counter id (`form-1`). Field ids are `<form id>-<path>`. †                             | `.id` used in `htmlFor`, tests or storage keys              | Pass `id` where it must be the same on the server and the client. Do not depend on the id format. |
-| `useForm()` does not subscribe. `instance.status.form` is a snapshot.                                                                                  | `form.status.` in JSX                                       | Read with `useSelector(state => state.status.form)`, or use `<Submit>`.                           |
-| `useField` does not re-render on check entries. †                                                                                                      | `field.issues()`, `state.issues` in JSX                     | Render `<FieldError name>` or `useSelector(state => state.error[path])`.                          |
-| `<Field>` writes by input `type`: number, boolean, `File`, list. An empty number writes `undefined`. †                                                 | An `onChange` that coerces, `valueAsNumber`                 | Delete the coercing handler. Set `type` on `<Field>`.                                             |
-| `field.setError` entries go at the next change of the field. `instance.error.set` entries stay until a run or `clear`. †                               | `setIssues(`                                                | Use `setError` for server errors and `error.set` for the 0.x lifetime.                            |
-| `mode: 'replace'` replaces one check. In 0.x it replaced every level at the path.                                                                      | `setIssues(` with more than one level                       | Call `set` or `clear` on each check.                                                              |
-| A non-exclusive check (a custom level) keeps the entries of an event that has no validator. In 0.x they were cleared. †                                | A custom level with validators for some events only         | Call `instance.<level>.clear(path)` where the 0.x code depended on the clearing.                  |
-| A check added after `standard` has no handle sugar (`field.warning()`), and `<FieldError>` shows only `error`.                                         | `issues.warning`, other levels in JSX                       | Read `instance.<level>.at(path)` or `useSelector(state => state.<level>[path])`.                  |
-| `status.form.successful` is `boolean \| null`.                                                                                                         | `successful` comparisons                                    | Handle `null` (no settled submit yet).                                                            |
-| Hooks and parts work only inside `Root`. An instance is made per `Root`, not per module.                                                               | The form used outside `<form>`, a module-level `createForm` | Move the code inside `Root`. Create server instances per request.                                 |
+| Change                                                                                                                                                                 | Detect                                                      | Do                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| The `schema` only types the values. Submit and `validation.run()` do not use it.                                                                                       | A form with no `checks.error.validate.submit`               | Add `error: { submit: schema }`.                                                                          |
+| The `checks` map is gone. An unknown `checks` option can pass when options are not a literal.                                                                          | `checks:`                                                   | Move `checks.error.validate` to `error`. Add one `check(...)` and one option per other level.             |
+| Submit callbacks are options: `<Root options={{ onSubmit }}>` takes `(values, instance) => …`. `onSubmit` on `Root` itself is the DOM handler of the `<form>`.         | `onSubmit={event`, `.submit(`                               | Pass `onSubmit` and `onInvalid` in the `options` prop of `Root`, to `create(options)` or to `.configure`. |
+| `Root` prevents the default of `submit` and `reset`. The `Reset` part restores the defaults. A hand-written `type='reset'` button does nothing.                        | `preventDefault()`, `type='reset'`, `action=`               | Delete the DOM handler. Use `<Reset>`. Do not depend on native submission.                                |
+| `validation.run` resolves `[valid, issues]` by check name with flat entries. A discarded run resolves `[true, issues]` with an empty list per check.                   | `.validate(`, `.issue.message`                              | Read `entry.message`.                                                                                     |
+| `'~mount'` and `'~update'` are removed. The `options` prop of `Root` holds the options, and a change never resets values.                                              | `'~mount'`, `'~update'`                                     | Pass changing options in the `options` prop of `Root`.                                                    |
+| The adapter supplies the form id. `form.create()` alone gives a counter id (`form-1`). Field ids are `<form id>-<path>`, with a dot of the path as `-`.                | `.id` used in `htmlFor`, tests or storage keys              | Pass `id` where it must be the same on the server and the client. Do not depend on the id format.         |
+| `useForm()` does not subscribe. `instance.status.form` is a snapshot.                                                                                                  | `form.status.` in JSX                                       | Read with `useSelector(state => state.status.form)`, or use `<Submit>`.                                   |
+| `useField` does not re-render on check entries, only when they change the `valid` flag of its path.                                                                    | `field.issues()`, `state.issues` in JSX                     | Render `<FieldError name>` or `useSelector(state => state.error[path])`.                                  |
+| `<Field>` writes by input `type`: number, boolean, `File`, list. An empty number writes `undefined`.                                                                   | An `onChange` that coerces, `valueAsNumber`                 | Delete the coercing handler. Set `type` on `<Field>`.                                                     |
+| `field.setError` entries go at the next change of the field. `instance.error.set` entries stay until a run with an `error` validator for the path, a reset or `clear`. | `setIssues(`                                                | Use `setError` for server errors and `error.set` for the 0.x lifetime.                                    |
+| `mode: 'replace'` replaces one check. In 0.x it replaced every level at the path.                                                                                      | `setIssues(` with more than one level                       | Call `set` or `clear` on each check.                                                                      |
+| A non-exclusive check (a custom level) keeps the entries of an event that has no validator. In 0.x they were cleared.                                                  | A custom level with validators for some events only         | Call `instance.<level>.clear(path)` where the 0.x code depended on the clearing.                          |
+| A check added after `standard` has no handle sugar (`field.warning()`), and `<FieldError>` shows only `error`.                                                         | `issues.warning`, other levels in JSX                       | Read `instance.<level>.at(path)` or `useSelector(state => state.<level>[path])`.                          |
+| `status.form.successful` is `boolean \| null`.                                                                                                                         | `successful` comparisons                                    | Handle `null` (no settled submit yet).                                                                    |
+| Hooks and parts work only inside `Root`. An instance is made per `Root`, not per module.                                                                               | The form used outside `<form>`, a module-level `createForm` | Move the code inside `Root`. Create server instances per request.                                         |
 
 ### 5. Procedure
 
@@ -162,7 +184,7 @@ Migrate one form at a time. Keep the type check green between forms.
 3. Add `.extend(check('<level>', { blocking }))` for each custom level. Then add one `.configure({ ... })` with the
    other options. Rename `checks.error.validate` to `error`, and add `submit: schema` if it has no `submit` validator.
 4. Call `createParts(form)` at module level and take the parts and hooks the form uses.
-5. Replace `<form onSubmit>` with `<Root onSubmit onInvalid>`. Delete `preventDefault()` and `form.submit(...)`.
+5. Replace `<form onSubmit>` with `<Root options={{ onSubmit, onInvalid }}>`. Delete `preventDefault()` and `form.submit(...)`.
    Replace each `<Field form name>{field => <input {...field.props} />}</Field>` with `<Field name />` and put the
    input's props on it. Replace error markup with `<FieldError name />`, the submit button with `<Submit>` and a
    reset button with `<Reset>`.
@@ -233,14 +255,16 @@ const { Root, Field, FieldError, Submit } = createParts(teamInvites);
 export function TeamInvites() {
   return (
     <Root
-      onSubmit={async (values, form) => {
-        const result = await invite(values);
-        if (result.taken) form.field('email').setError([{ message: 'Already a member' }]);
+      options={{
+        onSubmit: async (values, form) => {
+          const result = await invite(values);
+          if (result.taken) form.field('email').setError([{ message: 'Already a member' }]);
+        },
       }}
     >
       <Field name='email' type='email' />
       <FieldError name='email'>
-        {({ messages }) => messages.map(message => <span key={message}>{message}</span>)}
+        {({ messages }) => messages.map((message: string) => <span key={message}>{message}</span>)}
       </FieldError>
       <Field name='seats' type='number' />
       <Submit>Invite</Submit>
@@ -262,9 +286,9 @@ Do not:
 
 - write a compatibility shim or wrapper that restores a 0.x name;
 - keep 0.x and `0.7.0` installed together, or keep two copies of `@oxform/core`;
-- hand-edit generated types or declaration files to make the type check pass;
-- migrate a row marked `†` in Solid code before P8-09 has verified it. For a 0.x feature with no replacement,
-  apply "Deviations and decisions" below.
+- hand-edit generated types or declaration files to make the type check pass.
+
+For a 0.x feature with no replacement, apply "Deviations and decisions" below.
 
 ## Deviations and decisions
 
@@ -274,7 +298,7 @@ item 4 of the direction. Items 2 to 4 and 7 are design item 7, decided in `01-pu
 
 1. **`useFormEffect` and Solid `createFormEffect`.** Decided (D31): no adapter export. The guide uses the
    pattern of `01-public-api.md`, section 7.4: `createEffect(useForm(), selector, fn)` in the framework's
-   effect. P8-09 verifies it on the built packages.
+   effect. P8-09 verified it on the built packages.
 2. **Root-only (pathless) issues.** `form.issues()`, `form.setIssues()` and `state.issues`. Decided (D22): the
    empty path `''` is the root in `at` and `set`. No part shows root issues: read `state.error['']` with
    `useSelector`.
@@ -298,7 +322,7 @@ item 4 of the direction. Items 2 to 4 and 7 are design item 7, decided in `01-pu
    `ArrayLike`, `DeepRecord`, `FormSubmitSuccessHandler`, `FormSubmitErrorHandler` and the `StandardSchema` alias.
    Decided: the guide lists them in one row as removed, with no replacement. Code that used them uses the
    read-back types (`ValuesOf`, `OptionsOf`, `StateOf`, `InstanceOf`) or the Standard Schema package.
-9. **Solid.** The adapters are not built. Every Solid row is marked `†`, and P8-09 verifies it after P6-04.
+9. **Solid.** P8-09 verified the Solid rows on the built `@oxform/solid` and `@oxform/solid/v2`.
 
 No longer gaps under the new spike: custom levels (`check(name, options)`), an "any form" type (`AnyForm`),
 `field.props` (`<Field>`, `render` and the built `usePart`), per-field stores (`instance.store` with a selector),
@@ -314,5 +338,5 @@ Differences from, and notes on, `00-direction.md`:
   `01-public-api.md`, section 3.3, places them in `@oxform/core/behaviors`.
 - The example simplifies the team invites domain of the catalogue: one invitee `email` at the root in place of
   `members[]`, and `seats`.
-- `usePart` takes `ComponentPropsWithoutRef<Tag>`, so it cannot forward `render` or function children
-  (`examples/readme.md`, finding 3). The guide prefers the `render` prop.
+- The built `usePart` takes the part props of its tag, with `render` and function children
+  (`packages/react/dist/index.d.ts`). The guide prefers the `render` prop.

@@ -158,3 +158,14 @@
 - Why it matters: a maintainer of another library can contest these cells. The page review (P8-11) or a
   correction (4.6, rule 6) decides them. Removing row 15 would also remove a row where two other libraries
   are ahead of Oxform (3.2).
+
+## The state of the `fieldError`, `reset` and `root` parts is `any` in the built types (TK-066)
+
+- What: the built declaration types the `fieldError` slot as `Slot<{ readonly name: KeyProp }, any, "p">`
+  (`packages/core/dist/behaviors-*.d.ts`, from `packages/core/src/behaviors/slots.ts:114-121`). The `reset` and
+  `root` slots also have `any` state (`slots.ts:149`, `:171`). So `<FieldError name>{({ messages }) => …}</FieldError>`
+  gets `messages: any`, and `messages.map(message => …)` fails under `strict` with `TS7006`. The spec reads the
+  state with a cast (`packages/core/src/behaviors/slots.spec.ts:269`).
+- Why it matters: the documented way to show every error message is untyped, and a consumer must annotate
+  `message: string`. The migration guide example does that. The `fieldError` state should be
+  `{ messages: string[] }` in the declarations.
