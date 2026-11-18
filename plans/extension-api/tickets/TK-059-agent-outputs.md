@@ -3,12 +3,12 @@ id: TK-059
 title: Agent outputs
 phase: 8
 work_package: P8-02
-status: in-progress
+status: done
 depends_on: [TK-058]
 branch: codex/P8-02-agent-outputs
 pr: null
 started: 2026-11-18
-completed: null
+completed: 2026-11-18
 ---
 
 # TK-059: Agent outputs
@@ -62,14 +62,14 @@ page or a forbidden term. Each docs tool check has a recorded result.
 - [x] Each of the four tool checks of `04#7.2` and the `<include>` check of `04#8` has a recorded result.
 - [x] The page actions work at desktop and mobile sizes. The console shows no runtime, SSR or hydration error
       (`AGENTS.md`, "Validation").
-- [ ] `pnpm run build`, `pnpm run check:all` and `pnpm run check:format` pass.
+- [x] `pnpm run build`, `pnpm run check:all` and `pnpm run check:format` pass.
 
 ## Evidence
 
-Open: `pnpm run check:all` fails, because `check:terms` finds 7 forbidden terms in files outside this ticket:
+Rewording commit `64cec47` (approved by the coordinator): the 7 forbidden terms that `check:terms` found in
 `docs/form-core-behaviors.md:397`, `docs/structure.md:60`, `packages/adapter-parity/src/fixtures.ts:93`,
 `packages/core/src/internal/paths.spec.ts:32` and `:68`, `packages/core/src/main/scopes.ts:29` and
-`packages/core/tests/types/main.test-d.ts:574`. The last acceptance item stays open until they are reworded.
+`packages/core/tests/types/main.test-d.ts:574` now use glossary words.
 
 - Outputs: `/llms.txt` (`src/routes/llms[.]txt.ts`), `/llms-full.txt` (`src/routes/llms-full[.]txt.ts`),
   `/docs.md` (`src/routes/docs[.]md.ts`) and `/docs/<slug>.md` (the `GET` handler of `src/routes/docs.$.tsx`,
@@ -119,10 +119,15 @@ Open: `pnpm run check:all` fails, because `check:terms` finds 7 forbidden terms 
   `test:coverage` and `test`, the order of `02#CI`. `prepublish` ends with `docs:check:agents`.
 - Commands, from the repository root: `pnpm run build` (12/12), `pnpm run docs:build` (passed),
   `pnpm run docs:check:agents` (passed), `pnpm run check:format` (passed), `pnpm run check:package` and
-  `pnpm run check:parity` (passed), `pnpm run test` (passed), `pnpm run check:all` (failed at `check:terms`,
-  above).
-- Two of about ten `docs:build` runs failed in prerender with `fetch failed` (`ETIMEDOUT`) on the preview
-  server, on the first build after a content change. The next run passed with no change.
+  `pnpm run check:parity` (passed), `pnpm run test` (passed). After the rebase onto `eccecd1` and the
+  rewording: `pnpm run build`, `pnpm run check:all` ("check:terms: no forbidden term in 261 files"),
+  `pnpm run test`, `pnpm run docs:build`, `pnpm run docs:check:agents` and `pnpm run check:format` passed.
+- Two of about ten `docs:build` runs failed in prerender with `fetch failed` (`ETIMEDOUT` on `::1`,
+  `ECONNREFUSED` on `127.0.0.1`). Cause: the prerender preview server listened on `localhost` (`::1` only), and
+  a render that blocks the event loop past the 250 ms connection timeout fails a pending connection. Fix
+  (commit `9ed56b7`): `preview.host: '127.0.0.1'` in `apps/docs/vite.config.ts`. A Node probe reproduced the
+  error on `localhost` and passed on `127.0.0.1`. The preview URL is now `http://127.0.0.1:<port>/`. Three cold
+  builds (no `.cache`) passed after the fix. Details in `reports/docs-build.md`.
 
 Decisions (owner decision 18):
 
