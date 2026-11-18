@@ -44,9 +44,17 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run check
 
+      - name: Check terms
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm run check:terms
+
       - name: Check package
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm run check:package
+
+      - name: Check docs for agents
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm run docs:check:agents
 
       - name: Test coverage
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
