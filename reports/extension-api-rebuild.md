@@ -169,3 +169,7 @@
 - Why it matters: the documented way to show every error message is untyped, and a consumer must annotate
   `message: string`. The migration guide example does that. The `fieldError` state should be
   `{ messages: string[] }` in the declarations.
+- Fixed: `SlotFactory` returns `Slot<…, NoInfer<SlotState>, …>` (`packages/core/src/main/types.ts`), so the
+  `any` of the `SlotRecord` constraint no longer becomes the state of a slot. A slot with no `state` gets `{}`,
+  and `fieldError` writes `state` before `text`, so it gets `{ messages: string[] }`. The cast in `slots.spec.ts`
+  is removed. The annotation in `plans/extension-api/05-migration-guide.md` is no longer necessary.

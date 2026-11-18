@@ -266,7 +266,7 @@ describe('fieldErrorSlots', () => {
     const error = subject.slot('fieldError');
     const absent = error.present!(subject.instance.store.state, subject.part());
     subject.instance.error.set('name', [{ message: 'Taken' }, { message: 'Short' }]);
-    const state = error.state!(subject.instance.store.state, subject.part()) as { messages: string[] };
+    const state = error.state!(subject.instance.store.state, subject.part());
 
     expect([absent, error.present!(subject.instance.store.state, subject.part()), state, error.text!(state), subject.attrs('fieldError')]).toEqual([
       false,

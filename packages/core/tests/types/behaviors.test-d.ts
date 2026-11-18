@@ -141,6 +141,19 @@ describe('rootSlots, fieldSlots, fieldErrorSlots, submitSlots, resetSlots', () =
     expectTypeOf<PartsOf<typeof resettable>['reset']['element']>().toEqualTypeOf<'button'>();
   });
 
+  it('give each part a precise state', () => {
+    expectTypeOf<PartsOf<typeof lean>['root']['state']>().toEqualTypeOf<{}>();
+    expectTypeOf<PartsOf<typeof lean>['field']['state']>().toEqualTypeOf<{}>();
+    expectTypeOf<PartsOf<typeof lean>['fieldError']['state']>().toEqualTypeOf<{ messages: string[] }>();
+    expectTypeOf<PartsOf<typeof lean>['submit']['state']>().toEqualTypeOf<{
+      submitting: boolean;
+      submits: number;
+      successful: boolean | null;
+    }>();
+    expectTypeOf<PartsOf<typeof filter>['field']['state']>().toEqualTypeOf<{}>();
+    expectTypeOf<PartsOf<typeof resettable>['reset']['state']>().toEqualTypeOf<{}>();
+  });
+
   it('take a slot factory', () => {
     // @ts-expect-error A slot group takes a slot factory.
     rootSlots({});

@@ -302,7 +302,7 @@ export interface SlotDefinition<Spec, SlotState, Api, State, Tag extends Element
   /** The element of the part, unless the caller of `createParts` chooses another. */
   readonly element?: Tag;
   readonly props?: Spec;
-  /** What the part shows when it gets no children. */
+  /** What the part shows when it gets no children. Write it after `state`, so it reads the inferred state. */
   readonly text?: (state: NoInfer<SlotState>) => string | undefined;
   readonly present?: (state: State, part: PartHandle<PropsOf<Spec>, Api>) => boolean;
   readonly state?: (state: State, part: PartHandle<PropsOf<Spec>, Api>) => SlotState;
@@ -322,14 +322,17 @@ export interface Slot<Props = {}, SlotState = {}, Tag extends ElementTag = 'div'
   readonly [slotBrand]: PartSpec<Props, SlotState, Tag>;
 }
 
-/** Makes a slot. `Spec` comes from `props`, `SlotState` from `state` and `Tag` from `element`. */
+/**
+ * Makes a slot. `Spec` comes from `props`, `SlotState` from `state` and `Tag` from `element`. `SlotState` is not
+ * inferred from the slot record that the call returns into, so a slot with no `state` has the state `{}`.
+ */
 export type SlotFactory<Api, State> = <
   const Spec extends Readonly<Record<string, PropKind>> = {},
   SlotState = {},
   const Tag extends ElementTag = 'div',
 >(
   definition: SlotDefinition<Spec, SlotState, Api, State, Tag>,
-) => Slot<SlotPropsOf<Spec>, SlotState, Tag>;
+) => Slot<SlotPropsOf<Spec>, NoInfer<SlotState>, Tag>;
 
 export type SlotRecord = Readonly<Record<string, Slot<any, any, any>>>;
 

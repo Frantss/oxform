@@ -112,6 +112,14 @@ describe('PartComponent', () => {
     // @ts-expect-error `nope` is not a path of Profile.
     accepts(<parts.Field name='nope' />);
   });
+
+  it('gives the children of the error part its messages', () => {
+    accepts(
+      <parts.FieldError name='name'>
+        {state => state().messages.map(message => message.toUpperCase())}
+      </parts.FieldError>,
+    );
+  });
 });
 
 describe('PartComponents', () => {

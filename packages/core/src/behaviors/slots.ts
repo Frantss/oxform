@@ -114,9 +114,9 @@ export const fieldErrorSlots = /* @__PURE__ */ defineSlots(
     fieldError: slot({
       element: 'p',
       props: { name: 'key' },
+      state: (state, part) => ({ messages: (state.error[part.key] ?? []).map(entry => entry.message) }),
       text: ({ messages }) => messages[0],
       present: (state, part) => hasErrors(state, part.key),
-      state: (state, part) => ({ messages: (state.error[part.key] ?? []).map(entry => entry.message) }),
       attrs: (_state, part) => ({ id: `${fieldId(part)}-error`, role: 'alert' }),
     }),
   }),
