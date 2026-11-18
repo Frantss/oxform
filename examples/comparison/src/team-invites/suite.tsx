@@ -53,7 +53,9 @@ export const teamInvitesSuite = (name: string, Version: ComponentType, stub = fa
       const sendInvites = vi.spyOn(server, 'sendInvites');
       await userEvent.click(screen.getByRole('button', { name: 'Add member' }));
       await userEvent.fill(emails(screen), 'ada@example.com');
-      await userEvent.click(screen.getByRole('button', { name: 'Send invites' }));
+      // Enter submits from the email field. A click would blur it, and the blur lookup can shift the layout between
+      // mousedown and mouseup, so the click would miss the button.
+      await userEvent.keyboard('{Enter}');
       await expect
         .element(screen.getByRole('textbox', { name: 'Team' }))
         .toHaveAccessibleDescription('Enter a team name.');
@@ -61,7 +63,7 @@ export const teamInvitesSuite = (name: string, Version: ComponentType, stub = fa
       expect(sendInvites).not.toHaveBeenCalled();
       await userEvent.fill(screen.getByRole('textbox', { name: 'Team' }), 'Design');
       await userEvent.fill(emails(screen), 'grace@example.com');
-      await userEvent.click(screen.getByRole('button', { name: 'Send invites' }));
+      await userEvent.keyboard('{Enter}');
 
       await vi.waitFor(() =>
         expect(sendInvites).toHaveBeenCalledWith({

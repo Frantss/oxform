@@ -19,8 +19,8 @@ has the buttons "Move up" and "Remove". Under the list: "Add member". At the end
 
 ## Behavior
 
-1. "Add member" appends an empty row. "Remove" removes its row. "Move up" swaps its row with the row above.
-   The values move with their rows.
+1. "Add member" appends an empty row. "Remove" removes its row. "Move up" swaps its row with the row above,
+   and is disabled on the first row. The values move with their rows.
 2. A member email validates its format on change, before any submit.
 3. On blur, a member email with a valid format is looked up with `server.isMember`. A member shows "This
    address is already a member.".
