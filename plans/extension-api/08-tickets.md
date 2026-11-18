@@ -117,7 +117,7 @@ evidence.
 | [TK-053](./tickets/TK-053-solid-v2-example.md)         | Solid 2 example app            | P7-06        | done    | TK-046, TK-051         |
 | [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | done    | TK-008                 |
 | [TK-055](./tickets/TK-055-comparison-research.md)      | Comparison research closure    | P7-08        | done    | None                   |
-| [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | ready   | TK-054, TK-042, TK-050 |
+| [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | done    | TK-054, TK-042, TK-050 |
 | [TK-057](./tickets/TK-057-comparison-measurement.md)   | Comparison measurement         | P7-10        | blocked | TK-056, TK-033         |
 
 ### Phase 8: documentation
