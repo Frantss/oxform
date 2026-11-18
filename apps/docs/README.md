@@ -79,9 +79,11 @@ the theme and Fumadocs share provider contexts during server rendering.
 
 ## Production
 
-After building, run `pnpm run docs:start` from the repository root. The srvx
-server loads `dist/server/server.js`, serves static files from `dist/client`,
-and listens on `0.0.0.0` using `PORT` (default `3000`).
+After building, run `pnpm run docs:start` from the repository root.
+`server.ts` starts srvx with `dist/server/server.js`, serves static files from
+`dist/client`, and listens on `0.0.0.0` using `PORT` (default `3000`). It sends
+Markdown requests (a `.md` URL, or `Accept: text/markdown` on a docs URL) to the
+app before the static files.
 
 On Railway, keep the repository root as the build context and set:
 

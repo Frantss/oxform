@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -23,5 +23,5 @@
       "collections/*": ["./.source/*"]
     }
   },
-  "include": ["src", "content", "source.config.ts", ".source"]
+  "include": ["src", "content", "scripts", "content-pages.ts", "source.config.ts", ".source"]
 }

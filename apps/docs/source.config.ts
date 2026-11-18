@@ -5,6 +5,7 @@ import { transformerTwoslash } from 'fumadocs-twoslash';
 import { createFileSystemTypesCache } from 'fumadocs-twoslash/cache-fs';
 import { createFileSystemGeneratorCache, createGenerator, remarkAutoTypeTable } from 'fumadocs-typescript';
 import { z } from 'zod';
+import { contentDirectory, pageFilePatterns } from './content-pages';
 
 const generator = createGenerator({
   cache: createFileSystemGeneratorCache('.cache/fumadocs-typescript'),
@@ -25,9 +26,10 @@ const principles = ['composable', 'reusable', 'extensible', 'type-safe', 'lightw
 const pageTypes = ['concept', 'guide', 'reference', 'extension', 'recipe', 'adapter', 'overview'] as const;
 
 export const docs = defineDocs({
-  dir: 'content/docs',
+  dir: contentDirectory,
   docs: {
-    files: ['*.{md,mdx}', '{core,concepts,compose,extend,behaviors,presets,adapters,recipes,migration}/**/*.{md,mdx}'],
+    files: pageFilePatterns,
+    postprocess: { includeProcessedMarkdown: true },
     schema: pageSchema.extend({
       description: z.string(),
       type: z.enum(pageTypes),

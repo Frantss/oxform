@@ -1,5 +1,6 @@
 {
   "title": "Oxform",
+  "description": "Oxform is a framework-agnostic form library for TypeScript. A form is a chain of extensions on defineForm, and each extension adds options, state, an api and slots. An adapter turns the slots of a form into parts for React, Solid 1 or Solid 2. Each link below opens the Markdown form of one page, in sidebar order. /llms-full.txt has the text of every page in one file.",
   "pages": [
     "---Start---",
     "index",
