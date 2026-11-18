@@ -278,7 +278,7 @@ Two audiences, with one source:
 - **Migration guide**: one small page written for an agent that upgrades a 0.x code base. It is a mapping
   table, an ordered procedure and a verification step.
 - **Comparison**: one page compares Oxform with TanStack Form, React Hook Form and Formisch, in features and
-  in size. [07-comparison.md](./07-comparison.md) owns its method and content rules.
+  capabilities, as a static table. [07-comparison.md](./07-comparison.md) owns its method and content rules.
 - **Contributor documentation** (`docs/*.md`, `AGENTS.md`, package readmes) is rewritten for the new
   structure. Each fact stays in one place.
 
@@ -295,7 +295,7 @@ Each fact has one owner. Other files link to it and do not restate it.
 | [04-documentation.md](./04-documentation.md)     | Example catalogue, public docs site map, page templates, agent-first delivery      |
 | [05-migration-guide.md](./05-migration-guide.md) | The draft of the agent-focused migration guide itself                              |
 | [06-roadmap.md](./06-roadmap.md)                 | Phases, work packages, order, exit criteria, risks, the decision register          |
-| [07-comparison.md](./07-comparison.md)           | The comparison with other form libraries: method, fairness rules, features, sizes  |
+| [07-comparison.md](./07-comparison.md)           | The comparison with other form libraries: method, fairness rules, features         |
 | [08-tickets.md](./08-tickets.md)                 | The ticket list and the map from each ticket to its work package                   |
 
 ## Owner decisions
@@ -335,7 +335,8 @@ Decided by the owner on 2026-11-15.
 15. **Scoped parts.** A part is scoped with its `scope` prop only. `createParts` returns no `within`. The
     adapter hooks keep their `{ scope }` option.
 16. **Comparison.** The documentation compares Oxform with TanStack Form, React Hook Form and Formisch, in
-    features and in size. `07-comparison.md` owns the design of the comparison.
+    features and capabilities, as a static table. `07-comparison.md` owns the design of the comparison. Decision
+    19 replaces the first form of this decision, which also compared sizes.
 17. **Needs are hard requirements.** The owner's words: "no hand work means that dependencies are hard
     requirement, if a behavior/extension needs another and it is missing the form config should fail". Every
     extension, every built-in slot group and the preset state their needs, and every need is required. No
@@ -344,3 +345,9 @@ Decided by the owner on 2026-11-15.
 18. **Finish the plan.** The owner's words: "finish the plan, do not ask me for anything else". The plan
     decides every remaining choice with its recorded default, or with the simplest option that fits the
     direction. `06-roadmap.md`, decision register, records each one, who decided it and why.
+
+Decided by the owner on 2026-11-18.
+
+19. **The comparison is a static table.** The owner's words: "comparison was meant to be a static table
+    comparison of features and capabilities". The comparison workspace, its form versions and the size method
+    are removed. Only the feature data stays, in `07-comparison-features.json`.

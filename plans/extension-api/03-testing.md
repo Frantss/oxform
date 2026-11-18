@@ -544,14 +544,8 @@ with `defineForm(...).extend(...)`.
 - The spike sizes in the table are the reference until the first complete build. The spike's path helpers are
   simpler than today's (`XR:492-493`), so the first real numbers can be higher.
 - The documentation publishes the measured sizes ([04-documentation.md](./04-documentation.md)).
-- The comparison with other form libraries is measured in `examples/comparison` by `compare:size`.
-  [07-comparison.md](./07-comparison.md) owns its method.
-- Both measurements are reports, not a test layer: nothing asserts on a size, neither is part of `check:all`,
-  and neither blocks a merge.
-- The shared browser test of each comparison form is part of the comparison workspace
-  ([07-comparison.md](./07-comparison.md), section 4.6). It proves that every version meets the form's
-  specification. It is not a test layer of the packages, it is not one of the I8 example flows, and it does
-  not count toward coverage.
+- The size report is a report, not a test layer: nothing asserts on a size, it is not part of `check:all`,
+  and it does not block a merge.
 
 ### Choice: how to measure
 
@@ -580,7 +574,7 @@ installed Vite+ exposes Vitest's bench mode before the file is written; if not, 
 
 Requirements only. [02-structure.md](./02-structure.md) owns the script names and the job layout. The names
 this file uses are `test:coverage`, `check:test-structure`, `check:types:dist`, `check:type-coverage`,
-`test:package`, `check:consumers`, `check:parity`, `check:tree-shaking`, `report:size`, `compare:size` and `bench`.
+`test:package`, `check:consumers`, `check:parity`, `check:tree-shaking`, `report:size` and `bench`.
 
 | Requirement                                                              | Layer                                                 | Needs a build | Blocks a merge |
 | ------------------------------------------------------------------------ | ----------------------------------------------------- | ------------- | -------------- |
@@ -592,7 +586,7 @@ this file uses are `test:coverage`, `check:test-structure`, `check:types:dist`, 
 | Type tests on source                                                     | Type                                                  | No            | Yes            |
 | Type tests on `dist`, and `check:type-coverage`                          | Type                                                  | Yes           | Yes            |
 | Tree-shaking content check                                               | Bundle                                                | Yes           | Yes            |
-| Size report and comparison measurement                                   | Report, not a layer                                   | Yes           | No             |
+| Size report                                                              | Report, not a layer                                   | Yes           | No             |
 | `publint`, `attw`, module sharing, public exports only, consumer install | Packaging                                             | Yes           | Yes            |
 | Documentation snippets compile (`docs:check:agents`, Twoslash)           | Owned by [04-documentation.md](./04-documentation.md) | Yes           | Yes            |
 | Benchmark                                                                | Performance                                           | No            | No             |

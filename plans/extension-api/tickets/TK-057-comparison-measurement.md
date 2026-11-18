@@ -3,12 +3,12 @@ id: TK-057
 title: Comparison measurement
 phase: 7
 work_package: P7-10
-status: todo
+status: dropped
 depends_on: [TK-056, TK-033]
 branch: codex/P7-10-comparison-measurement
 pr: null
 started: null
-completed: null
+completed: 2026-11-18
 ---
 
 # TK-057: Comparison measurement
@@ -50,4 +50,4 @@ bytes on each run. `compare:check` fails when the data is stale.
 
 ## Evidence
 
-Record the command results, the two compared runs and any deviation from the plan here.
+Dropped on 2026-11-18. The owner ruled that the comparison is a static table of features and capabilities (`00-direction.md`, owner decision 19). The size method is removed, so nothing is measured.

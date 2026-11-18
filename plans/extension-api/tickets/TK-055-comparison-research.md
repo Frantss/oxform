@@ -15,13 +15,13 @@ completed: 2026-11-16
 
 ## Outcome
 
-No cell of the comparison is "Unverified". `examples/comparison/features.json` has one record per matrix cell,
+No cell of the comparison is "Unverified". `07-comparison-features.json` has one record per matrix cell,
 and each record has a primary source, a version and a read date.
 
 ## Scope
 
 - In: each "Unverified" cell of `07#2.2`, `#2.3` and `#3.3`, resolved at a primary source or removed with its
-  row. `examples/comparison/features.json` with the fields of `07#5`.
+  row. `07-comparison-features.json` with the fields of `07#5`.
 - Out: the form versions (TK-056). The size data (TK-057). The page and its generated tables (TK-068).
 
 ## Read first
@@ -49,7 +49,7 @@ and each record has a primary source, a version and a read date.
 
 ## Evidence
 
-- `examples/comparison/features.json`: 84 records (21 rows × 4 libraries) with `row`, `library`, `value`,
+- `07-comparison-features.json`: 84 records (21 rows × 4 libraries) with `row`, `library`, `value`,
   `note`, `source`, `version` and `readAt`. No value is "Unverified", and no record lacks a source, version or
   date. Each fact was read on 2026-11-16 at the library's documentation, repository, npm registry or GitHub API.
 - A script compared each record with its cell in `07#3.3`: 21 rows on both sides, 0 differences.

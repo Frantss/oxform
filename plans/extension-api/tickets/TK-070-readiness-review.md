@@ -58,10 +58,7 @@ depends_on:
     TK-051,
     TK-052,
     TK-053,
-    TK-054,
     TK-055,
-    TK-056,
-    TK-057,
     TK-058,
     TK-059,
     TK-060,
@@ -73,7 +70,6 @@ depends_on:
     TK-066,
     TK-067,
     TK-068,
-    TK-069,
   ]
 branch: codex/P9-01-readiness-review
 pr: null
@@ -94,9 +90,9 @@ packages.
 - In: one line of evidence per item of `06-roadmap.md#Definition of done for 0.7.0`: a command result, a file
   path or the Evidence section of a ticket. Check that each decision of the register is applied by the work
   package in its "Applied in" column, and that each accepted limit is on `limits.mdx`. Check that the size
-  report, `results/size.json`, `features.json` and the benchmark numbers in `reports/` match the current
+  report, `07-comparison-features.json` and the benchmark numbers in `reports/` match the current
   build. Run the items that need `main` or the registry on the integration branch, and name the ticket that
-  closes them: TK-069 (`compare:check` in `prepublish`), TK-071 (`explorations/` deleted) and TK-073 (`main`
+  closes them: TK-071 (`explorations/` deleted) and TK-073 (`main`
   and the registry).
 - Out: fixing a failed item. A failed item goes back to its ticket, and this review runs again. Deleting
   `explorations/` (TK-071). The version, the merge and the publish (TK-072, TK-073).

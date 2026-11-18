@@ -3,7 +3,7 @@ id: TK-056
 title: Comparison workspace
 phase: 7
 work_package: P7-09
-status: done
+status: dropped
 depends_on: [TK-054, TK-042, TK-050]
 branch: codex/P7-09-comparison-workspace
 pr: null
@@ -52,6 +52,10 @@ Formisch in React. Every version passes the shared browser test of its form.
 - [x] `pnpm run check:all` passes.
 
 ## Evidence
+
+Dropped on 2026-11-18. The owner ruled that the comparison is a static table of features and capabilities (`00-direction.md`, owner decision 19). The comparison workspace is removed. Only the feature data stays, in `07-comparison-features.json`.
+
+Earlier notes, kept as a record:
 
 Record the command results, the pinned versions and any deviation from the plan here.
 

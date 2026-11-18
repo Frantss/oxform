@@ -29,7 +29,7 @@ page or a forbidden term. Each docs tool check has a recorded result.
   `check:terms` to `check:all`, `check:terms` and `docs:check:agents` to CI in the order of `02#CI`, and
   `docs:check:agents` to `prepublish` (`02#Tooling and scripts`). The tool checks of `04#7.2` (items 1 to 4)
   and the `<include>` check of `04#8`.
-- Out: page content (TK-060 to TK-068). `compare:check` in `prepublish` (TK-069). The in-package `docs/`
+- Out: page content (TK-060 to TK-068). The in-package `docs/`
   folders and `docs:package` (stage B, D40, recorded by TK-074). An MCP server, per-section indexes and a
   skill (D47).
 

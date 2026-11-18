@@ -115,10 +115,10 @@ evidence.
 | [TK-051](./tickets/TK-051-react-example.md)            | React example app              | P7-04        | done    | TK-042, TK-050         |
 | [TK-052](./tickets/TK-052-solid-example.md)            | Solid 1 example app            | P7-05        | done    | TK-046, TK-051         |
 | [TK-053](./tickets/TK-053-solid-v2-example.md)         | Solid 2 example app            | P7-06        | done    | TK-046, TK-051         |
-| [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | done    | TK-008                 |
+| [TK-054](./tickets/TK-054-comparison-specification.md) | Comparison form specifications | P7-07        | dropped | TK-008                 |
 | [TK-055](./tickets/TK-055-comparison-research.md)      | Comparison research closure    | P7-08        | done    | None                   |
-| [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | done    | TK-054, TK-042, TK-050 |
-| [TK-057](./tickets/TK-057-comparison-measurement.md)   | Comparison measurement         | P7-10        | blocked | TK-056, TK-033         |
+| [TK-056](./tickets/TK-056-comparison-workspace.md)     | Comparison workspace           | P7-09        | dropped | TK-054, TK-042, TK-050 |
+| [TK-057](./tickets/TK-057-comparison-measurement.md)   | Comparison measurement         | P7-10        | dropped | TK-056, TK-033         |
 
 ### Phase 8: documentation
 
@@ -134,17 +134,17 @@ evidence.
 | [TK-065](./tickets/TK-065-solid-pages.md)           | Solid pages               | P8-08        | blocked | TK-052, TK-053, TK-059 |
 | [TK-066](./tickets/TK-066-migration-guide.md)       | Migration guide           | P8-09        | blocked | TK-042, TK-046, TK-059 |
 | [TK-067](./tickets/TK-067-contributor-docs.md)      | Contributor documents     | P8-10        | blocked | TK-047, TK-059         |
-| [TK-068](./tickets/TK-068-comparison-page.md)       | Comparison page           | P8-11        | blocked | TK-055, TK-057, TK-059 |
+| [TK-068](./tickets/TK-068-comparison-page.md)       | Comparison page           | P8-11        | blocked | TK-055, TK-059         |
 
 ### Phase 9: release 0.7.0 and cleanup
 
 | Id                                                      | Title                     | Work package | Status  | Depends on       |
 | ------------------------------------------------------- | ------------------------- | ------------ | ------- | ---------------- |
-| [TK-069](./tickets/TK-069-comparison-staleness-gate.md) | Comparison staleness gate | P9-06        | blocked | TK-057           |
-| [TK-070](./tickets/TK-070-readiness-review.md)          | Readiness review          | P9-01        | blocked | TK-002 to TK-069 |
+| [TK-069](./tickets/TK-069-comparison-staleness-gate.md) | Comparison staleness gate | P9-06        | dropped | TK-057           |
+| [TK-070](./tickets/TK-070-readiness-review.md)          | Readiness review          | P9-01        | blocked | TK-002 to TK-068 |
 | [TK-071](./tickets/TK-071-delete-spikes.md)             | Delete the spikes         | P9-02        | blocked | TK-070           |
 | [TK-072](./tickets/TK-072-version.md)                   | Version                   | P9-03        | blocked | TK-071           |
-| [TK-073](./tickets/TK-073-merge-and-publish.md)         | Merge and publish         | P9-04        | blocked | TK-072, TK-069   |
+| [TK-073](./tickets/TK-073-merge-and-publish.md)         | Merge and publish         | P9-04        | blocked | TK-072           |
 | [TK-074](./tickets/TK-074-close-the-plan.md)            | Close the plan            | P9-05        | blocked | TK-073           |
 
 <!-- tickets:end -->

@@ -144,7 +144,7 @@
 
 ## Comparison cells that rest on a judgement (TK-055)
 
-- Where: `plans/extension-api/07-comparison.md` 3.3, rows 9, 10, 12, 13 and 15, and `examples/comparison/features.json`.
+- Where: `plans/extension-api/07-comparison.md` 3.3, rows 9, 10, 12, 13 and 15, and `plans/extension-api/07-comparison-features.json`.
 - Finding: these cells come from what the documentation leaves out, not from a direct statement:
   - Row 15, Formisch: "Not available". The docs do not mention devtools. The `@formisch` npm organisation
     publishes no devtools package, so "Built-in" and "Add-on" are both excluded. 3.1 asks for a statement or the

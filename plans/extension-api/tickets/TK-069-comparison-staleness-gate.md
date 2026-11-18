@@ -3,12 +3,12 @@ id: TK-069
 title: Comparison staleness gate
 phase: 9
 work_package: P9-06
-status: todo
+status: dropped
 depends_on: [TK-057]
 branch: codex/P9-06-comparison-staleness-gate
 pr: null
 started: null
-completed: null
+completed: 2026-11-18
 ---
 
 # TK-069: Comparison staleness gate
@@ -43,4 +43,4 @@ completed: null
 
 ## Evidence
 
-Record the two `prepublish` runs and any deviation from the plan here.
+Dropped on 2026-11-18. The owner ruled that the comparison is a static table of features and capabilities (`00-direction.md`, owner decision 19). No size data exists, so no staleness gate runs in `prepublish`.

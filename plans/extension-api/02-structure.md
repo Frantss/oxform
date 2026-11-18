@@ -31,8 +31,7 @@ Citations: `X/` is `explorations/extension-api/`. Installed versions used as evi
 │   ├── kit/             # Private. Framework-neutral code of the example catalogue. Core only
 │   ├── react/           # Private. The catalogue rendered with React, with browser tests
 │   ├── solid/           # Private. The catalogue rendered with Solid 1
-│   ├── solid-v2/        # Private. The catalogue rendered with Solid 2
-│   └── comparison/      # Private. The reference forms written with each form library (07-comparison.md)
+│   └── solid-v2/        # Private. The catalogue rendered with Solid 2
 ├── docs/                # Contributor guides
 ├── plans/               # Plans. This folder stays until the roadmap is complete
 ├── reports/             # Findings, one file per topic (AGENTS.md "Findings")
@@ -401,8 +400,7 @@ examples/
 │   ├── src/main.tsx, src/playground.tsx, index.html, playground.html
 │   └── tests/                # One browser flow per example (03-testing.md)
 ├── solid/                    # example-oxform-solid. Same layout, Solid 1
-├── solid-v2/                 # example-oxform-solid-v2. Same layout, Solid 2
-└── comparison/               # example-oxform-comparison, private. See "Comparison workspace"
+└── solid-v2/                 # example-oxform-solid-v2. Same layout, Solid 2
 ```
 
 - The kit imports only `@oxform/core` entry points. The spike kit proves that this split works: it imports
@@ -419,25 +417,6 @@ examples/
 
 Rejected: a copy of the kit per example workspace.
 
-### Comparison workspace
-
-`examples/comparison` serves the comparison page of the documentation (owner decision 16).
-[07-comparison.md](./07-comparison.md) owns its design: the form specifications, the libraries, the fairness
-rules, the measurement method and the staleness rule. This file owns only its place in the workspace.
-
-| Item            | Target                                                                                                                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Content         | The two reference forms of `07-comparison.md`, section 4.2 (Sign-in and Team invites), written with each library in React                                                                                   |
-| Shared          | One Valibot schema module per form, and one browser test per form that every version passes                                                                                                                 |
-| Versions        | `package.json` pins an exact version of each library. The other libraries reach no other workspace                                                                                                          |
-| Workspace       | `example-oxform-comparison`. Private, not versioned, not published                                                                                                                                          |
-| `compare:size`  | Builds and measures every version, and writes `examples/comparison/results/size.json`, which is committed. It uses the bundler settings of `report:size`, so the repository has one way to measure a bundle |
-| `compare:check` | The staleness check of `07-comparison.md`, section 6.2. It runs in `prepublish`                                                                                                                             |
-| Gate            | No size gate. Neither script is part of `check:all` or a CI step                                                                                                                                            |
-
-The result files stay in `examples/comparison/results/`, next to their source (`07-comparison.md`, section 8,
-item 6). The docs page reads them (`04-documentation.md`, section 5).
-
 ## Tooling and scripts
 
 Root scripts (`package.json`). The names stay as today unless stated.
@@ -445,20 +424,18 @@ Root scripts (`package.json`). The names stay as today unless stated.
 | Script                                                | Target                                                                                                                                                                                                    |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `build`, `build:dev`                                  | Unchanged: `vp run -r build`. It builds the libraries, the examples and the docs app                                                                                                                      |
-| `test`                                                | Today's explicit chain, with the kit and the comparison workspace added. Each package `test` includes its Node and server runs                                                                            |
+| `test`                                                | Today's explicit chain, with the kit added. Each package `test` includes its Node and server runs                                                                                                         |
 | `check`, `check:rules`, `check:format`, `check:types` | Unchanged. The lint overrides of this plan run in `check:rules`                                                                                                                                           |
 | `check:package`                                       | Unchanged chain: core, react, solid                                                                                                                                                                       |
 | `check:tree-shaking` (new)                            | `vp run @oxform/core#check:tree-shaking`. Fails when a tier contains an extension that its chain does not import                                                                                          |
 | `report:size` (new)                                   | `vp run @oxform/core#report:size`. Reports the size of each tier. It has no budget and is not part of `check:all`                                                                                         |
-| `compare:size` (new)                                  | `vp run example-oxform-comparison#compare:size`. Writes `results/size.json` for the comparison page. Not part of `check:all`                                                                              |
-| `compare:check` (new)                                 | `vp run example-oxform-comparison#compare:check`. The staleness check of the comparison data. Runs in `prepublish`. Not part of `check:all`                                                               |
 | `check:terms` (new)                                   | `scripts/check-terms.ts` at the root. The glossary check for `packages/*/src`, `packages/*/tests`, `examples/*` and `docs/*.md`. It uses the term list of `docs:check:agents` and allows code identifiers |
 | `check:parity` (new)                                  | `vp run @oxform/adapter-parity#check:parity`                                                                                                                                                              |
 | `test:coverage` (new)                                 | The `test:coverage` script of `@oxform/core`, `@oxform/react` and `@oxform/solid`                                                                                                                         |
 | `docs:check:agents` (new)                             | `vp run @oxform/docs#check:agents`. It reads the output of `docs:build`                                                                                                                                   |
 | `check:all`                                           | `check`, then `check:terms`, `check:package`, `check:parity`, `check:tree-shaking`                                                                                                                        |
 | `docs:package` (new, stage B)                         | Copies the generated Markdown of the docs build into `packages/<name>/docs/`                                                                                                                              |
-| `prepublish`                                          | `build`, `check:all`, `docs:check:agents`, `compare:check`, and `docs:package` in stage B                                                                                                                 |
+| `prepublish`                                          | `build`, `check:all`, `docs:check:agents`, and `docs:package` in stage B                                                                                                                                  |
 | `postbuild`                                           | Deleted (deviation 2)                                                                                                                                                                                     |
 | `fix:*`, other `docs:*`, `version:*`, `publish`       | Unchanged                                                                                                                                                                                                 |
 
@@ -471,7 +448,7 @@ Package scripts:
 | `solid-v1`, `solid-v2` | `build`, `test` (browser), `test:ssr`, `test:coverage`, `test:dev`, `check:types`                                                                                                                                                                                                                                                                     |
 | `@oxform/solid`        | `build` (both, then assemble), `test`, `test:ssr`, `test:coverage`, `check:types`, `check:types:dist`, `check:type-coverage`, `check:consumers`, `check:package`                                                                                                                                                                                      |
 | `@oxform/docs`         | Today's scripts, plus `check:agents` (`apps/docs/scripts/check-agents.ts`) and, in stage B, `package`                                                                                                                                                                                                                                                 |
-| `examples/*`           | `dev`, `build`, `test`, `check:types`. The kit and `adapter-parity` have `test` and `check:types` only, and `adapter-parity` also has `check:parity`. `examples/comparison` has `build`, `test`, `check:types`, `compare:size` and `compare:check`                                                                                                    |
+| `examples/*`           | `dev`, `build`, `test`, `check:types`. The kit and `adapter-parity` have `test` and `check:types` only, and `adapter-parity` also has `check:parity`.                                                                                                                                                                                                 |
 
 - `check:package` in core is `check:test-duplicates`, `check:test-structure`, `publint --strict`,
   `attw --pack --no-emoji --profile esm-only`, `test:package`, `check:types:dist`, `check:type-coverage`, then
@@ -496,8 +473,7 @@ Package scripts:
   built entries. `03-testing.md` owns the tiers and what each must not contain.
 - `report:size` in core runs the same pack and then `scripts/measure-bundles.ts`. It prints the gzip size of
   each tier and exits 0 for every size. No budget exists (owner decision 12). The documentation publishes
-  the numbers (`04-documentation.md`), and `07-comparison.md` owns how the comparison page uses them.
-- `compare:size` and `compare:check` are described in [Comparison workspace](#comparison-workspace).
+  the numbers (`04-documentation.md`).
 - File locations agree with `03-testing.md`. The base `test.include` (`vite.config.ts:56`) matches every spec
   location. Each package narrows it to separate the browser, Node and `dist` runs. Core unit and integration
   specs run in Node with browser mode off, which is a change from today's base configuration.
@@ -529,7 +505,7 @@ Package scripts:
 Step order for A: install, Playwright (cached), `build`, `check`, `check:terms`, `check:package`,
 `check:parity`, `check:tree-shaking`, `docs:check:agents`, `test:coverage`, `test`. Build stays first because the later steps read `dist` and the docs output. The
 steps after `build` run even when an earlier check fails, so one run shows all failures (`03-testing.md`,
-"CI mapping"). The benchmark of `03-testing.md`, `report:size`, `compare:size` and `compare:check` are not CI steps.
+"CI mapping"). The benchmark of `03-testing.md` and `report:size` are not CI steps.
 
 ## Contributor-doc impact
 
@@ -557,8 +533,7 @@ List only. [04-documentation.md](./04-documentation.md) owns the rewrite.
 - Delete aggressively: CJS output, `typesVersions`, `remeda`, `type-fest`, `postbuild`, `explorations/`.
 - Added complexity and its reason: `tests/package/` (the direction's "entry points share modules" check),
   `tests/bundle/` (the tree-shaking check and the size report), the `#core*` aliases (presets with no
-  private access), three private workspaces (`examples/kit` for 04, `adapter-parity` for 03,
-  `examples/comparison` for 07).
+  private access), two private workspaces (`examples/kit` for 04, `adapter-parity` for 03).
 
 ## Deviations and decisions
 
@@ -581,7 +556,7 @@ Every item is decided or is a verification task of a work package. `06-roadmap.m
    scripts scan recursively for `*.spec.ts(x)` (`check-test-structure.ts:11,24`). They need the `tests` root.
 6. **Requests accepted.** From 03: a private parity workspace (`packages/adapter-parity`) and `tests/bundle/`
    in core. From 04: in-package `docs/` folders in two stages, `docs:check:agents`, and a shared example kit.
-   From 07: the private workspace `examples/comparison`, `compare:size` and `compare:check`.
+   From 07: nothing. The owner dropped the comparison workspace and its scripts on 2026-11-18 (`00-direction.md`, owner decision 19).
 7. **Kit and rendering code.** Closed. Rendering code lives in the example apps, and the kit holds the
    framework-neutral part. `04-documentation.md`, section 8, has the same split.
 8. **In-package docs folder name.** Closed. The folder is `docs/` (`04-documentation.md`, section 7.4).

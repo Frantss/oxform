@@ -4,7 +4,7 @@ title: Merge and publish
 phase: 9
 work_package: P9-04
 status: todo
-depends_on: [TK-072, TK-069]
+depends_on: [TK-072]
 branch: codex/P9-04-merge-and-publish
 pr: null
 started: null

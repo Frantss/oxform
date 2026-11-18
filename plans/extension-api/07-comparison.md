@@ -1,24 +1,22 @@
 # Comparison with other form libraries
 
 Status: complete, revision 4. This file owns the comparison page of the public documentation: its purpose,
-the research behind it, the feature matrix, the size method, the page outline and its maintenance. It agrees
+the research behind it, the feature matrix, the fairness rules, the page outline and its maintenance. It agrees
 with [00-direction.md](./00-direction.md) and uses its glossary. The site map and the page templates are in
-[04-documentation.md](./04-documentation.md), the workspace and scripts in [02-structure.md](./02-structure.md),
-the tiers of Oxform's own size check in [03-testing.md](./03-testing.md) and the order of work in
-[06-roadmap.md](./06-roadmap.md).
+[04-documentation.md](./04-documentation.md) and the order of work in [06-roadmap.md](./06-roadmap.md).
 
 Nothing is built. Every statement about Oxform is a plan. Every statement about another library was read on
-2026-11-15 and read again on 2026-11-16 (P7-08) at the source that the row names. `examples/comparison/features.json`
+2026-11-15 and read again on 2026-11-16 (P7-08) at the source that the row names. `07-comparison-features.json`
 holds each cell of 3.3 with its source, version and date.
 
 ## 1. Purpose and reader
 
 The owner requires a comparison with **TanStack Form**, **React Hook Form** and **Formisch**, in features and
-in size. The page is `comparison.mdx` in the "Start" section (`04#5`, "Start").
+capabilities, as a static table (`00#Owner decisions` 19). The page is `comparison.mdx` in the "Start" section (`04#5`, "Start").
 
 | Reader                                | Question the page answers                                                            |
 | ------------------------------------- | ------------------------------------------------------------------------------------ |
-| Developer who chooses a library       | "Which of these four fits my form, my framework and my size limit?"                  |
+| Developer who chooses a library       | "Which of these four fits my form and my framework?"                                 |
 | Developer who uses one of the others  | "What does Oxform do differently, and what do I lose if I change?"                   |
 | Coding agent that must pick a library | The same questions, from a table and a JSON file, with a version and a date per fact |
 | Maintainer of one of the other three  | "Is my library described correctly, and how do I get an error corrected?"            |
@@ -181,126 +179,41 @@ Oxform's own limits that the page repeats from `04#5.2`: row 4 (the schema is ty
 number of fields. The page links `limits.mdx` and does not restate the rest.
 
 P7-08 resolved each "Unverified" cell. It removed the row "A form pays only for the features it imports": TanStack
-Form and React Hook Form state nothing about it at a primary source, and the size table measures it. Row 15 for
+Form and React Hook Form state nothing about it at a primary source. Row 15 for
 Formisch rests on the absence of a package (F10), because the documentation does not mention devtools.
 
-## 4. Size comparison method
+## 4. Fairness rules
 
-### 4.1 Approaches
-
-| Approach                                                                                                    | Verification                                                                                                       | Risks and mitigation                                                                                                                                      |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **A (decided).** The same reference forms, written with each library, built and measured in this repository | `compare:size` twice gives the same bytes. Each form passes one shared browser test, so no version lacks a feature | The other libraries are used badly. Mitigation: the fairness rules of 4.6. Cost: four versions of each form. Mitigation: two forms only                   |
-| B. One build per package: import the whole public entry point of each library, pinned, and measure it       | The script is repeatable. No form code to review                                                                   | It punishes libraries whose size depends on what is imported: Oxform and Formisch (F6). It answers "how big is the package", not "what does my form cost" |
-| C. Quote figures: Bundlephobia, or each project's own statement                                             | A link per number                                                                                                  | Methods differ and are often not stated (F2). Versions and dates differ. A project's figure for a competitor is not neutral                               |
-
-Decision: A. B is not built (YAGNI): its result would mislead for two of the four libraries. C is rejected for
-the size table. A project's own statement can appear in a footnote, quoted, with its source and "method not
-stated".
-
-Check against the coding standards: A adds one private workspace and one script. It reuses the build and
-measure method of `report:size` (`03#Choice: how to measure`), so there is one way to measure a bundle in the
-repository (DIE).
-
-### 4.2 Reference forms
-
-Two forms, from the domains of `04#4.1`. Each has a written specification (fields, rules, behavior) that all
-four versions implement.
-
-| Form         | Domain       | Specification                                                                                                                                                           | Why                                              |
-| ------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Sign-in      | Sign-in      | `email`, `password`. Validation on submit, then on change. A server error is set on `password`. The button is disabled while the form submits (E01, E19)                | The smallest real form. The lower bound          |
-| Team invites | Team invites | `team`, `seats`, `members[]` of `{ email, role }`. Add, remove and move a row. Format on change, an async lookup on blur, all on submit. Reset (E18 and the array rows) | Arrays, async validation, reset: the upper bound |
-
-One schema library for all four: Valibot, with one shared schema module per form. Formisch supports no other
-(F2). TanStack Form and Oxform take it through Standard Schema (T3). React Hook Form takes it through
-`@hookform/resolvers` (R7).
-
-### 4.3 What is measured
-
-One React application entry per library and form. React Hook Form supports React only, so React is the one
-framework that all four share.
-
-| Figure                | Contents                                                                                                           | Use                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| **Form with library** | The form component, the library, its adapter and its dependencies. `react`, `react-dom` and `valibot` are external | The headline number of the table                                      |
-| Form code only        | The same entry with the library external too                                                                       | Shows how much of the headline is the application's own code          |
-| With schema library   | The headline build with `valibot` bundled                                                                          | Shows the real cost when the schema library is new to the application |
-
-- Each figure is reported minified, gzip (level 9) and brotli (quality 11), from `node:zlib`.
-- One build per entry with one output chunk, so no shared chunk hides bytes (`03#Bundle content and size`).
-- Production mode, no source maps, the same target and minifier for every entry. The bundler is the one that
-  `report:size` uses. Its version is recorded.
-- Oxform is resolved to the built `dist` of the workspace, not to source (`03#Bundle content and size`).
-- No figure is a gate. The gate of the bundle content is `check:tree-shaking`, which measures no size.
-- Tree-shaking is on for all. The page says so, and says that an application with other settings gets other
-  numbers.
-
-### 4.4 Oxform's tiers
-
-Oxform has two rows for each form, because the chain decides the size:
-
-| Row                | Sign-in                                                                                  | Team invites                                   |
-| ------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Oxform, lean chain | The chain of E01: `values`, `validation`, `check('error')`, `status`, `events`, `submit` | The shortest chain that passes the shared test |
-| Oxform, `standard` | `defineForm(...).extend(standard)`                                                       | `defineForm(...).extend(standard)`             |
-
-Both rows appear next to the other libraries, in the same table, with equal weight. The page does not show
-only the lean row. Formisch is also modular: its version imports only the methods that the form needs, as its
-documentation teaches (F6). TanStack Form and React Hook Form have one row each.
-
-### 4.5 Versions and re-measurement
-
-- `examples/comparison/package.json` pins an exact version of each library, of `valibot`, of
-  `@hookform/resolvers` and of React. The lockfile fixes the rest.
-- The result file is `examples/comparison/results/size.json`, committed. Fields: `measuredAt`, `method`
-  (a version number of this section), `bundler`, `node`, and one record per row with `library`, `version`,
-  `publishedAt`, `form`, `variant`, and bytes for the three figures in three encodings.
-- `compare:size` runs, and the file is committed, when: a file in `examples/comparison` changes, a pinned
-  version changes, the bundler version changes, or an Oxform release is prepared.
-- `compare:check` reads the registry and reports a pinned version that is behind `latest`. It runs in
-  `prepublish` and can run on a schedule.
-- The page prints, directly under each size table: the date, the version of every library, the bundler and
-  its version, and a link to this method and to the source folder. The same values are columns of the Markdown
-  table, so a number is never read without them.
-
-### 4.6 Fairness rules
-
-1. Each version is idiomatic for its library. A reviewer checks it against that library's current
-   documentation and records the pages used in a `readme.md` beside the code.
-2. Every version passes the same browser test of the form's specification. No version leaves a feature out.
-3. No version adds a feature that the specification does not have.
-4. The source of all versions is public, in `examples/comparison`, and the page links it.
-5. Numbers are published as measured. A row is not removed, and a form is not changed, because Oxform is
-   larger.
-6. Correction path: the page links an issue template "Comparison correction". A maintainer of another library
-   can open an issue or a pull request against `examples/comparison`. A valid correction is merged and the
-   table is measured again before the next release.
-7. The page states what the numbers do not show: runtime speed, render counts, and forms that differ from the
-   two measured.
+1. Each cell is filled from the primary source of its library, never from memory or from another comparison.
+   Each record of `07-comparison-features.json` holds the source, the version and the date read.
+2. Cells are published as read. A row is not removed, and a cell is not changed, because Oxform lacks the
+   feature. A row leaves the matrix only if it has no value for one of the four libraries (3.1).
+3. A contested cell has a footnote with the source link, the version and the date read (3.1).
+4. Correction path: the page links an issue template "Comparison correction". A maintainer of another library
+   can open an issue or a pull request against `07-comparison-features.json`. A valid correction is checked at
+   the primary source and merged before the next release.
+5. The page states what the table does not show: runtime speed, render counts and bundle sizes.
 
 ## 5. Page outline for `comparison.mdx`
 
 Row for the "Start" table of `04#5` (for `04` to adopt):
 
-| Path             | Title      | Purpose                                                                                | P   | Example                            |
-| ---------------- | ---------- | -------------------------------------------------------------------------------------- | --- | ---------------------------------- |
-| `comparison.mdx` | Comparison | Features and size of Oxform, TanStack Form, React Hook Form and Formisch, with sources | L T | The sign-in and team invites forms |
+| Path             | Title      | Purpose                                                                                        | P   | Example |
+| ---------------- | ---------- | ---------------------------------------------------------------------------------------------- | --- | ------- |
+| `comparison.mdx` | Comparison | Features and capabilities of Oxform, TanStack Form, React Hook Form and Formisch, with sources | L T | None    |
 
 Like `choose-an-api.mdx` and `limits.mdx`, the page has the `overview` type of `04#6`: tables and links, with
 a fixed first and last heading. It keeps the required frontmatter (`type: overview`), "In short" of three
 sentences at most, and "Related" with five links at most. This section owns the headings between them.
 
-| H2                             | Content                                                                                                       |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| In short                       | What is compared, for which versions, on which date. One sentence on what the page does not show              |
-| Features                       | The matrix of 3.3, with the vocabulary of 3.1 as a legend and footnotes with source links                     |
-| Size                           | One table per reference form: library, variant, version, minified, gzip, brotli. Then the stamp line of 4.5   |
-| How the sizes are measured     | The three figures of 4.3 in one table, the fairness rules, a link to `examples/comparison` and to `size.json` |
-| When to choose another library | One short list per library, from section 2. Draft below                                                       |
-| When to choose Oxform          | A lean chain for a small form, custom extensions, scopes, named checks. Each item links its guide             |
-| Report an error                | The correction path of 4.6                                                                                    |
-| Related                        | `limits`, `compose/lean-form`, `presets/standard`, `quick-start`                                              |
+| H2                             | Content                                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| In short                       | What is compared, for which versions, on which date. One sentence on what the page does not show  |
+| Features                       | The matrix of 3.3, with the vocabulary of 3.1 as a legend and footnotes with source links         |
+| When to choose another library | One short list per library, from section 2. Draft below                                           |
+| When to choose Oxform          | A lean chain for a small form, custom extensions, scopes, named checks. Each item links its guide |
+| Report an error                | The correction path of 4                                                                          |
+| Related                        | `limits`, `compose/lean-form`, `presets/standard`, `quick-start`                                  |
 
 Draft of "When to choose another library" (each line cites a row of section 2 on the page):
 
@@ -313,15 +226,14 @@ Draft of "When to choose another library" (each line cites a row of section 2 on
 
 Agent-first form of the data (`04#7`):
 
-| Output                                  | Content                                                                                      |
-| --------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `examples/comparison/results/size.json` | The size records of 4.5                                                                      |
-| `examples/comparison/features.json`     | One record per matrix cell: `row`, `library`, `value`, `note`, `source`, `version`, `readAt` |
-| `/docs/comparison.md`                   | The plain-Markdown route. Both tables are Markdown tables, with version and date columns     |
-| `/comparison.json`                      | Both JSON files as one static file of the site, linked from the page and from `llms.txt`     |
+| Output                        | Content                                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `07-comparison-features.json` | One record per matrix cell: `row`, `library`, `value`, `note`, `source`, `version`, `readAt` |
+| `/docs/comparison.md`         | The plain-Markdown route. The table is a Markdown table, with version and date columns       |
+| `/comparison.json`            | The JSON file as one static file of the site, linked from the page and from `llms.txt`       |
 
-The tables in the page are generated from the two JSON files by a script, as Markdown, so that the Markdown
-route contains them. A component that renders the JSON in the browser would leave the Markdown route empty.
+The table in the page is generated from the JSON file by a script, as Markdown, so that the Markdown route
+contains it. A component that renders the JSON in the browser would leave the Markdown route empty.
 Decided: the script rewrites a block between two markers in `comparison.mdx`, because that needs no Fumadocs
 feature. Verification task of P8-11: if Fumadocs includes a generated Markdown file in the page and in the
 Markdown route, P8-11 uses the include and removes the markers.
@@ -330,71 +242,54 @@ Markdown route, P8-11 uses the include and removes the markers.
 
 ### 6.1 Who and when
 
-| Event                                          | Action                                                                     | Who                                           |
-| ---------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------- |
-| An Oxform release is prepared                  | `compare:check`, update pins, `compare:size`, review the matrix            | The person who releases                       |
-| A change in `examples/comparison` or a pin     | `compare:size`, commit `size.json`                                         | The author of the change                      |
-| A major version of another library is released | Update that library's forms and matrix cells against its new documentation | The owner, from the report of `compare:check` |
-| A correction arrives                           | Check it at the primary source, merge, measure again                       | The owner                                     |
+| Event                                          | Action                                                | Who                     |
+| ---------------------------------------------- | ----------------------------------------------------- | ----------------------- |
+| An Oxform release is prepared                  | Review the matrix against the changed Oxform features | The person who releases |
+| A major version of another library is released | Update that library's cells against its documentation | The owner               |
+| A correction arrives                           | Check it at the primary source and merge it           | The owner               |
 
 ### 6.2 Staleness rule
 
-| Approach                                                       | Verification                                                                              | Risks and mitigation                                                                                              |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **A (decided).** A warning on the page, and a block on release | Set `measuredAt` to an old date: the docs build shows the warning, and `prepublish` fails | The site can show a warning between releases. That is honest and accepted                                         |
-| B. The docs build fails when the data is stale                 | The same, on `docs:build`                                                                 | A pull request that does not touch the comparison fails because time passed or another project released. Rejected |
-
-Rule for A: the data is stale when `measuredAt` or any `readAt` is more than 90 days old, or when a pinned
-version is behind a major version of `latest`. The docs build prints a warning block at the top of the page
-with the date. `compare:check` fails `prepublish` on the same condition. The docs build does not call the
-network: only `compare:check` reads the registry.
+The data is stale when any `readAt` is more than 90 days old. The docs build prints a warning block at the top
+of the page with the oldest date. The warning gates nothing: the docs build and the release do not fail on
+it, and no script reads the network. A build that fails on stale data would fail a pull request that does not
+touch the comparison, because time passed or another project released. That approach is rejected.
 
 ### 6.3 Work packages
 
 `06-roadmap.md` owns the ids, the order and the exit criteria. This table gives the comparison scope of each.
+P7-07, P7-09, P7-10 and P9-06 are dropped (`00#Owner decisions` 19).
 
-| Id    | Title                | Scope                                                                                                             | Depends on                   | Verification                                                               |
-| ----- | -------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| P7-07 | Form specifications  | The written specification and the shared Valibot schema of the two forms, and one shared browser test per form    | P1-07                        | The test runs against a stub and fails                                     |
-| P7-08 | Research closure     | Resolve each "Unverified" cell of 2.2, 2.3 and 3.3 at a primary source, or remove the row. Write `features.json`  | None                         | No "Unverified" value in `features.json`. Each record has a source         |
-| P7-09 | Comparison workspace | `examples/comparison`: four versions of each form, pinned versions, the review `readme.md`                        | P7-07, P5-07, P7-03          | The shared test passes for every version. `check:types` passes             |
-| P7-10 | Measurement          | `compare:size`, `compare:check`, `size.json`, the root scripts                                                    | P7-09, `report:size` (P4-04) | Two runs give the same bytes. An old date makes `compare:check` fail       |
-| P8-11 | The page             | `comparison.mdx`, the generated tables, `/comparison.json`, the warning block, the issue template, the `04#5` row | P7-08, P7-10, P8-01, P8-02   | `docs:build` and `docs:check:agents` pass. The `.md` route has both tables |
-| P9-06 | Release gate         | `compare:check` in `prepublish`. A line in the definition of done                                                 | P7-10                        | `prepublish` fails with stale data                                         |
+| Id    | Title            | Scope                                                                                                            | Depends on          | Verification                                                             |
+| ----- | ---------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------ |
+| P7-08 | Research closure | Resolve each "Unverified" cell of 2.2, 2.3 and 3.3 at a primary source, or remove the row. Write the JSON file   | None                | No "Unverified" value in the JSON file. Each record has a source         |
+| P8-11 | The page         | `comparison.mdx`, the generated table, `/comparison.json`, the warning block, the issue template, the `04#5` row | P7-08, P8-01, P8-02 | `docs:build` and `docs:check:agents` pass. The `.md` route has the table |
 
 ## 7. Risks
 
-| #   | Risk                                                                                           | Mitigation                                                                                                                                                                                                                                                                                                                                                                             |
-| --- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | The data goes stale. Three of the four libraries published in the last 100 days (T10, R8, F10) | The stamp beside every number, the warning, the release gate (6.2)                                                                                                                                                                                                                                                                                                                     |
-| 2   | A maintainer says the comparison is unfair                                                     | Public source, the shared test, the review record, the correction path (4.6)                                                                                                                                                                                                                                                                                                           |
-| 3   | Another library's API is misused, so its number is too high                                    | Fairness rule 1. A second reviewer for each version. Corrections are merged before the next release                                                                                                                                                                                                                                                                                    |
-| 4   | The numbers make Oxform look worse                                                             | They are published as measured (fairness rule 5). The spike's full preset is 8.59 kB gzip without an adapter, and the lean sign-in chain is 6.43 kB without slots (`explorations/extension-api/readme.md`, "Bundle sizes"). Formisch states "starting at 2.5 kB" (F1). Oxform can be the largest row for sign-in. The page then says so, and "When to choose another library" names it |
-| 5   | A matrix cell is wrong about another library                                                   | A source, version and date per cell. No cell from memory. P7-08 before publication                                                                                                                                                                                                                                                                                                     |
-| 6   | The reference forms favour Oxform's design                                                     | They come from the catalogue, which was chosen before this plan. A form is corrected if a maintainer shows a bias (4.6, rule 6)                                                                                                                                                                                                                                                        |
-| 7   | Four versions of two forms are a maintenance cost at each major release of another library     | Two forms only. If a version cannot be kept current, its row is removed with a dated note, not left stale                                                                                                                                                                                                                                                                              |
-| 8   | The "planned" cells are read as shipped features                                               | The suffix on every Oxform cell, and one sentence in "In short", until the release                                                                                                                                                                                                                                                                                                     |
-| 9   | Download and star counts change every week                                                     | They are dated facts in `features.json`, updated only at a release. The page shows the date                                                                                                                                                                                                                                                                                            |
+| #   | Risk                                                                                           | Mitigation                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | The data goes stale. Three of the four libraries published in the last 100 days (T10, R8, F10) | The date beside every cell and the warning (6.2)                                                          |
+| 2   | A maintainer says the comparison is unfair                                                     | A source per cell, the correction path (4)                                                                |
+| 3   | A matrix cell is wrong about another library                                                   | A source, version and date per cell. No cell from memory. P7-08 before publication                        |
+| 4   | The "planned" cells are read as shipped features                                               | The suffix on every Oxform cell, and one sentence in "In short", until the release                        |
+| 5   | Download and star counts change every week                                                     | They are dated facts in `07-comparison-features.json`, updated only at a release. The page shows the date |
 
 ## 8. Deviations and decisions
 
 Every item is decided or is a verification task of a work package. `06-roadmap.md` records who decided.
 
-1. **Two reference forms: Sign-in and Team invites.** Decided (owner, D50). The catalogue's checkout has no
-   array (`04#4.1`). Team invites has the array and the server lookup, and "a page does not invent a new"
-   domain. No third form is measured.
-2. **No size gate.** Decided (owner decision 12). Size is measured and published only. `00#Principles` 5 and
-   `03#Bundle content and size` say the same. The only gate here is on staleness.
+1. **A static table.** Decided (owner, 2026-11-18, `00#Owner decisions` 19). The page compares features and
+   capabilities. It has no size table, no reference forms and no comparison workspace. D50 is dropped.
+2. **No size comparison and no size gate.** Decided (owner decision 12, and decision 19). `00#Principles` 5 says
+   the same.
 3. **Page type.** Decided: `overview` (`04#6`, section 5).
-4. **React only for size.** Decided (owner, D50). No Solid table.
-5. **Performance is not compared.** Decided (owner, D50). React Hook Form states fewer re-renders as a main
-   feature (R1). The page has no render-count row and states the omission (4.6, rule 7).
-6. **The location of the result files.** Decided by `02#Comparison workspace`: `examples/comparison/results/`,
-   next to its source.
-7. **Unverified facts.** Resolved by P7-08 (2026-11-16), in 2.2, 2.3 and 3.3. TanStack Form: date of 1.0.0, a plugin mechanism, named sets of
+4. **Performance is not compared.** Decided (owner, 2026-11-15). React Hook Form states fewer re-renders as a main
+   feature (R1). The page has no render-count row and states the omission (4, rule 5).
+5. **Unverified facts.** Resolved by P7-08 (2026-11-16), in 2.2, 2.3 and 3.3. TanStack Form: date of 1.0.0, a plugin mechanism, named sets of
    issues, agent documentation. React Hook Form: date of the first stable major, debounce and cancellation of
    async validation, `FormProvider` as a reuse API, agent documentation. Formisch: server rendering, devtools,
    uncontrolled inputs, debounce and cancellation, npm package names for Angular, HonoX and React Native, how
    "2.5 kB" is measured.
-8. **Renames and public `createX`.** This file names no `createX` function and no adapter hook, so the
+6. **Renames and public `createX`.** This file names no `createX` function and no adapter hook, so the
    decisions on renames and on non-public behavior functions do not change it.
