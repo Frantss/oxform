@@ -8,7 +8,7 @@ export function NotFound() {
       <p className='mb-8 text-fd-muted-foreground'>The documentation page you requested does not exist yet.</p>
       <Link
         to='/docs/$'
-        params={{ _splat: 'react' }}
+        params={{ _splat: '' }}
         className='w-fit rounded-md bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground'
       >
         Open docs

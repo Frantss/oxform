@@ -1,0 +1,13 @@
+{
+  "title": "Compose",
+  "pages": [
+    "index",
+    "lean-form",
+    "form-without-validation",
+    "standard-preset",
+    "your-own-preset",
+    "slot-group",
+    "repeated-block",
+    "array-rows"
+  ]
+}

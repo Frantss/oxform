@@ -1,0 +1,15 @@
+{
+  "title": "Recipes",
+  "pages": [
+    "index",
+    "lookup-on-blur",
+    "server-errors",
+    "dependent-fields",
+    "unsaved-changes",
+    "discard-changes",
+    "third-party-controls",
+    "another-element",
+    "derived-ui",
+    "form-without-javascript"
+  ]
+}

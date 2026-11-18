@@ -1,0 +1,15 @@
+{
+  "title": "Extend",
+  "pages": [
+    "index",
+    "write-an-extension",
+    "option-with-instance",
+    "intercept-a-change",
+    "observe-runs",
+    "refuse-a-submit",
+    "field-members",
+    "second-check",
+    "replace-a-slot",
+    "test-and-share"
+  ]
+}

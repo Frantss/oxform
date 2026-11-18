@@ -1,0 +1,17 @@
+{
+  "title": "Built-in behaviors",
+  "pages": [
+    "index",
+    "values",
+    "validation",
+    "check",
+    "status",
+    "events",
+    "arrays",
+    "reset",
+    "submit",
+    "handles",
+    "scope",
+    "slot-groups"
+  ]
+}

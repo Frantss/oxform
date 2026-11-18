@@ -87,7 +87,7 @@ On Railway, keep the repository root as the build context and set:
 
 - Build command: `pnpm exec vp run --filter '@oxform/docs...' build`
 - Start command: `pnpm --dir apps/docs run start`
-- Health check: `/docs/react`
+- Health check: `/docs`
 - Environment: `RAILPACK_NODE_VERSION=24`, `NODE_ENV=production`, `PORT=8080`
 
 The build includes the docs workspace and its dependencies, including all

@@ -1,5 +1,5 @@
 import { DocsBody, DocsDescription, DocsLayout, DocsPage, DocsTitle } from '@frantss/fumadocs-theme';
-import { createFileRoute, notFound } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useFumadocsLoader } from 'fumadocs-core/source/client';
 import browserCollections from 'collections/browser';
@@ -20,6 +20,8 @@ export const Route = createFileRoute('/docs/$')({
   },
 });
 
+const legacyRoots = new Set(['react', 'solid', 'core']);
+
 const serverLoader = createServerFn({
   method: 'GET',
 })
@@ -27,7 +29,11 @@ const serverLoader = createServerFn({
   .handler(async ({ data: slugs }) => {
     const page = source.getPage(slugs);
 
-    if (!page) throw notFound();
+    if (!page) {
+      if (slugs.length === 1 && legacyRoots.has(slugs[0])) throw redirect({ href: '/docs' });
+
+      throw notFound();
+    }
 
     return {
       path: page.path,

@@ -1,3 +1,29 @@
 {
-  "pages": ["index"]
+  "title": "Oxform",
+  "pages": [
+    "---Start---",
+    "index",
+    "quick-start",
+    "comparison",
+    "!choose-an-api",
+    "!limits",
+    "---Main APIs---",
+    "...core",
+    "---Concepts---",
+    "...concepts",
+    "---Compose---",
+    "...compose",
+    "---Extend---",
+    "...extend",
+    "---Built-in behaviors---",
+    "...behaviors",
+    "---Presets---",
+    "...presets",
+    "---Adapters---",
+    "...adapters",
+    "---Recipes---",
+    "...recipes",
+    "---Migration---",
+    "...migration"
+  ]
 }
