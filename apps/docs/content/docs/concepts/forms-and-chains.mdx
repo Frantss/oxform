@@ -40,7 +40,22 @@ several extensions in one `.extend`.
 
 ## Example
 
+A sign-in form on a public page needs no arrays, no reset and no field handles, so its chain names each extension
+that it uses (E01). Each `.extend` returns a new form, and each extension comes after the ones that it needs.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in.ts</include>
+
+A checkout needs arrays, reset, handles and every part, so one `.extend(standard)` applies them (E03).
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/checkout.ts</include>
+
 ## Common mistakes
+
+| Wrong code                                         | Effect                                                                                                      | Fix                                                             |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `signIn.extend(warnings)`, then `signIn.create()`  | The instance has no `warning` check. `.extend` returned a new form                                          | Keep the result: `const withWarnings = signIn.extend(warnings)` |
+| A preset with a `schema` parameter                 | A preset cannot change the schema: `defineForm` fixes `Values` before it runs                               | Write `defineForm(init).extend(preset)` for each schema         |
+| `defineForm(init).extend(values).extend(standard)` | `create` throws: `The "values" extension declares the state key "values", which "values" already declares.` | Apply `standard` alone                                          |
 
 ## Related
 

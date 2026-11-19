@@ -47,7 +47,24 @@ The six conflict rules:
 
 ## Example
 
+The billing and the shipping address are the same block with the same rules (E15). The scope has no place: the
+checkout places it at `billing` and `shipping`, and `copyAddress` works at both.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/address.ts</include>
+
+A row must not know its index (E16). It takes the scope of one member, from `form.scope('members.0')`, with no
+`defineScope`.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/member-row.ts</include>
+
 ## Common mistakes
+
+| Wrong code                                                                | Effect                                                                                                     | Fix                                                     |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `<Field name="street" />` in the address block, with no `scope`           | The input writes `street` of the form, not `billing.street`                                                | Pass the scope: `<Field scope={scope} name="street" />` |
+| A form validator for `billing.street` and the scope's own validator       | Both run. The field can report two issues                                                                  | Validate the block in one place: the scope's `checks`   |
+| `create({ defaultValues: { ...order, billing: { street: 'Main St' } } })` | Type error: "is missing the following properties"                                                          | Give every member, or cast the partial value            |
+| `scopes: { billing: address }` on a form with no `error` check            | `create` throws: `The scope "billing" has validators for the check "error", which the form does not have.` | Extend `check('error')`, or `standard`                  |
 
 ## Related
 

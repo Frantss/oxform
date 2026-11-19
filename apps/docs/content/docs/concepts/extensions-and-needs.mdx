@@ -47,7 +47,22 @@ error at `.extend` and a runtime error at `create`.
 
 ## Example
 
+`autosave` saves a draft once the values stop changing and are valid (E06). It states its needs twice: in its
+`Extendable` parameter and in `needs`. It reads `values` and `validation` from `deps`, and its timer starts on a
+change, so a new instance does nothing.
+
+<include meta='twoslash'>../../../../../examples/kit/src/autosave.ts</include>
+
+The smallest chain that meets its needs is `defineForm(init).extend(values).extend(validation).extend(autosave)`.
+
 ## Common mistakes
+
+| Wrong code                                       | Effect                                                                                                                                                              | Fix                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `defineForm(init).extend(autosave)`              | Type error at `.extend`: the form lacks `values` and `validation`. `create` throws: `The "autosave" extension needs "values", which no earlier extension provides.` | Extend `values` and `validation` first                               |
+| `.extend(check('error')).extend(check('error'))` | The result type is `DuplicateOption<"error">`. `create` throws: `The "check:error" extension declares the state key "error", which "check:error" already declares.` | Give the second check another name                                   |
+| Two extensions that declare the option `delay`   | Type error at `.extend` only: `The option "delay" is declared twice.` Nothing throws at runtime                                                                     | Give each option a name that no other extension of the chain uses    |
+| An api that returns `{ id }`                     | `create` throws: `The "name" extension returns "id" from api, which the instance has.`                                                                              | Use another name. `id`, `store` and `destroy` belong to the instance |
 
 ## Related
 

@@ -38,7 +38,37 @@ hydration.
 
 ## Example
 
+The sign-in page is rendered on the server, and the ids and the values must match after hydration (E26). The form
+lives at module scope and holds no state. It sets no id, so each instance takes the id that the adapter gives.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email(), password: z.string().min(8) });
+
+// Module scope: one form for every request. It holds no state.
+export const signInPage = defineForm({ schema, defaultValues: { email: '', password: '' } })
+  .extend(standard)
+  .configure({ error: { submit: schema }, onSubmit: async credentials => console.log(credentials.email) });
+
+// Each render or request: one instance. `Root` makes it, with the id of the framework.
+export const render = (id: string) => {
+  const form = signInPage.create({ id });
+  return form.field('email').state.id;
+};
+```
+
+`render('r1')` gives the field id `r1-email`, on the server and in the browser. The kit holds the same form as
+`sign-in-page.ts`, on the lean sign-in chain.
+
 ## Common mistakes
+
+| Wrong code                                                             | Effect                                                                         | Fix                                          |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
+| `export const form = signInPage.create()` at module scope              | Every request shares one instance, and the state of one user leaks to the next | Make one instance per render or per request  |
+| `create()` with no `id`, rendered by hand on a server and in a browser | The counter ids `form-1` can differ, and hydration fails                       | Pass the same `id` to `create` on both sides |
 
 ## Related
 

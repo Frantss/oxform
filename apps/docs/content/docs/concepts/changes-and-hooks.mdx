@@ -41,7 +41,22 @@ were added, which is the order of the chain.
 
 ## Example
 
+Emails pasted from a spreadsheet have spaces and capitals, so lookups fail (E08). An interceptor changes the value
+before it is written.
+
+<include meta='twoslash'>../../../../../examples/kit/src/normalize-email.ts</include>
+
+A change of country makes the region invalid (E21). A listener runs after the write, and writes the region.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/region.ts</include>
+
 ## Common mistakes
+
+| Wrong code                                                                           | Effect                                                                | Fix                                           |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------- |
+| `values.onChange` to trim a value                                                    | The untrimmed value is written first, then a second write follows     | Return the new change from `values.intercept` |
+| `form.values.set('title', text)` for the input of the user                           | The value changes, but `dirty` does not, and no event validation runs | Call `form.events.change('title', text)`      |
+| An interceptor that reads `change.path === 'billing.email'` for a write of `billing` | The interceptor misses it: the write has the path `billing`           | Also handle a write of the parent object      |
 
 ## Related
 

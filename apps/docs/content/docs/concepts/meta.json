@@ -1,13 +1,13 @@
 {
   "title": "Concepts",
   "pages": [
-    "!forms-and-chains",
-    "!extensions-and-needs",
-    "!options",
-    "!changes-and-hooks",
-    "!checks-and-validation",
-    "!slots-and-parts",
-    "!scopes",
-    "!server-rendering"
+    "forms-and-chains",
+    "extensions-and-needs",
+    "options",
+    "changes-and-hooks",
+    "checks-and-validation",
+    "slots-and-parts",
+    "scopes",
+    "server-rendering"
   ]
 }

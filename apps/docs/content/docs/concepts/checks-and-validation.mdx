@@ -43,7 +43,23 @@ nothing: a check option does.
 
 ## Example
 
+An address that is already a member must be refused before submit, without a request per key press (E18). The
+format runs on `change`, the lookup on `blur`, and both on `submit`. A change during a lookup makes it stale.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/team-invites.ts</include>
+
+A title over 60 characters is cut in search results, and the writer must still publish (E14). A second check that is
+not blocking holds the advice.
+
+<include meta='twoslash'>../../../../../examples/kit/src/warnings.ts</include>
+
 ## Common mistakes
+
+| Wrong code                                                                   | Effect                                                                                                               | Fix                                                                |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `defineForm({ schema, defaultValues }).extend(standard)` and no check option | A submit succeeds with values that the schema refuses                                                                | Add `.configure({ error: { submit: schema } })`                    |
+| `.extend(standard).extend(warnings)`, then `form.field(path).warning()`      | Type error: "Property 'warning' does not exist". The member is not there at runtime                                  | Extend the check before `handles`, or call `form.warning.at(path)` |
+| `check('error')` twice in one chain                                          | `create` throws: `The "check:error" extension declares the state key "error", which "check:error" already declares.` | Give each check its own name                                       |
 
 ## Related
 

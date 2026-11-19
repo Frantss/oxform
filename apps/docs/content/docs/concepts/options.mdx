@@ -40,7 +40,21 @@ three sources: `defineForm`, `configure` and `create`. `create` wins over `confi
 
 ## Example
 
+The validators and the publish call are the same for every article, so `configure` sets them at module scope
+(E05). The article differs per page, so each page passes it to `create`, or to the `options` prop of `Root`.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-editor.ts</include>
+
+`articleEditor.create({ defaultValues: article })` gives one page its article. `onSubmit` gets `form`, typed as the
+instance of the whole chain, because `configure` replaces `Self`.
+
 ## Common mistakes
+
+| Wrong code                                                               | Effect                                                                                        | Fix                                                    |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `defineForm(init).configure({ error: {} }).extend(standard)`             | Type error at `configure`: "Object literal may only specify known properties"                 | Call `configure` after the last `.extend`              |
+| `configure({ error: { change } })`, then `create({ error: { submit } })` | The instance has the `submit` validator only. The option of `create` replaces the whole value | Give the full value in `create`                        |
+| A misspelled option from JavaScript, or with a cast                      | Nothing fails at runtime, and the option has no effect                                        | Type-check the code that configures and creates a form |
 
 ## Related
 

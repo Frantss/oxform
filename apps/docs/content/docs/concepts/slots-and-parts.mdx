@@ -43,7 +43,21 @@ it.
 
 ## Example
 
+The design system disables the submit button until the form is valid, and the built-in part does not (E13). A
+group with a `submit` slot, spread after `submitSlots`, replaces the built-in slot by its key.
+
+<include meta='twoslash'>../../../../../examples/kit/src/strict-submit-slots.ts</include>
+
+The adapter makes one part per slot (E29): `createParts(signInPage, { fieldError: 'span' })` returns `Root`,
+`Field`, `FieldError` and `Submit`, and renders the error in a `span`.
+
 ## Common mistakes
+
+| Wrong code                                                          | Effect                                                           | Fix                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| A `submit` slot that sets only `disabled`, to wrap the built-in one | The part loses the built-in attributes. A slot cannot be wrapped | Write the whole slot, with each member that the part needs |
+| `{ ...fieldErrorSlots(slot), ...fieldSlots(slot) }`                 | The `field` part has no `aria-describedby`                       | Spread one of them                                         |
+| `slot({ text: ({ messages }) => messages[0], state: ... })`         | Type error: the parameter of `text` is `{}`                      | Write `state` before `text`                                |
 
 ## Related
 
