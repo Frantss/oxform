@@ -154,7 +154,7 @@
   - Rows 9, 12 and 13: "User code" where a library documents no option or API, and the docs show the parts that
     the application uses.
   - Row 21 ("A form pays only for the features it imports") is removed. No primary source states it for
-    TanStack Form or React Hook Form, and the size table measures it.
+    TanStack Form or React Hook Form, and no size is measured (owner decision 19).
 - Why it matters: a maintainer of another library can contest these cells. The page review (P8-11) or a
   correction (4.6, rule 6) decides them. Removing row 15 would also remove a row where two other libraries
   are ahead of Oxform (3.2).
