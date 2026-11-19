@@ -225,10 +225,10 @@ packages that applied the renames (no id), answered the decisions (P0-01) and cl
   comparison data (P7-08) is the feature data of `07`.
 - **Inputs:** `04#4`, `04#8`, `02#Examples`, I8 of `03#Integration layer`, `07#2`, `07#3`.
 - **Deliverables:** `examples/kit/**`, `examples/react/**`, `examples/solid/**`, `examples/solid-v2/**`,
-  `plans/extension-api/07-comparison-features.json`.
+  `apps/docs/data/comparison-features.json`.
 - **Exit criteria:** `pnpm run test` passes the kit specs and one browser flow per example. `pnpm run check:types`
   passes in each example workspace. Each app builds its `playground.html`. No file is copied from the spike.
-  `07-comparison-features.json` is committed.
+  `apps/docs/data/comparison-features.json` is committed.
 - **Unblocks:** the pages of phase 8 that include a catalogue row, and the comparison page (P8-11).
 
 | Id    | Title                                     | Scope                                                                                                                              | Depends on   | Owner plan section                         | Verification                                                       |

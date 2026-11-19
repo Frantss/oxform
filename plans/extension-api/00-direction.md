@@ -350,7 +350,7 @@ Decided by the owner on 2026-11-18.
 
 19. **The comparison is a static table.** The owner's words: "comparison was meant to be a static table
     comparison of features and capabilities". The comparison workspace, its form versions and the size method
-    are removed. Only the feature data stays, in `07-comparison-features.json`.
+    are removed. Only the feature data stays, now in `apps/docs/data/comparison-features.json`.
 
 Decided by the owner on 2026-11-16, recorded on 2026-11-18 (commit `7ae20db`).
 

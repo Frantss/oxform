@@ -90,7 +90,7 @@ packages.
 - In: one line of evidence per item of `06-roadmap.md#Definition of done for 0.7.0`: a command result, a file
   path or the Evidence section of a ticket. Check that each decision of the register is applied by the work
   package in its "Applied in" column, and that each accepted limit is on `limits.mdx`. Check that the size
-  report, `07-comparison-features.json` and the benchmark numbers in `reports/` match the current
+  report, `apps/docs/data/comparison-features.json` and the benchmark numbers in `reports/` match the current
   build. Run the items that need `main` or the registry on the integration branch, and name the ticket that
   closes them: TK-071 (`explorations/` deleted) and TK-073 (`main`
   and the registry).
@@ -157,7 +157,7 @@ fixed and this review runs again.
    the spike numbers as history. One stale sentence: `reports/extension-api-rebuild.md:157` says that "the size
    table measures it" (finding).
 5. Comparison page as a static table: **FAIL**. Pass: `comparison.mdx` (TK-068), all 84 records of
-   `07-comparison-features.json` render with their value and source in `dist/client/docs/comparison.md`, and
+   `apps/docs/data/comparison-features.json` render with their value and source in `dist/client/docs/comparison.md`, and
    `/comparison.json` equals the JSON. Failed:
    - At 390x844 the matrix breaks words inside the word ("Not avail able", "Bui lt-in"): the cells have
      `overflow-wrap: anywhere`, and the cell width is 58 px. Owner: TK-068.
