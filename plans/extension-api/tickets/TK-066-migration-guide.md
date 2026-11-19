@@ -3,12 +3,12 @@ id: TK-066
 title: Migration guide
 phase: 8
 work_package: P8-09
-status: in-progress
+status: done
 depends_on: [TK-042, TK-046, TK-059]
 branch: codex/P8-09-migration-guide
 pr: null
 started: 2026-11-18
-completed: null
+completed: 2026-11-18
 ---
 
 # TK-066: Migration guide
@@ -47,7 +47,7 @@ published at `migration/index`. A trial by hand of the guide is recorded in `rep
 - [x] `05-migration-guide.md` has no `†`.
 - [x] Each of the 11 items of Part A has a recorded result on the built packages.
 - [x] The "after" example compiles in `pnpm run docs:build`.
-- [ ] The trial is recorded in `reports/`: the application, the agent, the result of section 6 "Verify".
+- [x] The trial is recorded in `reports/`: the application, the agent, the result of section 6 "Verify".
 - [x] `pnpm run docs:check:agents` and `pnpm run check:format` pass.
 - [x] `migration/index` renders at desktop and mobile sizes. The console shows no runtime, SSR or hydration
       error (`AGENTS.md`, "Validation").
@@ -143,5 +143,18 @@ Decisions (owner decision 18):
   pages and steps. The 0.x example is `no-check`, because the docs app installs only 0.7.0.
 - `Related` links only the pages that exist now (the introduction and the repository).
 
-Open: the agent trial on a 0.x application (acceptance item 4) runs separately, so the status stays
-`in-progress`.
+Acceptance item 4 was open at the end of part 2. Part 3 closes it.
+
+### Part 3: the trial and the guide gaps (2026-11-18)
+
+- Trial: a Claude Sonnet subagent, with only the published page, migrated a copy of the 0.x `examples/react`
+  (seven forms, six browser tests). Section 6 "Verify": type check pass, tests 6 of 6 pass, search A with
+  application-code matches only, browser pass. Recorded in `reports/migration-trial.md`.
+- Gaps: the agent reported 11. Each was checked on the built packages (`pnpm run build` 12 of 12 on
+  `a586a7c`; React browser tests 5 of 5 and `tsc --noEmit` probes on `packages/*/dist`, deleted after the run).
+  Gap 1 is an artifact of the workspace trial, and the guide already states the peer. Gaps 2 to 11 changed Part
+  B and the page in the same way: sections 3, 4, 5 and 6. No package finding: the runtime error of gap 4 names
+  the fix.
+- The page body is made from Part B again, so the two stay the same. `pnpm run docs:build` passes with the
+  "after" example in Twoslash. `docs:check:agents`, `check:terms` and `check:format` pass. `/docs/migration`
+  passes the browser check at 1280x800 and 390x844 on port 3206.
