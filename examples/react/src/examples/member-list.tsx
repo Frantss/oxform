@@ -1,8 +1,9 @@
+import { createParts } from '@oxform/react';
 import { inviteMember } from 'example-oxform-kit/member-list';
 import { MemberRow } from './member-row';
-import { teamInvitesParts } from './team-invites-form';
+import { teamInvitesForm } from './team-invites-form';
 
-const { useArray, useForm } = teamInvitesParts;
+const { useArray, useForm } = createParts(teamInvitesForm);
 
 /** E17 and E33. The rows come from `useArray`, keyed by the item ids, so focus and errors stay with the row. */
 export const MemberList = () => {

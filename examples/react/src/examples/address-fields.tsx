@@ -1,9 +1,10 @@
 import type { Scope } from '@oxform/core';
+import { createParts } from '@oxform/react';
 import { copyAddress } from 'example-oxform-kit/address';
 import type { Address } from 'example-oxform-kit/schemas/checkout';
-import { checkoutParts } from './checkout-form';
+import { checkoutForm } from './checkout-form';
 
-const { Field, FieldError, useScope } = checkoutParts;
+const { Field, FieldError, useScope } = createParts(checkoutForm);
 
 /** E31. One block for any address: its fields take the scope, so their names are paths of the address. */
 export const AddressFields = ({

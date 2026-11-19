@@ -1,7 +1,8 @@
+import { createParts } from '@oxform/react';
 import { countryOf } from 'example-oxform-kit/schemas/checkout';
-import { checkoutParts } from './checkout-form';
+import { checkoutForm } from './checkout-form';
 
-const { useSelector } = checkoutParts;
+const { useSelector } = createParts(checkoutForm);
 
 /** E32. The summary reads the country only, so it renders again only when the country changes. */
 export const OrderSummary = () => {

@@ -1,33 +1,11 @@
-import { clearRegionOnCountryChange } from 'example-oxform-kit/region';
-import { countryOf } from 'example-oxform-kit/schemas/checkout';
-import { useEffect } from 'react';
+import { createParts } from '@oxform/react';
 import { Addresses } from './address-fields';
-import { checkoutParts } from './checkout-form';
+import { checkoutForm } from './checkout-form';
 import { CountrySelect } from './country-select';
 import { OrderSummary } from './order-summary';
+import { RegionSelect } from './region-select';
 
-const { Root, Field, FieldError, Submit, Reset, useForm, useSelector } = checkoutParts;
-
-/** E21: a change of country clears the region, for as long as the form is shown. */
-const RegionSelect = () => {
-  const form = useForm();
-  const country = countryOf(useSelector(state => state.values.country));
-  useEffect(() => clearRegionOnCountryChange(form), [form]);
-
-  return (
-    <Field
-      name='region'
-      render={props => (
-        <select {...props}>
-          <option value=''>Choose a region</option>
-          {country?.regions.map(region => (
-            <option key={region}>{region}</option>
-          ))}
-        </select>
-      )}
-    />
-  );
-};
+const { Root, Field, FieldError, Submit, Reset, useSelector } = createParts(checkoutForm);
 
 const Paid = () => {
   const paid = useSelector(state => state.status.form.submits > 0 && state.status.form.successful);
