@@ -3,11 +3,11 @@ id: TK-073
 title: Merge and publish
 phase: 9
 work_package: P9-04
-status: todo
+status: in-progress
 depends_on: [TK-072]
 branch: codex/P9-04-merge-and-publish
-pr: null
-started: null
+pr: https://github.com/Frantss/oxform/pull/1
+started: 2026-11-19
 completed: null
 ---
 
