@@ -11,7 +11,7 @@ export const articleEditorForm = articleEditor
   .extend(slots(slot => warningSlots(slot)))
   .extend(autosave)
   .configure({
-    warning: { change: articleAdviceSchema, submit: articleAdviceSchema },
+    warning: { change: articleAdviceSchema },
     saveDraft: draft => articles.saveDraft(draft),
     onSaveError: (_error, form) => form.warning.set('', [{ message: 'The draft was not saved. Keep this tab open.' }]),
   });
