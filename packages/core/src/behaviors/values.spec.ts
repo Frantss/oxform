@@ -33,6 +33,13 @@ describe('values', () => {
     expect(defaultValues.address.city).toBe('x');
   });
 
+  it('keeps the siblings of a written path', () => {
+    using subject = setup();
+    subject.instance.values.set('address.city', 'y');
+
+    expect(subject.instance.values.get()).toEqual({ ...defaultValues, address: { city: 'y', zip: '1' } });
+  });
+
   it('writes with an updater of the current value', () => {
     using subject = setup();
     subject.instance.values.set('name', current => `${current}b`);
