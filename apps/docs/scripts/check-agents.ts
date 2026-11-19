@@ -6,14 +6,17 @@ import { contentDirectory, listPageFiles, markdownUrlOf, pageUrlOf } from '../co
 
 /**
  * `docs:check:agents` (rules in `apps/docs/README.md`, "Agent checks"). Run it after `pnpm run docs:build`: it
- * reads the content files and the prerendered output in `dist/client`. Each failure names the file and the rule.
+ * reads the content files and the prerendered assets of the Cloudflare build. Each failure names the file and the
+ * rule.
  * `--record-heading-ids` adds new heading ids to `heading-ids.json`. It never removes one.
  */
 
 const appDirectory = join(import.meta.dirname, '..');
 const repositoryDirectory = join(appDirectory, '../..');
 const pagesDirectory = join(appDirectory, contentDirectory);
-const outputDirectory = join(appDirectory, 'dist/client');
+/** The static assets that `cf deploy --prebuilt` uploads. */
+const outputPath = '.cloudflare/output/v0/workers/default/assets';
+const outputDirectory = join(appDirectory, outputPath);
 const headingIdsFile = join(import.meta.dirname, 'heading-ids.json');
 const imageAllowlistFile = join(import.meta.dirname, 'image-allowlist.json');
 
@@ -389,33 +392,33 @@ function checkOutputs(pages: PageSource[]) {
       fail(
         page.label,
         'markdown-output',
-        `no Markdown output at dist/client${markdownUrlOf(page.url)}, or it is empty`,
+        `no Markdown output at ${outputPath}${markdownUrlOf(page.url)}, or it is empty`,
       );
   }
 
-  if (index === undefined) fail('dist/client/llms.txt', 'llms-index', 'missing. Run `pnpm run docs:build` first');
+  if (index === undefined) fail(`${outputPath}/llms.txt`, 'llms-index', 'missing. Run `pnpm run docs:build` first');
   else {
     const links = [...index.matchAll(/\]\((\/[^)\s]*)\)/g)].map(match => match[1]);
 
     for (const link of links)
-      if (readOutput(link) === undefined) fail('dist/client/llms.txt', 'llms-index', `the link ${link} is dead`);
+      if (readOutput(link) === undefined) fail(`${outputPath}/llms.txt`, 'llms-index', `the link ${link} is dead`);
 
     for (const page of listed) {
       const count = links.filter(link => link === markdownUrlOf(page.url)).length;
       if (count !== 1)
         fail(
-          'dist/client/llms.txt',
+          `${outputPath}/llms.txt`,
           'llms-index',
           `${page.label} is listed ${count} times, expected once at ${markdownUrlOf(page.url)}. Is it in its meta.json?`,
         );
     }
   }
 
-  if (full === undefined) fail('dist/client/llms-full.txt', 'llms-full', 'missing. Run `pnpm run docs:build` first');
+  if (full === undefined) fail(`${outputPath}/llms-full.txt`, 'llms-full', 'missing. Run `pnpm run docs:build` first');
   else
     for (const page of listed)
       if (!full.includes(`# ${page.frontmatter.title}\n`))
-        fail('dist/client/llms-full.txt', 'llms-full', `the title of ${page.label} is missing`);
+        fail(`${outputPath}/llms-full.txt`, 'llms-full', `the title of ${page.label} is missing`);
 }
 
 function outputHeadingIds(pages: PageSource[]): Record<string, string[]> {

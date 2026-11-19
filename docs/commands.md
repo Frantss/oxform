@@ -23,7 +23,8 @@ pnpm install
 ```bash
 pnpm run docs:dev                        # docs at http://localhost:3002
 pnpm run docs:build                      # production docs build
-pnpm run docs:start                      # serve the build, on PORT (default 3000)
+pnpm run docs:preview                    # serve the built Worker at http://127.0.0.1:4173
+pnpm run docs:deploy                     # build, then deploy the oxform-docs Worker (needs Cloudflare login)
 pnpm run docs:check                      # generate MDX metadata and type-check the app
 pnpm run docs:check:agents               # agent checks, after docs:build
 pnpm --dir apps/docs run playground:build  # rebuild the embedded previews after editing an example
@@ -33,7 +34,8 @@ pnpm --dir examples/solid-v2 run dev
 ```
 
 - The docs dev server listens on port 3002 (`apps/docs/vite.config.ts`). Pass `-- --port <port>` to change
-  it. To serve the build on another port, run `PORT=<port> pnpm run docs:start`.
+  it. To serve the build on another port, run `pnpm run docs:preview -- --port <port>`. Deploy only with
+  the owner's approval. The [docs app readme](../apps/docs/README.md#production) covers production.
 - `docs:check:agents` checks `llms.txt`, `llms-full.txt`, the Markdown outputs, the page templates, the code
   fences, the term list, the reference inventory, the example ids and the heading ids. Each failure prints
   `file[:line]: [rule] message`. After you add a heading, run

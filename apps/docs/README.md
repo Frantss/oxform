@@ -129,18 +129,42 @@ the theme and Fumadocs share provider contexts during server rendering.
 
 ## Production
 
-After building, run `pnpm run docs:start` from the repository root.
-`server.ts` starts srvx with `dist/server/server.js`, serves static files from
-`dist/client`, and listens on `0.0.0.0` using `PORT` (default `3000`). It sends
-Markdown requests (a `.md` URL, or `Accept: text/markdown` on a docs URL) to the
-app before the static files.
+The docs run on the `oxform-docs` Cloudflare Worker. `cloudflare.config.ts` sets the account, the
+compatibility date, Node compatibility, observability and the domains. `workers.dev` stays on. Only a
+production-mode build declares `oxform.frantss.uy`.
 
-On Railway, keep the repository root as the build context and set:
+The Worker runs TanStack Start's server entry, so `/api/search`, the server functions, the legacy redirects and
+the real 404s work as in development. Static files answer before the Worker, except on `/docs*`
+(`runWorkerFirst`): there the app answers Markdown, for a `.md` URL or for `Accept: text/markdown`. A rule
+matches the path only, so it cannot select by the `Accept` header. HTML handling is off (`htmlHandling: 'none'`)
+so the `playground.html` iframe URLs stay as they are. The Worker renders each HTML page; the prerendered HTML
+files are not served.
 
-- Build command: `pnpm exec vp run --filter '@oxform/docs...' build`
-- Start command: `pnpm --dir apps/docs run start`
+Keep the docs-local `vite-plus` dependency so `cf` detects the build tool. The plugins stay inside
+`lazyPlugins` so the Vite+ commands that only read metadata do not start Cloudflare's build. Keep `.cloudflare`
+in `.gitignore`: Tailwind scans the files that git does not ignore, and a scan of the build output changes the
+server's stylesheet hash, so the HTML links a stylesheet that does not exist.
+
+Run from the repository root:
+
+```bash
+pnpm run build           # the libraries, the playgrounds and the docs (cf build)
+pnpm run docs:check:agents
+pnpm run docs:preview    # the built Worker at http://127.0.0.1:4173
+```
+
+The build writes the Worker and its assets to `apps/docs/.cloudflare/output/v0/`. `cf build` and
+`cf deploy` do not run package scripts, so build with `docs:build` (or `build`): it also generates the
+comparison data and rebuilds the playground previews. Pass `-- --port <port>` to `docs:preview` for another
+port.
+
+Check the build, then deploy it. The dry run needs no login. The deploy needs Cloudflare authentication:
+
+```bash
+pnpm --dir apps/docs exec cf deploy --dry-run --prebuilt --mode production
+pnpm run docs:deploy     # docs:build, then cf deploy --prebuilt --mode production
+```
+
+`cf` declares Node `^22.23.0 || ^24.22.0 || ^26.12.0` (`apps/docs/package.json`, `engines`).
+
 - Health check: `/docs`
-- Environment: `RAILPACK_NODE_VERSION=24`, `NODE_ENV=production`, `PORT=8080`
-
-The build includes the docs workspace and its dependencies, including all
-three playground previews.

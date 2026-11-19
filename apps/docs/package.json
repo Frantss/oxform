@@ -5,11 +5,12 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "dev": "pnpm run comparison:generate && pnpm run playground:build && vp dev",
-    "build": "pnpm run comparison:generate && pnpm run playground:build && vp build",
+    "dev": "pnpm run comparison:generate && pnpm run playground:build && cf dev",
+    "build": "pnpm run comparison:generate && pnpm run playground:build && cf build",
     "comparison:generate": "node scripts/generate-comparison.ts",
     "playground:build": "vp run example-oxform-react#build && vp run example-oxform-solid#build && vp run example-oxform-solid-v2#build",
-    "start": "node server.ts",
+    "preview": "vp preview",
+    "deploy": "pnpm run build && cf deploy --prebuilt --mode production",
     "check:types": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "pnpm run comparison:generate && fumadocs-mdx",
     "check:agents": "node scripts/check-agents.ts"
@@ -30,22 +31,27 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "solid-js": "^1.9.17",
-    "srvx": "1.0.7",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.v.11",
     "@tailwindcss/vite": "^4.3.3",
     "@types/mdx": "^2.0.14",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "cf": "1.0.0-beta.27",
     "example-oxform-react": "workspace:*",
     "example-oxform-solid": "workspace:*",
     "example-oxform-solid-v2": "workspace:*",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0",
+    "vite-plus": "catalog:oxform",
     "yaml": "^2.9.1"
+  },
+  "engines": {
+    "node": "^22.23.0 || ^24.22.0 || ^26.12.0"
   }
 }

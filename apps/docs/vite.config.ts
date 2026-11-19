@@ -1,8 +1,9 @@
+import { cloudflare } from '@cloudflare/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
 import mdx from 'fumadocs-mdx/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, lazyPlugins } from 'vite-plus';
 import { listPageFiles, markdownUrlOf, pageUrlOf } from './content-pages';
 import { playgroundAssets } from './playground-assets';
 
@@ -23,7 +24,8 @@ export default defineConfig({
   preview: {
     host: '127.0.0.1',
   },
-  plugins: [
+  plugins: lazyPlugins(async () => [
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
     playgroundAssets(),
     mdx(await import('./source.config')),
     tailwindcss(),
@@ -35,7 +37,7 @@ export default defineConfig({
       },
     }),
     react(),
-  ],
+  ]),
   resolve: {
     tsconfigPaths: true,
   },
