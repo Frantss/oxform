@@ -37,10 +37,21 @@ function sidebarPages(): Page[] {
   return pages;
 }
 
+/** The index lists each page once: a `meta.json` link to a page of another folder adds no second line. */
 export function llmsIndex(): string {
-  const index = llms(source).index();
+  const listed = new Set<string>();
+  const lines = llms(source)
+    .index()
+    .split('\n')
+    .filter(line => {
+      const url = /^- \[[^\]]*\]\((\/docs[^)]*)\)/.exec(line)?.[1];
+      if (url === undefined) return true;
+      if (listed.has(url)) return false;
+      listed.add(url);
+      return true;
+    });
 
-  return index.replace(/\]\((\/docs[^)]*)\)/g, (_match, url: string) => `](${markdownUrlOf(url)})`);
+  return lines.join('\n').replace(/\]\((\/docs[^)]*)\)/g, (_match, url: string) => `](${markdownUrlOf(url)})`);
 }
 
 export async function llmsFullText(): Promise<string> {

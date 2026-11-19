@@ -12,6 +12,7 @@
     "slots",
     "define-slots",
     "define-scope",
+    "[scope(path)](/docs/behaviors/scope)",
     "create-effect",
     "types"
   ]
