@@ -614,5 +614,30 @@
     "how-it-works",
     "variations",
     "related"
+  ],
+  "/docs/adapters/solid-v2": [
+    "install",
+    "create-the-parts",
+    "parts",
+    "hooks",
+    "custom-parts",
+    "server-rendering",
+    "differences",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/adapters/solid": [
+    "install",
+    "create-the-parts",
+    "parts",
+    "hooks",
+    "read-one-value",
+    "render-a-scope",
+    "render-the-rows-of-an-array",
+    "custom-parts",
+    "server-rendering",
+    "differences",
+    "common-mistakes",
+    "related"
   ]
 }

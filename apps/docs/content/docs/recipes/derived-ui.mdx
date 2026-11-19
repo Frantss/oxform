@@ -17,10 +17,20 @@ An order summary must update when one value changes, without a render of the who
 `state.values.country`, so it renders again only when the country changes. The state type comes from the chain,
 so `state.values.country` is a `string`.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/order-summary.tsx
     </include>
   </Tab>
 </Tabs>

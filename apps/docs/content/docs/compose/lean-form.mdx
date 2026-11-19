@@ -165,10 +165,20 @@ export const signIn = defineForm({ schema: signInSchema, defaultValues: { email:
 no `reset` part, so there is no `Reset`. The second argument renders the `fieldError` slot in a `span`. The form
 type does not change.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
     </include>
   </Tab>
 </Tabs>

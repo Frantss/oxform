@@ -24,10 +24,20 @@ component has the capitalized slot name: the slot `fieldError` gives `FieldError
 per form object. The second argument changes the element that a slot declares, by slot name. An unknown name throws
 `oxform: the form has no part "name".`
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
     </include>
   </Tab>
 </Tabs>
@@ -72,10 +82,20 @@ renders the component again only when what it reads changes.
 `useSelector` returns what the selector reads. The order summary reads the country only, so it renders again only
 when the country changes (E32).
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/order-summary.tsx
     </include>
   </Tab>
 </Tabs>
@@ -85,10 +105,20 @@ when the country changes (E32).
 `useScope('billing')` gives the scope of the billing address. `AddressFields` passes it to each part as `scope`, so
 the names of its parts are paths of the address (E31).
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/address-fields.tsx
     </include>
   </Tab>
 </Tabs>
@@ -99,10 +129,20 @@ the names of its parts are paths of the address (E31).
 (E33). The id of a field follows its path, not its item: after a move, `members.0.email` is the field of the
 member that is now first.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/member-list.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/member-list.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/member-list.tsx
     </include>
   </Tab>
 </Tabs>
@@ -114,10 +154,20 @@ same form object. `slotProps` are the props of the slot, such as `{ name: 'count
 the part for that element, so a wrapper can take `PartProps<'select'>` and pass them on. The country select renders
 the `field` slot in a `select` (E30).
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/country-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/country-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/country-select.tsx
     </include>
   </Tab>
 </Tabs>

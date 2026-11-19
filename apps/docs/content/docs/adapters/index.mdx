@@ -15,11 +15,11 @@ framework change.
 
 ## The import that changes [#the-import-that-changes]
 
-| Framework | Entry point        | Install                                  | Page                          |
-| --------- | ------------------ | ---------------------------------------- | ----------------------------- |
-| React 19  | `@oxform/react`    | `npm install @oxform/core @oxform/react` | [React](/docs/adapters/react) |
-| Solid 1   | `@oxform/solid`    | `npm install @oxform/core @oxform/solid` | Solid 1                       |
-| Solid 2   | `@oxform/solid/v2` | `npm install @oxform/core @oxform/solid` | Solid 2                       |
+| Framework | Entry point        | Install                                  | Page                               |
+| --------- | ------------------ | ---------------------------------------- | ---------------------------------- |
+| React 19  | `@oxform/react`    | `npm install @oxform/core @oxform/react` | [React](/docs/adapters/react)      |
+| Solid 1   | `@oxform/solid`    | `npm install @oxform/core @oxform/solid` | [Solid 1](/docs/adapters/solid)    |
+| Solid 2   | `@oxform/solid/v2` | `npm install @oxform/core @oxform/solid` | [Solid 2](/docs/adapters/solid-v2) |
 
 `@oxform/core` is a peer dependency of each adapter, so an application has one copy of it. An adapter does not
 export the APIs of `@oxform/core`: import the form APIs from the core entry points.
@@ -42,10 +42,20 @@ match. The adapter knows no extension: everything a part does comes from its slo
 
 The sign-in form of the kit (E29) renders with the same parts in each framework:
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
     </include>
   </Tab>
 </Tabs>
@@ -53,5 +63,7 @@ The sign-in form of the kit (E29) renders with the same parts in each framework:
 ## Related
 
 - [React](/docs/adapters/react)
+- [Solid 1](/docs/adapters/solid)
+- [Solid 2](/docs/adapters/solid-v2)
 - [Quick start](/docs/quick-start)
 - [Slot groups](/docs/behaviors/slot-groups)

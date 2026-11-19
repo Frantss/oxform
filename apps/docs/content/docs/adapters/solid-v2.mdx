@@ -1,0 +1,123 @@
+---
+title: Solid 2
+description: Set up @oxform/solid/v2 with the Solid 2 compiler and find where it differs from the Solid 1 adapter.
+type: adapter
+entry: ['@oxform/solid/v2']
+principles: [type-safe]
+examples: [E29, E27]
+---
+
+## Install
+
+Solid 2 is a release candidate. The package lists the version that it is tested with, `2.0.0-rc.19`:
+
+```bash
+npm install @oxform/core @oxform/solid solid-js@2.0.0-rc.19 @solidjs/web@2.0.0-rc.19
+npm install -D @solidjs/vite-plugin@3.0.0-next.51
+```
+
+Import from `@oxform/solid/v2`, not from `@oxform/solid`, which is the Solid 1 adapter. Both entry points export the
+same names and the same types. Set up the compiler of Solid 2:
+
+- Add `solid()` of `@solidjs/vite-plugin` to `plugins` in the Vite configuration. For a server build, use
+  `solid({ ssr: true })`.
+- Give Vite `resolve: { dedupe: ['solid-js', '@solidjs/web'] }`, so the application and the adapter share one copy
+  of Solid.
+- In `tsconfig.json`, take JSX from `@solidjs/web`:
+
+```json
+{ "compilerOptions": { "jsx": "preserve", "jsxImportSource": "@solidjs/web" } }
+```
+
+The adapter imports `JSX`, `isServer`, `Show` and the `Dynamic` element from `@solidjs/web`, where the Solid 1
+adapter imports them from `solid-js/web`. Import `render`, `hydrate` and `renderToString` from `@solidjs/web` too.
+
+## Create the parts
+
+`createParts(form, elements?)` works as in [Solid 1](/docs/adapters/solid#create-the-parts): it returns `Root`, one
+component per slot except `root`, and the adapter hooks. Only the import changes (E29).
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Parts
+
+The parts behave as in [Solid 1](/docs/adapters/solid#parts). `children` and `render` are functions of an accessor
+of the slot state, called once. Read the props through the props object, without destructuring. Wrap props with
+`merge` of `solid-js`, which replaces `mergeProps` of Solid 1. `Root` takes its `form` and makes its instance once.
+
+## Hooks
+
+The hooks are those of [Solid 1](/docs/adapters/solid#hooks): `useForm`, `useSelector`, which returns an accessor,
+and `useField`, `useArray` and `useScope`, which take a path or an accessor of a path. Each needs a `Root` of the
+same form object above it, and an owner.
+
+## Custom parts
+
+`usePart(form, slot, slotProps, props, tag)` works as in [Solid 1](/docs/adapters/solid#custom-parts). A wrapper
+that passes on its props uses `merge(props, { … })` of `solid-js`.
+
+## Server rendering
+
+The rules of [Solid 1](/docs/adapters/solid#server-rendering) apply. Render with `renderToString` of
+`@solidjs/web` in the server build (`solid({ ssr: true })`), and start the client with `hydrate`. The effect that
+gives new `options` to the instance does not run on the server. A request handler can give a submitted instance
+to `Root` as `form` (E27).
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Differences
+
+Every difference of [Solid 1](/docs/adapters/solid#differences) from React applies to Solid 2. Two rows have a
+Solid 2 value of their own:
+
+| Item                   | React                        | Solid 1                             | Solid 2                                                | Reason                                                                        |
+| ---------------------- | ---------------------------- | ----------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `Root` options         | Layout effect on each render | A computation that tracks the props | `createEffect(compute, effect)`, skipped on the server | Solid 2 splits an effect into the part that tracks and the part that writes   |
+| Boolean `aria-*` value | `"true"` or `"false"`        | The same                            | The part writes the boolean as a string                | Solid 2 writes a boolean as presence, and an empty `aria-invalid` means false |
+
+## Common mistakes
+
+| Wrong code                                               | Effect                                                                                          | Fix                                     |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `import { createParts } from '@oxform/solid'` in Solid 2 | The build fails: the Solid 1 adapter imports `solid-js/web`, which `solid-js` 2 does not export | Import from `@oxform/solid/v2`          |
+| `"jsxImportSource": "solid-js"`                          | TypeScript finds no `solid-js/jsx-runtime`: `solid-js` 2 does not export it                     | Set `"jsxImportSource": "@solidjs/web"` |
+| `mergeProps(props, { … })` in a wrapper                  | Solid 2 has no `mergeProps`                                                                     | Use `merge(props, { … })` of `solid-js` |
+
+## Related
+
+- [Adapters](/docs/adapters)
+- [Solid 1](/docs/adapters/solid)
+- [React](/docs/adapters/react)
+- [A form without JavaScript](/docs/recipes/form-without-javascript)

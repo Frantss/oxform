@@ -1,0 +1,273 @@
+---
+title: Solid 1
+description: Render the slots of a form as Solid 1 components and read its state with the adapter hooks of @oxform/solid.
+type: adapter
+entry: ['@oxform/solid']
+principles: [type-safe]
+examples: [E29, E30, E31, E32, E33, E26, E27]
+---
+
+## Install
+
+```bash
+npm install @oxform/core @oxform/solid solid-js
+```
+
+`@oxform/core` and `solid-js` 1.9 or later are peer dependencies. The package is ESM only. `@oxform/solid` exports
+the same names as `@oxform/react`: `createParts`, `usePart`, and the types `PartElements`, `PartRender`,
+`PartProps`, `PartComponent`, `PartComponents`, `RootProps`, `RootComponent` and `FormHooks`. For Solid 2, import
+from `@oxform/solid/v2` (see [Solid 2](/docs/adapters/solid-v2)).
+
+## Create the parts
+
+`createParts(form, elements?)` returns `Root`, one component per slot except `root`, and the adapter hooks. Each
+component has the capitalized slot name: the slot `fieldError` gives `FieldError`. Call it at module scope, once
+per form object. The second argument changes the element that a slot declares, by slot name. An unknown name throws
+`oxform: the form has no part "name".`
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+The parts of one form object share one instance lookup. Two calls of `createParts` with the same form object give
+parts that work together, so a file can call it for the parts and hooks that it uses. `configure` returns a new
+form object, which has its own parts.
+
+## Parts
+
+A Solid component runs once. A part reads its props and the form state inside reactive scopes, so only the
+attributes and the text that change are written to the DOM.
+
+| Part or prop   | Behavior                                                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Root`         | Makes the instance once, from the `options` prop and an id from `createUniqueId`. A computation tracks `options` and gives new values to the instance                                      |
+| `Root` `form`  | An existing instance. `Root` provides it and does not change its options. `options` beside `form` is a type error                                                                          |
+| A part         | Renders nothing while its slot is not present. Else it creates the element with the slot attributes, which win over your props. It disposes the element when the slot is no longer present |
+| `'key'` props  | Paths of the form, such as `name` on `Field`. With a `scope` prop, paths of that scope                                                                                                     |
+| DOM props      | Reach the element, such as `class`, `placeholder`, `autocomplete`, `type`, `min`, `max` and `step`                                                                                         |
+| `children`     | Content, or a function of an accessor of the slot state, called once: `<Submit>{state => (state().submitting ? 'Sending…' : 'Send')}</Submit>`                                             |
+| `render`       | A function only, `(props, state) => JSX.Element`, called once: `render={props => <textarea rows={8} {...props} />}`. `state` is an accessor                                                |
+| Event handlers | The `on` handlers of a slot are native listeners. Your own handlers also run: an `onClick` on `Reset` runs, and the form still resets                                                      |
+
+Read the props of your own components through the props object, as `props.scope`. Do not destructure them: Solid
+props are getters, and a destructured prop does not update. The state of the `Submit` children is
+`{ submitting, submits, successful }`. When `Root` leaves the tree, the cleanups of the instance that it made run in
+`onCleanup`, and the instance stays usable. The adapter never calls `destroy`: the owner of a given instance
+destroys it.
+
+## Hooks
+
+Each hook needs a `Root` of the same form object above it, and throws outside one. Call a hook in a component, so
+that its cleanup runs with the owner of that component. A path argument is a string, or an accessor of a string
+that the hook follows.
+
+| Hook                              | Returns                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `useForm()`                       | The instance of the nearest `Root`                                                                     |
+| `useSelector(selector, options?)` | An accessor of the selected state. It updates when the result changes, by `===` or by `compare`        |
+| `useField(path, { scope? })`      | The handle of `form.field(path)`. In a reactive scope, `state` and `get()` follow the value and status |
+| `useArray(path, { scope? })`      | The handle of `form.array(path)`. In a reactive scope, `get()` and `ids` follow the array value        |
+| `useScope(prefix, { scope? })`    | `form.scope(prefix)`. With an accessor of the prefix, the scope follows the current prefix             |
+
+### Read one value [#read-one-value]
+
+`useSelector` returns an accessor of what the selector reads. Call it in JSX or in another reactive scope. The
+order summary reads the country only, so its text updates only when the country changes (E32).
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+The type of the result is an accessor. A hook that wraps `useSelector` returns it as it is:
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { createParts } from '@oxform/solid';
+import { z } from 'zod';
+
+const schema = z.object({ country: z.string() });
+const shipping = defineForm({ schema, defaultValues: { country: '' } }).extend(standard);
+const { useSelector } = createParts(shipping);
+
+export const useCountry = () => useSelector(state => state.values.country);
+//           ^?
+```
+
+### Render a scope [#render-a-scope]
+
+`useScope('billing')` gives the scope of the billing address. `AddressFields` passes it to each part as `scope`, so
+the names of its parts are paths of the address (E31). It reads `props.scope`, not a destructured `scope`.
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+### Render the rows of an array [#render-the-rows-of-an-array]
+
+`useArray('members')` follows the array. `<For each={members.ids}>` renders one row per item id, so a row stays
+with its item (E33). A row is not rendered again when it moves, so it takes its scope from `useScope` with an
+accessor of its index. The id of a field follows its path, not its item: after a move, `members.0.email` is the
+field of the member that is now first.
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-list.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/member-list.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/member-list.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Custom parts
+
+`usePart(form, slot, slotProps, props, tag)` renders one slot of the form in another element, inside a `Root` of the
+same form object. `slotProps` are the props of the slot, such as `{ name: 'country' }`. `props` are the props of
+the part for that element, so a wrapper can take `PartProps<'select'>` and pass them on with `mergeProps`. The
+country select renders the `field` slot in a `select` (E30).
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/country-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/country-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/country-select.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+For one use, the `render` prop of a part is enough: `<Field name='region' render={props => <select {...props} />} />`.
+
+## Server rendering
+
+The rules of [Server rendering](/docs/concepts/server-rendering) apply. Keep the form at module scope, and let
+each render make its own instance. Render with `renderToString` of `solid-js/web` in the server build of Solid,
+and start the client with `hydrate`. The first HTML has the state at creation: the values, the `aria-*` and
+`data-*` attributes, and `disabled`. No state is serialized: the client makes its own instance from the same
+options.
+
+- The form id comes from `createUniqueId`, so the ids of the server HTML and of the client match. Do not set an
+  `id` option on a form that renders on the server, unless it is the same on both sides (E26).
+- On the server, a part and a hook read the state of the store once, and subscribe to nothing.
+- A request handler can make an instance, submit it, and give it to `Root` as `form`. The HTML then has the posted
+  values and their errors (E27). See [A form without JavaScript](/docs/recipes/form-without-javascript).
+
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Differences
+
+The export names and the parts are the same as in [React](/docs/adapters/react). These are the differences, and
+the reason for each.
+
+| Item                          | React                                       | Solid 1                                                                                     | Reason                                                                  |
+| ----------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `useSelector` result          | `Selected`                                  | `Accessor<Selected>`                                                                        | A Solid component runs once. A plain value is never updated             |
+| `useField`, `useArray` result | The handle. The component renders again     | The handle. `state`, `get()` and `ids` track when read in a reactive scope                  | No second render                                                        |
+| Hook path arguments           | `string`                                    | `string` or `Accessor<string>`                                                              | A path that changes must be followed                                    |
+| `children` as function        | `(state) => node`, called per render        | `(state: Accessor<State>) => JSX.Element`, called once                                      | No second render                                                        |
+| `render`                      | Element or function                         | Function only: `(props, state: Accessor<State>) => JSX.Element`                             | A Solid JSX element is a DOM node. It cannot be cloned with new props   |
+| Part props                    | Read per render                             | Read through the props object inside reactive scopes. No destructuring                      | Solid props are getters                                                 |
+| Absent part                   | Returns `null`                              | Conditional rendering. The element is created and disposed, and `bind` follows it           | No second render                                                        |
+| `Root` options                | Layout effect on each render                | A computation that tracks the props                                                         | A component runs once                                                   |
+| Form id                       | `useId`                                     | `createUniqueId`                                                                            | Each is the hydration-safe id of the framework                          |
+| Store on the server           | `useSyncExternalStore` server snapshot      | Reads `store.state` directly. No subscription on the server                                 | Nothing updates on the server                                           |
+| Cleanup                       | Effect cleanup                              | `onCleanup` of the owner. Every hook needs an owner                                         | Solid runs cleanups with the owner                                      |
+| Element creation              | `createElement(tag)`                        | The `Dynamic` element of `solid-js/web`                                                     | The tag is data                                                         |
+| Multiple select value         | React selects the options of a list `value` | The part sets `selected` on each option                                                     | Solid sets `value` as a property, which takes no list                   |
+| Focus across a list move      | React moves one node of a swap              | The part puts the focus back after a store write, and drops the events that the write fires | Solid moves both nodes of a swap, and the browser blurs a moved element |
+| Boolean `aria-*` value        | `"true"` or `"false"`                       | The same                                                                                    | Solid 1 writes a boolean value as the string `"true"` or `"false"`      |
+| `'use client'`                | Yes                                         | No                                                                                          | It is for React Server Components only                                  |
+
+## Common mistakes
+
+| Wrong code                                                      | Effect                                                                                             | Fix                                                               |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `const AddressFields = ({ scope }) => …`                        | The destructured prop is read once, and does not follow a new value                                | Read `props.scope` in the JSX                                     |
+| `const country = useSelector(…)()` in the component body        | The value is read once, when the component runs. The text does not update                          | Keep the accessor, and call it in the JSX: `{country()}`          |
+| `<Submit>{state => (state.submitting ? '…' : 'Send')}</Submit>` | Type error. `state` is an accessor                                                                 | Call it: `state().submitting`                                     |
+| `render={<textarea rows={8} />}`                                | Type error. `render` takes a function only                                                         | `render={props => <textarea rows={8} {...props} />}`              |
+| A hook in the component that renders `Root`                     | It type-checks, and throws at render: `oxform: call this inside the Root of the same form object.` | Call the hook in a component inside `Root`                        |
+| A row of `<For>` with ``form.scope(`members.${index()}`)``      | The scope keeps the index of the first run. After a move, the row writes to another item           | ``useScope(() => `members.${index()}`)``, which follows the index |
+
+## Related
+
+- [Adapters](/docs/adapters)
+- [React](/docs/adapters/react)
+- [Solid 2](/docs/adapters/solid-v2)
+- [Quick start](/docs/quick-start)
+- [A part with another element](/docs/recipes/another-element)

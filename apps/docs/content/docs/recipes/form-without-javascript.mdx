@@ -16,10 +16,20 @@ The sign-in form must work before JavaScript loads.
 Render the form with `method='post'`. Before JavaScript loads, the browser posts the fields by their `name`, which
 is the path of each field. With JavaScript, the `root` slot prevents the post and submits the instance.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in.tsx
     </include>
   </Tab>
 </Tabs>
@@ -32,10 +42,20 @@ instance, so it destroys it after the render.
 
 `Root` takes that instance in its `form` prop, so the HTML has the posted values and their errors.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/sign-in-server.tsx
     </include>
   </Tab>
 </Tabs>

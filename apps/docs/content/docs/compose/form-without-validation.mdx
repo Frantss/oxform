@@ -91,10 +91,20 @@ The form has no `root` slot, so `Root` renders no element and only provides the 
 element that the page needs, here a `search` element. `Field` comes from `fieldSlots`, and the results read the
 values with `useSelector`. The form type does not change.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/member-filter.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/member-filter.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/member-filter.tsx
     </include>
   </Tab>
 </Tabs>

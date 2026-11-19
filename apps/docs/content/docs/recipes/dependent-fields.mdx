@@ -21,10 +21,20 @@ empty, set the region to `''`. The function returns the `Unsubscribe` of the lis
 The region select starts the listener in an effect and stops it when it leaves the tree. It reads the country with
 `useSelector` to list the regions of that country.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/region-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/region-select.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/region-select.tsx
     </include>
   </Tab>
 </Tabs>

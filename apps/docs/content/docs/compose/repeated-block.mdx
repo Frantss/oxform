@@ -95,10 +95,20 @@ Call it with the two scopes of an instance: `copyAddress(form.scope('billing'), 
 passes the scope to each part as `scope`, so its names are paths of the address: `street`, `city` and
 `postalCode`. The same component renders the shipping address. The form type does not change.
 
-<Tabs groupId='framework' items={['React']}>
+<Tabs groupId='framework' items={['React', 'Solid 1', 'Solid 2']}>
   <Tab value='React'>
     <include meta='no-check="checked in the React example"'>
       ../../../../../examples/react/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 1'>
+    <include meta='no-check="checked in the Solid 1 example"'>
+      ../../../../../examples/solid/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+  <Tab value='Solid 2'>
+    <include meta='no-check="solid 2 types, checked in the Solid 2 example"'>
+      ../../../../../examples/solid-v2/src/examples/address-fields.tsx
     </include>
   </Tab>
 </Tabs>
