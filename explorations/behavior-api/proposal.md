@@ -413,7 +413,7 @@ would add a dependency that Oxform must track.
    `createChange`, `createValues`, `createValidation` and `createCheck` in a
    throwaway package. Include a second check (`warning`), because it tests
    registration and `exclusive`. Port the validation lane and race scenarios
-   from [form-core-behaviors.md](../../docs/form-core-behaviors.md). Keep
+   from `docs/form-core-behaviors.md` (deleted, in git history). Keep
    `type-tests/` passing.
 3. **Measure bundle size** in three tiers (minified and gzipped, tree-shaken):
    values and one check; the lean login form; the full preset. Compare with
