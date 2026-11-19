@@ -1,0 +1,51 @@
+---
+title: Validate on the server on blur
+description: Refuse an email address that is already a member, with one lookup on the server when the user leaves the field.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [type-safe]
+examples: [E18]
+---
+
+## Problem
+
+An address that is already a member must be refused before submit, without a request per key press.
+
+## Solution
+
+Give the `error` check one validator per event in `configure`. On `change`, the schema checks the format only. On
+`blur` and on `submit`, `invitesSchema` also asks the server for each address. It is a Standard Schema validator
+that adds an issue at `members.<index>.email` for an address that is already a member.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/team-invites.ts</include>
+
+The row shows the error of its email with `FieldError`. It does not know the event that found the error.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-row.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- A key press fires `change`, so only the format validator runs. No request is sent.
+- Leaving the field fires `blur`. The lookup runs for the members, and its issues replace the entries of the
+  `error` check in the scope of the run, because the check is exclusive.
+- A newer run makes an older run stale. When a change starts a run during a lookup, the result of the lookup is
+  dropped, so a slow answer never writes an old error.
+- `submit` runs the lookup again, and a blocking error stops the submit.
+
+## Variations
+
+- To look up on `submit` only, leave out `blur: invitesSchema`. The user then sees the error after the first
+  submit.
+
+## Related
+
+- [`validation`](/docs/behaviors/validation)
+- [`check`](/docs/behaviors/check)
+- [`events`](/docs/behaviors/events)
+- [Rows of an array](/docs/compose/array-rows)

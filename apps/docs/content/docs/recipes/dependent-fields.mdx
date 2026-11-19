@@ -1,0 +1,49 @@
+---
+title: Dependent fields
+description: Clear the region of a checkout when the country changes.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [composable]
+examples: [E21]
+---
+
+## Problem
+
+A change of country makes the region invalid.
+
+## Solution
+
+Listen to the changes of the form with `values.onChange`. When the change is at `country` and the region is not
+empty, set the region to `''`. The function returns the `Unsubscribe` of the listener.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/region.ts</include>
+
+The region select starts the listener in an effect and stops it when it leaves the tree. It reads the country with
+`useSelector` to list the regions of that country.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/region-select.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- `values.onChange` runs after each write, with the path of the change. The listener writes the region with
+  `values.set`, which is a second change at `region`. That change does not match `country`, so the listener
+  stops there.
+- The listener reads the region before it writes, so a region that is already empty causes no write.
+
+## Variations
+
+- To change a value before it is written, such as to trim it, use `values.intercept` in an extension. See
+  [Change a value before it is written](/docs/extend/intercept-a-change).
+- To start the listener for every instance, write it in the `api` of an extension instead of a component.
+
+## Related
+
+- [`values`](/docs/behaviors/values)
+- [Read one value](/docs/recipes/derived-ui)
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)

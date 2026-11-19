@@ -1,0 +1,44 @@
+---
+title: Read one value
+description: Update an order summary when the country changes, without a render of the whole form.
+type: recipe
+entry: ['@oxform/react']
+principles: [type-safe]
+examples: [E32]
+---
+
+## Problem
+
+An order summary must update when one value changes, without a render of the whole form.
+
+## Solution
+
+`useSelector(selector)` returns what the selector reads from the state of the form. The summary reads
+`state.values.country`, so it renders again only when the country changes. The state type comes from the chain,
+so `state.values.country` is a `string`.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- The hook runs the selector on each change of the state, and renders the component again when the result is not
+  `===` to the last one.
+- A selector that returns a new object on each run renders on each change. Give it `compare`:
+  `useSelector(selector, { compare: (a, b) => a.unsaved === b.unsaved })`.
+
+## Variations
+
+- Outside a component, use `createEffect(form, selector, effect)` from `@oxform/core`. See
+  [Unsaved changes](/docs/recipes/unsaved-changes).
+
+## Related
+
+- [React](/docs/adapters/react)
+- [Unsaved changes](/docs/recipes/unsaved-changes)
+- [`values`](/docs/behaviors/values)

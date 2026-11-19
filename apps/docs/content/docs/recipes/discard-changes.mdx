@@ -1,0 +1,49 @@
+---
+title: Discard changes
+description: Return the article to the last saved text with Discard, not to the text that the page first loaded.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [composable]
+examples: [E23]
+---
+
+## Problem
+
+"Discard" must return to the last saved text, not to the first loaded text.
+
+## Solution
+
+Keep the last saved values. `reset.all({ values })` resets the form to the values that you give, and the status of
+each field is clean again. After a save, call it with the saved values, so they are the new baseline. "Discard"
+calls it with the baseline.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-drafts.ts</include>
+
+The actions make the drafts once per instance. After a successful submit, `submit.onResult` marks the published
+text as saved.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/article-actions.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- `reset.all()` with no values returns to the default values of the instance. With `values`, it starts from those
+  values. The default values of the form do not change.
+- A reset restores the field status and the form status and clears the entries of each check, so "Unsaved
+  changes" goes away.
+
+## Variations
+
+- To discard one field, call `reset.at(path)`. It restores the value at the path from the default values, or from
+  its `value` option, and clears the field status and the entries at the path.
+
+## Related
+
+- [`reset`](/docs/behaviors/reset)
+- [Unsaved changes](/docs/recipes/unsaved-changes)
+- [`submit`](/docs/behaviors/submit)

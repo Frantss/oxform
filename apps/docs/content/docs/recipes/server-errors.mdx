@@ -1,0 +1,62 @@
+---
+title: Errors from the server
+description: Show an error that the server returns, on the field that it is about, and keep the form usable.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [type-safe]
+examples: [E19, E20]
+---
+
+## Problem
+
+The server refuses a password, and the form must show it and stay usable. A payment service returns its errors as
+a list of paths.
+
+## Solution
+
+### One error from onSubmit [#one-error-from-on-submit]
+
+`onSubmit` gets the values and the instance. It awaits the request. When the server refuses, it sets an entry of
+the `error` check on `password` with `form.error.set(path, entries)`.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in-submit.ts</include>
+
+The `FieldError` of `password` shows the entry, and `Submit` shows `submitting` until the request ends.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+### A list of errors by path [#a-list-of-errors-by-path]
+
+When the server returns many errors, give each one to the field of its path. `form.field(path).setError(entries)`
+is the check sugar of `handles`, so the checkout, which uses `standard`, has it. The `issue.path` type is
+`Path<Checkout>`, so a path that the form does not have is a type error.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/payment-issues.ts</include>
+
+## How it works
+
+- `submit` validates first. When the `error` check passes, it calls `onSubmit` and awaits it, and `submitting` is
+  true until the promise ends.
+- An entry from `form.error.set(path, entries)` stays until the next run of the `error` check on that path. The
+  check is exclusive, so the next `blur` or `submit` that validates the path replaces the entry.
+- An entry from `form.field(path).setError(entries)` goes when the value at the path, or above it, next changes.
+  A reset is such a change. No validation run removes it, so the user sees it until they correct the value.
+
+## Variations
+
+- On a lean chain without `handles`, use `form.error.set(path, entries)` for each path.
+- For an error that is about the whole form, show a banner with a slot group such as `formErrorSlots`. See
+  [A reusable slot group](/docs/compose/slot-group).
+
+## Related
+
+- [`submit`](/docs/behaviors/submit)
+- [`handles`](/docs/behaviors/handles)
+- [`check`](/docs/behaviors/check)
+- [Quick start](/docs/quick-start)

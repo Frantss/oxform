@@ -1,0 +1,47 @@
+---
+title: Third-party controls
+description: Connect a control of a design system that reports a value and no DOM event to a field of the form.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [extensible]
+examples: [E24]
+---
+
+## Problem
+
+The role select of the design system reports `onValueChange`, not `input`.
+
+## Solution
+
+Take the field handle of the path with `useField`, and give the control the value and two callbacks: `change(value)`
+on a new value, and `blur()` when the control loses focus. `roleSelectProps` of the kit
+(`examples/kit/src/role-select.ts`) maps a field handle to the props of the select. Inside a row, `useField` takes
+the scope of the member, so the path is `role`.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-row.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- `field.change(value)` and `field.blur()` go through `events`, as the DOM events of a `Field` do. They write the
+  value, update the status, and run the validators of the `change` and `blur` events.
+- `useField` renders the row again when the value or the status of that path changes, so the control shows the
+  new value.
+- `field.get()` reads `undefined` when the item of the path does not exist, so the value type of an item path
+  includes `undefined`.
+
+## Variations
+
+- A control that passes its props and its `ref` to a native element needs no handle. Give it to the `render` prop of
+  `Field`: `<Field name='team' render={<TextInput />} />`. The slot then sets the value and listens to the events.
+
+## Related
+
+- [`events`](/docs/behaviors/events)
+- [`handles`](/docs/behaviors/handles)
+- [React](/docs/adapters/react)

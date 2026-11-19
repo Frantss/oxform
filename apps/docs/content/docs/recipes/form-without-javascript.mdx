@@ -1,0 +1,58 @@
+---
+title: A form without JavaScript
+description: Validate a posted sign-in form in a request handler and answer with the same form and its errors.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [composable]
+examples: [E27]
+---
+
+## Problem
+
+The sign-in form must work before JavaScript loads.
+
+## Solution
+
+Render the form with `method='post'`. Before JavaScript loads, the browser posts the fields by their `name`, which
+is the path of each field. With JavaScript, the `root` slot prevents the post and submits the instance.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+The request handler makes an instance from the posted body with `create({ defaultValues: body })`, and awaits
+`form.submit.run()`. The run validates, and calls `onSubmit` when the values are valid. The handler made the
+instance, so it destroys it after the render.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in-handler.ts</include>
+
+`Root` takes that instance in its `form` prop, so the HTML has the posted values and their errors.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in-server.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- The form lives at module scope and holds no state. Each request makes its own instance, so two requests at the
+  same time share nothing.
+- With `form`, `Root` does not make an instance and does not change the options of the given one. `options`
+  beside `form` is a type error.
+- Your server reads the posted body into the values type, such as `{ email, password }`. The handler does not
+  parse it.
+- When JavaScript loads, the client `Root` makes its own instance from its own options. No state is serialized.
+
+## Related
+
+- [Server rendering rules](/docs/concepts/server-rendering)
+- [React](/docs/adapters/react)
+- [Errors from the server](/docs/recipes/server-errors)
+- [`submit`](/docs/behaviors/submit)

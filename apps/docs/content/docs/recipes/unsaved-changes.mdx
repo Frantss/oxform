@@ -1,0 +1,60 @@
+---
+title: Unsaved changes
+description: Show that the article has unsaved changes, disable Publish while it validates, and warn before the tab closes.
+type: recipe
+entry: ['@oxform/core', '@oxform/react']
+principles: [composable]
+examples: [E22, E25]
+---
+
+## Problem
+
+The writer must see unsaved changes, and "Publish" must wait for validation. The browser must warn before the tab
+closes with unsaved text.
+
+## Solution
+
+### A label and a disabled button [#a-label-and-a-disabled-button]
+
+Select two flags of the form status: `dirty` for the label, and `validating` or `submitting` for the button.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-status.ts</include>
+
+### A warning before the tab closes [#a-warning-before-the-tab-closes]
+
+`createEffect` runs a function when a selected value changes. While the form is dirty, a `beforeunload` listener
+asks the browser to warn. The function returns the cleanup, which removes the listener.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/unsaved-warning.ts</include>
+
+### Render them [#render-them]
+
+`useSelector` takes the selector and a `compare` function, so the actions render again only when one of the two
+flags changes. An effect starts the warning and returns its cleanup.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/article-actions.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- `status.form.dirty` becomes true at the first change and stays true until a reset. A value that comes back to
+  its default still counts as a change.
+- `status.form.validating` is true while a validation run is pending, such as an async validator.
+- `createEffect` runs outside a component, so the caller stops it. In a component, return the cleanup from the
+  effect.
+
+## Variations
+
+- To compare with the default values instead of tracking changes, read `status.at(path).default` for each field.
+  The member filter does this for "Clear filters".
+
+## Related
+
+- [Discard changes](/docs/recipes/discard-changes)
+- [`status`](/docs/behaviors/status)
+- [Read one value](/docs/recipes/derived-ui)

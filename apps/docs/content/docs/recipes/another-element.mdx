@@ -1,0 +1,46 @@
+---
+title: A part with another element
+description: Render the field slot of the country in a select with usePart.
+type: recipe
+entry: ['@oxform/react']
+principles: [extensible]
+examples: [E30]
+---
+
+## Problem
+
+A country field is a `<select>`, and the `field` part renders an `<input>`.
+
+## Solution
+
+`usePart(form, slot, slotProps, props, tag)` renders one slot in the element `tag`. The slot `field` sets the
+`name`, the value, the `aria-*` attributes and the listeners, as it does on an `input`. The component takes
+`PartProps<'select'>`, so a caller can pass the props of a `select`, such as `aria-label`, and the options are its
+children.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/country-select.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## How it works
+
+- `usePart` finds the instance of the nearest `Root` of the same form object. `createParts` and `usePart` must
+  get the same form object, and `configure` returns a new one.
+- The attributes of the slot win over the props that you pass. Your other props, such as `className`, reach the
+  element.
+
+## Variations
+
+- For one use, give the part a `render` function: the region select renders `Field` in a `select` with
+  `render={props => <select {...props}>…</select>}` (`examples/react/src/examples/region-select.tsx`).
+- To change the element of a slot in every use, pass it to `createParts`: `createParts(form, { field: 'textarea' })`.
+
+## Related
+
+- [React](/docs/adapters/react)
+- [Dependent fields](/docs/recipes/dependent-fields)
+- [Slots and parts](/docs/concepts/slots-and-parts)
