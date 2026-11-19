@@ -191,3 +191,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.frantss-docs-prose:has(> h2#features) :is(th, td) {
+  min-width: 6.5rem;
+  overflow-wrap: normal;
+  word-break: normal;
+}
