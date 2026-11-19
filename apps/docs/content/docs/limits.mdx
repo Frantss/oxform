@@ -219,8 +219,8 @@ where a limit occurs also lists it in "Common mistakes".
 
 ### A partial default for a scope needs a cast [#partial-scope-default]
 
-- **Symptom**: `create({ defaultValues: { ..., billing: { street: 'Main St' } } })` is a type error: "Property 'city'
-  is missing".
+- **Symptom**: `create({ defaultValues: { ..., billing: { street: 'Main St' } } })` is a type error (TS2739): the value
+  "is missing the following properties".
 - **Cause**: `defaultValues` has the type of the full `Values`. At runtime the values at the path of a scope merge
   deeply over the scope's own.
 - **What to do**: cast the partial value, or give every member of the scope.
