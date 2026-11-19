@@ -195,3 +195,9 @@
   application, a server component that imports `createParts` gets hooks and contexts on the server and fails. The
   `adapters/react` page states no `'use client'` fact until the build keeps it, for example with a banner on the
   output chunk.
+- Fixed: every export of `@oxform/react` is a client value, so the whole entry is a client module.
+  `packages/react/vite.config.ts` sets `banner: { js: "'use client';" }`, and `dist/index.js` now starts with
+  the directive (the source map moves one line with it; `index.d.ts` gets no banner). The same config turns off
+  the `MODULE_LEVEL_DIRECTIVE` warning, as the banner puts back what the bundle drops.
+  `check:package` runs `scripts/check-client-directive.ts`, which fails when the first line of `dist/index.js` is
+  not the directive. The `adapters/react` page can now state the `'use client'` fact.

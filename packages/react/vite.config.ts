@@ -20,6 +20,10 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     clean: true,
+    // Rolldown drops module directives when it bundles. Every export is a client value, so the whole entry is a
+    // client module: the banner puts `'use client'` back, and `check:client-directive` checks it.
+    banner: { js: "'use client';" },
+    checks: { moduleLevelDirective: false },
     deps: {
       alwaysBundle: [/#.*/],
       neverBundle: ['@oxform/core', /^@oxform\/core\//],
