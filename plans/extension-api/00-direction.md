@@ -351,3 +351,11 @@ Decided by the owner on 2026-11-18.
 19. **The comparison is a static table.** The owner's words: "comparison was meant to be a static table
     comparison of features and capabilities". The comparison workspace, its form versions and the size method
     are removed. Only the feature data stays, in `07-comparison-features.json`.
+
+Decided by the owner on 2026-11-16, recorded on 2026-11-18 (commit `7ae20db`).
+
+20. **Only behavior tests and type tests.** The owner deleted the package and build tests (the module-sharing
+    spec, the consumer and tree-shaking checks, the bundle fixtures and the size report), the test meta-checks
+    (test structure, test duplicates, the 100% per-file coverage gate) and the cases that pin implementation
+    details. `publint`, `attw`, the type coverage check and the parity check stay. The definition of done in
+    `06-roadmap.md` marks the items that this decision removes.

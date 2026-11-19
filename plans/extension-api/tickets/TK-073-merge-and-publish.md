@@ -24,7 +24,8 @@ serves the new tree.
 - In: merge `main` into `codex/extension-api-rebuild` one last time, and pass CI. Merge the integration branch
   into `main` in one merge, through a pull request (`gh`). Run `pnpm run prepublish`, then `pnpm run publish`,
   on `main`. Confirm that the site serves the new tree, and that the hosting health check uses the path that
-  TK-058 wrote in `apps/docs/README.md`.
+  TK-058 wrote in `apps/docs/README.md`. Before the publish, remove the "(planned)" suffix from the Oxform
+  cells of the comparison page (`07-comparison.md#3.1`, rules), because the release makes them shipped.
 - Out: the version bump (TK-072). Removing the plan (TK-074). Stage B of the in-package docs.
 - Side effect: a merge into `main`, a publish of three packages to the registry, and a deploy of the site. It
   needs the owner's approval when it runs (`AGENTS.md`, "Autonomy").
@@ -50,8 +51,8 @@ serves the new tree.
 - [ ] The registry lists 0.7.0 for the three packages, each ESM only.
 - [ ] A consumer install of `@oxform/react` and `@oxform/solid` in an empty project resolves one copy of
       `@oxform/core`.
-- [ ] The live site serves the new tree, and `/docs/react`, `/docs/solid` and `/docs/core` redirect to the
-      introduction. It works at desktop and mobile sizes, with no runtime, SSR or hydration error in the
+- [ ] The live site serves the new tree. `/docs/react` and `/docs/solid` redirect to the introduction, and
+      `/docs/core` serves the Main APIs page (TK-058 and TK-070 Evidence). It works at desktop and mobile sizes, with no runtime, SSR or hydration error in the
       console (`AGENTS.md`, "Validation").
 - [ ] Each item of `06#Definition of done for 0.7.0` that TK-070 left open has evidence.
 

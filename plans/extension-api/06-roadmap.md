@@ -398,13 +398,15 @@ None is open. Rows X01 to X26 are closed and removed. Revision 4 applied X22 to 
 ## Definition of done for 0.7.0
 
 - [ ] `pnpm run build`, `pnpm run check:all`, `pnpm run test` and `pnpm run docs:check:agents` pass on `main`.
-- [ ] Core unit coverage is 100 per file. Adapter coverage meets `03#Coverage`.
+- [ ] ~~Core unit coverage is 100 per file. Adapter coverage meets `03#Coverage`.~~ Removed by owner decision 20:
+      coverage is reported, with no gate.
 - [ ] Every export of every entry point is in `01`, has a positive and a negative type case, and has a
       reference page.
-- [ ] `pnpm run check:tree-shaking` passes for every tier. The sizes of `report:size` are published in the
-      documentation. No size is a gate.
+- [ ] ~~`pnpm run check:tree-shaking` passes for every tier. The sizes of `report:size` are published in the
+      documentation. No size is a gate.~~ Removed by owner decisions 19 and 20: no page states a measured size.
 - [ ] The comparison page is published as a static table of features and capabilities (`07#5`).
-- [ ] `publint`, `attw` with the ESM-only profile, the module-sharing spec and the consumer checks pass.
+- [ ] `publint` and `attw` with the ESM-only profile pass. The module-sharing spec and the consumer checks are
+      removed by owner decision 20; TK-073 checks one copy of core in a consumer install.
 - [ ] React, Solid 1 and Solid 2 pass P1 to P14. Each difference between adapters is a row of `01#6.3`.
 - [ ] Each catalogue row E01 to E33 is in the kit with a passing test, and each example app passes its flows.
 - [ ] The site builds with every snippet type-checked. The agent trial of `04#7.5` is recorded in `reports/`.
