@@ -2,7 +2,7 @@
 title: A block used twice
 description: Describe an address once as a scope, and place it at billing and at shipping.
 type: guide
-entry: ['@oxform/core', '@oxform/core/presets']
+entry: ['@oxform/core', '@oxform/core/presets', '@oxform/react']
 principles: [reusable, type-safe]
 examples: [E15, E31]
 ---
@@ -88,6 +88,20 @@ export const copyAddress = (from: Scope<Address, 'error'>, to: Scope<Address, 'e
 ```
 
 Call it with the two scopes of an instance: `copyAddress(form.scope('billing'), form.scope('shipping'))`.
+
+### Render the block [#render-the-block]
+
+`useScope('billing')` gives the scope of the billing address, as `form.scope('billing')` does. `AddressFields`
+passes the scope to each part as `scope`, so its names are paths of the address: `street`, `city` and
+`postalCode`. The same component renders the shipping address. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

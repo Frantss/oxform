@@ -2,7 +2,7 @@
 title: Add a second check
 description: Add a warning check that does not block a submit, with its option and its part.
 type: guide
-entry: ['@oxform/core', '@oxform/core/behaviors']
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/react']
 principles: [extensible, type-safe]
 examples: [E14]
 ---
@@ -106,6 +106,19 @@ export const advised = articleEditor
   .extend(slots(slot => warningSlots(slot)))
   .configure({ warning: { change: articleAdviceSchema, submit: articleAdviceSchema } });
 ```
+
+### Render the part [#render-the-part]
+
+`createParts` gives `FieldWarning` for the `fieldWarning` slot. Put it next to the `FieldError` of the same path.
+The warning shows, and "Publish" still submits. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/article-editor.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

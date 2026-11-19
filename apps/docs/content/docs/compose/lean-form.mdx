@@ -2,9 +2,9 @@
 title: A lean form
 description: Build the sign-in form as a chain that has only the extensions it needs.
 type: guide
-entry: ['@oxform/core', '@oxform/core/behaviors']
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/react']
 principles: [composable, lightweight, type-safe]
-examples: [E01]
+examples: [E01, E29]
 ---
 
 ## Problem
@@ -158,6 +158,20 @@ export const signIn = defineForm({ schema: signInSchema, defaultValues: { email:
   .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
   .configure({ error: { blur: signInSchema, submit: signInSchema } });
 ```
+
+### Render it [#render-it]
+
+`createParts` gives one component per part of the chain: `Root`, `Field`, `FieldError` and `Submit`. The form has
+no `reset` part, so there is no `Reset`. The second argument renders the `fieldError` slot in a `span`. The form
+type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

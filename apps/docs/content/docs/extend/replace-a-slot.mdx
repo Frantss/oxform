@@ -2,7 +2,7 @@
 title: Replace a slot
 description: Replace the built-in submit slot with a slot of the same key.
 type: guide
-entry: ['@oxform/core', '@oxform/core/behaviors']
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/react']
 principles: [extensible]
 examples: [E13]
 ---
@@ -60,6 +60,19 @@ import { strictSubmitSlots } from './strict-submit-slots';
 
 export const strictSignIn = signIn.extend(slots(slot => strictSubmitSlots(slot)));
 ```
+
+### Render the part [#render-the-part]
+
+`Submit` now renders the replacement slot. The render code does not change: the part has the same name, and its
+`disabled` attribute comes from the new slot. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/team-invites.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

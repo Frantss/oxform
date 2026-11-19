@@ -2,7 +2,7 @@
 title: A reusable slot group
 description: Write a slot group that states its needs, and spread it into two forms.
 type: guide
-entry: ['@oxform/core', '@oxform/core/behaviors']
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/react']
 principles: [reusable]
 examples: [E12]
 ---
@@ -68,6 +68,19 @@ export const houseForm = <Values, Api extends {}, Options, State extends {}, Slo
   form: Form<Values, Api, Options, State, Slots, Fields>,
 ) => form.extend(standard).extend(slots(slot => formErrorSlots(slot)));
 ```
+
+### Render the part [#render-the-part]
+
+`createParts` gives `FormError` for the `formError` part. Put it once in the form. It renders nothing until a
+submit fails. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/team-invites.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

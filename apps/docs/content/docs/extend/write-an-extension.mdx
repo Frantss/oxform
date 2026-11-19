@@ -2,7 +2,7 @@
 title: Write an extension
 description: Write the autosave extension with options, state, an api and a slot.
 type: guide
-entry: ['@oxform/core']
+entry: ['@oxform/core', '@oxform/react']
 principles: [extensible, reusable, type-safe]
 examples: [E06]
 ---
@@ -123,6 +123,19 @@ export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values'
     }),
   });
 ```
+
+### Render the part [#render-the-part]
+
+`createParts` gives `AutosaveStatus` for the `autosaveStatus` slot. It shows the `text` of the slot, from the
+`autosave` state. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/article-editor.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

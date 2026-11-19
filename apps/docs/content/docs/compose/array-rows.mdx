@@ -2,7 +2,7 @@
 title: Rows of an array
 description: Write a row that takes the scope of its array item, and add, remove and move the rows.
 type: guide
-entry: ['@oxform/core', '@oxform/core/presets']
+entry: ['@oxform/core', '@oxform/core/presets', '@oxform/react']
 principles: [reusable, type-safe]
 examples: [E16, E17, E33]
 ---
@@ -82,6 +82,34 @@ members.append({ email: 'grace@example.com', role: 'admin' });
 members.move(0, 1);
 members.ids; // The two ids, in the new order.
 ```
+
+### Render a row [#render-a-row]
+
+`MemberRow` takes the scope of its member and passes it to each part as `scope`, so the names are `email` and
+`role`. `useField('role', { scope: member })` gives the field handle of the role of that member. The form type
+does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-row.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+### Render the rows [#render-the-rows]
+
+`useArray('members')` gives `form.array('members')`, and renders the list again when the array changes. Each row
+is keyed by its id from `ids` and gets ``form.scope(`members.${index}`)``. "Move up" and "Remove" call the array
+operations, and the ids move with the items.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-list.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

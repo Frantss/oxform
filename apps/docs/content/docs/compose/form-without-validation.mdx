@@ -2,7 +2,7 @@
 title: A form without validation
 description: Build a filter bar from three extensions, with no validation and no submit.
 type: guide
-entry: ['@oxform/core', '@oxform/core/behaviors']
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/react']
 principles: [composable, lightweight]
 examples: [E02]
 ---
@@ -84,6 +84,20 @@ const memberFilter = defineForm({ schema: memberFilterSchema, defaultValues: { q
 export const hasFilters = (form: InstanceOf<typeof memberFilter>) =>
   !form.status.at('query').default || !form.status.at('role').default;
 ```
+
+### Render it [#render-it]
+
+The form has no `root` slot, so `Root` renders no element and only provides the instance. The component adds the
+element that the page needs, here a `search` element. `Field` comes from `fieldSlots`, and the results read the
+values with `useSelector`. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-filter.tsx
+    </include>
+  </Tab>
+</Tabs>
 
 ## Complete example
 

@@ -151,7 +151,9 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-a-row",
+    "render-the-rows"
   ],
   "/docs/compose/form-without-validation": [
     "problem",
@@ -163,7 +165,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-it"
   ],
   "/docs/compose/lean-form": [
     "problem",
@@ -177,7 +180,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-it"
   ],
   "/docs/compose/repeated-block": [
     "problem",
@@ -189,7 +193,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-the-block"
   ],
   "/docs/compose/slot-group": [
     "problem",
@@ -200,7 +205,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-the-part"
   ],
   "/docs/compose/standard-preset": [
     "problem",
@@ -437,7 +443,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-the-part"
   ],
   "/docs/extend/second-check": [
     "problem",
@@ -450,7 +457,8 @@
     "complete-example",
     "verify",
     "common-mistakes",
-    "related"
+    "related",
+    "render-the-part"
   ],
   "/docs/extend/test-and-share": [
     "problem",
@@ -475,6 +483,69 @@
     "complete-example",
     "verify",
     "common-mistakes",
+    "related",
+    "render-the-part"
+  ],
+  "/docs/adapters": [
+    "in-short",
+    "the-import-that-changes",
+    "the-shared-surface",
+    "the-same-form-in-each-framework",
+    "related"
+  ],
+  "/docs/adapters/react": [
+    "install",
+    "create-the-parts",
+    "parts",
+    "hooks",
+    "read-one-value",
+    "render-a-scope",
+    "render-the-rows-of-an-array",
+    "custom-parts",
+    "server-rendering",
+    "differences",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/quick-start": [
+    "problem",
+    "what-you-build",
+    "steps",
+    "install",
+    "write-the-chain",
+    "render-it",
+    "submit-it",
+    "swap-the-chain-for-standard",
+    "complete-example",
+    "verify",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/recipes/another-element": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/dependent-fields": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/derived-ui": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/discard-changes": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/form-without-javascript": ["problem", "solution", "how-it-works", "related"],
+  "/docs/recipes": ["in-short", "the-recipes", "related"],
+  "/docs/recipes/lookup-on-blur": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/server-errors": [
+    "problem",
+    "solution",
+    "one-error-from-on-submit",
+    "a-list-of-errors-by-path",
+    "how-it-works",
+    "variations",
+    "related"
+  ],
+  "/docs/recipes/third-party-controls": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/unsaved-changes": [
+    "problem",
+    "solution",
+    "a-label-and-a-disabled-button",
+    "a-warning-before-the-tab-closes",
+    "render-them",
+    "how-it-works",
+    "variations",
     "related"
   ],
   "/docs/limits": [
