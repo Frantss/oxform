@@ -222,7 +222,7 @@ function checkCodeBlocks(page: PageSource) {
     if (!/\.tsx?$/.test(path)) continue;
 
     const line = page.bodyLine + page.body.slice(0, include.index).split('\n').length - 1;
-    const meta = /meta=["']([^"']*)["']/.exec(attributes)?.[1] ?? '';
+    const meta = /meta=(["'])(.*?)\1/.exec(attributes)?.[2] ?? '';
 
     if (!existsSync(path)) {
       fail(
