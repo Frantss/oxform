@@ -183,6 +183,8 @@ attributes, and `disabled`. No state is serialized: the client makes its own ins
 - The form id comes from `useId`, so the ids of the server HTML and of the client match. Do not set an `id` option
   on a form that renders on the server, unless it is the same on both sides (E26).
 - `useSelector` passes the state at creation as the server snapshot.
+- `@oxform/react` is a client module: its build starts with `'use client'`. With React Server Components, call
+  `createParts` and render the parts in a client component.
 - A request handler can make an instance, submit it, and give it to `Root` as `form`. The HTML then has the posted
   values and their errors (E27). See [A form without JavaScript](/docs/recipes/form-without-javascript).
 
