@@ -1,15 +1,10 @@
-import { slots } from '@oxform/core';
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { signIn } from './sign-in';
-import { strictSubmitSlots } from './strict-submit-slots';
+import { strictSignIn } from './strict-sign-in';
 import { readPart } from './testing';
 
-/** Sign-in with the `submit` slot of the design system in place of the built-in one. */
-const form = signIn.extend(slots(slot => strictSubmitSlots(slot)));
-
-const setup = (options: Parameters<typeof form.create>[0] = {}) => {
-  const instance = form.create({ onSubmit: () => {}, ...options });
-  const disabled = () => readPart(form, instance, 'submit').attrs.disabled;
+const setup = (options: Parameters<typeof strictSignIn.create>[0] = {}) => {
+  const instance = strictSignIn.create({ onSubmit: () => {}, ...options });
+  const disabled = () => readPart(strictSignIn, instance, 'submit').attrs.disabled;
   return { instance, disabled, [Symbol.dispose]: () => instance.destroy() };
 };
 

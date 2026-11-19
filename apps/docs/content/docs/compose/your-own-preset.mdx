@@ -45,41 +45,14 @@ Extend the extensions and spread the slot groups after `standard`. `normalizeEma
 groups need the `status` state, which `standard` gives. `strictSubmitSlots` comes after the `submit` slot of
 `standard`, so its `submit` slot replaces that one.
 
-```ts no-check="imports files of the example kit"
-import { slots, type Form } from '@oxform/core';
-import { standard } from '@oxform/core/presets';
-import { formErrorSlots } from './form-error-slots';
-import { normalizeEmail } from './normalize-email';
-import { strictSubmitSlots } from './strict-submit-slots';
-
-export const houseForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
-  form: Form<Values, Api, Options, State, Slots, Fields>,
-) =>
-  form
-    .extend(standard)
-    .extend(normalizeEmail)
-    .extend(slots(slot => ({ ...formErrorSlots(slot), ...strictSubmitSlots(slot) })));
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/house-form.ts</include>
 
 ### Use it in two forms [#use-it-in-two-forms]
 
 A preset does not hold a schema. Each form calls `defineForm` with its own schema and default values, then
 `.extend(houseForm)`. Both forms now have the api of `standard`, the `formError` part and the strict `submit` part.
 
-```ts no-check="imports files of the example kit"
-import { defineForm } from '@oxform/core';
-import { houseForm } from './house-form';
-import { emptyOrder, orderSchema } from './schemas/checkout';
-import { emptyTeamInvites, teamInvitesSchema } from './schemas/team-invites';
-
-export const checkout = defineForm({ schema: orderSchema, defaultValues: emptyOrder })
-  .extend(houseForm)
-  .configure({ error: { submit: orderSchema } });
-
-export const teamInvites = defineForm({ schema: teamInvitesSchema, defaultValues: emptyTeamInvites })
-  .extend(houseForm)
-  .configure({ error: { submit: teamInvitesSchema } });
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/house-forms.ts</include>
 
 ## Complete example
 

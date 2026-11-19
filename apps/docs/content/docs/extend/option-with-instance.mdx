@@ -77,23 +77,7 @@ In `configure` or `create`, the `form` parameter is the instance of the whole ch
 `warning` check, so the callback sets a warning on `title`. `warnings` comes after `standard`, so after `handles`:
 the field handle has no `warning` sugar, and the callback uses `form.warning.set`.
 
-```ts no-check="imports files of the example kit"
-import { slots } from '@oxform/core';
-import { articleEditor } from './article-editor';
-import { autosave } from './autosave';
-import { articles } from './services';
-import { warningSlots, warnings } from './warnings';
-
-const editor = articleEditor
-  .extend(warnings)
-  .extend(slots(slot => warningSlots(slot)))
-  .extend(autosave);
-
-export const form = editor.create({
-  saveDraft: articles.saveDraft,
-  onSaveError: (_error, form) => form.warning.set('title', [{ message: 'The draft was not saved.' }]),
-});
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-autosave.ts</include>
 
 ## Complete example
 

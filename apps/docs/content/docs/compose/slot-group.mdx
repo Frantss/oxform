@@ -53,21 +53,13 @@ export const formErrorSlots = defineSlots(
 ### Spread it into two forms [#spread-it-into-two-forms]
 
 Call the group inside `slots(...)`. The `slot` of `slots(...)` is typed by the api and the state of the form so
-far, so a form that does not have a need of the group is a type error there. Both forms have `status`, so both
-now have the `formError` part.
+far, so a form that does not have a need of the group is a type error there. The sign-in form spreads the group
+alone. The `houseForm` preset spreads it next to `strictSubmitSlots`, after `standard`. Both have `status`, so
+both now have the `formError` part.
 
-```ts no-check="imports files of the example kit"
-import { slots, type Form } from '@oxform/core';
-import { standard } from '@oxform/core/presets';
-import { formErrorSlots } from './form-error-slots';
-import { signIn } from './sign-in';
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in-with-banner.ts</include>
 
-export const signInWithBanner = signIn.extend(slots(slot => formErrorSlots(slot)));
-
-export const houseForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
-  form: Form<Values, Api, Options, State, Slots, Fields>,
-) => form.extend(standard).extend(slots(slot => formErrorSlots(slot)));
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/house-form.ts</include>
 
 ### Render the part [#render-the-part]
 

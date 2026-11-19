@@ -53,13 +53,7 @@ export const strictSubmitSlots = defineSlots(
 The sign-in form spreads `submitSlots` in its chain. A later `.extend(slots(...))` with the new group replaces the
 `submit` slot. In one spread, put the new group last: `{ ...submitSlots(slot), ...strictSubmitSlots(slot) }`.
 
-```ts no-check="imports files of the example kit"
-import { slots } from '@oxform/core';
-import { signIn } from './sign-in';
-import { strictSubmitSlots } from './strict-submit-slots';
-
-export const strictSignIn = signIn.extend(slots(slot => strictSubmitSlots(slot)));
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/strict-sign-in.ts</include>
 
 ### Render the part [#render-the-part]
 

@@ -95,17 +95,7 @@ export const warningSlots = defineSlots(
 
 Extend the check, then spread the group. The group needs the `warning` state, so it comes after the check.
 
-```ts no-check="imports files of the example kit"
-import { slots } from '@oxform/core';
-import { articleEditor } from './article-editor';
-import { articleAdviceSchema } from './schemas/article';
-import { warningSlots, warnings } from './warnings';
-
-export const advised = articleEditor
-  .extend(warnings)
-  .extend(slots(slot => warningSlots(slot)))
-  .configure({ warning: { change: articleAdviceSchema, submit: articleAdviceSchema } });
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-advice.ts</include>
 
 ### Render the part [#render-the-part]
 

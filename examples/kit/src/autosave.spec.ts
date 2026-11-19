@@ -1,27 +1,13 @@
-import { slots } from '@oxform/core';
 import { describe, expect, it, vi } from 'vite-plus/test';
-import { articleEditor } from './article-editor';
-import { autosave } from './autosave';
+import { autosavedArticle } from './article-autosave';
 import { readPart } from './testing';
-import { warningSlots, warnings } from './warnings';
 
 const article = { title: 'Notes on the engine', body: 'The engine weaves patterns.' };
-
-/** E07: the article editor with `warnings`, so a failed save can show on `title`. */
-const editor = articleEditor
-  .extend(warnings)
-  .extend(slots(slot => warningSlots(slot)))
-  .extend(autosave);
 
 const setup = (saveDraft: (draft: typeof article) => Promise<unknown> = async () => {}) => {
   vi.useFakeTimers();
   const save = vi.fn(saveDraft);
-  const form = editor.create({
-    defaultValues: article,
-    saveDraft: save,
-    autosaveDelay: 500,
-    onSaveError: (_error, instance) => instance.warning.set('title', [{ message: 'The draft was not saved.' }]),
-  });
+  const form = autosavedArticle.create({ defaultValues: article, saveDraft: save, autosaveDelay: 500 });
   return {
     form,
     save,
@@ -88,7 +74,7 @@ describe('autosave', () => {
 
   it('shows the save state in the autosaveStatus part', async () => {
     using subject = setup();
-    const status = () => readPart(editor, subject.form, 'autosaveStatus').text;
+    const status = () => readPart(autosavedArticle, subject.form, 'autosaveStatus').text;
     const before = status();
     subject.form.values.set('body', 'More text.');
     const changed = status();

@@ -1,16 +1,10 @@
-import { defineForm } from '@oxform/core';
 import { slotsOf } from '@oxform/core/adapter';
 import { describe, expect, it } from 'vite-plus/test';
-import { houseForm } from './house-form';
-import { emptyTeamInvites, teamInvitesSchema } from './schemas/team-invites';
+import { houseCheckout, houseTeamInvites } from './house-forms';
 import { readPart } from './testing';
 
-const invites = defineForm({ schema: teamInvitesSchema, defaultValues: emptyTeamInvites })
-  .extend(houseForm)
-  .configure({ error: { submit: teamInvitesSchema } });
-
 const setup = () => {
-  const form = invites.create({
+  const form = houseTeamInvites.create({
     defaultValues: { team: '', seats: 1, members: [{ email: '', role: 'member' }] },
     onSubmit: () => {},
   });
@@ -21,7 +15,7 @@ describe('houseForm', () => {
   it('gives the parts of standard and the formError part', () => {
     using _subject = setup();
 
-    expect(Object.keys(slotsOf(invites))).toEqual(['root', 'field', 'fieldError', 'submit', 'reset', 'formError']);
+    expect(Object.keys(slotsOf(houseTeamInvites))).toEqual(['root', 'field', 'fieldError', 'submit', 'reset', 'formError']);
   });
 
   it('cleans up pasted emails', () => {
@@ -35,6 +29,13 @@ describe('houseForm', () => {
     using subject = setup();
     await subject.form.submit.run();
 
-    expect([readPart(invites, subject.form, 'formError').present, readPart(invites, subject.form, 'submit').attrs.disabled]).toEqual([true, true]);
+    expect([
+      readPart(houseTeamInvites, subject.form, 'formError').present,
+      readPart(houseTeamInvites, subject.form, 'submit').attrs.disabled,
+    ]).toEqual([true, true]);
+  });
+
+  it('gives a second form with its own schema the same parts', () => {
+    expect(Object.keys(slotsOf(houseCheckout))).toEqual(Object.keys(slotsOf(houseTeamInvites)));
   });
 });

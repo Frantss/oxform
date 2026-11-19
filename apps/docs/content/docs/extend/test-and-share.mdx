@@ -27,46 +27,14 @@ slot is plain data.
 Extend only the needs of the extension, then the extension. `autosave` needs `values` and `validation`. A preset
 would hide a missing need, because it gives every built-in api.
 
-```ts no-check="imports files of the example kit"
-import { defineForm } from '@oxform/core';
-import { validation, values } from '@oxform/core/behaviors';
-import { autosave } from './autosave';
-import { articleSchema, emptyArticle } from './schemas/article';
-
-export const draftForm = defineForm({ schema: articleSchema, defaultValues: emptyArticle })
-  .extend(values)
-  .extend(validation)
-  .extend(autosave);
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/draft-form.ts</include>
 
 ### Test with fake timers [#test-with-fake-timers]
 
 `setup()` creates the instance with the options of the test and returns it as a disposable, so `using` destroys it at the end of the test. With fake timers, the test
 controls when the timer of `autosave` fires. The kit runs this test with Vitest through Vite+ (`vite-plus/test`).
 
-```ts no-check="imports files of the example kit"
-import { describe, expect, it, vi } from 'vitest';
-import type { InstanceOf } from '@oxform/core';
-import { draftForm } from './draft-form';
-
-const setup = () => {
-  vi.useFakeTimers();
-  const saveDraft = vi.fn();
-  const form: InstanceOf<typeof draftForm> = draftForm.create({ saveDraft, autosaveDelay: 100 });
-  return { form, saveDraft, [Symbol.dispose]: () => (form.destroy(), vi.useRealTimers()) };
-};
-
-describe('autosave', () => {
-  it('saves once the values stop changing', async () => {
-    using subject = setup();
-    subject.form.values.set('title', 'Notes');
-    await vi.advanceTimersByTimeAsync(99);
-    expect(subject.saveDraft).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1);
-    expect(subject.saveDraft.mock.calls).toEqual([[{ title: 'Notes', body: '' }]]);
-  });
-});
-```
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/draft-form.spec.ts</include>
 
 ### Publish with a peer dependency [#publish-with-a-peer-dependency]
 

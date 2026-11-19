@@ -1,15 +1,10 @@
-import { slots } from '@oxform/core';
 import { describe, expect, it } from 'vite-plus/test';
-import { formErrorSlots } from './form-error-slots';
-import { signIn } from './sign-in';
+import { signInWithBanner } from './sign-in-with-banner';
 import { readPart } from './testing';
 
-/** Sign-in with the `formError` part. */
-const form = signIn.extend(slots(slot => formErrorSlots(slot)));
-
 const setup = () => {
-  const instance = form.create({ onSubmit: () => {} });
-  const formError = () => readPart(form, instance, 'formError');
+  const instance = signInWithBanner.create({ onSubmit: () => {} });
+  const formError = () => readPart(signInWithBanner, instance, 'formError');
   return { instance, formError, [Symbol.dispose]: () => instance.destroy() };
 };
 

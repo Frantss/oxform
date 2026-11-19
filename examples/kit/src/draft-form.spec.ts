@@ -1,10 +1,11 @@
+import type { InstanceOf } from '@oxform/core';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { draftForm } from './draft-form';
 
 const setup = () => {
   vi.useFakeTimers();
   const saveDraft = vi.fn();
-  const form = draftForm.create({ saveDraft, autosaveDelay: 100 });
+  const form: InstanceOf<typeof draftForm> = draftForm.create({ saveDraft, autosaveDelay: 100 });
   return {
     form,
     saveDraft,
