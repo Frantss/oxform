@@ -1,5 +1,136 @@
 {
   "/docs": ["in-short", "related", "model", "principles", "inspiration", "entry-points"],
+  "/docs/behaviors": ["in-short", "extensions", "needs-are-required", "slot-groups-and-scopes", "related"],
+  "/docs/behaviors/arrays": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/check": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/events": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/handles": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/reset": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/scope": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "signature",
+    "parameters",
+    "returns",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/slot-groups": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/status": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/submit": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/validation": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/behaviors/values": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "use-from-an-extension",
+    "rules",
+    "common-mistakes",
+    "related"
+  ],
   "/docs/choose-an-api": [
     "in-short",
     "task-to-api",
@@ -62,6 +193,17 @@
     "procedure",
     "verify",
     "no-replacement",
+    "related"
+  ],
+  "/docs/presets/standard": [
+    "when-to-use",
+    "import",
+    "minimal-example",
+    "needs",
+    "adds",
+    "order",
+    "rules",
+    "common-mistakes",
     "related"
   ]
 }

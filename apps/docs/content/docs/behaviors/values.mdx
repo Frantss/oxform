@@ -1,0 +1,100 @@
+---
+title: values
+description: Read, write, intercept and observe the values of a form with the values extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable, extensible]
+examples: [E21, E08]
+---
+
+## When to use
+
+Use `values` on every form. It holds the data of the form, and every other built-in extension needs it. To write a
+value as the user types, use [`events`](/docs/behaviors/events) instead: `events.change` also marks the field status.
+
+## Import
+
+```ts twoslash
+import { values } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+A change of country makes the region invalid. The checkout clears `region` when `country` changes (E21).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ country: z.string(), region: z.string() });
+
+const checkout = defineForm({ schema, defaultValues: { country: 'PT', region: 'Lisboa' } }).extend(values);
+
+const form = checkout.create();
+
+form.values.onChange(change => {
+  if (change.path === 'country') form.values.set('region', '');
+});
+
+form.values.set('country', 'ES');
+const region = form.values.get('region');
+//    ^?
+```
+
+After the write, `region` is `''`.
+
+## Needs
+
+None. `values` can be the first extension of a chain.
+
+## Adds
+
+| Addition       | Name        | What it is                                                                                           |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| Option         | None        | `defaultValues` is a base option of `defineForm`, `configure` and `create`                           |
+| State key      | `values`    | The values of the form                                                                               |
+| Api member     | `values`    | `get()`, `get(path)`, `set(path, updater, details?)`, `intercept(interceptor)`, `onChange(listener)` |
+| Extension hook | `intercept` | Runs before each write. It returns a replacement change, nothing, or calls `details.cancel()`        |
+| Extension hook | `onChange`  | Runs after each write, with the change and its `reason`                                              |
+| Slot           | None        |                                                                                                      |
+| Field member   | None        |                                                                                                      |
+
+## Order
+
+Apply `values` first. Every other built-in extension needs it, so it must come before them. The `standard` preset
+applies it first.
+
+## Use from an extension
+
+A custom extension names `values` in `Needs` and in `needs.api`, reads `values` from `deps`, and subscribes to
+`values.intercept` or `values.onChange`. `normalizeEmail` trims and lower-cases each email that is written (E08):
+
+<include meta='twoslash'>../../../../../examples/kit/src/normalize-email.ts</include>
+
+## Rules
+
+- Every write goes through `values.set`: the writes of `events`, `arrays` and `reset` too.
+- `set` runs the interceptors, then the write, then the listeners, each in the order they were added.
+- `set` returns `false` when an interceptor cancels the change or the new value is equal (`Object.is`) to the
+  current value. Then no listener runs.
+- An interceptor returns a replacement change, or nothing to keep the change. `details.cancel()` refuses it.
+- `details.reason` is `'input'` for `events.change`, `'array'` for `arrays`, `'reset'` for `reset`, and
+  `'programmatic'` when the caller gives no reason.
+- `values.set` does not change the field status. `events` and `arrays` mark it.
+- `intercept` and `onChange` return a function that removes the hook.
+
+## Common mistakes
+
+| Wrong code                                           | Effect                                                                             | Fix                                                  |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `form.values.set('title', text)` in an input handler | The value changes, but the field is not dirty or touched, and no check runs        | Call `form.events.change('title', text)`             |
+| `form.values.intercept(log)` to observe writes       | The hook also sees changes that a later interceptor cancels, or that write nothing | Use `form.values.onChange(log)`: it sees only writes |
+| A listener that writes the path it observes          | Each write runs the listener again, until the value stops changing                 | Write another path, or compare the value first       |
+
+## Related
+
+- [Built-in behaviors](/docs/behaviors)
+- [`events`](/docs/behaviors/events)
+- [`validation`](/docs/behaviors/validation)
+- [The `standard` preset](/docs/presets/standard)

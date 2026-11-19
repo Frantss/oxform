@@ -1,0 +1,137 @@
+---
+title: check
+description: Add one named check to a form, with its validators by event, its entries by path and its api.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable, extensible]
+examples: [E18, E14]
+---
+
+## When to use
+
+Use `check(name, options?)` for each named set of issues of a form. `check('error', { blocking: true })` holds the
+errors that stop a submit. A second check, such as `check('warning')`, holds advice that must not block.
+
+## Import
+
+```ts twoslash
+import { check } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+A title over 60 characters is cut in search results. The writer must know, and must still publish (E14).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string().min(1, 'Enter a title.'), body: z.string() });
+const advice = z.object({ title: z.string().max(60, 'Search results cut a title after 60 characters.') });
+
+const article = defineForm({ schema, defaultValues: { title: '', body: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(check('warning'))
+  .configure({ error: { submit: schema }, warning: { change: advice } });
+
+const form = article.create();
+form.values.set('title', 'A'.repeat(61));
+void form.validation.run('title').then(([valid]) => {
+  console.log(valid, form.warning.at('title'));
+});
+```
+
+The run is valid, because `warning` is not blocking. `form.warning.at('title')` holds one entry.
+
+## Needs
+
+| Need               | Required | Used for                                 | Error at `create` when it is missing                                                   |
+| ------------------ | -------- | ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `validation` (api) | Yes      | Registers the check, so each run uses it | `The "check:error" extension needs "validation", which no earlier extension provides.` |
+
+The message names the extension `check:<name>`, here for `check('error')`.
+
+## Adds
+
+| Addition     | Name                             | What it is                                                                                                                              |
+| ------------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Option       | `<name>`                         | The validators by event: `change`, `blur`, `focus`, `submit`. Each is a Standard Schema, or a function of `{ values }` that returns one |
+| State key    | `<name>`                         | The entries by path. The empty path `''` holds the entries of the whole form                                                            |
+| Api member   | `<name>`                         | `name`, `blocking`, `at(path, { nested? })`, `set(path, entries, { mode? })`, `clear(path?)`, `validates(event)`                        |
+| Field member | `<name>()`, `set<Name>(entries)` | Added by `handles` to each field handle, for each check applied before it                                                               |
+| Slot         | None                             | `fieldErrorSlots` reads the state of `error`                                                                                            |
+
+`check` takes two options:
+
+| Option      | Default | Meaning                                                                                              |
+| ----------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `blocking`  | `false` | An entry makes a run invalid, the field and the form status not valid, and a submit call `onInvalid` |
+| `exclusive` | `false` | A run replaces every entry in its scope, also the entries set by hand                                |
+
+## Order
+
+Apply each `check` after `validation`. Apply it before `handles`, so the field handles get its members.
+
+## Use from an extension
+
+A custom extension that reads a check names it by its api key in `needs.api`, and states its type,
+`CheckApi<Values, Name>`, in the form type of `Extendable`. `Needs` has no entry for a check, because the name is
+chosen per form. The extension then reads the check from `deps` and calls `at`, `set` or `clear`. A check has no
+extension hook: to observe its runs, use `validation.onRun`. A slot group reads the entries from the state key of the
+check: `warningSlots` (E14) needs the state key `warning`.
+
+## Rules
+
+- `check('error')` makes the extension `check:error`. It adds the option, the state key and the api member `error`.
+- The name must be new in the chain. Two checks with one name throw at `create`:
+  `The "check:error" extension declares the state key "error", which "check:error" already declares.`
+- An entry has the fields of a Standard Schema issue, and `type`, the event of the validator that found it.
+- A check that is not exclusive keeps, in a run, the entries of the events that did not run and the entries set by
+  hand.
+- `set(path, entries, { mode })`: `'replace'` (default) writes the entries, `'append'` adds them, `'keep'` writes only
+  when the path has no entry.
+- `at(path, { nested: true })` returns the entries at the path and below. `at('', { nested: true })` returns every
+  entry.
+- `arrays` moves the entries of every check with the items.
+
+## Common mistakes
+
+| Wrong code                                          | Effect                                                                                   | Fix                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `.extend(handles).extend(check('warning'))`         | The field handles have no `warning()` and no `setWarning()`, in the types and at runtime | Apply the check before `handles`                 |
+| `check('warning')` with no `warning` option         | The check never finds an issue: it has no validator                                      | Set `warning: { change: schema }` in `configure` |
+| `check('error')` for errors that must stop a submit | The check does not block: a submit calls `onSubmit` with errors                          | Use `check('error', { blocking: true })`         |
+
+The type error of the first row:
+
+```ts twoslash
+// @errors: 2339
+import { defineForm } from '@oxform/core';
+import { arrays, check, events, handles, reset, status, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string() });
+
+const form = defineForm({ schema, defaultValues: { title: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(status)
+  .extend(events)
+  .extend(arrays)
+  .extend(reset)
+  .extend(handles)
+  .extend(check('warning'))
+  .create();
+
+form.field('title').warning();
+```
+
+## Related
+
+- [`validation`](/docs/behaviors/validation)
+- [`handles`](/docs/behaviors/handles)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Built-in behaviors](/docs/behaviors)

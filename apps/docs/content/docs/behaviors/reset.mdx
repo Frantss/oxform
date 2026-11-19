@@ -1,0 +1,116 @@
+---
+title: reset
+description: Restore the values, the status and the entries of a form or of one field with the reset extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable]
+examples: [E23]
+---
+
+## When to use
+
+Use `reset` for "Discard" and for a new baseline after a save. `reset.all` restores the whole form, and `reset.at`
+restores one field. To clear the entries of one check only, use the `clear` method of the
+[check](/docs/behaviors/check).
+
+## Import
+
+```ts twoslash
+import { reset } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+"Discard" must return to the last saved text, not to the text that the page first loaded (E23).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { events, reset, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string(), body: z.string() });
+
+const articleEditor = defineForm({ schema, defaultValues: { title: 'First draft', body: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events)
+  .extend(reset);
+
+const form = articleEditor.create();
+form.events.change('title', 'Second draft');
+
+const saved = form.values.get();
+form.reset.all({ values: saved });
+
+form.events.change('title', 'Third draft');
+form.reset.all({ values: saved });
+console.log(form.values.get('title'), form.status.form.dirty);
+```
+
+After the save, the form is clean at `'Second draft'`. "Discard" returns to `'Second draft'`, not to
+`'First draft'`.
+
+## Needs
+
+| Need           | Required | Used for                                      | Error at `create` when it is missing                                         |
+| -------------- | -------- | --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Writes the values to start from               | `The "reset" extension needs "values", which no earlier extension provides.` |
+| `status` (api) | Yes      | Restores the field status and the form status | `The "reset" extension needs "status", which no earlier extension provides.` |
+| `events` (api) | Yes      | Clears the element refs                       | `The "reset" extension needs "events", which no earlier extension provides.` |
+
+## Adds
+
+| Addition     | Name    | What it is                                                         |
+| ------------ | ------- | ------------------------------------------------------------------ |
+| Option       | None    |                                                                    |
+| State key    | None    |                                                                    |
+| Api member   | `reset` | `all(options?)` for the form, `at(path, { value? })` for one field |
+| Slot         | None    | `resetSlots` gives the `reset` part, which calls `reset.all()`     |
+| Field member | None    | `handles` gives `reset({ value? })` on each field handle           |
+
+The options of `reset.all`:
+
+| Option        | Meaning                                                                         |
+| ------------- | ------------------------------------------------------------------------------- |
+| `values`      | The values to start from. The default values of the form do not change          |
+| `status`      | Overrides of `dirty`, `submits` and `successful` of the form after the reset    |
+| `keep.checks` | `true` keeps the entries of every check. A list keeps the checks of those names |
+| `keep.refs`   | Keeps the element refs of `events`                                              |
+| `keep.fields` | Keeps the field status, the entries and the refs. It wins over the other flags  |
+
+## Order
+
+Apply `reset` after `values`, `status` and `events`. Apply it before `handles`, which needs it.
+
+## Use from an extension
+
+A custom extension names `reset` in `Needs` (`Needs<Values, 'values' | 'status' | 'events' | 'reset'>`) and in
+`needs.api`, and calls `deps.reset.all()` or `deps.reset.at(path)`. `reset` has no extension hook: to observe a
+reset, use `values.onChange`, where `details.reason` is `'reset'`.
+
+## Rules
+
+- `reset.all()` writes the default values, or `options.values`, with the reason `'reset'`.
+- A reset discards each pending validation run that it overlaps, and starts no run.
+- `reset.all()` restores the form status from `defaultStatus` and the field status from `defaultFieldStatus`. A submit
+  in progress does not write its result over the reset.
+- `reset.all()` clears the entries of every check and the element refs, unless `keep` says otherwise.
+- `reset.at(path)` restores the value at the path from the default values, or `options.value`, and clears the field
+  status and the entries at the path and below. It takes no `keep` and no `status`.
+- `reset.all({ values })` does not change the default values. `status.at(path).default` still compares with them.
+
+## Common mistakes
+
+| Wrong code                                                     | Effect                                                                | Fix                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `form.reset.all()` for "Discard" after a save                  | The form returns to the first loaded text, and the saved text is lost | Keep the saved values and call `form.reset.all({ values: saved })` |
+| `defineForm(init).extend(values).extend(status).extend(reset)` | Type error at `.extend`: the form lacks `events`. Throws at `create`  | Extend `events` before `reset`                                     |
+| `form.reset.all()` to clear only the errors                    | The values and the status return to their defaults too                | Call `form.error.clear()`                                          |
+
+## Related
+
+- [`status`](/docs/behaviors/status)
+- [`events`](/docs/behaviors/events)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [`handles`](/docs/behaviors/handles)
+- [Built-in behaviors](/docs/behaviors)

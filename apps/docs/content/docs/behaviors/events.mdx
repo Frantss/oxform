@@ -1,0 +1,115 @@
+---
+title: events
+description: Send the change, focus and blur of a field to the form, so it marks the status and validates by event.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable]
+examples: [E24]
+---
+
+## When to use
+
+Use `events` on every form that renders fields. A user action goes through `events`: it writes the value, marks
+the status and requests the validation of that event. The `field` part of `fieldSlots` calls it for you. To write a
+value from code with no interaction, use [`values.set`](/docs/behaviors/values).
+
+## Import
+
+```ts twoslash
+import { events } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+The role select of the design system reports `onValueChange`, not `input` (E24). Its handlers call `events`.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, events, status, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ role: z.enum(['member', 'admin']) });
+
+const invite = defineForm({ schema, defaultValues: { role: 'member' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .configure({ error: { change: schema } });
+
+const form = invite.create();
+
+const roleSelectProps = {
+  value: form.values.get('role'),
+  onValueChange: (role: 'member' | 'admin') => form.events.change('role', role),
+  onBlur: () => form.events.blur('role'),
+};
+roleSelectProps.onValueChange('admin');
+console.log(form.status.at('role'));
+```
+
+After `onValueChange`, `role` is `'admin'`, dirty and touched, and a `change` run of `role` has started.
+
+## Needs
+
+| Need           | Required | Used for                                  | Error at `create` when it is missing                                          |
+| -------------- | -------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Writes the value of a change              | `The "events" extension needs "values", which no earlier extension provides.` |
+| `status` (api) | Yes      | Marks the field dirty, touched or blurred | `The "events" extension needs "status", which no earlier extension provides.` |
+
+## Adds
+
+| Addition     | Name      | What it is                                                                                                               |
+| ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Option       | `onError` | `(error, form, { path, event })`: gets a validation run of an event that rejected                                        |
+| State key    | None      | The element refs stay in memory                                                                                          |
+| Api member   | `events`  | `change(path, updater, options?)`, `focus(path, options?)`, `blur(path, options?)`, `register(path)`, `unregister(path)` |
+| Slot         | None      | `fieldSlots` and `fieldErrorSlots` call `events`                                                                         |
+| Field member | None      | `handles` gives `change`, `focus`, `blur`, `register` and `unregister` on each field handle                              |
+
+| Method   | Writes    | Marks                 | Validates on |
+| -------- | --------- | --------------------- | ------------ |
+| `change` | The value | `dirty` and `touched` | `change`     |
+| `focus`  | Nothing   | `touched`             | `focus`      |
+| `blur`   | Nothing   | `blurred`             | `blur`       |
+
+## Order
+
+Apply `events` after `values` and `status`. Apply it before `reset` and `handles`, which need it.
+
+## Use from an extension
+
+A custom extension names `events` in `Needs` (`Needs<Values, 'values' | 'status' | 'events'>`) and in `needs.api`.
+It calls `deps.events.change(path, value)` to write a value as a user action. `events` has no extension hook: to
+observe a write, use `values.onChange`, where `details.reason` is `'input'` for a change of `events`.
+
+## Rules
+
+- `change` writes with the reason `'input'`. When the write is refused or equal, it marks nothing and validates
+  nothing.
+- `options.should` turns off a step: `{ dirty: false }`, `{ touch: false }` or `{ validate: false }`.
+  `{ validate: true }` requests the run even when no check has a validator for the event.
+- An event validates only its own path, and only when a check has a validator for the event.
+- `focus` and `blur` move the focus of the registered element. The DOM event that this causes calls the same
+  method again, and that second call does nothing.
+- `register(path)` returns a ref callback. `null` keeps the registered element. `unregister(path)` forgets the
+  element and keeps the value.
+- `events` touches an element only in `focus`, `blur` and `register`. Creating an instance touches no element.
+- Without `onError`, a run of an event that rejects is an unhandled rejection.
+
+## Common mistakes
+
+| Wrong code                                             | Effect                                                                      | Fix                                     |
+| ------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------------------------- |
+| `onValueChange: role => form.values.set('role', role)` | The value changes, but the field is not dirty or touched, and no check runs | Call `form.events.change('role', role)` |
+| `defineForm(init).extend(values).extend(events)`       | Type error at `.extend`: the form lacks `status`. Throws at `create`        | Extend `status` before `events`         |
+| A validator that can reject, and no `onError`          | The rejection is unhandled                                                  | Set `onError` in `configure`            |
+
+## Related
+
+- [`status`](/docs/behaviors/status)
+- [`values`](/docs/behaviors/values)
+- [`handles`](/docs/behaviors/handles)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Built-in behaviors](/docs/behaviors)

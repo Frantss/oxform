@@ -1,0 +1,51 @@
+---
+title: Built-in behaviors
+description: Find the built-in extension that adds an api member, a state key or an option, and what it needs.
+type: overview
+entry: ['@oxform/core/behaviors']
+principles: [composable, lightweight]
+examples: []
+---
+
+## In short
+
+`@oxform/core/behaviors` exports nine extensions and five slot groups. Each extension adds one behavior to a form,
+and states the earlier extensions that it needs. The table lists the extensions in the order that the `standard`
+preset applies them.
+
+## Extensions [#extensions]
+
+| Extension                                  | Needs                                           | Api member                | State key                         | Options                                |
+| ------------------------------------------ | ----------------------------------------------- | ------------------------- | --------------------------------- | -------------------------------------- |
+| [`values`](/docs/behaviors/values)         | None                                            | `values`                  | `values`                          | None. `defaultValues` is a base option |
+| [`validation`](/docs/behaviors/validation) | `values`                                        | `validation`              | `validating`                      | None                                   |
+| [`check(name)`](/docs/behaviors/check)     | `validation`                                    | The member named `name`   | The key named `name`              | The option named `name`                |
+| [`status`](/docs/behaviors/status)         | `values`                                        | `status`                  | `status`                          | `defaultStatus`, `defaultFieldStatus`  |
+| [`events`](/docs/behaviors/events)         | `values`, `status`                              | `events`                  | None                              | `onError`                              |
+| [`arrays`](/docs/behaviors/arrays)         | `values`, `status`                              | `arrays`                  | None                              | None                                   |
+| [`reset`](/docs/behaviors/reset)           | `values`, `status`, `events`                    | `reset`                   | None                              | None                                   |
+| [`submit`](/docs/behaviors/submit)         | `values`, `status`                              | `submit`                  | None. It writes the form `status` | `onSubmit`, `onInvalid`                |
+| [`handles`](/docs/behaviors/handles)       | `values`, `status`, `events`, `reset`, `arrays` | `field`, `array`, `scope` | None                              | None                                   |
+
+`standard` applies `check('error', { blocking: true, exclusive: true })` in the place of `check(name)`.
+
+## Needs are required [#needs-are-required]
+
+Every need is required. No need is optional.
+
+- A missing need is a type error at `.extend`.
+- A missing need also throws at `create`, before an instance exists. The message names the extension and the need:
+  `The "events" extension needs "status", which no earlier extension provides.`
+- A need comes earlier in the chain. Each page states the order under "Order".
+
+## Slot groups and scopes [#slot-groups-and-scopes]
+
+- [Slot groups](/docs/behaviors/slot-groups): `rootSlots`, `fieldSlots`, `fieldErrorSlots`, `submitSlots` and
+  `resetSlots`. No extension brings a slot. A form spreads the groups that it needs with `slots(...)`.
+- [`scope(path)`](/docs/behaviors/scope): an instance member that `handles` adds.
+
+## Related
+
+- [The `standard` preset](/docs/presets/standard)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [`handles`](/docs/behaviors/handles)

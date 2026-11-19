@@ -1,0 +1,113 @@
+---
+title: scope(path)
+description: View one object path of a form instance as a Scope, so a row or a block uses names relative to it.
+type: reference
+entry: ['@oxform/core/behaviors', '@oxform/core']
+principles: [reusable, type-safe]
+examples: [E16]
+---
+
+## When to use
+
+Use `form.scope(path)` when a piece of code works on one sub-object and must not know where it is, such as a row
+of an array. It is an instance member that `handles` adds, and it needs no `defineScope`. To describe a repeated
+block with its own validators and defaults, use `defineScope` instead.
+
+## Import
+
+```ts twoslash
+import { handles } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+A row component must not know its index (E16).
+
+```ts twoslash
+import { defineForm, type Scope } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const member = z.object({ email: z.string(), role: z.enum(['member', 'admin']) });
+const schema = z.object({ team: z.string(), members: z.array(member) });
+type Member = z.infer<typeof member>;
+
+const teamInvites = defineForm({
+  schema,
+  defaultValues: { team: '', members: [{ email: 'ada@example.com', role: 'admin' }] },
+}).extend(standard);
+
+const memberLabel = (row: Scope<Member, 'error'>) =>
+  `${row.field('email').get() || 'New member'} (${row.field('role').get()})`;
+
+const form = teamInvites.create();
+console.log(memberLabel(form.scope('members.0')));
+```
+
+The label is `ada@example.com (admin)`.
+
+## Signature
+
+```ts twoslash
+import type { ObjectPath, PathValue, Scope } from '@oxform/core';
+
+export interface ScopeMember<Values, Checks extends string, Fields> {
+  scope<At extends ObjectPath<Values>>(path: At): Scope<NonNullable<PathValue<Values, At>>, Checks, Fields>;
+}
+```
+
+`Checks` is the check names of the form before `handles`. `Fields` is the field members of its extensions.
+
+## Parameters
+
+| Name   | Type                 | Required | Meaning                                                              |
+| ------ | -------------------- | -------- | -------------------------------------------------------------------- |
+| `path` | `ObjectPath<Values>` | Yes      | A path of the values whose value is an object, such as `'members.0'` |
+
+## Returns
+
+| Member        | Type            | Meaning                              |
+| ------------- | --------------- | ------------------------------------ |
+| `field(path)` | A field handle  | The field at `path` inside the scope |
+| `array(path)` | An array handle | The array at `path` inside the scope |
+| `scope(path)` | `Scope`         | A scope inside the scope             |
+
+The return type is `Scope<Values, Checks, Fields>`, exported from `@oxform/core`.
+
+## Rules
+
+- The paths of a scope are relative to it. `form.scope('members.0').field('email')` is the field `members.0.email`.
+- A scope has no state of its own. Its handles read and write the state of the form.
+- `scope(path)` returns the same object for the same path.
+- A function written for `Scope<Member, 'error'>` takes the scope of any form whose value at that path is a
+  `Member` and that has the `error` check. A scope of values of another shape is a type error.
+- A scope of an array item follows the index, not the item. After a move, `form.scope('members.0')` is the new first
+  item. Key a row by the item id of `form.array('members').ids`.
+
+## Common mistakes
+
+| Wrong code                                     | Effect                                                         | Fix                                                        |
+| ---------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- |
+| `row.field('members.0.email')` on a row scope  | Type error: the path is not a path of `Member`                 | Write the path relative to the scope: `row.field('email')` |
+| `form.scope('team')` on a string field         | Type error: `scope` takes only a path whose value is an object | Use `form.field('team')`                                   |
+| `form.scope(path)` on a form without `handles` | Type error: the instance has no `scope`                        | Extend `handles`, or apply `standard`                      |
+
+The type error of the first row:
+
+```ts twoslash
+// @errors: 2345
+import { type Scope } from '@oxform/core';
+
+type Member = { email: string; role: 'member' | 'admin' };
+
+declare const row: Scope<Member, 'error'>;
+
+row.field('members.0.email');
+```
+
+## Related
+
+- [`handles`](/docs/behaviors/handles)
+- [`arrays`](/docs/behaviors/arrays)
+- [The `standard` preset](/docs/presets/standard)
+- [Built-in behaviors](/docs/behaviors)

@@ -1,0 +1,101 @@
+---
+title: standard
+description: Apply every built-in extension and the four built-in slot groups to a form with the standard preset.
+type: extension
+entry: ['@oxform/core/presets']
+principles: [composable, lightweight]
+examples: [E03]
+---
+
+## When to use
+
+Use `standard` when a form needs arrays, reset, handles and every part, such as a checkout. It replaces nine
+`.extend` lines and one `slots(...)` call. A form that needs less, such as a sign-in form, writes a lean chain of
+[built-in behaviors](/docs/behaviors) instead.
+
+## Import
+
+```ts twoslash
+import { standard } from '@oxform/core/presets';
+```
+
+## Minimal example
+
+A checkout needs arrays, reset, handles and every part (E03).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const address = z.object({ street: z.string().min(1), city: z.string().min(1) });
+const schema = z.object({ email: z.email(), country: z.string(), billing: address });
+
+export const checkout = defineForm({
+  schema,
+  defaultValues: { email: '', country: '', billing: { street: '', city: '' } },
+})
+  .extend(standard)
+  .configure({ error: { submit: schema } });
+
+const form = checkout.create();
+form.field('billing.city').change('Lisbon');
+```
+
+## Needs
+
+None. `standard` applies `values` first, and each extension that it applies meets its needs with an earlier one.
+
+## Adds
+
+`standard` applies, in this order:
+
+1. `values`
+2. `validation`
+3. `check('error', { blocking: true, exclusive: true })`
+4. `status`
+5. `events`
+6. `arrays`
+7. `reset`
+8. `submit`
+9. `handles`
+10. `slots(...)` with `rootSlots`, `fieldErrorSlots`, `submitSlots` and `resetSlots`
+
+| Addition      | Names                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Options       | `error`, `defaultStatus`, `defaultFieldStatus`, `onError`, `onSubmit`, `onInvalid`                          |
+| State keys    | `values`, `validating`, `error`, `status`                                                                   |
+| Api members   | `values`, `validation`, `error`, `status`, `events`, `arrays`, `reset`, `submit`, `field`, `array`, `scope` |
+| Slots         | `root`, `field`, `fieldError`, `submit`, `reset`                                                            |
+| Field members | `error()` and `setError(entries)` on each field handle                                                      |
+
+`standard` exports no type. Read the types of a standard form back from the form: `InstanceOf<typeof checkout>`,
+`OptionsOf<typeof checkout>`.
+
+## Order
+
+Apply `standard` right after `defineForm`, or after extensions that do not add its names. An extension can follow it.
+Call `configure` after the last `.extend`.
+
+## Rules
+
+- `standard` is a function from form to form. It is generic in the form it receives.
+- It applies a check named `error`. A form that already has an `error` check cannot apply it.
+- It adds the names of the table above. An earlier extension that adds one of them throws at `create`.
+- An extension applied after `standard` can use every api member of the table, `field` included.
+- A check applied after `standard` has no members on the field handles, because `handles` comes before it.
+
+## Common mistakes
+
+| Wrong code                                                 | Effect                                                                                                                                         | Fix                                                               |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `defineForm(init).extend(standard)` with no `error` option | No field is ever invalid: the `schema` only types the values                                                                                   | `.configure({ error: { submit: schema } })`                       |
+| `.extend(standard).extend(check('warning'))`               | The field handles have no `warning()` member                                                                                                   | Write the chain by hand, with `check('warning')` before `handles` |
+| `.extend(values).extend(standard)`                         | `standard` applies `values` again. `create` throws: `The "values" extension declares the state key "values", which "values" already declares.` | Apply `standard` alone                                            |
+
+## Related
+
+- [Built-in behaviors](/docs/behaviors)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [`handles`](/docs/behaviors/handles)
+- [`check`](/docs/behaviors/check)

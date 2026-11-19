@@ -1,0 +1,124 @@
+---
+title: validation
+description: Run the checks of a form by event and by path, and read their issues, with the validation extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable]
+examples: [E18, E09]
+---
+
+## When to use
+
+Use `validation` when a form has at least one check. It runs the validators of every check and keeps one result per
+path. A form with nothing to validate, such as a filter bar, leaves it out: then every path is valid.
+
+## Import
+
+```ts twoslash
+import { validation } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+An address that is already a member must be refused before submit, without a request per key press. The format
+runs on `change`, the lookup on `blur`, and both on `submit` (E18).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+declare function isMember(email: string): Promise<boolean>;
+
+const format = z.object({ email: z.email('Enter an email address.') });
+const lookup = format.refine(async ({ email }) => !(await isMember(email)), {
+  message: 'This address is already a member.',
+  path: ['email'],
+});
+
+const invite = defineForm({ schema: format, defaultValues: { email: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .configure({ error: { change: format, blur: lookup, submit: lookup } });
+
+const form = invite.create();
+form.values.set('email', 'ada@example.com');
+void form.validation.run('email', { type: 'blur' }).then(([valid, issues]) => {
+  console.log(valid, issues.error);
+});
+```
+
+## Needs
+
+| Need           | Required | Used for                                                 | Error at `create` when it is missing                                              |
+| -------------- | -------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Reads the values, and discards stale runs on each change | `The "validation" extension needs "values", which no earlier extension provides.` |
+
+## Adds
+
+| Addition       | Name         | What it is                                                                            |
+| -------------- | ------------ | ------------------------------------------------------------------------------------- |
+| Option         | None         | Each check adds the option with its name                                              |
+| State key      | `validating` | The number of pending runs                                                            |
+| Api member     | `validation` | `run(targets?, options?)`, `onRun(listener)`, `issues(path?)`, `checks`, `validating` |
+| Extension hook | `onRun`      | Runs after each applied run, with its targets, event, `valid` and issues              |
+| Slot           | None         |                                                                                       |
+| Field member   | None         |                                                                                       |
+
+## Order
+
+Apply `validation` after `values`. Apply each `check(name)` after it. The other built-in extensions find
+`validation` when they use it, so it can be anywhere after `values`. A form without `validation` acts as a form with
+no check.
+
+## Use from an extension
+
+A custom extension names `validation` in `Needs` and in `needs.api`, reads `validation` from `deps`, and subscribes to
+`validation.onRun`. `funnel` reports the paths that fail in each run, and the result of each submit (E09):
+
+<include meta='twoslash'>../../../../../examples/kit/src/funnel.ts</include>
+
+## Rules
+
+- `run()` with no target runs every path. `run(path)` and `run([paths])` keep only the issues at those paths and
+  below.
+- `run(targets, { type })` runs only the validators of that event. Without `type`, a run uses every event.
+- `run` resolves `[valid, issues]`. `valid` is false when a blocking check found an issue in this run.
+- A change at a target, at a descendant or an ancestor of a target, or at the root makes a pending run stale. A newer
+  run of the same targets and event also makes it stale. A stale run applies nothing, and resolves valid with an empty
+  list per check.
+- `onRun` sees each applied run, also the runs of `events` and `submit`. It does not see a stale run or a run that
+  rejected.
+- `issues(path)` reads the state. It never validates.
+- `validating` is a snapshot. To follow it, read `status.form.validating` from the store.
+- A validator gets the full values, also in a run with targets.
+
+## Common mistakes
+
+| Wrong code                                                                   | Effect                                                               | Fix                                                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `defineForm(init).extend(validation)`                                        | Type error at `.extend`: the form lacks `values`. Throws at `create` | Extend `values` first                                           |
+| `defineForm({ schema, ... }).extend(values).extend(validation)` and no check | Each run resolves valid: the `schema` only types the values          | Add `check('error')` and the option `error: { submit: schema }` |
+| `run()` and then read the result of an older run                             | The older run is stale. It resolves valid and applies nothing        | Read the result of the newest run, or read `issues()`           |
+
+The type error of the first row:
+
+```ts twoslash
+// @errors: 2769
+import { defineForm } from '@oxform/core';
+import { validation } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.string() });
+
+defineForm({ schema, defaultValues: { email: '' } }).extend(validation);
+```
+
+## Related
+
+- [`check`](/docs/behaviors/check)
+- [`values`](/docs/behaviors/values)
+- [`events`](/docs/behaviors/events)
+- [`submit`](/docs/behaviors/submit)
+- [Built-in behaviors](/docs/behaviors)

@@ -1,0 +1,140 @@
+---
+title: handles
+description: Get a bound handle for a field, an array or a sub-object of a form with the handles extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable, type-safe]
+examples: [E20, E11]
+---
+
+## When to use
+
+Use `handles` when code outside a component works on one field: it gets a handle bound to the path, with the check
+members of the field. A form that renders its fields only through parts, such as a sign-in form, can leave it out.
+Inside a component, use the adapter hooks instead.
+
+## Import
+
+```ts twoslash
+import { handles } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+The payment service returns its errors as a list of paths (E20).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { arrays, check, events, handles, reset, status, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email(), card: z.object({ number: z.string() }) });
+
+const checkout = defineForm({ schema, defaultValues: { email: '', card: { number: '' } } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(arrays)
+  .extend(reset)
+  .extend(handles);
+
+type PaymentIssue = { readonly path: 'email' | 'card.number'; readonly message: string };
+
+const form = checkout.create();
+const applyPaymentIssues = (issues: readonly PaymentIssue[]) => {
+  for (const issue of issues) form.field(issue.path).setError([{ message: issue.message }]);
+};
+
+applyPaymentIssues([{ path: 'card.number', message: 'The card was declined.' }]);
+console.log(form.field('card.number').error());
+```
+
+The error stays until the card number, or `card`, next changes.
+
+## Needs
+
+| Need           | Required | Used for                                           | Error at `create` when it is missing                                           |
+| -------------- | -------- | -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `values` (api) | Yes      | `get`, and the values of the field state           | `The "handles" extension needs "values", which no earlier extension provides.` |
+| `status` (api) | Yes      | The status of the field state                      | `The "handles" extension needs "status", which no earlier extension provides.` |
+| `events` (api) | Yes      | `change`, `focus`, `blur`, `register` and the ref  | `The "handles" extension needs "events", which no earlier extension provides.` |
+| `reset` (api)  | Yes      | `reset` of a field                                 | `The "handles" extension needs "reset", which no earlier extension provides.`  |
+| `arrays` (api) | Yes      | The operations and the item ids of an array handle | `The "handles" extension needs "arrays", which no earlier extension provides.` |
+
+## Adds
+
+| Addition     | Name                                | What it is                                                                                   |
+| ------------ | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| Option       | None                                |                                                                                              |
+| State key    | None                                |                                                                                              |
+| Api member   | `field(path)`                       | A field handle: `state`, `get`, `change`, `focus`, `blur`, `register`, `unregister`, `reset` |
+| Api member   | `array(path)`                       | An array handle: `get`, `ids` and the operations of `arrays` without the path                |
+| Api member   | `scope(path)`                       | The handles of a sub-object. See [`scope(path)`](/docs/behaviors/scope)                      |
+| Field member | `<check>()`, `set<Check>(entries)`  | For each check applied before `handles`: `error()` and `setError(entries)` for `error`       |
+| Field member | The field members of the extensions | Added with `fields` and `on<T>` by each extension of the form                                |
+| Slot         | None                                |                                                                                              |
+
+`field(path).state` has `id`, `value`, `defaultValue`, `ref` and `status`. `id` is the form id and the path, as in
+the ids of the slots.
+
+## Order
+
+Apply `handles` after `values`, `status`, `events`, `arrays`, `reset` and every check. The `standard` preset applies
+it last.
+
+## Use from an extension
+
+A custom extension names `field` in `Needs` and in `needs.api`, and adds field members with `fields`. A card number
+shows as `4242 4242 …`, and the payment provider needs digits only, so `masks` adds `unmasked()` to string fields
+(E11):
+
+<include meta='twoslash'>../../../../../examples/kit/src/masks.ts</include>
+
+## Rules
+
+- `field(path)`, `array(path)` and `scope(path)` take a path of the values. The path is type-checked.
+- `set<Check>(entries)` sets entries from outside validation, such as the errors of a server. They go when the field
+  or an ancestor next changes, a reset included. Only the entries of that call go.
+- The check members follow the checks applied before `handles`: in the types, the checks of the chain so far; at
+  runtime, the checks that `validation` has when `create` runs `handles`.
+- On a chain without `validation`, a field handle has no check member.
+- `handles` reads every state at the time of the call. `field(path).state` is a snapshot.
+- An extension that adds field members needs a `field(path)` api. Without it, `create` throws:
+  `The "masks" extension adds field members, so the form needs a field(path) api.`
+
+## Common mistakes
+
+| Wrong code                                     | Effect                                                                                   | Fix                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `.extend(handles).extend(check('warning'))`    | The field handles have no `warning()` and no `setWarning()`, in the types and at runtime | Apply each check before `handles`                   |
+| `form.field(path)` on a form without `handles` | Type error: the instance has no `field`                                                  | Extend `handles`, or use `values` and the check api |
+| `field.setError(entries)` in a validator       | The next change removes the entries, and a run does not refresh them                     | Return the issue from the validator of the check    |
+
+The type error of the second row:
+
+```ts twoslash
+// @errors: 2339
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.string() });
+
+const form = defineForm({ schema, defaultValues: { email: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error'))
+  .create();
+
+form.field('email').setError([{ message: 'Taken.' }]);
+```
+
+## Related
+
+- [`scope(path)`](/docs/behaviors/scope)
+- [`check`](/docs/behaviors/check)
+- [`arrays`](/docs/behaviors/arrays)
+- [The `standard` preset](/docs/presets/standard)
+- [Built-in behaviors](/docs/behaviors)

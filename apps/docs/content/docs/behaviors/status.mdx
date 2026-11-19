@@ -1,0 +1,117 @@
+---
+title: status
+description: Read the dirty, touched, blurred and valid flags of each field and of the form with the status extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable]
+examples: [E22]
+---
+
+## When to use
+
+Use `status` when the page shows the state of a field or of the form: unsaved changes, a touched field, a submit in
+progress. `events`, `arrays`, `reset` and `submit` need it. To read the values, use
+[`values`](/docs/behaviors/values) instead.
+
+## Import
+
+```ts twoslash
+import { status } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+The writer must see unsaved changes, and "Publish" must wait for validation (E22).
+
+```ts twoslash
+import { defineForm, type StateOf } from '@oxform/core';
+import { events, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string(), body: z.string() });
+
+const articleEditor = defineForm({ schema, defaultValues: { title: '', body: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events);
+
+export const articleStatus = (state: StateOf<typeof articleEditor>) => ({
+  unsaved: state.status.form.dirty,
+  publishDisabled: state.status.form.validating || state.status.form.submitting,
+});
+
+const form = articleEditor.create();
+form.events.change('title', 'Second draft');
+console.log(articleStatus(form.store.state).unsaved, form.status.at('title'));
+```
+
+After the change, `unsaved` is `true`, and `title` is dirty and touched.
+
+## Needs
+
+| Need           | Required | Used for                                                   | Error at `create` when it is missing                                          |
+| -------------- | -------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Lists the fields, and compares each value with its default | `The "status" extension needs "values", which no earlier extension provides.` |
+
+## Adds
+
+| Addition     | Name                 | What it is                                                                           |
+| ------------ | -------------------- | ------------------------------------------------------------------------------------ |
+| Option       | `defaultStatus`      | The start of `dirty`, `submits` and `successful` of the form                         |
+| Option       | `defaultFieldStatus` | The start of `dirty`, `touched` and `blurred` by path. `'*'` applies to every path   |
+| State key    | `status`             | `{ form, fields }`: the status of the form, and a status for each path of the values |
+| Api member   | `status`             | `form`, a snapshot of the form status, and `at(path)`, the status of one field       |
+| Slot         | None                 | `fieldSlots`, `fieldErrorSlots` and `submitSlots` read the state                     |
+| Field member | None                 | `handles` gives `field(path).state.status`                                           |
+
+The status of a field:
+
+| Flag       | Meaning                                                                   |
+| ---------- | ------------------------------------------------------------------------- |
+| `dirty`    | The field was changed by `events` or `arrays`. It stays set until a reset |
+| `pristine` | Not `dirty`                                                               |
+| `touched`  | The field was changed or focused                                          |
+| `blurred`  | The field lost focus                                                      |
+| `valid`    | No blocking check has an entry at the path                                |
+| `default`  | The value is deep equal to the default value                              |
+
+The status of the form has `dirty`, `pristine`, `touched` and `blurred` from its fields, and `valid`, `validating`,
+`submitting`, `submits`, `submitted` and `successful`.
+
+## Order
+
+Apply `status` after `values`. Apply it before `events`, `arrays`, `reset`, `submit` and `handles`, which need it.
+
+## Use from an extension
+
+A custom extension names `status` in `Needs` (`Needs<Values, 'status'>`) and in `needs.api`. It reads
+`deps.status.form` and `deps.status.at(path)`. These are snapshots: to follow the status, read `status` from the
+store. `status` has no extension hook. A slot group reads the state key `status`: `formErrorSlots` (E12) needs it.
+
+## Rules
+
+- The flags of a field change only through `events`, `arrays` and `reset`. `values.set` changes no flag.
+- A flag set on a path is also set on each of its ancestors.
+- `dirty` records an interaction. It does not clear itself when the value returns to its default. Use `default` for
+  that.
+- `submit.run` sets the form `dirty`. The form `pristine` follows the fields only.
+- `valid` and `validating` come from `validation`. On a chain without `validation`, every path is valid and the form
+  never validates.
+- `status.form` and `status.at(path)` are snapshots. A component reads the status from the store.
+- The derived status is computed again on each change of the store. Its cost is linear in the number of fields.
+
+## Common mistakes
+
+| Wrong code                                                                                 | Effect                                                       | Fix                                                            |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------- |
+| `form.values.set('title', text)`, then read `status.form.dirty`                            | `dirty` stays `false`: a write by code is not an interaction | Write with `form.events.change('title', text)`                 |
+| `status.form.dirty` to show "no unsaved changes" after the user types the first text again | `dirty` stays `true`                                         | Read `status.at(path).default`, or reset the form after a save |
+| A form with thousands of fields                                                            | Each change of the store derives the status of every field   | Split the form, or keep the large list out of the values       |
+
+## Related
+
+- [`events`](/docs/behaviors/events)
+- [`reset`](/docs/behaviors/reset)
+- [`submit`](/docs/behaviors/submit)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Built-in behaviors](/docs/behaviors)

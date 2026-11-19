@@ -1,0 +1,167 @@
+---
+title: Slot groups
+description: Spread the built-in slot groups into a form to get the root, field, error, submit and reset parts.
+type: extension
+entry: ['@oxform/core/behaviors', '@oxform/core']
+principles: [reusable]
+examples: [E01, E12]
+---
+
+## When to use
+
+Use the built-in slot groups to get the parts of a form without writing a slot by hand. No extension brings a slot:
+a form spreads the groups it needs in one `slots(...)` call. To add a part that no group has, write a group with
+`defineSlots`, as `formErrorSlots` does (E12).
+
+## Import
+
+```ts twoslash
+import { fieldErrorSlots, fieldSlots, resetSlots, rootSlots, submitSlots } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+A sign-in form on a public page needs no arrays, no reset and no handles. Its groups get what they need from the
+chain (E01).
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import {
+  check,
+  events,
+  fieldErrorSlots,
+  rootSlots,
+  status,
+  submit,
+  submitSlots,
+  validation,
+  values,
+} from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email(), password: z.string().min(8) });
+
+export const signIn = defineForm({ schema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
+  .configure({ error: { blur: schema, submit: schema } });
+```
+
+## Needs
+
+Each need of a group is required. A missing need is a type error where the group is spread, and throws at `create`.
+
+| Group             | Need                 | Required | Used for                                      | Error at `create` when it is missing                                                                  |
+| ----------------- | -------------------- | -------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `rootSlots`       | `submit` (api)       | Yes      | Runs `submit.run` on a submit of the form     | `The "rootSlots" slot group needs "submit", which no earlier extension provides.`                     |
+| `fieldSlots`      | `events` (api)       | Yes      | Sends input, focus and blur                   | `The "fieldSlots" slot group needs "events", which no earlier extension provides.`                    |
+| `fieldSlots`      | `values` (api)       | Yes      | Clears a file input on a reset                | `The "fieldSlots" slot group needs "values", which no earlier extension provides.`                    |
+| `fieldSlots`      | `values` (state key) | Yes      | Shows the value                               | `The "fieldSlots" slot group needs the state key "values", which no earlier extension provides.`      |
+| `fieldSlots`      | `status` (state key) | Yes      | Sets `aria-invalid` and the `data-*` flags    | `The "fieldSlots" slot group needs the state key "status", which no earlier extension provides.`      |
+| `fieldErrorSlots` | `events` (api)       | Yes      | Sends input, focus and blur                   | `The "fieldErrorSlots" slot group needs "events", which no earlier extension provides.`               |
+| `fieldErrorSlots` | `values` (api)       | Yes      | Clears a file input on a reset                | `The "fieldErrorSlots" slot group needs "values", which no earlier extension provides.`               |
+| `fieldErrorSlots` | `values` (state key) | Yes      | Shows the value                               | `The "fieldErrorSlots" slot group needs the state key "values", which no earlier extension provides.` |
+| `fieldErrorSlots` | `status` (state key) | Yes      | Sets `aria-invalid` and the `data-*` flags    | `The "fieldErrorSlots" slot group needs the state key "status", which no earlier extension provides.` |
+| `fieldErrorSlots` | `error` (state key)  | Yes      | Shows the first error, and `aria-describedby` | `The "fieldErrorSlots" slot group needs the state key "error", which no earlier extension provides.`  |
+| `submitSlots`     | `status` (state key) | Yes      | Disables the button while submitting          | `The "submitSlots" slot group needs the state key "status", which no earlier extension provides.`     |
+| `resetSlots`      | `reset` (api)        | Yes      | Runs `reset.all()` on a click                 | `The "resetSlots" slot group needs "reset", which no earlier extension provides.`                     |
+
+## Adds
+
+Each group adds slots only: no option, no state key, no api member and no field member.
+
+| Group             | Slot         | Element  | Props          | Slot state                            | What it renders                                                                                                                             |
+| ----------------- | ------------ | -------- | -------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rootSlots`       | `root`       | `form`   | None           | None                                  | Prevents the default of `submit` and calls `submit.run` with the `value` of the submit button. Prevents the default of `reset`              |
+| `fieldSlots`      | `field`      | `input`  | `name`, a path | None                                  | `id`, `name`, the value or `checked`, `aria-invalid`, `data-dirty`, `data-touched`, `data-blurred`. Sends input, focus and blur to `events` |
+| `fieldErrorSlots` | `field`      | `input`  | `name`, a path | None                                  | The `field` of `fieldSlots`, plus `aria-describedby` while the path has errors                                                              |
+| `fieldErrorSlots` | `fieldError` | `p`      | `name`, a path | `{ messages }`                        | Present only while the path has `error` entries. `id`, `role="alert"`, and the first message as its text                                    |
+| `submitSlots`     | `submit`     | `button` | None           | `{ submitting, submits, successful }` | `type="submit"`. `disabled` and `data-submitting` while submitting                                                                          |
+| `resetSlots`      | `reset`      | `button` | None           | None                                  | `type="reset"`. A click prevents the default and calls `reset.all()`                                                                        |
+
+The `field` slot reads the value by the `type` of the part: a checkbox gives `checked`, a number input a number, a
+file input its `File`, and a multiple select a list. A checkbox and a radio send their change on `click`.
+
+## Order
+
+Spread the groups in one `slots(...)` call after the extensions that they need. A later slot with the key of an
+earlier one replaces it.
+
+| Chain                                                     | Groups it spreads                                           |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| `standard`                                                | `rootSlots`, `fieldErrorSlots`, `submitSlots`, `resetSlots` |
+| Sign-in (E01): `values` to `submit` with `check('error')` | `rootSlots`, `fieldErrorSlots`, `submitSlots`               |
+| Member filter (E02): `values`, `status`, `events`         | `fieldSlots`                                                |
+
+## Rules
+
+- Spread one of `fieldSlots` and `fieldErrorSlots`. Both give the `field` slot. Use `fieldErrorSlots` when the form has
+  the `error` check, else `fieldSlots`.
+- A form with no `submit` spreads no root group. Its `Root` part renders no element and only provides the instance.
+- The ids of the `field` and `fieldError` slots are the form id and the path, so `aria-describedby` points to the
+  error of the same field.
+- `text`, `present`, `state` and `attrs` are pure functions of the state, so they run on a server. `on` and `bind`
+  run in a browser only.
+- A slot cannot be wrapped. To change a built-in part, write a slot with the same key after the group.
+
+## Common mistakes
+
+| Wrong code                                          | Effect                                                                         | Fix                                                                                 |
+| --------------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `{ ...fieldErrorSlots(slot), ...fieldSlots(slot) }` | `fieldSlots` replaces the `field` slot, and the field loses `aria-describedby` | Spread only `fieldErrorSlots`                                                       |
+| `rootSlots` on a form with no `submit`              | Type error at the spread. Throws at `create`                                   | Spread no root group. Add a `form` element in the component when the page needs one |
+| `fieldErrorSlots` on a form with no `error` check   | Type error at the spread. Throws at `create`                                   | Add `check('error')`, or spread `fieldSlots`                                        |
+| A custom slot with `text` before `state`            | Type error: the slot state is `{}`, because TypeScript infers left to right    | Write `state` before `text`                                                         |
+
+The type error of the second row:
+
+```ts twoslash
+// @errors: 2345
+import { defineForm, slots } from '@oxform/core';
+import { events, fieldSlots, rootSlots, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ query: z.string() });
+
+defineForm({ schema, defaultValues: { query: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldSlots(slot) })));
+```
+
+The type error of the last row:
+
+```ts twoslash
+// @errors: 2339
+import { defineForm, slots } from '@oxform/core';
+import { values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string() });
+
+defineForm({ schema, defaultValues: { title: '' } })
+  .extend(values)
+  .extend(
+    slots(slot => ({
+      titleLength: slot({
+        element: 'p',
+        text: ({ length }) => `${length} characters`,
+        state: state => ({ length: state.values.title.length }),
+      }),
+    })),
+  );
+```
+
+## Related
+
+- [Built-in behaviors](/docs/behaviors)
+- [`submit`](/docs/behaviors/submit)
+- [`check`](/docs/behaviors/check)
+- [`reset`](/docs/behaviors/reset)
+- [The `standard` preset](/docs/presets/standard)

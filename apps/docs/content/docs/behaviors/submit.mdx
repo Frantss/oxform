@@ -1,0 +1,114 @@
+---
+title: submit
+description: Validate a form and call onSubmit or onInvalid, then record the result in the status, with the submit extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable, extensible]
+examples: [E19, E10]
+---
+
+## When to use
+
+Use `submit` when the form sends its values. `submit.run` validates on `submit`, calls the `onSubmit` or the
+`onInvalid` option, and records the result in the form status. A form that only filters a list has no submit, and
+leaves it out.
+
+## Import
+
+```ts twoslash
+import { submit } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+The server refuses a password. The form must show it and stay usable (E19).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, status, submit, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+declare function signInRequest(credentials: { email: string; password: string }): Promise<boolean>;
+
+const schema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(submit)
+  .configure({
+    error: { submit: schema },
+    onSubmit: async (credentials, form) => {
+      if (!(await signInRequest(credentials)))
+        form.error.set('password', [{ message: 'The email or the password is wrong.' }]);
+    },
+  });
+
+void signIn.create().submit.run();
+```
+
+## Needs
+
+| Need           | Required | Used for                                            | Error at `create` when it is missing                                          |
+| -------------- | -------- | --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Reads the values for the attempt and for `onSubmit` | `The "submit" extension needs "values", which no earlier extension provides.` |
+| `status` (api) | Yes      | Records `submitting`, `submits` and `successful`    | `The "submit" extension needs "status", which no earlier extension provides.` |
+
+## Adds
+
+| Addition       | Name        | What it is                                                                     |
+| -------------- | ----------- | ------------------------------------------------------------------------------ |
+| Option         | `onSubmit`  | `(values, form, intent?)`: runs when the submit run is valid                   |
+| Option         | `onInvalid` | `(issues, form, intent?)`: runs when a blocking check has entries              |
+| State key      | None        | It writes the form `status`                                                    |
+| Api member     | `submit`    | `run(intent?)`, `intercept(interceptor)`, `onResult(listener)`                 |
+| Extension hook | `intercept` | Runs before validation, with `{ values, canceled, cancel() }`. It can be async |
+| Extension hook | `onResult`  | Runs after `onSubmit` or `onInvalid`, with `{ successful, issues }`            |
+| Slot           | None        | `rootSlots` calls `submit.run`. `submitSlots` reads the status                 |
+| Field member   | None        |                                                                                |
+
+## Order
+
+Apply `submit` after `values` and `status`. `validation` and the checks can come before or after it. `rootSlots`
+needs it.
+
+## Use from an extension
+
+A custom extension names `submit` in `Needs` and in `needs.api`, reads `submit` from `deps`, and subscribes to
+`submit.intercept` or `submit.onResult`. An invite to an address outside the company cannot be undone, so
+`confirmExternal` cancels the attempt until `onConfirm` resolves true (E10):
+
+<include meta='twoslash'>../../../../../examples/kit/src/confirm-external.ts</include>
+
+## Rules
+
+- `run` sets the form `dirty` and `submitting`, runs the interceptors, then validates every path on `submit`.
+- A valid run, with no blocking entry in the form, calls `onSubmit` with the values that were validated. Else
+  `run` calls `onInvalid` with the issues by check.
+- When the callback ends, `submitting` is `false`, `submits` goes up by one and `successful` holds the result.
+- A call during a submit returns the submit in progress. Its intent is dropped.
+- An interceptor that calls `attempt.cancel()` stops the submit. No callback runs and `submits` does not change.
+- A change of the values during validation or a newer run aborts the attempt. No callback runs, `submits` goes up by
+  one, `successful` does not change, and the promise of `run` still settles.
+- A reset during the attempt aborts it too, and the attempt writes nothing over the reset status.
+- `run` rejects when the callback or the validation rejects. Then `successful` is `false`.
+- `onResult` sees each submit that reached a callback. It does not see an aborted or a canceled one.
+- On a chain without `validation`, every run is valid.
+
+## Common mistakes
+
+| Wrong code                                    | Effect                                                          | Fix                                                           |
+| --------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| `onSubmit` that throws to show a server error | `run` rejects, and the form shows no error at the field         | Set the error with `form.error.set(path, entries)` and return |
+| `check('error')` without `blocking: true`     | `onSubmit` runs while the form has errors                       | Use `check('error', { blocking: true })`                      |
+| `submit.run()` twice to send two intents      | The second call returns the first submit. Its intent is dropped | Wait for the first `run` to settle                            |
+
+## Related
+
+- [`status`](/docs/behaviors/status)
+- [`validation`](/docs/behaviors/validation)
+- [`check`](/docs/behaviors/check)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Built-in behaviors](/docs/behaviors)

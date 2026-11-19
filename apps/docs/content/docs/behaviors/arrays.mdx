@@ -1,0 +1,105 @@
+---
+title: arrays
+description: Add, remove and move the items of an array field, with stable item ids, using the arrays extension.
+type: extension
+entry: ['@oxform/core/behaviors']
+principles: [composable]
+examples: [E17]
+---
+
+## When to use
+
+Use `arrays` when the user adds, removes or reorders the items of a list. An operation moves the values, the item
+ids, the field status and the check entries together, so a row keeps its errors. To replace a list from code with no
+interaction, `values.set` is enough.
+
+## Import
+
+```ts twoslash
+import { arrays } from '@oxform/core/behaviors';
+```
+
+## Minimal example
+
+The user adds, removes and reorders invitees (E17).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { arrays, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const member = z.object({ email: z.string(), role: z.enum(['member', 'admin']) });
+const schema = z.object({ team: z.string(), members: z.array(member) });
+
+const teamInvites = defineForm({ schema, defaultValues: { team: '', members: [] } })
+  .extend(values)
+  .extend(status)
+  .extend(arrays);
+
+const form = teamInvites.create();
+form.arrays.append('members', { email: 'ada@example.com', role: 'admin' });
+form.arrays.append('members', { email: 'alan@example.com', role: 'member' });
+form.arrays.move('members', 1, 0);
+form.arrays.remove('members', 1);
+
+console.log(form.values.get('members'));
+```
+
+One member is left: `alan@example.com`.
+
+## Needs
+
+| Need           | Required | Used for                                           | Error at `create` when it is missing                                          |
+| -------------- | -------- | -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `values` (api) | Yes      | Reads and writes the array                         | `The "arrays" extension needs "values", which no earlier extension provides.` |
+| `status` (api) | Yes      | Moves the status of the items, and marks the array | `The "arrays" extension needs "status", which no earlier extension provides.` |
+
+## Adds
+
+| Addition     | Name     | What it is                                                                                             |
+| ------------ | -------- | ------------------------------------------------------------------------------------------------------ |
+| Option       | None     |                                                                                                        |
+| State key    | None     | The item ids stay in memory                                                                            |
+| Api member   | `arrays` | `append`, `prepend`, `insert`, `swap`, `move`, `update`, `remove`, `replace`, each with the path first |
+| Slot         | None     |                                                                                                        |
+| Field member | None     | `handles` gives `array(path)`: the same operations without the path, and `ids`                         |
+
+Each operation takes `options.should` as `events.change` does: `{ dirty?, touch?, validate? }`.
+
+## Order
+
+Apply `arrays` after `values` and `status`. Apply it before `handles`, which needs it.
+
+## Use from an extension
+
+A custom extension names `arrays` in `Needs` (`Needs<Values, 'values' | 'status' | 'arrays'>`) and in `needs.api`,
+and calls the operations on `deps.arrays`. `arrays` has no extension hook: to observe an operation, use
+`values.onChange`, where `details.reason` is `'array'`. The item ids are on the array handle of `handles`.
+
+## Rules
+
+- Each operation writes the array with the reason `'array'`, then marks the array dirty and touched.
+- Each operation, except `remove`, validates the array path on `change` when a check has a validator for `change`.
+  `remove` never validates.
+- The item ids, the field status and the check entries follow the items through `prepend`, `insert`, `swap`, `move`
+  and `remove`.
+- `update(path, index, item)` resets the status of that item. `replace(path, items)` resets the status of every item
+  and gives each item a new id.
+- `insert` treats a negative index as 0. An index after the end pads the array with `undefined`.
+- `update` and `remove` clamp the index into the array. `swap` and `move` do nothing when an index is out of range.
+- When an interceptor refuses the write, the ids stay as they were.
+
+## Common mistakes
+
+| Wrong code                                                 | Effect                                                                   | Fix                                                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------- |
+| `form.values.set('members', [...members, next])` for "Add" | No item id moves, and the status and the entries stay at their old index | Call `form.arrays.append('members', next)`         |
+| Rows keyed by their index                                  | After a move, a row shows the focus and the errors of another item       | Key each row by `form.array('members').ids[index]` |
+| `remove` and then expect a validation run                  | `remove` never validates                                                 | Call `form.validation.run('members')` after it     |
+
+## Related
+
+- [`handles`](/docs/behaviors/handles)
+- [`status`](/docs/behaviors/status)
+- [`values`](/docs/behaviors/values)
+- [Built-in behaviors](/docs/behaviors)
