@@ -4,8 +4,8 @@ import { masks } from './masks';
 
 const masked = checkout.extend(masks).configure({ masks: { 'card.number': '#### #### #### ####' } });
 
-const setup = () => {
-  const form = masked.create();
+const setup = (definition = masked) => {
+  const form = definition.create();
   return { form, [Symbol.dispose]: () => form.destroy() };
 };
 
@@ -30,5 +30,14 @@ describe('masks', () => {
     void subject.form.field('billing').unmasked;
 
     expect(['unmasked' in subject.form.field('email'), 'unmasked' in subject.form.field('billing')]).toEqual([true, false]);
+  });
+
+  it('takes a mask only at a path of the form', () => {
+    // @ts-expect-error `card.nmber` is not a path of the checkout.
+    const misspelled = checkout.extend(masks).configure({ masks: { 'card.nmber': '#### ####' } });
+    using subject = setup(misspelled);
+    subject.form.field('card.number').change('42424242');
+
+    expect(subject.form.values.get('card.number')).toBe('42424242');
   });
 });

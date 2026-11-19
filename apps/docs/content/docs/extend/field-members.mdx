@@ -29,13 +29,13 @@ Field members go on the handles of `field(path)`, so the extension needs the `fi
 `masks` also needs `values`, for its interceptor.
 
 ```ts twoslash
-import { defineExtension, optionTypes, type Extendable, type Needs } from '@oxform/core';
+import { defineExtension, optionTypes, type Extendable, type Needs, type Path } from '@oxform/core';
 
 export const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'field'>>) =>
   defineExtension(form, {
     name: 'masks',
     needs: { api: ['values', 'field'] },
-    options: optionTypes<{ masks: Readonly<Record<string, string>> }>(),
+    options: optionTypes<{ masks: Readonly<Partial<Record<Path<Values>, string>>> }>(),
     api: () => ({}),
   });
 ```

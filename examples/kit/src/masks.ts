@@ -1,4 +1,4 @@
-import { defineExtension, on, optionTypes, type Extendable, type Needs } from '@oxform/core';
+import { defineExtension, on, optionTypes, type Extendable, type Needs, type Path } from '@oxform/core';
 
 const digitsOf = (text: string) => text.replace(/\D/gu, '');
 
@@ -25,8 +25,7 @@ export const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 
   defineExtension(form, {
     name: 'masks',
     needs: { api: ['values', 'field'] },
-    // `string` keys: `Path<Values>` of an unresolved `Values` does not index a mapped option (01-public-api.md, 7.5).
-    options: optionTypes<{ masks: Readonly<Record<string, string>> }>(),
+    options: optionTypes<{ masks: Readonly<Partial<Record<Path<Values>, string>>> }>(),
     api: (context, { values }) => {
       values.intercept(change => {
         const mask = context.options().masks?.[change.path];

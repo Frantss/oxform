@@ -57,7 +57,7 @@ defineForm({ schema: z.object({ title: z.string() }), defaultValues: { title: ''
 ```
 
 In `configure`, `form` is the instance of the whole chain, so `form.field` is typed. The `masks` extension of E11
-declares `optionTypes<{ masks: Readonly<Record<string, string>> }>()` the same way.
+declares `optionTypes<{ masks: Readonly<Partial<Record<Path<Values>, string>>> }>()` the same way.
 
 ## Signature
 
@@ -92,17 +92,17 @@ type `Self` with the instance type. `SelfIssues` is replaced with the issues of 
 - Use `Self` for the instance in an option's parameters. An extension cannot name the instance type, because later
   extensions add to it.
 - Call `context.instance()` inside the callback, not during `api`.
-- An option of a generic extension that is keyed by path uses `string` keys. `Path<Values>` of an unresolved
-  `Values` does not index a mapped option.
+- An option that is keyed by path uses `Partial<Record<Path<Values>, T>>`. A key that is not a path of the form
+  is a type error in `configure` and `create`.
 
 ## Common mistakes
 
-| Wrong code                                                           | Effect                                                                             | Fix                                                              |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `onSaveError: (error: unknown, form: Instance<Values>) => void`      | The callback sees an instance with no api                                          | Write `form: Self`                                               |
-| `context.options().saveDraft(draft)`                                 | Type error: the option is possibly `undefined`                                     | Call it as `saveDraft?.(draft)`, or give a default               |
-| An extension that declares an option named `onSubmit` after `submit` | `.extend` returns `DuplicateOption<"onSubmit">`, and the next call is a type error | Give the option a name that no other extension of the chain uses |
-| `options: optionTypes<{ masks: Record<Path<Values>, string> }>()`    | `context.options().masks?.[change.path]` is a type error in the generic extension  | Use `Readonly<Record<string, string>>`, as `masks` does          |
+| Wrong code                                                           | Effect                                                                             | Fix                                                                    |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `onSaveError: (error: unknown, form: Instance<Values>) => void`      | The callback sees an instance with no api                                          | Write `form: Self`                                                     |
+| `context.options().saveDraft(draft)`                                 | Type error: the option is possibly `undefined`                                     | Call it as `saveDraft?.(draft)`, or give a default                     |
+| An extension that declares an option named `onSubmit` after `submit` | `.extend` returns `DuplicateOption<"onSubmit">`, and the next call is a type error | Give the option a name that no other extension of the chain uses       |
+| `options: optionTypes<{ masks: Record<Path<Values>, string> }>()`    | `configure` and `create` need a mask for every path of the form (TS2740)           | Use `Readonly<Partial<Record<Path<Values>, string>>>`, as `masks` does |
 
 ## Related
 
