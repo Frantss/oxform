@@ -1,152 +1,74 @@
 # Oxform
 
 > [!IMPORTANT]
-> `oxform-react` is deprecated. Use [`@oxform/react`](https://www.npmjs.com/package/@oxform/react) instead.
-> Install it with `npm install @oxform/react` and update your imports to `@oxform/react`.
->
-> `oxform-core` is deprecated. Use [`@oxform/core`](https://www.npmjs.com/package/@oxform/core) instead.
-> Install it with `npm install @oxform/core` and update your imports to `@oxform/core`.
+> `oxform-react` and `oxform-core` are deprecated. Use [`@oxform/react`](https://www.npmjs.com/package/@oxform/react) and [`@oxform/core`](https://www.npmjs.com/package/@oxform/core) instead.
 
-Oxform is a lean and flexible framework-agnostic form library. It provides an
-intuitive API inspired by [react-hook-form](https://react-hook-form.com/),
-allowing you to build forms with ease.
+Oxform is a framework-agnostic form library for TypeScript. A form is a chain of extensions. Each extension
+adds options, state, an api and slots. A thin adapter turns the slots of a form into parts for React or Solid.
 
-## Key benefits
+Five principles guide the design:
 
-- ✅ Framework-agnostic core
-- ✅ First-class TypeScript support
-- ✅ First-class [Standard Schema](https://standardschema.dev/) support
-- ⚛️ React integration
-- Solid integration
+1. **Composable.** A form is a chain of extensions, assembled for each use case.
+2. **Reusable.** An extension, a preset, a slot group and a scope can each be packaged and used in another
+   form.
+3. **Extensible.** Add options, state, api, slots and field members with no change to the engine.
+4. **Type-safe.** `Values` comes from the schema. Every other type is inferred from the chain.
+5. **Lightweight.** A form pays only for the extensions in its chain.
 
-## Features
+The design is inspired by [UI SDK](https://ui-sdk.dev/): a `define*` function with `name`, `options`,
+`state`, `api` and `slots`, and slots that an adapter renders.
 
-- Synchronous and asynchronous validation
-- Per-event validators (`change`, `blur`, `focus`, `submit`)
-- Event-scoped issues for warnings, notices, and blocking risk checks
-- Array fields with insert / append / prepend / move / swap / remove / replace
-- Nested fields with type-safe deep paths
-- Reactive subscriptions via `@tanstack/store`
-- Programmatic issues setting with `replace` / `append` / `keep` modes
-- Granular field reset and form reset with selective `keep` options
+## A sign-in form
+
+A sign-in page needs values, validation, one blocking check, status, events and submit. It needs no arrays and
+no reset, so the chain leaves them out.
+
+```ts
+import { defineForm, slots } from '@oxform/core';
+import {
+  check,
+  events,
+  fieldErrorSlots,
+  rootSlots,
+  status,
+  submit,
+  submitSlots,
+  validation,
+  values,
+} from '@oxform/core/behaviors';
+
+export const signIn = defineForm({ schema: signInSchema, defaultValues: emptySignIn })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+```
+
+The full example is `examples/kit/src/sign-in.ts`. The `standard` preset in `@oxform/core/presets` applies
+the full chain in one call.
 
 ## Packages
 
-| Package                           | Description                                          | Docs                               |
-| --------------------------------- | ---------------------------------------------------- | ---------------------------------- |
-| [`@oxform/react`](packages/react) | React bindings — hooks and components. Start here.   | [readme](packages/react/readme.md) |
-| [`@oxform/solid`](packages/solid) | Solid bindings — reactive primitives and components. | [readme](packages/solid/readme.md) |
-| [`@oxform/core`](packages/core)   | Framework-agnostic form engine                       | [readme](packages/core/readme.md)  |
+| Package                                       | Entry points                              | Purpose                                |
+| --------------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| [`@oxform/core`](./packages/core/readme.md)   | `.`, `/behaviors`, `/presets`, `/adapter` | The main APIs, the built-in extensions |
+| [`@oxform/react`](./packages/react/readme.md) | `.`                                       | The React adapter. Peer: React 19      |
+| [`@oxform/solid`](./packages/solid/readme.md) | `.` (Solid 1), `/v2` (Solid 2)            | The Solid adapters                     |
 
-## Quick start (React)
+The packages are ESM only. An adapter lists `@oxform/core` as a peer dependency.
 
-```bash
-npm install @oxform/react zod
-```
+## Links
 
-```tsx
-import { Field, useForm } from '@oxform/react';
-import z from 'zod';
-
-const schema = z.object({
-  name: z.string().min(3),
-  email: z.string().email(),
-});
-
-export function SignupForm() {
-  const form = useForm({
-    schema,
-    defaultValues: { name: '', email: '' },
-    checks: {
-      error: {
-        validate: { change: schema },
-      },
-    },
-  });
-
-  return (
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        form.submit(console.log, console.error)();
-      }}
-    >
-      <Field form={form} name='name'>
-        {field => <input type='text' {...field.props} />}
-      </Field>
-      <Field form={form} name='email'>
-        {field => <input type='email' {...field.props} />}
-      </Field>
-      <button type='submit'>Submit</button>
-    </form>
-  );
-}
-```
-
-See the [React package readme](packages/react/readme.md) for the full API and
-the [examples directory](examples/react/src/examples) for runnable demos
-(basic, array, async, effect, transform).
-
-For Solid, see the [Solid package readme](packages/solid/readme.md) and run
-the [Solid example](examples/solid/readme.md) with
-`pnpm --dir examples/solid run dev`.
-Solid 2 (`2.0.0-rc.19`) uses `@oxform/solid/v2`; run its
-[example](examples/solid-v2/readme.md) with
-`pnpm --dir examples/solid-v2 run dev`.
-
-## Documentation
-
-The public documentation app includes React, Solid, and core guides and API
-references:
-
-```bash
-pnpm install
-pnpm run docs:dev
-```
-
-Open [localhost:3002](http://localhost:3002). See the
-[docs app readme](apps/docs/README.md) for content editing and validation.
-
-## Examples
-
-The docs [playground](http://localhost:3002/playground) includes interactive
-React, Solid 1, and Solid 2 demos with source viewing. Run `pnpm run docs:dev`
-to use it locally. Select an example, edit its form fields, and inspect its
-state or console output. Reset demo starts a fresh instance.
-
-The [`examples/react`](examples/react) workspace contains runnable demos:
-
-```bash
-pnpm install
-cd examples/react
-pnpm run dev
-```
-
-## Contributing
-
-Development setup, conventions, and architecture are documented in the
-[contributor guide](AGENTS.md) and the [`docs/`](docs) folder:
-
-- [Structure](docs/structure.md) — monorepo layout and package organization
-- [Commands](docs/commands.md) — build, test, lint, release commands
-- [Checks and issues](docs/checks-and-issues.md) — warnings, notices, blocking risk checks,
-  and issue validation behavior
-- [Form core behaviors](docs/form-core-behaviors.md) — canonical specification
-  of every method's expected behavior
-- [Testing](docs/testing.md) — Vitest + Playwright browser testing patterns
-- [TypeScript conventions](docs/typescript.md) — type patterns and API design
-- [Code style](docs/code-style.md) — imports, formatting, naming
-
-Common commands:
-
-```bash
-pnpm install              # install workspace dependencies
-pnpm run build            # build libraries, examples, and docs
-pnpm run test             # run library and example test suites
-pnpm run check:all        # lint + format + types + package check
-pnpm run fix:format readme.md # format changed files
-```
+- Documentation: [oxform.frantss.uy](https://oxform.frantss.uy). For agents: [llms.txt](https://oxform.frantss.uy/llms.txt).
+- Examples: [`examples/`](./examples) (React, Solid 1, Solid 2 and the shared kit). The docs
+  [playground](./apps/docs/README.md#playground) runs them.
+- Contributors: [`AGENTS.md`](./AGENTS.md) and the guides in [`docs/`](./docs).
+- Source: [github.com/frantss/oxform](https://github.com/frantss/oxform).
 
 ## License
 
-[MIT](license.md) © Francisco Bongiovanni
+MIT
