@@ -185,6 +185,9 @@
   `extend/intercept-a-change` and `extend/field-members` guides state no limit for it. The complete example of
   `extend/field-members` includes `masks.ts`, so readers see the old comment and the weaker `string` keys. The kit
   owner can type the option as `Partial<Record<Path<Values>, string>>` and drop the comment.
+- Fixed: `examples/kit/src/masks.ts` types the option as `Readonly<Partial<Record<Path<Values>, string>>>` with no
+  comment, and `masks.spec.ts` checks that a key that is not a path is a type error. `core/option.mdx` and the
+  "State the needs" step of `extend/field-members.mdx` state the same type, and the `string` keys rule is removed.
 
 ## The built React adapter has no `'use client'` directive (TK-064)
 
@@ -210,6 +213,9 @@
 - Why it matters: the values of the table are its content, and a reader on a phone cannot read them. A fix is a
   rule for the matrix cells in `apps/docs/src/styles/app.css` (`overflow-wrap: normal` and a `min-width`, with the
   table wrapper that already scrolls), or a list layout per row on small screens.
+- Fixed: `apps/docs/src/styles/app.css` sets `overflow-wrap: normal`, `word-break: normal` and `min-width: 6.5rem`
+  on the table cells of the page that has the `#features` heading. At 390x844 and 1280x800 no word breaks inside
+  the word, the page does not scroll sideways, and the matrix and the sources table scroll in their wrappers.
 
 ## The comparison page depends on the plan folder that TK-074 removes (TK-070)
 
@@ -221,6 +227,12 @@
   the Oxform source links are dead. Move the JSON to the docs app (for example `apps/docs/data/`), point each
   Oxform source at a docs page, and update the two references. The "(planned)" suffix that `07-comparison.md` 3.1
   removes at release has no owning ticket either; TK-073 can own it.
+- Fixed: the data is `apps/docs/data/comparison-features.json` (moved with `git mv`). `generate-comparison.ts`,
+  `comparison.mdx`, the issue template, `04-documentation.md`, `07-comparison.md` and TK-055, TK-056 and TK-068
+  name the new path; `00-direction.md`, `06-roadmap.md` and TK-070 still name the old one. Each Oxform record links
+  to a docs page (`/docs/...`, `/llms.txt`), to a repository file on GitHub `main` (`packages/core/package.json`,
+  `readme.md#packages`), or to npm. `showPlannedSuffix` in `generate-comparison.ts` turns the "(planned)" suffix
+  off in one line.
 
 ## The agent trial of `04-documentation.md` 7.5 is not recorded (TK-070)
 
@@ -237,6 +249,9 @@
   TK-063 compiled them once in the kit by hand. No kit file holds `strictSignIn` or `signInWithBanner`.
 - Why it matters: a later API change can break these blocks with no failing check. Moving each block to a kit file
   or a `// #region` of one, and including it, puts it under `check:types`.
+- Fixed: each of the 8 blocks is now an `<include>` of a kit file that `check:types` compiles and a spec tests.
+  New kit files: `strict-sign-in.ts`, `sign-in-with-banner.ts`, `article-advice.ts`, `article-autosave.ts` and
+  `house-forms.ts`; the specs that built these chains inline now import them.
 
 ## Api types of `@oxform/core/behaviors` with no page (TK-070)
 
