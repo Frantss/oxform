@@ -173,3 +173,15 @@
   `any` of the `SlotRecord` constraint no longer becomes the state of a slot. A slot with no `state` gets `{}`,
   and `fieldError` writes `state` before `text`, so it gets `{ messages: string[] }`. The cast in `slots.spec.ts`
   is removed. The annotation in `plans/extension-api/05-migration-guide.md` is no longer necessary.
+
+## The comment on the `masks` option names a cast that is no longer needed (TK-063)
+
+- What: `examples/kit/src/masks.ts:28` says that `Path<Values>` of an unresolved `Values` does not index a mapped
+  option, so the option uses `string` keys. A probe on the built `@oxform/core` (2026-11-18) compiled
+  `optionTypes<{ masks: Partial<Record<Path<Values>, string>> }>()` with `context.options().masks?.[change.path]`
+  in a generic extension, and `.configure({ masks: { 'card.number': '####' } })` on the checkout, with no cast.
+  Only `Record` without `Partial` fails, at `create` (TS2741: every path is required).
+- Why it matters: `01-public-api.md` 7.5, item 5 ("`change.path` needs a cast"), no longer holds, so the
+  `extend/intercept-a-change` and `extend/field-members` guides state no limit for it. The complete example of
+  `extend/field-members` includes `masks.ts`, so readers see the old comment and the weaker `string` keys. The kit
+  owner can type the option as `Partial<Record<Path<Values>, string>>` and drop the comment.
