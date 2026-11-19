@@ -201,3 +201,54 @@
   the `MODULE_LEVEL_DIRECTIVE` warning, as the banner puts back what the bundle drops.
   `check:package` runs `scripts/check-client-directive.ts`, which fails when the first line of `dist/index.js` is
   not the directive. The `adapters/react` page can now state the `'use client'` fact.
+
+## The comparison matrix breaks words on a phone (TK-070)
+
+- What: at 390x844, `/docs/comparison` shows "Not avail able", "Bui lt-in" and "Use r cod e". The cells of the
+  matrix (`apps/docs/content/docs/comparison.mdx:29`, the generated `comparison-matrix.md`) have the computed style
+  `overflow-wrap: anywhere`, and five columns leave 58 px per cell.
+- Why it matters: the values of the table are its content, and a reader on a phone cannot read them. A fix is a
+  rule for the matrix cells in `apps/docs/src/styles/app.css` (`overflow-wrap: normal` and a `min-width`, with the
+  table wrapper that already scrolls), or a list layout per row on small screens.
+
+## The comparison page depends on the plan folder that TK-074 removes (TK-070)
+
+- What: `apps/docs/scripts/generate-comparison.ts:21` reads `plans/extension-api/07-comparison-features.json`.
+  Each Oxform record links to a plan file (`00-direction.md`, `01-public-api.md` and others) on GitHub `main`.
+  `apps/docs/content/docs/comparison.mdx:54` and `.github/ISSUE_TEMPLATE/comparison-correction.yml:9` name the
+  plan path.
+- Why it matters: after TK-074 removes `plans/extension-api/`, `docs:build` fails at `comparison:generate`, and
+  the Oxform source links are dead. Move the JSON to the docs app (for example `apps/docs/data/`), point each
+  Oxform source at a docs page, and update the two references. The "(planned)" suffix that `07-comparison.md` 3.1
+  removes at release has no owning ticket either; TK-073 can own it.
+
+## The agent trial of `04-documentation.md` 7.5 is not recorded (TK-070)
+
+- What: 7.5 asks for one trial by hand per release: an agent gets only `llms.txt` and the task "write the sign-in
+  form as a lean chain, then add a `warning` check", and its output is type-checked. No file in `reports/` holds
+  it, and no ticket ran it. `reports/migration-trial.md` is the trial of the migration guide.
+- Why it matters: the definition of done (`06-roadmap.md`) and the phase 8 exit criteria require it. It is the
+  only check that the agent outputs work for the task that they exist for.
+
+## Docs blocks that no check compiles (TK-070)
+
+- What: 8 inline blocks carry `no-check="imports files of the example kit"`, for example
+  `apps/docs/content/docs/extend/replace-a-slot.mdx:56` and `apps/docs/content/docs/compose/slot-group.mdx:59`.
+  TK-063 compiled them once in the kit by hand. No kit file holds `strictSignIn` or `signInWithBanner`.
+- Why it matters: a later API change can break these blocks with no failing check. Moving each block to a kit file
+  or a `// #region` of one, and including it, puts it under `check:types`.
+
+## Api types of `@oxform/core/behaviors` with no page (TK-070)
+
+- What: 26 type exports of `packages/core/export/behaviors.ts` are named on no docs page, for example
+  `ValuesApi`, `SubmitResult`, `ChangeInterceptor` and `ValidationRunOptions`. The inventory check
+  (`apps/docs/scripts/check-agents.ts:325`) covers runtime exports only, as `04-documentation.md` 3 asks.
+- Why it matters: the definition of done says every export has a reference page. A reader who sees the type in an
+  editor finds no page for it. Either name each type on its behavior page or narrow the definition of done to
+  runtime exports.
+
+## A stale sentence about the size table (TK-070)
+
+- What: `reports/extension-api-rebuild.md:157` says that "the size table measures it". The size table and its
+  scripts were removed (owner decision of 2026-11-16 and owner decision 19).
+- Why it matters: a reader may look for a measured size that does not exist.
