@@ -187,7 +187,8 @@ type does not change.
 
 ## Complete example
 
-The form of the example kit. The schema is in `schemas/sign-in.ts` of the kit.
+The form of the example kit. The schema is in `schemas/sign-in.ts` of the kit, and this file imports it from
+there. Another file, such as the render code, imports the form: `import { signIn } from './sign-in';`.
 
 <include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in.ts</include>
 
