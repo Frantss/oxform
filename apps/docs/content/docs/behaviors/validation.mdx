@@ -57,14 +57,14 @@ void form.validation.run('email', { type: 'blur' }).then(([valid, issues]) => {
 
 ## Adds
 
-| Addition       | Name         | What it is                                                                            |
-| -------------- | ------------ | ------------------------------------------------------------------------------------- |
-| Option         | None         | Each check adds the option with its name                                              |
-| State key      | `validating` | The number of pending runs                                                            |
-| Api member     | `validation` | `run(targets?, options?)`, `onRun(listener)`, `issues(path?)`, `checks`, `validating` |
-| Extension hook | `onRun`      | Runs after each applied run, with its targets, event, `valid` and issues              |
-| Slot           | None         |                                                                                       |
-| Field member   | None         |                                                                                       |
+| Addition       | Name         | What it is                                                                                                                                                                                                           |
+| -------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Option         | None         | Each check adds the option with its name                                                                                                                                                                             |
+| State key      | `validating` | The number of pending runs                                                                                                                                                                                           |
+| Api member     | `validation` | `run(targets?, options?)`, which resolves the tuple `[valid, issues]`: `valid` is a `boolean`, `issues` has the entries of each check by check name. Also `onRun(listener)`, `issues(path?)`, `checks`, `validating` |
+| Extension hook | `onRun`      | Runs after each applied run, with its targets, event, `valid` and issues                                                                                                                                             |
+| Slot           | None         |                                                                                                                                                                                                                      |
+| Field member   | None         |                                                                                                                                                                                                                      |
 
 ## Order
 
@@ -84,7 +84,8 @@ A custom extension names `validation` in `Needs` and in `needs.api`, reads `vali
 - `run()` with no target runs every path. `run(path)` and `run([paths])` keep only the issues at those paths and
   below.
 - `run(targets, { type })` runs only the validators of that event. Without `type`, a run uses every event.
-- `run` resolves `[valid, issues]`. `valid` is false when a blocking check found an issue in this run.
+- `run` resolves the tuple `[valid, issues]`, so read it as `const [valid, issues] = await form.validation.run()`.
+  `valid` is false when a blocking check found an issue in this run. `issues.error` is the list of the `error` check.
 - A change at a target, at a descendant or an ancestor of a target, or at the root makes a pending run stale. A newer
   run of the same targets and event also makes it stale. A stale run applies nothing, and resolves valid with an empty
   list per check.
