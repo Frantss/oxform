@@ -3,12 +3,12 @@ id: TK-067
 title: Contributor documents
 phase: 8
 work_package: P8-10
-status: in-progress
+status: done
 depends_on: [TK-047, TK-059]
 branch: codex/P8-10-contributor-docs
 pr: null
 started: 2026-11-18
-completed: null
+completed: 2026-11-18
 ---
 
 # TK-067: Contributor documents
@@ -58,8 +58,10 @@ completed: null
 
 ## Evidence
 
-Status stays `in-progress`: `docs/architecture.md` (TK-060 draft) is not completed yet. The coordinator sends a
-follow-up after TK-060 lands. `AGENTS.md` already lists it and links it, so that one link is dead until then.
+Part 2: `docs/architecture.md` is complete from the TK-060 draft (the "Draft." line removed, a link to
+`docs/adapter-authors.md` added; adapter-side use of `@oxform/core/adapter` stays only in that document). The code
+comments at `vite.config.ts:41` and `apps/docs/scripts/check-agents.ts:8` no longer name the plan. The AGENTS.md link
+to `docs/architecture.md` resolves.
 
 Commands of `docs/commands.md`, run from the worktree root (ports 3207, never 3002):
 
@@ -108,8 +110,7 @@ One row had no test: "write one path by value or updater, siblings kept" (row 4)
 
 Links: `grep` for `form-core-behaviors`, `checks-and-issues` and `plans/extension-api` outside `plans/` and `reports/`
 finds no link. Two links in `explorations/behavior-api/` (`proposal.md:416`, `tickets/tk-007-lane-race-specs.md:8`)
-became plain text. Two code comments name the plan (`vite.config.ts:41`, `apps/docs/scripts/check-agents.ts:8`). They
-are outside this ticket's files and are not links.
+became plain text. The two code comments that named the plan were reworded in part 2.
 
 Decisions (owner decision 18):
 
