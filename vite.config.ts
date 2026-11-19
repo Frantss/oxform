@@ -24,7 +24,7 @@ const restrictImports = (
 
 export const base = defineConfig({
   lint: {
-    ignorePatterns: ['dist/**', 'node_modules/**', 'explorations/**'],
+    ignorePatterns: ['dist/**', 'node_modules/**'],
     plugins: ['oxc', 'typescript', 'import', 'promise', 'react', 'react-perf'],
     env: {
       browser: true,
