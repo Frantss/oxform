@@ -46,7 +46,8 @@ editor.create().warning.at('title');
 ### Set its validators [#set-its-validators]
 
 The `warning` option takes validators by event, as the `error` option does. The advice schema has one rule: a
-title of 60 characters at most. It runs on `change` and on `submit`.
+title of 60 characters at most. It runs on `change` only. The check keeps one entry per event, so the same schema
+on `change` and on `submit` gives a long title two equal warnings.
 
 ```ts twoslash
 import { defineForm } from '@oxform/core';
@@ -62,7 +63,7 @@ export const editor = defineForm({ schema: articleSchema, defaultValues: { title
   .extend(check('warning'))
   .configure({
     error: { change: articleSchema },
-    warning: { change: articleAdviceSchema, submit: articleAdviceSchema },
+    warning: { change: articleAdviceSchema },
   });
 ```
 
@@ -129,18 +130,19 @@ The check and the slot group of the example kit.
 ## Verify
 
 Change `title` to a text over 60 characters: `form.warning.at('title')` has one entry, and the `fieldWarning` part
-for `title` is present with the message. Submit: `onSubmit` runs, and the warning stays. The test of the kit does
+for `title` is present with the message. Submit, then run every event with `form.validation.run()`: `onSubmit` runs, and the warning stays, with one entry. The test of the kit does
 this (`examples/kit/src/warnings.spec.ts`).
 
 ## Common mistakes
 
-| Wrong code                                                                 | Effect                                                                                                         | Fix                                                                                                  |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `form.field('title').warning()` after `.extend(standard).extend(warnings)` | Type error: no `warning` sugar. A check applied after `handles` has no sugar, in the types and at runtime      | Read the check: `form.warning.at('title')`. Or write a chain that applies the check before `handles` |
-| One generic preset that applies `standard` and `check('warning')`          | Type error at the next `.extend`: with a generic `Options`, TypeScript cannot decide if the option name is new | Apply `warnings` and `warningSlots` on the form, as the kit does                                     |
-| `check('warning', { blocking: true })`                                     | A warning stops the submit                                                                                     | Leave out `blocking` for advice                                                                      |
-| `.extend(check('error'))` on a form that has `error`                       | Type error at the next call: the option `error` is declared twice. At `create`, the state key `error` throws   | Give the second check its own name                                                                   |
-| `slot({ text: ({ messages }) => …, state: … })`                            | `text` comes first, so its parameter is `{}`, and `messages` is a type error                                   | Write `text` after `state`                                                                           |
+| Wrong code                                                                 | Effect                                                                                                         | Fix                                                                                                                                   |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `form.field('title').warning()` after `.extend(standard).extend(warnings)` | Type error: no `warning` sugar. A check applied after `handles` has no sugar, in the types and at runtime      | Read the check: `form.warning.at('title')`. Or write a chain that applies the check before `handles`                                  |
+| One generic preset that applies `standard` and `check('warning')`          | Type error at the next `.extend`: with a generic `Options`, TypeScript cannot decide if the option name is new | Apply `warnings` and `warningSlots` on the form, as the kit does                                                                      |
+| `check('warning', { blocking: true })`                                     | A warning stops the submit                                                                                     | Leave out `blocking` for advice                                                                                                       |
+| `.extend(check('error'))` on a form that has `error`                       | Type error at the next call: the option `error` is declared twice. At `create`, the state key `error` throws   | Give the second check its own name                                                                                                    |
+| `slot({ text: ({ messages }) => …, state: … })`                            | `text` comes first, so its parameter is `{}`, and `messages` is a type error                                   | Write `text` after `state`                                                                                                            |
+| `warning: { change: articleAdviceSchema, submit: articleAdviceSchema }`    | After a change and a submit, `form.warning.at('title')` has the same warning twice: one entry per event        | Give the advice to one event, as the kit does. Or write `check('warning', { exclusive: true })`; a run of every event still gives two |
 
 ## Related
 

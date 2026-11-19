@@ -91,6 +91,10 @@ check: `warningSlots` (E14) needs the state key `warning`.
 - An entry has the fields of a Standard Schema issue, and `type`, the event of the validator that found it.
 - A check that is not exclusive keeps, in a run, the entries of the events that did not run and the entries set by
   hand.
+- A check keeps one entry per event that finds an issue. With one schema on `change` and on `submit`, an issue has
+  two entries after a change and a submit, and after a run of every event (`validation.run()` with no `type`). Give
+  each issue to one event. `exclusive: true` keeps one entry when each run has one event, as the runs of `events`
+  and `submit` do, but a run of every event still gives one entry per event.
 - `set(path, entries, { mode })`: `'replace'` (default) writes the entries, `'append'` adds them, `'keep'` writes only
   when the path has no entry.
 - `at(path, { nested: true })` returns the entries at the path and below. `at('', { nested: true })` returns every
@@ -99,11 +103,12 @@ check: `warningSlots` (E14) needs the state key `warning`.
 
 ## Common mistakes
 
-| Wrong code                                          | Effect                                                                                   | Fix                                              |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `.extend(handles).extend(check('warning'))`         | The field handles have no `warning()` and no `setWarning()`, in the types and at runtime | Apply the check before `handles`                 |
-| `check('warning')` with no `warning` option         | The check never finds an issue: it has no validator                                      | Set `warning: { change: schema }` in `configure` |
-| `check('error')` for errors that must stop a submit | The check does not block: a submit calls `onSubmit` with errors                          | Use `check('error', { blocking: true })`         |
+| Wrong code                                          | Effect                                                                                   | Fix                                                                                   |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `.extend(handles).extend(check('warning'))`         | The field handles have no `warning()` and no `setWarning()`, in the types and at runtime | Apply the check before `handles`                                                      |
+| `check('warning')` with no `warning` option         | The check never finds an issue: it has no validator                                      | Set `warning: { change: schema }` in `configure`                                      |
+| `check('error')` for errors that must stop a submit | The check does not block: a submit calls `onSubmit` with errors                          | Use `check('error', { blocking: true })`                                              |
+| `warning: { change: schema, submit: schema }`       | After a change and a submit, `form.warning.at(path)` has each issue twice                | Give the schema to one event: `warning: { change: schema }`. Or use `exclusive: true` |
 
 The type error of the first row:
 

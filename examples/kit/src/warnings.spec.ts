@@ -25,9 +25,18 @@ describe('warnings', () => {
 
   it('does not stop the writer from publishing', async () => {
     using subject = setup();
-    subject.form.values.set('title', longTitle);
+    subject.form.events.change('title', longTitle);
     await subject.form.submit.run();
 
     expect([subject.form.warning.at('title').length, subject.onSubmit.mock.calls.length]).toEqual([1, 1]);
+  });
+
+  it('keeps one warning for one issue after a change, a submit and a run of every event', async () => {
+    using subject = setup();
+    subject.form.events.change('title', longTitle);
+    await subject.form.submit.run();
+    await subject.form.validation.run();
+
+    expect(subject.form.warning.at('title').map(entry => entry.type)).toEqual(['change']);
   });
 });
