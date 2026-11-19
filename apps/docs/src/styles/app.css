@@ -16,6 +16,22 @@
 .playground-description {
   color: var(--color-fd-muted-foreground);
 }
+.playground-guides {
+  margin-block: 0.75rem;
+}
+.playground-guides h2 {
+  margin-bottom: 0.375rem;
+  font-weight: 700;
+}
+.playground-guides ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+.playground-guides a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
 .playground-selectors {
   display: flex;
   flex-wrap: wrap;

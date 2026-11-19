@@ -64,6 +64,16 @@ function PlaygroundPage() {
           </label>
         </div>
         <p className='playground-description'>{selected.description}</p>
+        <nav className='playground-guides' aria-label='Guides for this form'>
+          <h2>Guides</h2>
+          <ul>
+            {selected.guides.map(guide => (
+              <li key={guide.href}>
+                <a href={guide.href}>{guide.title}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
         <Playground key={framework + '/' + selected.id} framework={framework} example={selected} />
       </main>
     </HomeLayout>
