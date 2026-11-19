@@ -131,7 +131,7 @@ evidence.
 | [TK-062](./tickets/TK-062-behavior-pages.md)        | Behavior and preset pages | P8-05        | done   | TK-050, TK-059, TK-033 |
 | [TK-063](./tickets/TK-063-compose-extend-guides.md) | Compose and extend guides | P8-06        | done   | TK-050, TK-059, TK-033 |
 | [TK-064](./tickets/TK-064-react-pages.md)           | React pages               | P8-07        | done   | TK-051, TK-059, TK-033 |
-| [TK-065](./tickets/TK-065-solid-pages.md)           | Solid pages               | P8-08        | ready  | TK-052, TK-053, TK-059 |
+| [TK-065](./tickets/TK-065-solid-pages.md)           | Solid pages               | P8-08        | done   | TK-052, TK-053, TK-059 |
 | [TK-066](./tickets/TK-066-migration-guide.md)       | Migration guide           | P8-09        | done   | TK-042, TK-046, TK-059 |
 | [TK-067](./tickets/TK-067-contributor-docs.md)      | Contributor documents     | P8-10        | done   | TK-047, TK-059         |
 | [TK-068](./tickets/TK-068-comparison-page.md)       | Comparison page           | P8-11        | done   | TK-055, TK-059         |
