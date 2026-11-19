@@ -185,3 +185,13 @@
   `extend/intercept-a-change` and `extend/field-members` guides state no limit for it. The complete example of
   `extend/field-members` includes `masks.ts`, so readers see the old comment and the weaker `string` keys. The kit
   owner can type the option as `Partial<Record<Path<Values>, string>>` and drop the comment.
+
+## The built React adapter has no `'use client'` directive (TK-064)
+
+- What: `packages/react/src/create-parts.ts:1` and `packages/react/src/use-part.ts:1` start with `'use client'`,
+  but the bundled `packages/react/dist/index.js` has no such directive (`grep -c "use client"` gives 0). The build
+  drops module directives when it merges the modules into one file.
+- Why it matters: `01-public-api.md` 6.2 says that the module has `'use client'`. In a React Server Components
+  application, a server component that imports `createParts` gets hooks and contexts on the server and fails. The
+  `adapters/react` page states no `'use client'` fact until the build keeps it, for example with a banner on the
+  output chunk.
