@@ -16,13 +16,13 @@ completed: 2026-11-18
 ## Outcome
 
 `comparison.mdx` shows the feature matrix of Oxform, TanStack Form, React Hook Form and Formisch, generated
-from the committed `07-comparison-features.json`. The `.md` route holds the table. `/comparison.json` serves
+from the committed `apps/docs/data/comparison-features.json`. The `.md` route holds the table. `/comparison.json` serves
 the data. A stale data set shows a warning on the page.
 
 ## Scope
 
 - In: `comparison.mdx` with the H2 headings of `07-comparison.md#5`, on the overview type. The script that
-  writes the table as Markdown from `plans/extension-api/07-comparison-features.json`. The static `/comparison.json`, linked from the page and from `llms.txt`.
+  writes the table as Markdown from `apps/docs/data/comparison-features.json`. The static `/comparison.json`, linked from the page and from `llms.txt`.
   The warning block of the staleness rule of `07#6.2`, which the docs build prints with no network call. The
   "Comparison correction" issue template of `07#4` rule 4.
 - Out: the research data (TK-055). A size table, a comparison workspace and a release gate (dropped, owner
@@ -58,7 +58,7 @@ the data. A stale data set shows a warning on the page.
 - Path taken: the Markdown include. `comparison.mdx` has three `<include>./generated/comparison-*.md</include>`
   lines (warning, matrix, sources). Fumadocs puts the included text in the HTML page and in the `.md` route
   (`dist/client/docs/comparison.md` holds the matrix and the sources table). No markers.
-- `apps/docs/scripts/generate-comparison.ts` reads `plans/extension-api/07-comparison-features.json` and writes
+- `apps/docs/scripts/generate-comparison.ts` reads `apps/docs/data/comparison-features.json` and writes
   `content/docs/generated/*.md` and `public/comparison.json` (a copy of the JSON file). All are git-ignored
   (`apps/docs/.gitignore`). The `dev`, `build` and `postinstall` scripts of `apps/docs` run it first.
 - Table: a matrix of 21 rows by 4 libraries, each value linking its source, and a "Sources and versions" table of

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        The table is generated from `plans/extension-api/07-comparison-features.json`. A maintainer checks each correction at the primary source of the library before it is merged. A cell is not changed because Oxform lacks the feature.
+        The table is generated from `apps/docs/data/comparison-features.json`. A maintainer checks each correction at the primary source of the library before it is merged. A cell is not changed because Oxform lacks the feature.
   - type: input
     id: row
     attributes:

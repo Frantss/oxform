@@ -6,7 +6,7 @@ with [00-direction.md](./00-direction.md) and uses its glossary. The site map an
 [04-documentation.md](./04-documentation.md) and the order of work in [06-roadmap.md](./06-roadmap.md).
 
 Nothing is built. Every statement about Oxform is a plan. Every statement about another library was read on
-2026-11-15 and read again on 2026-11-16 (P7-08) at the source that the row names. `07-comparison-features.json`
+2026-11-15 and read again on 2026-11-16 (P7-08) at the source that the row names. `apps/docs/data/comparison-features.json`
 holds each cell of 3.3 with its source, version and date.
 
 ## 1. Purpose and reader
@@ -185,12 +185,12 @@ Formisch rests on the absence of a package (F10), because the documentation does
 ## 4. Fairness rules
 
 1. Each cell is filled from the primary source of its library, never from memory or from another comparison.
-   Each record of `07-comparison-features.json` holds the source, the version and the date read.
+   Each record of `apps/docs/data/comparison-features.json` holds the source, the version and the date read.
 2. Cells are published as read. A row is not removed, and a cell is not changed, because Oxform lacks the
    feature. A row leaves the matrix only if it has no value for one of the four libraries (3.1).
 3. A contested cell has a footnote with the source link, the version and the date read (3.1).
 4. Correction path: the page links an issue template "Comparison correction". A maintainer of another library
-   can open an issue or a pull request against `07-comparison-features.json`. A valid correction is checked at
+   can open an issue or a pull request against `apps/docs/data/comparison-features.json`. A valid correction is checked at
    the primary source and merged before the next release.
 5. The page states what the table does not show: runtime speed, render counts and bundle sizes.
 
@@ -226,11 +226,11 @@ Draft of "When to choose another library" (each line cites a row of section 2 on
 
 Agent-first form of the data (`04#7`):
 
-| Output                        | Content                                                                                      |
-| ----------------------------- | -------------------------------------------------------------------------------------------- |
-| `07-comparison-features.json` | One record per matrix cell: `row`, `library`, `value`, `note`, `source`, `version`, `readAt` |
-| `/docs/comparison.md`         | The plain-Markdown route. The table is a Markdown table, with version and date columns       |
-| `/comparison.json`            | The JSON file as one static file of the site, linked from the page and from `llms.txt`       |
+| Output                                    | Content                                                                                      |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `apps/docs/data/comparison-features.json` | One record per matrix cell: `row`, `library`, `value`, `note`, `source`, `version`, `readAt` |
+| `/docs/comparison.md`                     | The plain-Markdown route. The table is a Markdown table, with version and date columns       |
+| `/comparison.json`                        | The JSON file as one static file of the site, linked from the page and from `llms.txt`       |
 
 The table in the page is generated from the JSON file by a script, as Markdown, so that the Markdown route
 contains it. A component that renders the JSON in the browser would leave the Markdown route empty.
@@ -267,13 +267,13 @@ P7-07, P7-09, P7-10 and P9-06 are dropped (`00#Owner decisions` 19).
 
 ## 7. Risks
 
-| #   | Risk                                                                                           | Mitigation                                                                                                |
-| --- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1   | The data goes stale. Three of the four libraries published in the last 100 days (T10, R8, F10) | The date beside every cell and the warning (6.2)                                                          |
-| 2   | A maintainer says the comparison is unfair                                                     | A source per cell, the correction path (4)                                                                |
-| 3   | A matrix cell is wrong about another library                                                   | A source, version and date per cell. No cell from memory. P7-08 before publication                        |
-| 4   | The "planned" cells are read as shipped features                                               | The suffix on every Oxform cell, and one sentence in "In short", until the release                        |
-| 5   | Download and star counts change every week                                                     | They are dated facts in `07-comparison-features.json`, updated only at a release. The page shows the date |
+| #   | Risk                                                                                           | Mitigation                                                                                                            |
+| --- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | The data goes stale. Three of the four libraries published in the last 100 days (T10, R8, F10) | The date beside every cell and the warning (6.2)                                                                      |
+| 2   | A maintainer says the comparison is unfair                                                     | A source per cell, the correction path (4)                                                                            |
+| 3   | A matrix cell is wrong about another library                                                   | A source, version and date per cell. No cell from memory. P7-08 before publication                                    |
+| 4   | The "planned" cells are read as shipped features                                               | The suffix on every Oxform cell, and one sentence in "In short", until the release                                    |
+| 5   | Download and star counts change every week                                                     | They are dated facts in `apps/docs/data/comparison-features.json`, updated only at a release. The page shows the date |
 
 ## 8. Deviations and decisions
 

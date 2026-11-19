@@ -4,9 +4,9 @@
     "library": "Oxform",
     "value": "React, Solid 1, Solid 2",
     "note": "(planned)",
-    "source": "plans/extension-api/00-direction.md#packages-and-entry-points",
+    "source": "/docs/adapters#the-import-that-changes",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Frameworks",
@@ -40,9 +40,9 @@
     "library": "Oxform",
     "value": "Not available",
     "note": "(planned) Values live in the store",
-    "source": "plans/extension-api/01-public-api.md#3.1",
+    "source": "/docs#model",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Uncontrolled inputs",
@@ -76,9 +76,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) From the schema and the chain",
-    "source": "plans/extension-api/00-direction.md#principles",
+    "source": "/docs#principles",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Types without a hand-written generic",
@@ -112,9 +112,9 @@
     "library": "Oxform",
     "value": "Not available",
     "note": "(planned) A schema only types Values",
-    "source": "plans/extension-api/04-documentation.md#5.2",
+    "source": "/docs/limits#schema-validates-nothing",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "The schema validates without more setup",
@@ -148,9 +148,9 @@
     "library": "Oxform",
     "value": "Standard Schema",
     "note": "(planned)",
-    "source": "plans/extension-api/02-structure.md#package-manifest",
+    "source": "/docs/behaviors/check#adds",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Schema libraries",
@@ -184,9 +184,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) Validator functions per check",
-    "source": "plans/extension-api/01-public-api.md#3.1",
+    "source": "/docs/behaviors/check#adds",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Validation without a schema library",
@@ -220,9 +220,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) Per event in each check",
-    "source": "plans/extension-api/04-documentation.md#4.2",
+    "source": "/docs/behaviors/check#adds",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Validation timing per validator",
@@ -256,9 +256,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) A newer run discards a stale one",
-    "source": "plans/extension-api/03-testing.md#integration-layer",
+    "source": "/docs/behaviors/validation#rules",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Async validation",
@@ -291,10 +291,10 @@
     "row": "Debounce of async validation",
     "library": "Oxform",
     "value": "User code",
-    "note": "(planned) No option in the plan",
-    "source": "plans/extension-api/01-public-api.md#3.1",
+    "note": "(planned) No debounce option on a check",
+    "source": "/docs/behaviors/check#adds",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Debounce of async validation",
@@ -328,9 +328,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) check(name)",
-    "source": "plans/extension-api/01-public-api.md#3.1",
+    "source": "/docs/extend/second-check",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "More than one named set of issues (warnings)",
@@ -364,9 +364,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) arrays",
-    "source": "plans/extension-api/01-public-api.md#3.1",
+    "source": "/docs/behaviors/arrays",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Array fields",
@@ -400,9 +400,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) defineScope",
-    "source": "plans/extension-api/04-documentation.md#4.2",
+    "source": "/docs/compose/repeated-block",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Reusable field group at more than one path",
@@ -436,9 +436,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) A preset",
-    "source": "plans/extension-api/04-documentation.md#4.2",
+    "source": "/docs/compose/your-own-preset",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Shared form set-up for a team",
@@ -472,9 +472,9 @@
     "library": "Oxform",
     "value": "User code",
     "note": "(planned) The rules are documented. No integration package",
-    "source": "plans/extension-api/04-documentation.md#4.2",
+    "source": "/docs/concepts/server-rendering",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Server rendering with a meta-framework",
@@ -507,10 +507,10 @@
     "row": "Devtools",
     "library": "Oxform",
     "value": "Not available",
-    "note": "(planned) Not in the plan",
-    "source": "plans/extension-api/07-comparison.md#3.3",
+    "note": "(planned) No devtools package",
+    "source": "readme.md#packages",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Devtools",
@@ -544,9 +544,9 @@
     "library": "Oxform",
     "value": "@tanstack/store",
     "note": "(planned)",
-    "source": "plans/extension-api/02-structure.md#package-manifest",
+    "source": "packages/core/package.json",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Runtime dependencies",
@@ -580,9 +580,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) defineExtension",
-    "source": "plans/extension-api/01-public-api.md#2.1",
+    "source": "/docs/core/define-extension",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Extension mechanism for new behavior",
@@ -616,9 +616,9 @@
     "library": "Oxform",
     "value": "None",
     "note": "(planned) 0.7.0 is a breaking 0.x release",
-    "source": "plans/extension-api/00-direction.md#owner-decisions",
+    "source": "/docs/migration",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "First stable major release",
@@ -652,9 +652,9 @@
     "library": "Oxform",
     "value": "To be read at release",
     "note": "(planned)",
-    "source": "plans/extension-api/07-comparison.md#3.3",
+    "source": "https://www.npmjs.com/package/@oxform/core",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "npm downloads in one week",
@@ -688,9 +688,9 @@
     "library": "Oxform",
     "value": "Built-in",
     "note": "(planned) llms.txt, page Markdown",
-    "source": "plans/extension-api/04-documentation.md#7.2",
+    "source": "/llms.txt",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Documentation for coding agents",
@@ -726,7 +726,7 @@
     "note": "(planned) Licence field of the package manifest",
     "source": "packages/core/package.json",
     "version": "0.7.0 (planned)",
-    "readAt": "2026-11-16"
+    "readAt": "2026-11-18"
   },
   {
     "row": "Licence",

@@ -2,9 +2,10 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Writes the generated parts of the comparison page from `plans/extension-api/07-comparison-features.json`
- * (`plans/extension-api/07-comparison.md#5`). `comparison.mdx` includes both Markdown files, so the `.md` route
- * holds the table. The build reads no network: the staleness warning compares each `readAt` with today's date.
+ * Writes the generated parts of the comparison page from `data/comparison-features.json`. `comparison.mdx` includes
+ * both Markdown files, so the `.md` route holds the table. The build reads no network: the staleness warning compares
+ * each `readAt` with today's date. A `source` that starts with `/` is a page of this site; another relative `source`
+ * is a file of the repository.
  */
 
 interface FeatureRecord {
@@ -18,18 +19,19 @@ interface FeatureRecord {
 }
 
 const appDirectory = join(import.meta.dirname, '..');
-const featuresFile = join(appDirectory, '../../plans/extension-api/07-comparison-features.json');
+const featuresFile = join(appDirectory, 'data/comparison-features.json');
 const generatedDirectory = join(appDirectory, 'content/docs/generated');
 const sourceBaseUrl = 'https://github.com/frantss/oxform/blob/main/';
 const staleAfterDays = 90;
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
+const showPlannedSuffix = true;
 
 const records: FeatureRecord[] = JSON.parse(readFileSync(featuresFile, 'utf8'));
 const libraries = [...new Set(records.map(record => record.library))];
 const rows = [...new Set(records.map(record => record.row))];
 
 const sourceUrl = (record: FeatureRecord) =>
-  /^https?:/.test(record.source) ? record.source : sourceBaseUrl + record.source;
+  /^(https?:|\/)/.test(record.source) ? record.source : sourceBaseUrl + record.source;
 const escapeCell = (text: string) =>
   text.replace(/[\\{}<>|]/g, character => (character === '|' ? '\\|' : `\\${character}`));
 const recordOf = (row: string, library: string) => {
@@ -37,7 +39,8 @@ const recordOf = (row: string, library: string) => {
   if (!record) throw new Error(`Missing record: ${row} / ${library}`);
   return record;
 };
-const plannedSuffix = (record: FeatureRecord) => (record.note.startsWith('(planned)') ? ' (planned)' : '');
+const plannedSuffix = (record: FeatureRecord) =>
+  showPlannedSuffix && record.note.startsWith('(planned)') ? ' (planned)' : '';
 
 const matrix = [
   `| Row | ${libraries.join(' | ')} |`,

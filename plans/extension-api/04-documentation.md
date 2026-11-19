@@ -551,20 +551,20 @@ One-place rule, applied: usage facts live on the site. Package readmes link to i
 
 The steps map to [06-roadmap.md](./06-roadmap.md), which owns the schedule.
 
-| Step | Work                                                                                                                                                     | Needs                                                    |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| 1    | Site skeleton: folders, `meta.json`, frontmatter schema, empty templates, single-tree layout, redirects                                                  | Nothing. Can start now                                   |
-| 2    | Agent outputs and `docs:check:agents`: `llms.txt`, `llms-full.txt`, `.md` route, page actions                                                            | Step 1. The four checks in 7.2                           |
-| 3    | The five domain schemas are fixed. The catalogue of section 4 is final (06, D36)                                                                         | Nothing                                                  |
-| 4    | Prose with no code dependency: `index`, `choose-an-api`, `limits`, each concept page's "In short", "Model" and "Rules", the `docs/architecture.md` draft | `00-direction.md`, the names of `01-public-api.md`       |
-| 5    | `migration/index.mdx`                                                                                                                                    | `05-migration-guide.md`, final names                     |
-| 6    | The core rows of the catalogue in the example kit (E01 to E28, without rendering), with their tests                                                      | Built `@oxform/core`, step 3                             |
-| 7    | `core/*`, `behaviors/*`, `presets/standard`, concept examples, the core part of `compose/*` and `extend/*`                                               | Step 6 (Twoslash and type tables read the built package) |
-| 8    | Rendering rows (E29 to E33), `quick-start`, `adapters/react`, `recipes/*`, the rendering part of the guides, the playground                              | Built `@oxform/react`                                    |
-| 9    | `adapters/solid`, `adapters/solid-v2`, framework tabs                                                                                                    | Built Solid adapters                                     |
-| 10   | `comparison.mdx`, with its table generated from `07-comparison-features.json`                                                                            | `07-comparison.md`, `07-comparison-features.json`        |
-| 11   | Root and package readmes, `docs/*.md` rewrites, the `AGENTS.md` section, `apps/docs/README.md`                                                           | Final structure and commands                             |
-| 12   | In-package `docs/` folders (7.4, stage B)                                                                                                                | Steps 2 and 7 to 10, the release step in `02`            |
+| Step | Work                                                                                                                                                     | Needs                                                         |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1    | Site skeleton: folders, `meta.json`, frontmatter schema, empty templates, single-tree layout, redirects                                                  | Nothing. Can start now                                        |
+| 2    | Agent outputs and `docs:check:agents`: `llms.txt`, `llms-full.txt`, `.md` route, page actions                                                            | Step 1. The four checks in 7.2                                |
+| 3    | The five domain schemas are fixed. The catalogue of section 4 is final (06, D36)                                                                         | Nothing                                                       |
+| 4    | Prose with no code dependency: `index`, `choose-an-api`, `limits`, each concept page's "In short", "Model" and "Rules", the `docs/architecture.md` draft | `00-direction.md`, the names of `01-public-api.md`            |
+| 5    | `migration/index.mdx`                                                                                                                                    | `05-migration-guide.md`, final names                          |
+| 6    | The core rows of the catalogue in the example kit (E01 to E28, without rendering), with their tests                                                      | Built `@oxform/core`, step 3                                  |
+| 7    | `core/*`, `behaviors/*`, `presets/standard`, concept examples, the core part of `compose/*` and `extend/*`                                               | Step 6 (Twoslash and type tables read the built package)      |
+| 8    | Rendering rows (E29 to E33), `quick-start`, `adapters/react`, `recipes/*`, the rendering part of the guides, the playground                              | Built `@oxform/react`                                         |
+| 9    | `adapters/solid`, `adapters/solid-v2`, framework tabs                                                                                                    | Built Solid adapters                                          |
+| 10   | `comparison.mdx`, with its table generated from `apps/docs/data/comparison-features.json`                                                                | `07-comparison.md`, `apps/docs/data/comparison-features.json` |
+| 11   | Root and package readmes, `docs/*.md` rewrites, the `AGENTS.md` section, `apps/docs/README.md`                                                           | Final structure and commands                                  |
+| 12   | In-package `docs/` folders (7.4, stage B)                                                                                                                | Steps 2 and 7 to 10, the release step in `02`                 |
 
 Rules:
 
