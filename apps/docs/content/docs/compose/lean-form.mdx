@@ -45,7 +45,9 @@ const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', pa
 
 `values` reads and writes the values. `validation` runs the checks. `check('error')` adds the `error` check:
 blocking, so an error stops a submit, and exclusive, so a run replaces the entries in its scope. The form now
-has the api members `values`, `validation` and `error`, the `error` state key and the `error` option.
+has the api members `values`, `validation` and `error`, the `error` state key and the `error` option. A second
+check, such as `check('warning')`, also goes after `validation`: see
+[where the check goes](/docs/extend/second-check#add-the-check).
 
 ```ts twoslash
 import { defineForm } from '@oxform/core';

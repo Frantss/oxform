@@ -27,6 +27,14 @@ blocking, so a warning does not stop a submit. `error` and `warning` run in the 
 `check(name, options?)` makes the extension. Without `blocking: true`, a warning does not make a run invalid. The
 form now has `form.warning` and the `warning` option.
 
+The place of the check in the chain:
+
+- Required: after `validation`, because the check needs the `validation` api. Before it, the chain is a type error,
+  and `create` throws `The "check:warning" extension needs "validation", which no earlier extension provides.`
+- Required for what it gives: before `handles`, for the `warning()` and `setWarning()` field members, and before a
+  slot group that reads its state, such as `warningSlots`.
+- Free otherwise. In a lean chain without `handles`, the convention is next to `check('error')`, before `status`.
+
 ```ts twoslash
 import { defineForm } from '@oxform/core';
 import { check } from '@oxform/core/behaviors';
