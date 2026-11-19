@@ -24,8 +24,10 @@ serves the new tree.
 - In: merge `main` into `codex/extension-api-rebuild` one last time, and pass CI. Merge the integration branch
   into `main` in one merge, through a pull request (`gh`). Run `pnpm run prepublish`, then `pnpm run publish`,
   on `main`. Confirm that the site serves the new tree, and that the hosting health check uses the path that
-  TK-058 wrote in `apps/docs/README.md`. Before the publish, remove the "(planned)" suffix from the Oxform
-  cells of the comparison page (`07-comparison.md#3.1`, rules), because the release makes them shipped.
+  TK-058 wrote in `apps/docs/README.md`. Before the publish, remove "(planned)" from the comparison page
+  (`07-comparison.md#3.1`, rules): set `showPlannedSuffix` to `false` in
+  `apps/docs/scripts/generate-comparison.ts`, and edit the `0.7.0 (planned)` versions in
+  `apps/docs/data/comparison-features.json` and the "(planned)" sentences of `comparison.mdx`.
 - Out: the version bump (TK-072). Removing the plan (TK-074). Stage B of the in-package docs.
 - Side effect: a merge into `main`, a publish of three packages to the registry, and a deploy of the site. It
   needs the owner's approval when it runs (`AGENTS.md`, "Autonomy").
