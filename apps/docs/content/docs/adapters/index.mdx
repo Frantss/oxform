@@ -1,0 +1,57 @@
+---
+title: Adapters
+description: Find the adapter of your UI framework and the members that every adapter shares.
+type: overview
+entry: ['@oxform/react', '@oxform/solid', '@oxform/solid/v2']
+principles: [reusable]
+examples: [E29]
+---
+
+## In short
+
+An adapter turns the slots of a form into the parts and the hooks of one UI framework. The three adapters have the
+same surface, so the same form renders in React, Solid 1 and Solid 2. Only the import and the rules of the
+framework change.
+
+## The import that changes [#the-import-that-changes]
+
+| Framework | Entry point        | Install                                  | Page                          |
+| --------- | ------------------ | ---------------------------------------- | ----------------------------- |
+| React 19  | `@oxform/react`    | `npm install @oxform/core @oxform/react` | [React](/docs/adapters/react) |
+| Solid 1   | `@oxform/solid`    | `npm install @oxform/core @oxform/solid` | Solid 1                       |
+| Solid 2   | `@oxform/solid/v2` | `npm install @oxform/core @oxform/solid` | Solid 2                       |
+
+`@oxform/core` is a peer dependency of each adapter, so an application has one copy of it. An adapter does not
+export the APIs of `@oxform/core`: import the form APIs from the core entry points.
+
+## The shared surface [#the-shared-surface]
+
+| Member                                       | What it does                                                                                                                                                                                       |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createParts(form, elements?)`               | Returns `Root`, one part component per slot except `root`, and the adapter hooks. `elements` changes the element of a slot, by slot name                                                           |
+| `Root`                                       | Makes the instance from its `options` prop, or takes an existing instance in `form`, and provides it to the parts. It renders the element of the `root` slot, or no element when the form has none |
+| A part, such as `Field`                      | Renders its slot: nothing while the slot is not present, else the element with the attributes of the slot. Its `'key'` props are paths of the form, or of the scope in its `scope` prop            |
+| `useForm`, `useSelector`                     | The instance of the nearest `Root`, and a selected part of its state                                                                                                                               |
+| `useField`, `useArray`, `useScope`           | `form.field`, `form.array` and `form.scope`, which follow the state that they read. Each takes `{ scope }`                                                                                         |
+| `usePart(form, slot, slotProps, props, tag)` | One slot of the form in another element                                                                                                                                                            |
+
+The form id comes from the hydration-safe id of the framework, so the ids of the server HTML and of the client
+match. The adapter knows no extension: everything a part does comes from its slot.
+
+## The same form in each framework [#the-same-form-in-each-framework]
+
+The sign-in form of the kit (E29) renders with the same parts in each framework:
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Related
+
+- [React](/docs/adapters/react)
+- [Quick start](/docs/quick-start)
+- [Slot groups](/docs/behaviors/slot-groups)

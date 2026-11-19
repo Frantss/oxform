@@ -1,0 +1,157 @@
+---
+title: Quick start
+description: Install Oxform, write the sign-in form as a lean chain, render it, submit it, and then swap the chain for the standard preset.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/core/presets', '@oxform/react']
+principles: [composable, lightweight, type-safe]
+examples: [E01, E29, E19]
+---
+
+## Problem
+
+A sign-in form on a public page must load fast and needs no arrays, reset or handles. The server can refuse a
+password, and the form must show it and stay usable.
+
+## What you build
+
+You build the sign-in form of the example kit: `email` and `password`. The form is a chain of six built-in
+extensions and one `slots(...)` call. Each extension answers a need of the form, and the built-in slot groups give
+every part, so you write no slot by hand. You render the form with React, submit it to a server that can refuse
+the password, and then replace the chain with the `standard` preset.
+
+## Steps
+
+### Install [#install]
+
+Install the core and the adapter of your framework. `@oxform/core` is a peer dependency of each adapter. The
+examples use [Zod](https://zod.dev) for the schema. Any schema that implements Standard Schema works.
+
+```bash
+npm install @oxform/core @oxform/react zod
+```
+
+### Write the chain [#write-the-chain]
+
+`defineForm` takes the schema and the default values, and fixes the `Values` type. Each `.extend` adds one
+extension and returns a new form: `values` reads and writes the values, `validation` and `check('error')` validate,
+`status` derives the field and form flags, `events` takes the input events, and `submit` runs the submit. The slot
+groups `rootSlots`, `fieldErrorSlots` and `submitSlots` add the parts `root`, `field`, `fieldError` and `submit`.
+The schema validates nothing, so `configure` gives the `error` check a validator on `blur` and on `submit`.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import {
+  check,
+  events,
+  fieldErrorSlots,
+  rootSlots,
+  status,
+  submit,
+  submitSlots,
+  validation,
+  values,
+} from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+export const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+```
+
+[A lean form](/docs/compose/lean-form) explains each line of the chain.
+
+### Render it [#render-it]
+
+`createParts(form)` gives one component per slot, named by the capitalized slot name, and the adapter hooks.
+`Root` makes the instance and renders the `form` element of the `root` slot. `Field` renders an `input` with the
+value, the `name` and the `aria-*` attributes of its path. `FieldError` shows the first error of its path, and
+`Submit` is disabled while the form submits. The second argument of `createParts` changes the element of one slot:
+here the error renders in a `span`. The form type does not change.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+`signInPage` is the form of the previous step with an `onSubmit` option. The next step writes it.
+
+### Submit it [#submit-it]
+
+`onSubmit` gets the values and the instance after the `error` check passes. It awaits the request. When the server
+refuses the password, it sets an error on `password`, so the `FieldError` of `password` shows it and the form
+stays usable. `Submit` shows `submitting` until the request ends. In the kit, the page form is
+`signIn.configure({ onSubmit: submitSignIn })`. The form type does not change.
+
+<include meta='no-check="checked in the example kit"'>../../../../examples/kit/src/sign-in-submit.ts</include>
+
+### Swap the chain for standard [#swap-the-chain-for-standard]
+
+The `standard` preset replaces the six `.extend` lines and the `slots(...)` call. It applies the same extensions
+and slot groups, and adds what the sign-in form left out:
+
+- `arrays`: array operations and stable item ids.
+- `reset`: `form.reset`, and the `reset` part with the `resetSlots` group.
+- `handles`: `form.field(path)`, `form.array(path)`, `form.scope(path)` and the check sugar, such as
+  `form.field('email').error()`.
+
+The form type now has these api members, and `createParts` also gives `Reset`. The render code stays the same.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+export const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(standard)
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+
+const form = signIn.create();
+form.field('email').error();
+//                  ^?
+```
+
+Use the lean chain when the form needs only some extensions, such as on a public page that must load fast. Use
+`standard` when the form needs arrays, reset or handles. See [Use the `standard` preset](/docs/compose/standard-preset).
+
+## Complete example
+
+The lean form of the example kit. The schema and its messages are in `schemas/sign-in.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../examples/kit/src/sign-in.ts</include>
+
+## Verify
+
+Run the React example with `pnpm --dir examples/react run dev` and open the sign-in form. Submit it empty: each
+field shows its message, and the email input names its message in `aria-describedby`. Type `ada@example.com` and
+a wrong password, then submit: the password shows "The email or the password is wrong." The test of the example
+does this (`examples/react/tests/sign-in.spec.tsx`).
+
+## Common mistakes
+
+| Wrong code                                                                   | Effect                                                                                                                | Fix                                                                          |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `defineForm({ schema, defaultValues }).extend(standard)` and no `configure`  | The schema only types `Values`. Nothing validates, and every submit calls `onSubmit`                                  | Set the validators of the check: `.configure({ error: { submit: schema } })` |
+| `useForm()` in the component that renders `Root`                             | Throws at render: `oxform: call this inside the Root of the same form object.`                                        | Call the hook in a component inside `Root`                                   |
+| `Root` from `createParts(signIn)` and `Field` from `createParts(signInPage)` | Throws at render with the same message. `configure` returns a new form object, and each form object has its own parts | Call `createParts` with the same form object for `Root` and its parts        |
+| `form.field('email')` on the lean chain                                      | Type error: `field` does not exist. `handles` adds it                                                                 | Read the check, `form.error.at('email')`, or use `standard`                  |
+
+## Related
+
+- [A lean form](/docs/compose/lean-form)
+- [Use the `standard` preset](/docs/compose/standard-preset)
+- [React](/docs/adapters/react)
+- [Errors from the server](/docs/recipes/server-errors)
+- [Slot groups](/docs/behaviors/slot-groups)

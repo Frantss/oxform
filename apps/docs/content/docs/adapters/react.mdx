@@ -1,0 +1,162 @@
+---
+title: React
+description: Render the slots of a form as React components and read its state with the adapter hooks of @oxform/react.
+type: adapter
+entry: ['@oxform/react']
+principles: [type-safe]
+examples: [E29, E30, E31, E32, E33, E26, E27]
+---
+
+## Install
+
+```bash
+npm install @oxform/core @oxform/react
+```
+
+`@oxform/core` and React 19 are peer dependencies. The package is ESM only. It exports `createParts`, `usePart`
+and the types of the parts: `PartElements`, `PartRender`, `PartProps`, `PartComponent`, `PartComponents`,
+`RootProps`, `RootComponent` and `FormHooks`.
+
+## Create the parts
+
+`createParts(form, elements?)` returns `Root`, one component per slot except `root`, and the adapter hooks. Each
+component has the capitalized slot name: the slot `fieldError` gives `FieldError`. Call it at module scope, once
+per form object. The second argument changes the element that a slot declares, by slot name. An unknown name throws
+`oxform: the form has no part "name".`
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/sign-in.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+The parts of one form object share one instance lookup. Two calls of `createParts` with the same form object give
+parts that work together, so a file can call it for the parts and hooks that it uses. `configure` returns a new
+form object, which has its own parts.
+
+## Parts
+
+| Part or prop   | Behavior                                                                                                                                                                      |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Root`         | Makes the instance once, from the `options` prop and an id from `useId`. A new `options` value reaches the instance on each render. It renders the `root` slot, or no element |
+| `Root` `form`  | An existing instance. `Root` provides it and does not change its options. `options` beside `form` is a type error                                                             |
+| A part         | Renders nothing while its slot is not present. Else it renders the element with the slot attributes, which win over your props                                                |
+| `'key'` props  | Paths of the form, such as `name` on `Field`. With a `scope` prop, paths of that scope                                                                                        |
+| DOM props      | Reach the element, such as `className`, `placeholder`, `autoComplete`, `type`, `min`, `max` and `step`                                                                        |
+| `children`     | Content, or a function of the slot state: `<Submit>{state => (state.submitting ? 'Sending…' : 'Send')}</Submit>`. Without children, the part shows the `text` of its slot     |
+| `render`       | Another element, which gets the props of the part, such as `render={<textarea rows={8} />}`. Or a function `(props, state) => node`                                           |
+| Event handlers | The `on` handlers of a slot are native listeners. Your own handlers also run: an `onClick` on `Reset` runs, and the form still resets                                         |
+
+The state of the `Submit` children is `{ submitting, submits, successful }`. The built-in `submit` part has
+`disabled` and `data-submitting` while the form submits. When `Root` leaves the tree, the cleanups of the instance
+that it made run, and the instance stays usable. The adapter never calls `destroy`: the owner of a given instance
+destroys it.
+
+## Hooks
+
+Each hook needs a `Root` of the same form object above it, and throws outside one. Each returns a plain value, and
+renders the component again only when what it reads changes.
+
+| Hook                              | Returns                                                                                |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `useForm()`                       | The instance of the nearest `Root`                                                     |
+| `useSelector(selector, options?)` | The selected state. It renders again when the result changes, by `===` or by `compare` |
+| `useField(path, { scope? })`      | `form.field(path)`. It follows the value and the status of that path                   |
+| `useArray(path, { scope? })`      | `form.array(path)`. It follows the array value                                         |
+| `useScope(prefix, { scope? })`    | `form.scope(prefix)`, the same object for the same inputs                              |
+
+### Read one value [#read-one-value]
+
+`useSelector` returns what the selector reads. The order summary reads the country only, so it renders again only
+when the country changes (E32).
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/order-summary.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+### Render a scope [#render-a-scope]
+
+`useScope('billing')` gives the scope of the billing address. `AddressFields` passes it to each part as `scope`, so
+the names of its parts are paths of the address (E31).
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/address-fields.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+### Render the rows of an array [#render-the-rows-of-an-array]
+
+`useArray('members')` follows the array. Each row is keyed by its item id from `ids`, and gets the scope of its item
+(E33). The id of a field follows its path, not its item: after a move, `members.0.email` is the field of the
+member that is now first.
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/member-list.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+## Custom parts
+
+`usePart(form, slot, slotProps, props, tag)` renders one slot of the form in another element, inside a `Root` of the
+same form object. `slotProps` are the props of the slot, such as `{ name: 'country' }`. `props` are the props of
+the part for that element, so a wrapper can take `PartProps<'select'>` and pass them on. The country select renders
+the `field` slot in a `select` (E30).
+
+<Tabs groupId='framework' items={['React']}>
+  <Tab value='React'>
+    <include meta='no-check="checked in the React example"'>
+      ../../../../../examples/react/src/examples/country-select.tsx
+    </include>
+  </Tab>
+</Tabs>
+
+For one use, the `render` prop of a part is enough: `<Field name='region' render={props => <select {...props} />} />`.
+
+## Server rendering
+
+The rules of [Server rendering](/docs/concepts/server-rendering) apply. Keep the form at module scope, and let
+each render make its own instance. The first HTML has the state at creation: the values, the `aria-*` and `data-*`
+attributes, and `disabled`. No state is serialized: the client makes its own instance from the same options.
+
+- The form id comes from `useId`, so the ids of the server HTML and of the client match. Do not set an `id` option
+  on a form that renders on the server, unless it is the same on both sides (E26).
+- `useSelector` passes the state at creation as the server snapshot.
+- A request handler can make an instance, submit it, and give it to `Root` as `form`. The HTML then has the posted
+  values and their errors (E27). See [A form without JavaScript](/docs/recipes/form-without-javascript).
+
+## Differences
+
+React is the reference adapter. The Solid adapters have the same export names and the same parts. They differ
+where Solid needs it: `useSelector` returns an accessor, `render` is a function only, and a component runs once.
+The Solid pages list each difference.
+
+## Common mistakes
+
+| Wrong code                                                           | Effect                                                                                             | Fix                                                   |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| A hook in the component that renders `Root`                          | It type-checks, and throws at render: `oxform: call this inside the Root of the same form object.` | Call the hook in a component inside `Root`            |
+| `createParts(checkout)`, and `usePart(checkout.configure({ … }), …)` | Throws at render with the same message. `configure` returns a new form object                      | Give `createParts` and `usePart` the same form object |
+| `<Root form={instance} options={{ … }}>`                             | Type error. A given instance keeps the options of its owner                                        | Set the options when you create the instance          |
+| A part with `name='city'` and no `scope` inside the address block    | The part writes to the form's `city` when the form has one, not to the address                     | Pass the scope: `<Field scope={scope} name='city' />` |
+| Rows keyed by their index                                            | After a move or a remove, a row keeps the focus and the state of another item                      | Key each row by `ids[index]` of `useArray`            |
+| `createParts(form, { fieldErorr: 'span' })`                          | Type error, and throws `oxform: the form has no part "fieldErorr".`                                | Use a slot name of the form                           |
+
+## Related
+
+- [Adapters](/docs/adapters)
+- [Quick start](/docs/quick-start)
+- [A part with another element](/docs/recipes/another-element)
+- [Read one value](/docs/recipes/derived-ui)
+- [Slot groups](/docs/behaviors/slot-groups)
