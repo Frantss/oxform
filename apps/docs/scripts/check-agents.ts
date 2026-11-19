@@ -5,7 +5,7 @@ import { findForbiddenTerms } from '../../../scripts/check-terms.ts';
 import { contentDirectory, listPageFiles, markdownUrlOf, pageUrlOf } from '../content-pages.ts';
 
 /**
- * `docs:check:agents` (`plans/extension-api/04-documentation.md#7.5`). Run it after `pnpm run docs:build`: it
+ * `docs:check:agents` (rules in `apps/docs/README.md`, "Agent checks"). Run it after `pnpm run docs:build`: it
  * reads the content files and the prerendered output in `dist/client`. Each failure names the file and the rule.
  * `--record-heading-ids` adds new heading ids to `heading-ids.json`. It never removes one.
  */

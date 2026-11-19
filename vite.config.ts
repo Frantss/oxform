@@ -38,7 +38,7 @@ export const base = defineConfig({
         rules: { 'react/refs': 'off' },
       },
       { files: ['packages/**/*.{ts,tsx}'], rules: { 'import/no-cycle': 'error' } },
-      // The dependency direction of the core areas (plans/extension-api/02-structure.md). A later override replaces
+      // The dependency direction of the core areas (docs/structure.md, "Source Organization"). A later override replaces
       // the rule options of an earlier one, so each file matches one of these entries.
       restrictImports(['packages/core/src/internal/**'], ['#main/*', '#behaviors/*', '#presets/*', ...coreBarrels]),
       restrictImports(['packages/core/src/main/**'], ['#behaviors/*', '#presets/*', ...coreBarrels], {
