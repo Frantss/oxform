@@ -1,7 +1,7 @@
 # Architecture
 
-Draft. This guide describes the internal design of `@oxform/core` for contributors. The public documentation in
-`apps/docs` describes how to use it. The source paths are relative to `packages/core/src`.
+This guide describes the internal design of `@oxform/core` for contributors. The public documentation in
+`apps/docs` describes how to use it. The source paths are relative to `packages/core/src`. For the contract of `@oxform/core/adapter`, see [Adapter authors](./adapter-authors.md).
 
 ## Modules
 
