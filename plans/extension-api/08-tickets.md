@@ -141,8 +141,8 @@ evidence.
 | Id                                                      | Title                     | Work package | Status  | Depends on       |
 | ------------------------------------------------------- | ------------------------- | ------------ | ------- | ---------------- |
 | [TK-069](./tickets/TK-069-comparison-staleness-gate.md) | Comparison staleness gate | P9-06        | dropped | TK-057           |
-| [TK-070](./tickets/TK-070-readiness-review.md)          | Readiness review          | P9-01        | blocked | TK-002 to TK-068 |
-| [TK-071](./tickets/TK-071-delete-spikes.md)             | Delete the spikes         | P9-02        | blocked | TK-070           |
+| [TK-070](./tickets/TK-070-readiness-review.md)          | Readiness review          | P9-01        | done    | TK-002 to TK-068 |
+| [TK-071](./tickets/TK-071-delete-spikes.md)             | Delete the spikes         | P9-02        | ready   | TK-070           |
 | [TK-072](./tickets/TK-072-version.md)                   | Version                   | P9-03        | blocked | TK-071           |
 | [TK-073](./tickets/TK-073-merge-and-publish.md)         | Merge and publish         | P9-04        | blocked | TK-072           |
 | [TK-074](./tickets/TK-074-close-the-plan.md)            | Close the plan            | P9-05        | blocked | TK-073           |
