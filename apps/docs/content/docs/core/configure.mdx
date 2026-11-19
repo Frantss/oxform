@@ -1,0 +1,97 @@
+---
+title: form.configure
+description: Set typed default options for every instance of a form.
+type: reference
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [type-safe]
+examples: [E05]
+---
+
+## When to use
+
+Use `.configure` for the options that are the same for every instance, such as validators and the publish call.
+Call it at module scope, after the last `.extend`. For the options of one instance, pass them to
+[`form.create`](/docs/core/create) or to the `options` prop of `Root`.
+
+## Import
+
+`configure` is a member of each form. Import the function that makes the form:
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+```
+
+## Minimal example
+
+The validators and the publish call are the same for every article, and the article differs per page (E05).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const articleSchema = z.object({ title: z.string().min(1), body: z.string().min(1) });
+type Article = z.infer<typeof articleSchema>;
+declare const publish: (id: string, article: Article) => Promise<void>;
+
+export const articleEditor = defineForm({ schema: articleSchema, defaultValues: { title: '', body: '' } })
+  .extend(standard)
+  .configure({
+    error: { change: articleSchema },
+    onSubmit: (article, form) => publish(form.id, article),
+  });
+
+const form = articleEditor.create({ defaultValues: { title: 'Spring sale', body: 'Draft' } });
+```
+
+`form` in `onSubmit` is the instance, typed from the whole chain. `create` gives the article of the page.
+
+## Signature
+
+```ts twoslash
+import type { Form, OptionsOf } from '@oxform/core';
+
+export interface FormConfigure<F extends Form<any, any, any, any, any, any>> {
+  configure(options: Partial<OptionsOf<F>>): F;
+}
+```
+
+`OptionsOf<F>` is the base options and the options of each extension so far, with `Self` replaced by the instance.
+
+## Parameters
+
+| Name      | Type                    | Required | Meaning                                                                           |
+| --------- | ----------------------- | -------- | --------------------------------------------------------------------------------- |
+| `options` | `Partial<OptionsOf<F>>` | Yes      | `id`, `schema`, `defaultValues`, and the options of the extensions applied so far |
+
+## Returns
+
+| Name   | Type          | Meaning                                                                     |
+| ------ | ------------- | --------------------------------------------------------------------------- |
+| Result | The same form | A new form with the same types. The form that you configure does not change |
+
+## Rules
+
+- Call `configure` after the last `.extend`. It takes only the options of the extensions applied so far.
+- Calls merge by option name, and a later call wins.
+- An option of `create`, or of `Root`, wins over the same option of `configure`. `configure` wins over
+  `defineForm`.
+- An option replaces the whole value of the same option from an earlier layer. Only the default values at the path
+  of a scope merge deeply.
+- Options are a type only. Nothing checks an unknown option at runtime.
+- `configure` is stateless. It is safe at module scope.
+
+## Common mistakes
+
+| Wrong code                                                                | Effect                                                                                       | Fix                                                          |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `defineForm(init).configure({ error: {} }).extend(standard)`              | Type error at `configure`: "Object literal may only specify known properties"                | Call `configure` after the last `.extend`                    |
+| `configure({ eror: { submit: schema } })` from JavaScript, or with a cast | Nothing fails at runtime, and the option has no effect                                       | Type-check the code that configures a form                   |
+| `configure({ error: { change } })`, then `create({ error: { submit } })`  | The instance has only the `submit` validator: an option of `create` replaces the whole value | Give the full value: `create({ error: { change, submit } })` |
+
+## Related
+
+- [`form.create`](/docs/core/create)
+- [`optionTypes`](/docs/core/option)
+- [Options](/docs/concepts/options)
+- [Known limits](/docs/limits)

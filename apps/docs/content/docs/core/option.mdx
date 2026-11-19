@@ -1,0 +1,113 @@
+---
+title: optionTypes
+description: Declare the option types of an extension, and use Self where an option needs the instance.
+type: reference
+entry: ['@oxform/core']
+principles: [type-safe, extensible]
+examples: [E06, E07, E11]
+---
+
+## When to use
+
+Use `optionTypes` in the `options` member of `defineExtension`, for each input that the caller of the extension
+gives. Use `Self` in an option's parameters when the callback needs the instance. An input that is the same for
+every caller is a constant in the extension, not an option.
+
+## Import
+
+```ts twoslash
+import { optionTypes, type Self } from '@oxform/core';
+```
+
+## Minimal example
+
+When the server rejects a draft, the application must show it on the form (E07). A reduced `autosave` of E06 gives
+the error and the instance to `onSaveError`.
+
+```ts twoslash
+import { defineExtension, defineForm, optionTypes, type Extendable, type Needs, type Self } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values'] },
+    options: optionTypes<{
+      saveDraft: (draft: Values) => Promise<unknown>;
+      onSaveError: (error: unknown, form: Self) => void;
+    }>(),
+    api: (context, { values }) => ({
+      autosave: {
+        flush: () =>
+          context
+            .options()
+            .saveDraft?.(values.get())
+            .catch(error => {
+              context.options().onSaveError?.(error, context.instance<never>());
+            }),
+      },
+    }),
+  });
+
+defineForm({ schema: z.object({ title: z.string() }), defaultValues: { title: '' } })
+  .extend(standard)
+  .extend(autosave)
+  .configure({ onSaveError: (_error, form) => form.field('title').setError([{ message: 'Not saved.' }]) });
+```
+
+In `configure`, `form` is the instance of the whole chain, so `form.field` is typed. The `masks` extension of E11
+declares `optionTypes<{ masks: Readonly<Record<string, string>> }>()` the same way.
+
+## Signature
+
+```ts twoslash
+import type { OptionTypes } from '@oxform/core';
+
+export declare function optionTypes<Options extends object>(): OptionTypes<Options>;
+```
+
+`Self` is a branded interface. `configure`, `create` and the `options` prop of `Root` replace each parameter of
+type `Self` with the instance type. `SelfIssues` is replaced with the issues of each check of the chain.
+
+## Parameters
+
+| Name      | Type           | Required | Meaning                                                 |
+| --------- | -------------- | -------- | ------------------------------------------------------- |
+| `Options` | An object type | Yes      | The type argument: the name and the type of each option |
+
+## Returns
+
+| Name   | Type                   | Meaning                                                             |
+| ------ | ---------------------- | ------------------------------------------------------------------- |
+| Result | `OptionTypes<Options>` | A type only. At runtime it is an empty object, and nothing reads it |
+
+## Rules
+
+- Every option of an extension is optional in `configure` and `create`. Read it with `context.options().name?`,
+  or give a default: `context.options().autosaveDelay ?? 1000`.
+- An option name must be new in the chain. `id`, `schema` and `defaultValues` are base options of every form. A
+  duplicate is a type error at `.extend`, and nothing throws at runtime.
+- Options are a type only. Nothing checks an unknown option at runtime.
+- Use `Self` for the instance in an option's parameters. An extension cannot name the instance type, because later
+  extensions add to it.
+- Call `context.instance()` inside the callback, not during `api`.
+- An option of a generic extension that is keyed by path uses `string` keys. `Path<Values>` of an unresolved
+  `Values` does not index a mapped option.
+
+## Common mistakes
+
+| Wrong code                                                           | Effect                                                                             | Fix                                                              |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `onSaveError: (error: unknown, form: Instance<Values>) => void`      | The callback sees an instance with no api                                          | Write `form: Self`                                               |
+| `context.options().saveDraft(draft)`                                 | Type error: the option is possibly `undefined`                                     | Call it as `saveDraft?.(draft)`, or give a default               |
+| An extension that declares an option named `onSubmit` after `submit` | `.extend` returns `DuplicateOption<"onSubmit">`, and the next call is a type error | Give the option a name that no other extension of the chain uses |
+| `options: optionTypes<{ masks: Record<Path<Values>, string> }>()`    | `context.options().masks?.[change.path]` is a type error in the generic extension  | Use `Readonly<Record<string, string>>`, as `masks` does          |
+
+## Related
+
+- [`defineExtension`](/docs/core/define-extension)
+- [`form.configure`](/docs/core/configure)
+- [Types and utilities](/docs/core/types)
+- [Options](/docs/concepts/options)
+- [Known limits](/docs/limits)

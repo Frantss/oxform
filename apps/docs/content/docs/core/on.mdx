@@ -1,0 +1,81 @@
+---
+title: on
+description: Add members to the field handles whose value is of one type.
+type: reference
+entry: ['@oxform/core']
+principles: [extensible, type-safe]
+examples: [E11]
+---
+
+## When to use
+
+Use `on<T>(guard)(build)` in the `fields` member of `defineExtension`, when the fields of one value type need a
+member, such as `unmasked()` on string fields. The members go on the handles of `form.field(path)` and of each
+scope. For a member of the whole form, return it from `api` instead.
+
+## Import
+
+```ts twoslash
+import { on } from '@oxform/core';
+```
+
+## Minimal example
+
+A card number shows as `4242 4242 …`, and the payment provider needs digits only (E11). `masks` adds
+`unmasked()` to string fields. The guard keeps the member off the other fields.
+
+<include meta='twoslash'>../../../../../examples/kit/src/masks.ts</include>
+
+With `masks` after `standard`, `form.field('card.number').unmasked()` returns the digits. A field of a number has
+no `unmasked` member.
+
+## Signature
+
+```ts twoslash
+import type { FieldMembers, FieldOf } from '@oxform/core';
+
+export declare function on<Condition = unknown>(
+  guard?: (value: unknown) => value is Condition,
+): <Members extends object>(
+  build: (field: FieldOf<Condition>, path: string) => Members,
+) => FieldMembers<Condition, Members>;
+```
+
+## Parameters
+
+| Name    | Type                                     | Required | Meaning                                                                                                             |
+| ------- | ---------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `guard` | `(value: unknown) => value is Condition` | No       | Decides at runtime, on the current value, at each `form.field(path)` call. Without it, every field gets the members |
+| `build` | `(field, path) => Members`               | Yes      | Returns the members. `field` has `get()` and `change(updater)`. `path` is relative to the scope                     |
+
+## Returns
+
+| Name   | Type                               | Meaning                                                                                |
+| ------ | ---------------------------------- | -------------------------------------------------------------------------------------- |
+| Result | `FieldMembers<Condition, Members>` | The value of `fields`. A field handle has `Members` when its value extends `Condition` |
+
+## Rules
+
+- The type argument decides in the types. The guard decides at runtime. Give a guard that matches the type.
+- `on<T>` decides by the value type only. It cannot put members on the fields of one path only.
+- The members go on the handles of `handles`. A chain with field members and no `field(path)` api throws at
+  `create`.
+- A member cannot replace a member of the handle, or a member of another extension. `form.field(path)` throws:
+  `The "name" extension cannot redefine the field member "get".`
+- `path` is relative to the scope of the handle. On `form.scope('billing')`, the street field gets `'street'`.
+
+## Common mistakes
+
+| Wrong code                                   | Effect                                                                                                                | Fix                                                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `fields: on<string>()(build)` with no guard  | The types put the member on string fields only. At runtime every field gets it, and `field.get()` may not be a string | Pass a guard: `on(isString)(build)`                                       |
+| A chain with `masks` and no `handles`        | `create` throws: `The "masks" extension adds field members, so the form needs a field(path) api.`                     | Extend `handles`, or `standard`, before `create`                          |
+| `on(isString)(field => ({ get: () => '' }))` | `form.field(path)` throws: `The "masks" extension cannot redefine the field member "get".`                            | Give the member a new name                                                |
+| A member for the field `card.number` only    | `on` cannot select by path                                                                                            | Read the path in `build`, or use an option keyed by path, as `masks` does |
+
+## Related
+
+- [`defineExtension`](/docs/core/define-extension)
+- [`handles`](/docs/behaviors/handles)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Known limits](/docs/limits)

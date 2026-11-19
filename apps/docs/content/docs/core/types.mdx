@@ -1,0 +1,160 @@
+---
+title: Types and utilities
+description: Read the types of a form back, type paths, and use the get and idPart helpers.
+type: reference
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/core/presets']
+principles: [type-safe]
+examples: [E04]
+---
+
+## When to use
+
+Use the read-back types when code outside the chain needs a type of the form: `ValuesOf<typeof form>`,
+`InstanceOf<typeof form>`. Use `Form` for the parameter of a preset. Never write a state or an api type by hand:
+read it back from the form.
+
+## Import
+
+```ts twoslash
+import { get, idPart, type AnyForm, type Form, type InstanceOf, type ValuesOf } from '@oxform/core';
+```
+
+## Minimal example
+
+A team wants every form to have the same banner, submit rule and email clean-up (E04). `houseForm` is a preset: it
+is generic in the `Form` that it gets, so it applies to any schema and keeps every type of the chain.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/house-form.ts</include>
+
+The read-back types give each type of a form:
+
+```ts twoslash
+import { defineForm, type InstanceOf, type OptionsOf, type ValuesOf } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string(), body: z.string() });
+const articleEditor = defineForm({ schema, defaultValues: { title: '', body: '' } }).extend(standard);
+
+type Article = ValuesOf<typeof articleEditor>;
+//   ^?
+type ArticleForm = InstanceOf<typeof articleEditor>;
+type ArticleOptions = OptionsOf<typeof articleEditor>;
+
+export const publish = (form: ArticleForm, options: Pick<ArticleOptions, 'id'>) => form.values.get('title');
+```
+
+## Signature
+
+```ts twoslash
+import type { Path, PathValue } from '@oxform/core';
+
+export declare function get<Values, const At extends Path<Values>>(values: Values, at: At): PathValue<Values, At>;
+
+export declare function idPart(path: string): string;
+```
+
+## Parameters
+
+| Function | Name     | Type           | Required | Meaning                                                   |
+| -------- | -------- | -------------- | -------- | --------------------------------------------------------- |
+| `get`    | `values` | `Values`       | Yes      | Plain values, such as the `values` key of the store state |
+| `get`    | `at`     | `Path<Values>` | Yes      | A dotted path: `'members.0.email'`                        |
+| `idPart` | `path`   | `string`       | Yes      | A path to put in an element id                            |
+
+## Returns
+
+| Function | Type                    | Meaning                                                                                                                               |
+| -------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `get`    | `PathValue<Values, At>` | The value at the path. Use it in a slot, which reads plain state: `get(state.values, part.key)`                                       |
+| `idPart` | `string`                | Letters and digits stay, a dot becomes `-`, any other character becomes `_<hex code>_`. `'members.0.email'` gives `'members-0-email'` |
+
+The exported types:
+
+| Group     | Types                                                                                                                                                                             | Use                                            |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Read-back | `ValuesOf`, `ApiOf`, `StateOf`, `OptionsOf`, `PartsOf`, `FieldsOf`, `InstanceOf`, `CheckNamesOf`                                                                                  | A type of a form, from `typeof form`           |
+| Form      | `Form`, `AnyForm`, `Instance`, `Extension`, `Extendable`, `Needs`, `BuiltInApis`, `BaseOptions`                                                                                   | The parameter of a preset or of an extension   |
+| Context   | `FormContext`, `StateSlice`, `Self`, `SelfIssues`, `OptionTypes`                                                                                                                  | The context of `api`, and the types of options |
+| Field     | `FieldMembers`, `FieldOf`                                                                                                                                                         | Field members of `on`                          |
+| Scope     | `Scope`, `ScopeDefinition`, `ScopedValues`                                                                                                                                        | A sub-object, and the scopes of `defineScope`  |
+| Slot      | `Slot`, `SlotFactory`, `SlotDefinition`, `SlotRecord`, `PartSpec`, `PartHandle`, `PartEventContext`, `PartDomProps`, `PropKind`, `PropsOf`, `KeyProp`, `Attributes`, `ElementTag` | Slots, slot groups and parts                   |
+| Path      | `Path`, `PathValue`, `ObjectPath`, `ArrayPath`, `ArrayItem`, `ArrayValue`                                                                                                         | Typed dotted paths of `Values`                 |
+| Utility   | `Updater`, `MaybePromise`, `Unsubscribe`, `DeepPartial`                                                                                                                           | Small helpers of the signatures                |
+
+## Rules
+
+- Read a type back from `typeof form`. Do not write a state, api or instance type by hand.
+- A preset is generic in its `Form` parameter, so it keeps the types of the chain that it gets.
+- `get` reads plain values. On an instance, use `form.values.get(path)`.
+- Two different paths never give the same `idPart`.
+- There is no `AnyInstance` type. Use one of the three patterns below.
+
+### Any form, typed by its instance [#instance-of-any-form]
+
+Make the function generic in the form, and type the instance with `InstanceOf<F>`. In the generic body, `create`
+returns the instance of `AnyForm`, so the cast names the exact type.
+
+```ts twoslash
+import type { AnyForm, InstanceOf } from '@oxform/core';
+
+export const withInstance = <F extends AnyForm, Result>(form: F, run: (instance: InstanceOf<F>) => Result) => {
+  const instance = form.create() as InstanceOf<F>;
+  try {
+    return run(instance);
+  } finally {
+    instance.destroy();
+  }
+};
+```
+
+### Only the members that the function uses [#members-it-uses]
+
+Type the parameter with the members that the function reads. Every instance that has them fits.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { values, type ValuesApi } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const logValues = (form: { readonly values: ValuesApi<any> }) => console.log(form.values.get());
+
+const schema = z.object({ query: z.string() });
+logValues(
+  defineForm({ schema, defaultValues: { query: '' } })
+    .extend(values)
+    .create(),
+);
+```
+
+### A sub-object at any path [#scope-of-a-sub-object]
+
+Type the parameter with `Scope<Values, Checks>`. It takes the scope of any form whose values there have that shape
+(E15).
+
+```ts twoslash
+import type { Scope } from '@oxform/core';
+
+type Address = { street: string; city: string };
+
+export const copyAddress = (from: Scope<Address, 'error'>, to: Scope<Address, 'error'>) => {
+  to.field('street').change(from.field('street').get());
+  to.field('city').change(from.field('city').get());
+};
+```
+
+## Common mistakes
+
+| Wrong code                                                     | Effect                                                                        | Fix                                                                           |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `type ArticleState = { values: Article; status: ... }` by hand | The type drifts from the chain, and a change of the chain is not a type error | `StateOf<typeof articleEditor>`                                               |
+| `(form: Instance<any>) => form.values.get()`                   | Type error: `Instance<any>` has no api members                                | Use one of the three patterns above                                           |
+| `const preset = (form: AnyForm) => form.extend(standard)`      | The result loses the types of the chain                                       | Make the preset generic in `Form<Values, Api, Options, State, Slots, Fields>` |
+| `copyAddress(form.scope('billing'), form.scope('email'))`      | Type error: `email` is not an object path                                     | Pass the scope of an `Address`                                                |
+
+## Related
+
+- [`defineForm`](/docs/core/define-form)
+- [`form.extend`](/docs/core/extend)
+- [`scope(path)`](/docs/behaviors/scope)
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)

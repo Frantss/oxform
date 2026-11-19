@@ -1,0 +1,62 @@
+---
+title: Main APIs
+description: Find the export of @oxform/core that makes a form, an extension, a slot group or a scope.
+type: overview
+entry: ['@oxform/core']
+principles: [composable]
+examples: [E01]
+---
+
+## In short
+
+`@oxform/core` makes forms and the pieces that a form is made of. A form is a chain of extensions on `defineForm`,
+and `form.create` makes an instance of it. The built-in extensions are in `@oxform/core/behaviors`, and the
+presets are in `@oxform/core/presets`.
+
+## From form to instance [#form-to-instance]
+
+Four lines take a schema to a live form: define the form, extend it, configure it, create an instance.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .configure({ error: { submit: schema } });
+
+const form = signIn.create();
+```
+
+The full sign-in chain of E01 also has `status`, `events`, `submit` and its slot groups. See
+[`form.extend`](/docs/core/extend).
+
+## Exports by group [#exports-by-group]
+
+| Group     | Export or member                                       | Page                                             |
+| --------- | ------------------------------------------------------ | ------------------------------------------------ |
+| Form      | `defineForm`                                           | [`defineForm`](/docs/core/define-form)           |
+| Form      | `form.extend`                                          | [`form.extend`](/docs/core/extend)               |
+| Form      | `form.configure`                                       | [`form.configure`](/docs/core/configure)         |
+| Form      | `form.create`                                          | [`form.create`](/docs/core/create)               |
+| Extension | `defineExtension`                                      | [`defineExtension`](/docs/core/define-extension) |
+| Extension | `optionTypes`                                          | [`optionTypes`](/docs/core/option)               |
+| Extension | `on`                                                   | [`on`](/docs/core/on)                            |
+| Slots     | `slots`                                                | [`slots`](/docs/core/slots)                      |
+| Slots     | `defineSlots`                                          | [`defineSlots`](/docs/core/define-slots)         |
+| Scope     | `defineScope`                                          | [`defineScope`](/docs/core/define-scope)         |
+| Scope     | `form.scope(path)`, a member that `handles` adds       | [`scope(path)`](/docs/behaviors/scope)           |
+| Effect    | `createEffect`                                         | [`createEffect`](/docs/core/create-effect)       |
+| Utilities | `ValuesOf`, `InstanceOf`, `Path`, `get`, `idPart`, ... | [Types and utilities](/docs/core/types)          |
+
+## Related
+
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
+- [Built-in behaviors](/docs/behaviors)
+- [Which API do I need](/docs/choose-an-api)
+- [Known limits](/docs/limits)

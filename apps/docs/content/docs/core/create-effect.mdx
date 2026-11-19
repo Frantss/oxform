@@ -1,0 +1,95 @@
+---
+title: createEffect
+description: Run code each time a selected part of the state of an instance changes, outside a component.
+type: reference
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [extensible]
+examples: [E25]
+---
+
+## When to use
+
+Use `createEffect` for code that is outside the form and outside a component, such as a browser listener that
+follows `status.form.dirty`. In a component, use `useSelector` of the adapter. Inside an extension, use an
+extension hook, such as `values.onChange`, or `context.store`.
+
+## Import
+
+```ts twoslash
+import { createEffect } from '@oxform/core';
+```
+
+## Minimal example
+
+The browser must warn before the tab closes with unsaved text (E25).
+
+```ts twoslash
+import { createEffect, defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const schema = z.object({ title: z.string(), body: z.string() });
+const articleEditor = defineForm({ schema, defaultValues: { title: '', body: '' } }).extend(standard);
+
+const warn = (event: Event) => event.preventDefault();
+
+const form = articleEditor.create();
+const effect = createEffect(
+  form,
+  state => state.status.form.dirty,
+  dirty => (dirty ? addEventListener('beforeunload', warn) : removeEventListener('beforeunload', warn)),
+);
+
+// When the page leaves the editor:
+effect.unsubscribe();
+removeEventListener('beforeunload', warn);
+```
+
+## Signature
+
+```ts twoslash
+import type { Instance, MaybePromise } from '@oxform/core';
+
+export declare function createEffect<State, Selected>(
+  instance: Pick<Instance<unknown, {}, State>, 'store'>,
+  selector: (state: State) => Selected,
+  effect: (selected: Selected) => MaybePromise<void>,
+): { unsubscribe(): void };
+```
+
+## Parameters
+
+| Name       | Type                               | Required | Meaning                                                 |
+| ---------- | ---------------------------------- | -------- | ------------------------------------------------------- |
+| `instance` | `{ store }`                        | Yes      | An instance, or any object with its `store`             |
+| `selector` | `(state) => Selected`              | Yes      | Selects the value to follow from the state of the store |
+| `effect`   | `(selected) => MaybePromise<void>` | Yes      | Runs with the new selected value                        |
+
+## Returns
+
+| Member          | Type         | Meaning                                   |
+| --------------- | ------------ | ----------------------------------------- |
+| `unsubscribe()` | `() => void` | Stops the effect. The caller must call it |
+
+## Rules
+
+- The effect does not run for the first selection. It runs on each later change.
+- The selected values are compared by deep equality. An equal value does not run the effect.
+- An async effect is not awaited, so two runs can overlap.
+- Do not call `createEffect` inside `api`. Use an extension hook or `context.store` there.
+- The caller stops the effect. `destroy()` of the instance does not stop it.
+
+## Common mistakes
+
+| Wrong code                                           | Effect                                                                  | Fix                                                                 |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Expecting the effect to run when it is created       | Nothing happens until the selected value changes                        | Read the first value yourself: `form.store.state.status.form.dirty` |
+| `createEffect(...)` inside the `api` of an extension | The effect starts on a server and for every instance that is never used | Use `values.onChange`, or subscribe in a method                     |
+| No call of `unsubscribe()` when the page leaves      | The listener stays, and the effect runs for an instance no longer used  | Keep the result and call `unsubscribe()`                            |
+
+## Related
+
+- [`form.create`](/docs/core/create)
+- [`status`](/docs/behaviors/status)
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)
+- [Server rendering rules](/docs/concepts/server-rendering)

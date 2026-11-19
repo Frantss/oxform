@@ -1,0 +1,90 @@
+---
+title: defineSlots
+description: Package a group of slots with its needs, so that many forms can spread it.
+type: reference
+entry: ['@oxform/core']
+principles: [reusable]
+examples: [E12]
+---
+
+## When to use
+
+Use `defineSlots` for slots that more than one form uses, such as the same message after a failed submit. A form
+spreads the group inside `.extend(slots(...))`, and the group checks its needs there. For a slot of one form only,
+write it in [`slots`](/docs/core/slots) directly.
+
+## Import
+
+```ts twoslash
+import { defineSlots } from '@oxform/core';
+```
+
+## Minimal example
+
+Every form needs the same message after a failed submit (E12). The group needs the `status` state, so it states
+`status` in the annotation of `slot` and in `needs`.
+
+<include meta='twoslash'>../../../../../examples/kit/src/form-error-slots.ts</include>
+
+A form spreads it next to the built-in groups: `.extend(slots(slot => ({ ...rootSlots(slot), ...formErrorSlots(slot) })))`.
+The sign-in form and `houseForm` both use it.
+
+## Signature
+
+```ts twoslash
+import type { SlotFactory, SlotRecord } from '@oxform/core';
+
+export declare function defineSlots<
+  Api,
+  State,
+  Slots extends SlotRecord,
+  const ApiNames extends readonly (keyof Api & string)[] = [],
+  const StateNames extends readonly (keyof State & string)[] = [],
+>(
+  definition: { readonly name: string; readonly needs?: { readonly api?: ApiNames; readonly state?: StateNames } },
+  build: (slot: SlotFactory<Api, State>) => Slots,
+): (slot: SlotFactory<Api, State>) => Slots;
+```
+
+The declaration is simpler than the real one in one place: `needs` is required, and must list every name, when
+`Api` or `State` has a member.
+
+## Parameters
+
+| Name               | Type                                       | Required                         | Meaning                                                                |
+| ------------------ | ------------------------------------------ | -------------------------------- | ---------------------------------------------------------------------- |
+| `definition.name`  | `string`                                   | Yes                              | The name of the group in the runtime errors                            |
+| `definition.needs` | `{ api?, state? }`                         | When the annotation has a member | The api names and the state keys of the annotation of `slot`, each one |
+| `build`            | `(slot: SlotFactory<Api, State>) => Slots` | Yes                              | Returns the slots. Annotate `slot` with what they need                 |
+
+## Returns
+
+| Name   | Type                                       | Meaning                                                                       |
+| ------ | ------------------------------------------ | ----------------------------------------------------------------------------- |
+| Result | `(slot: SlotFactory<Api, State>) => Slots` | The group. Spread its result inside `slots(...)`. Each slot records the group |
+
+## Rules
+
+- A slot group states its needs twice: in the annotation of `slot` and in `needs`. A difference between the two is
+  a type error.
+- A form that spreads the group must have each need. A missing need is a type error where the group is spread, and
+  `create` throws: `The "formErrorSlots" slot group needs the state key "status", which no earlier extension
+provides.`
+- `slot` must be typed first, so TypeScript cannot infer the needs from the body of the group.
+- A slot of the group replaces an earlier slot with the same key, and a later slot replaces it.
+- Spread the group inside `.extend(slots(...))`, where `slot` has the types of the form.
+
+## Common mistakes
+
+| Wrong code                                                                   | Effect                                                                          | Fix                                                     |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `needs: { state: ['status'] }` with `slot: SlotFactory<{}, { values: ... }>` | Type error: `Type '"status"' is not assignable to type '"values"'`              | Name the same keys in the annotation and in `needs`     |
+| `formErrorSlots(slot)` in a form with no `status`                            | Type error where it is spread. `create` throws and names the group and the need | Extend `status` before the `slots(...)` that spreads it |
+| `slots(slot => ...)` at module scope, to share slots                         | The `slot` parameter knows no api and no state of a form                        | Write a slot group with `defineSlots`                   |
+
+## Related
+
+- [`slots`](/docs/core/slots)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Known limits](/docs/limits)

@@ -1,0 +1,102 @@
+---
+title: form.create
+description: Create a live instance of a form in any runtime, and destroy it when it is done.
+type: reference
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable]
+examples: [E05, E28]
+---
+
+## When to use
+
+Use `.create` to make an instance in a test, a request handler or a script. In a component, `Root` of an adapter
+calls it for you, once per render. Use one instance for one render or one request, never one at module scope.
+
+## Import
+
+`create` is a member of each form. Import the function that makes the form:
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+```
+
+## Minimal example
+
+An extension author tests a chain without a preset or a DOM (E28). The smallest chain that meets the needs is
+enough.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const articleSchema = z.object({ title: z.string(), body: z.string() });
+
+const draftForm = defineForm({ schema: articleSchema, defaultValues: { title: '', body: '' } })
+  .extend(values)
+  .extend(validation);
+
+const form = draftForm.create({ id: 'draft', defaultValues: { title: 'Spring sale', body: '' } });
+console.log(form.id, form.values.get('title'), form.store.state.values);
+
+form.destroy();
+```
+
+The instance has the api of each extension, `id`, `store` and `destroy()`. The options of `create` win over those
+of `configure` (E05).
+
+## Signature
+
+```ts twoslash
+import type { Form, InstanceOf, OptionsOf } from '@oxform/core';
+
+export interface FormCreate<F extends Form<any, any, any, any, any, any>> {
+  create(options?: Partial<OptionsOf<F>>): InstanceOf<F>;
+}
+```
+
+## Parameters
+
+| Name      | Type                    | Required | Meaning                                                                               |
+| --------- | ----------------------- | -------- | ------------------------------------------------------------------------------------- |
+| `options` | `Partial<OptionsOf<F>>` | No       | `id`, `schema`, `defaultValues` and the options of every extension, for this instance |
+
+## Returns
+
+| Member      | Type                   | Meaning                                                                     |
+| ----------- | ---------------------- | --------------------------------------------------------------------------- |
+| api members | From the extensions    | One member for each api key of the chain, such as `values` and `validation` |
+| `id`        | `string`               | The `id` option, or one from a counter (`form-1`) when no layer gives one   |
+| `store`     | `ReadonlyStore<State>` | The state of the instance. `createEffect` and the adapter hooks read it     |
+| `destroy()` | `() => void`           | Runs every cleanup of `onDestroy` and stops the option listeners            |
+
+## Rules
+
+- Options merge as `defineForm`, then `configure`, then `create`. A later layer wins by option name.
+- The extensions run in chain order. Before each `api` runs, its needs are checked against the api and the state so
+  far. A missing need throws, names the extension and the need, and no instance is returned.
+- A duplicate api key or state key throws, and the message names both extensions.
+- A slot group with a missing need throws, and the message names the group.
+- An extension with field members throws when the form has no `field(path)` api.
+- Options are a type only. Nothing checks an unknown option at runtime.
+- `api` is inert, so `create` does no work on a server: no timer, no request and no validation run.
+- Only the creator of an instance calls `destroy()`. No adapter calls it.
+- Without an adapter, pass an `id` when the same instance renders on a server and in a browser. A counter can
+  differ between them.
+
+## Common mistakes
+
+| Wrong code                                                                     | Effect                                                                                | Fix                                           |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `export const form = signIn.create()` at module scope                          | Every render and every request shares one instance and its state                      | Create one instance per render or per request |
+| `create({ autosaveDelay: 500 })` on a form without `autosave`, from JavaScript | Nothing fails at runtime, and the option has no effect                                | Type-check the code that creates a form       |
+| `defineForm(init).extend(status).create()`                                     | Throws: `The "status" extension needs "values", which no earlier extension provides.` | Extend `values` before `status`               |
+| A handler that creates an instance and never calls `destroy()`                 | The cleanups of `onDestroy`, such as timers, never run                                | Call `form.destroy()` in a `finally` block    |
+
+## Related
+
+- [`form.configure`](/docs/core/configure)
+- [`createEffect`](/docs/core/create-effect)
+- [Options](/docs/concepts/options)
+- [Server rendering rules](/docs/concepts/server-rendering)
+- [Known limits](/docs/limits)

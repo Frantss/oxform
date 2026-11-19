@@ -1,0 +1,105 @@
+---
+title: defineForm
+description: Make a form with no extension, and fix its Values type from a schema and default values.
+type: reference
+entry: ['@oxform/core']
+principles: [type-safe]
+examples: [E01]
+---
+
+## When to use
+
+Use `defineForm` once per form, at module scope, as the first call of each chain. It fixes the `Values` type and
+adds no behavior. To reuse a set of extensions on many forms, write a preset and call `defineForm(init).extend(preset)`
+for each schema.
+
+## Import
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+```
+
+## Minimal example
+
+The sign-in form of E01 starts from its schema and its empty values.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { z } from 'zod';
+
+const signInSchema = z.object({
+  email: z.email('Enter an email address.'),
+  password: z.string().min(8, 'The password has at least 8 characters.'),
+});
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } });
+//    ^?
+```
+
+The form has no api, no option of its own and no state yet. Each `.extend` adds to it.
+
+## Signature
+
+```ts twoslash
+import type { BaseOptions, Form, ScopeDefinition, ScopedValues } from '@oxform/core';
+
+type StandardSchemaV1<Values> = BaseOptions<Values>['schema'];
+
+export declare function defineForm<Values>(init: {
+  readonly name?: string;
+  readonly id?: string;
+  readonly schema: StandardSchemaV1<Values>;
+  readonly defaultValues: NoInfer<Values>;
+}): Form<Values>;
+
+export declare function defineForm<Base, const Scopes extends Record<string, ScopeDefinition<any>>>(init: {
+  readonly name?: string;
+  readonly id?: string;
+  readonly schema: StandardSchemaV1<Base>;
+  readonly defaultValues: NoInfer<Base>;
+  readonly scopes: Scopes;
+}): Form<Base & ScopedValues<Scopes>>;
+```
+
+The second overload also makes a key of `scopes` that is a key of `Base`, or that has a dot, a type error.
+
+## Parameters
+
+| Name            | Type                              | Required | Meaning                                                                    |
+| --------------- | --------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `schema`        | `StandardSchemaV1<Values>`        | Yes      | Gives the `Values` type. It validates nothing                              |
+| `defaultValues` | `Values`                          | Yes      | The values of a new instance. TypeScript does not infer `Values` from them |
+| `name`          | `string`                          | No       | The name of the form. The default is `'form'`                              |
+| `id`            | `string`                          | No       | The id of every instance. An `id` in `configure`, `create` or `Root` wins  |
+| `scopes`        | `Record<string, ScopeDefinition>` | No       | Scopes of `defineScope`, by key. Each one adds its values at its key       |
+
+## Returns
+
+| Name   | Type           | Meaning                                                                         |
+| ------ | -------------- | ------------------------------------------------------------------------------- |
+| Result | `Form<Values>` | An immutable form with no extension: `name`, `extend`, `configure` and `create` |
+
+## Rules
+
+- `schema` and `defaultValues` are required.
+- `schema` only types `Values`. Validation needs a check option, such as `error: { submit: schema }`.
+- `defaultValues` must match `Values` exactly. It does not widen the type.
+- A scope key must not be a key of the form's own values, and must not contain a dot.
+- A form holds no state. Define it at module scope, and make an instance per render or per request.
+- `schema`, `defaultValues` and `id` are base options. A later `configure` or `create` can replace them.
+
+## Common mistakes
+
+| Wrong code                                                                                      | Effect                                                                                                                  | Fix                                                         |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `defineForm({ schema, defaultValues }).extend(standard)` and no check option                    | A submit succeeds with values that the schema refuses. No issue shows                                                   | Add `.configure({ error: { submit: schema } })`             |
+| `defineForm({ schema, defaultValues: { email: '' } })` for a schema with `email` and `password` | Type error at `defineForm`: "No overload matches this call". `password` is missing                                      | Give every member of `Values` in `defaultValues`            |
+| `defineForm({ ..., defaultValues: { billing: ... }, scopes: { billing: address } })`            | Type error. `create` throws: `The scope "billing" has the key of one of the form's own values, which it would replace.` | Leave the scope key out of the form's own schema and values |
+
+## Related
+
+- [`form.extend`](/docs/core/extend)
+- [`defineScope`](/docs/core/define-scope)
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
+- [Checks and validation](/docs/concepts/checks-and-validation)
+- [Known limits](/docs/limits)

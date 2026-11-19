@@ -1,0 +1,102 @@
+---
+title: defineScope
+description: Describe a sub-object once, with its schema, default values and validators, and place it at many keys.
+type: reference
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [reusable, type-safe]
+examples: [E15]
+---
+
+## When to use
+
+Use `defineScope` for a block that a form has more than once, with the same rules, such as a billing and a
+shipping address. `defineForm({ scopes })` places it. To view an object path that has no rules of its own, such as
+an array item, use [`form.scope(path)`](/docs/behaviors/scope) and no `defineScope`.
+
+## Import
+
+```ts twoslash
+import { defineScope } from '@oxform/core';
+```
+
+## Minimal example
+
+The billing and the shipping address are the same block with the same rules (E15).
+
+```ts twoslash
+import { defineForm, defineScope } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const addressSchema = z.object({ street: z.string().min(1), city: z.string().min(1) });
+
+export const address = defineScope({
+  schema: addressSchema,
+  defaultValues: { street: '', city: '' },
+  checks: { error: { submit: addressSchema } },
+});
+
+const orderSchema = z.object({ email: z.email() });
+
+export const checkout = defineForm({
+  schema: orderSchema,
+  defaultValues: { email: '' },
+  scopes: { billing: address, shipping: address },
+})
+  .extend(standard)
+  .configure({ error: { submit: orderSchema } });
+```
+
+`Values` is `{ email: string } & { billing: Address; shipping: Address }`. The `error` validators of the scope run
+at `billing` and at `shipping`, and the paths of their issues start there.
+
+## Signature
+
+```ts twoslash
+import type { ScopeDefinition } from '@oxform/core';
+
+export declare function defineScope<Values>(scope: ScopeDefinition<Values>): ScopeDefinition<Values>;
+```
+
+## Parameters
+
+| Name            | Type                                                  | Required | Meaning                                                                 |
+| --------------- | ----------------------------------------------------- | -------- | ----------------------------------------------------------------------- |
+| `schema`        | `StandardSchemaV1<Values>`                            | Yes      | Gives the `Values` type of the scope. It validates nothing              |
+| `defaultValues` | `Values`                                              | Yes      | The values at each place. Later layers merge deeply over them           |
+| `checks`        | `Record<string, { change?, blur?, focus?, submit? }>` | No       | Validators by check name and event. They run at each place of the scope |
+
+## Returns
+
+| Name   | Type                      | Meaning                                                                                              |
+| ------ | ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Result | `ScopeDefinition<Values>` | The scope, with no place. Give it to `defineForm({ scopes })`. `ScopedValues` types the keys it adds |
+
+## Rules
+
+- The `schema` of a scope only types its values. Validation comes from `checks`.
+- A scope key must not be a key of the form's own values. It is a type error, and `create` throws.
+- A scope key must not contain a dot. It is a type error, and `create` throws. View a nested path with
+  `form.scope('a.b')`.
+- The form must have each check that `checks` names. Else `create` throws and names the scope and the check.
+- A form validator and a scope validator on one path both run, and their issues merge. One field can report two
+  issues.
+- Default values at the path of a scope merge deeply: the scope's own, then `configure`, then `create`. Plain objects merge key by key. Other values, arrays too, replace.
+- A partial default for a scope needs a cast. `defaultValues` has the type of the full `Values`.
+
+## Common mistakes
+
+| Wrong code                                                                | Effect                                                                                                                                       | Fix                                          |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `defineScope({ schema, defaultValues })` and no `checks`                  | Nothing validates the address                                                                                                                | Add `checks: { error: { submit: schema } }`  |
+| `scopes: { billing: address }` on a form whose values have `billing`      | Type error. `create` throws: `The scope "billing" has the key of one of the form's own values, which it would replace.`                      | Leave `billing` out of the form's own schema |
+| `scopes: { 'order.billing': address }`                                    | Type error. `create` throws: `The scope "order.billing" has a dot in its key. A scope is one key: view a nested path with form.scope(path).` | Use one key                                  |
+| `checks: { error: ... }` on a form with no `error` check                  | `create` throws: `The scope "billing" has validators for the check "error", which the form does not have.`                                   | Extend `check('error')`, or `standard`       |
+| `create({ defaultValues: { ...order, billing: { street: 'Main St' } } })` | Type error: "is missing the following properties"                                                                                            | Give every member, or cast the partial value |
+
+## Related
+
+- [`scope(path)`](/docs/behaviors/scope)
+- [`defineForm`](/docs/core/define-form)
+- [Scopes](/docs/concepts/scopes)
+- [Known limits](/docs/limits)

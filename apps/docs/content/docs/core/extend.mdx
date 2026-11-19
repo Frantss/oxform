@@ -1,0 +1,122 @@
+---
+title: form.extend
+description: Apply an extension or a preset to a form, in the order that the form needs.
+type: reference
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, type-safe]
+examples: [E01, E06]
+---
+
+## When to use
+
+Use `.extend` to add one extension, such as `values` or `autosave`, or a preset, such as `standard`, to the end of a
+chain. It returns a new form and does not change the form that you extend. To set options, use
+[`form.configure`](/docs/core/configure) after the last `.extend`.
+
+## Import
+
+`extend` is a member of each form. Import the function that makes the form:
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+```
+
+## Minimal example
+
+A sign-in form on a public page must load fast, and needs no arrays, no reset and no field handles (E01). Each line
+of the chain answers a need of the form, and each extension comes after the extensions that it needs.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import { check, events, status, submit, validation, values } from '@oxform/core/behaviors';
+import { fieldErrorSlots, rootSlots, submitSlots } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+export const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+```
+
+A custom extension is applied the same way. `autosave` (E06) needs `values` and `validation`, so
+`defineForm(init).extend(values).extend(validation).extend(autosave)` is the smallest chain that takes it.
+
+## Signature
+
+```ts twoslash
+import type { AnyForm, Extendable, Extension, Form } from '@oxform/core';
+
+export interface FormExtend<Values, Api, Options, State, Slots, Fields> {
+  extend<NextOptions, NextState, NextApi, NextSlots, NextFields>(
+    extension: (
+      form: Extendable<Values, Api, State, true>,
+    ) => Extension<NextOptions, NextState, NextApi, NextSlots, NextFields>,
+  ): Form<
+    Values,
+    Api & NextApi,
+    Options & NextOptions,
+    State & NextState,
+    Omit<Slots, keyof NextSlots> & NextSlots,
+    Fields | NextFields
+  >;
+  extend<Result extends AnyForm>(preset: (form: Form<Values, Api, Options, State, Slots, Fields>) => Result): Result;
+}
+```
+
+When `NextOptions` has an option name that the form already has, the first overload returns a type with no form
+member and the text `The option "name" is declared twice.`
+
+## Parameters
+
+| Name        | Type                                   | Required | Meaning                                                                          |
+| ----------- | -------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `extension` | `(form: Extendable<...>) => Extension` | Yes      | A function of the form so far that returns `defineExtension(form, {...})`        |
+| `preset`    | `(form: Form<...>) => AnyForm`         | Yes      | A function from form to form, such as `standard`. Use it in place of `extension` |
+
+## Returns
+
+| Name   | Type   | Meaning                                                                                                                                                   |
+| ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Result | `Form` | A new form. For an extension, it adds its api, state, options, slots and field members to the types. For a preset, it is the form that the preset returns |
+
+## Rules
+
+- An extension comes after each extension that it needs. A missing need is a type error at `.extend`, and
+  `create` throws before an instance exists.
+- Every need is required. No need is optional.
+- The order of the chain is the order in which the extensions run, and the order of their extension hooks.
+- An option name must be new in the chain. A duplicate is a type error at `.extend`. Options are a type only, so
+  nothing throws at runtime for it.
+- An api key and a state key must be new in the chain. `.extend` does not check them. `create` throws and names
+  both extensions.
+- An api cannot return `id`, `store` or `destroy`. `create` throws: `The "name" extension returns "id" from api,
+which the instance has.`
+- A slot with the key of an earlier slot replaces it.
+- When `.extend` rejects an extension, the error describes the preset overload. Its last lines name the missing
+  needs, and its line is correct.
+
+## Common mistakes
+
+| Wrong code                                                       | Effect                                                                                                                                                                                                | Fix                                                                                 |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `defineForm(init).extend(autosave)`                              | Type error at `.extend`: "No overload matches this call", the form lacks `values` and `validation`. Throws at `create`                                                                                | Extend `values` and `validation` first                                              |
+| `defineForm(init).extend(status).create()`                       | Throws: `The "status" extension needs "values", which no earlier extension provides.`                                                                                                                 | Extend `values` before `status`                                                     |
+| `.extend(check('error')).extend(check('error'))`                 | The result type is `DuplicateOption<"error">`, so the next call is a type error. `create` throws: `The "check:error" extension declares the state key "error", which "check:error" already declares.` | Apply each check once. Give a second check another name, such as `check('warning')` |
+| `defineForm(init).extend(values).extend(standard)`               | No type error. `create` throws: `The "values" extension declares the state key "values", which "values" already declares.`                                                                            | Apply `standard` alone. It already applies `values`                                 |
+| Two extensions that return the api key `draft`                   | `create` throws: `The "b" extension returns "draft" from api, which "a" already returns.`                                                                                                             | Give the api member a name that no other extension of the chain uses                |
+| Reading `(form: Form<...>) => AnyForm` in the error as the cause | The cause is a missing need, not a preset                                                                                                                                                             | Read the last lines of the error. Extend the needs that they name                   |
+
+## Related
+
+- [`defineExtension`](/docs/core/define-extension)
+- [`form.configure`](/docs/core/configure)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Built-in behaviors](/docs/behaviors)
+- [Known limits](/docs/limits)

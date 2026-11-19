@@ -1,0 +1,99 @@
+---
+title: slots
+description: Add slots to one form, or replace a slot by its key, with an extension that has no other member.
+type: reference
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, extensible]
+examples: [E13]
+---
+
+## When to use
+
+Use `.extend(slots(build))` to spread slot groups into a form, or to add or replace one slot on one form. It adds
+no api, no option and no state. To use the same slots in many forms, write a slot group with
+[`defineSlots`](/docs/core/define-slots). To add state or an api with the slot, use `defineExtension`.
+
+## Import
+
+```ts twoslash
+import { slots } from '@oxform/core';
+```
+
+## Minimal example
+
+The design system disables the submit button until the form is valid, and the built-in part does not (E13). A
+`submit` slot after `submitSlots` has the same key, so it replaces the built-in one.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import { check, status, submit, submitSlots, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const schema = z.object({ email: z.email() });
+
+export const signIn = defineForm({ schema, defaultValues: { email: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error'))
+  .extend(status)
+  .extend(submit)
+  .extend(
+    slots(slot => ({
+      ...submitSlots(slot),
+      submit: slot({
+        element: 'button',
+        attrs: state => ({ type: 'submit', disabled: state.status.form.submitting || !state.status.form.valid }),
+      }),
+    })),
+  );
+```
+
+The kit writes this slot as the slot group `strictSubmitSlots`, so `houseForm` can spread it in every form.
+
+## Signature
+
+```ts twoslash
+import type { Extendable, Extension, SlotFactory, SlotRecord } from '@oxform/core';
+
+export declare function slots<Values, Provides, NeedState, Slots extends SlotRecord>(
+  build: (slot: SlotFactory<Provides, NeedState>) => Slots,
+): (form: Extendable<Values, Provides, NeedState>) => Extension<{}, {}, {}, Slots>;
+```
+
+## Parameters
+
+| Name    | Type                                       | Required | Meaning                                                                               |
+| ------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------- |
+| `build` | `(slot: SlotFactory<Api, State>) => Slots` | Yes      | Returns the slots by key. `slot` is typed by the api and the state of the form so far |
+
+## Returns
+
+| Name   | Type                                     | Meaning                                          |
+| ------ | ---------------------------------------- | ------------------------------------------------ |
+| Result | `(form) => Extension<{}, {}, {}, Slots>` | An extension named `slots`. Give it to `.extend` |
+
+## Rules
+
+- Write `slots(...)` inside `.extend(...)`. There it gets the types of the form.
+- A later slot with the key of an earlier slot replaces it. A slot cannot be wrapped.
+- Each slot group that `build` spreads states its needs. A missing need is a type error, and `create` throws and
+  names the group.
+- Write `text` after `state` in a slot, so `text` reads the inferred state.
+- `text`, `present`, `state` and `attrs` are pure functions of the state. `on` and `bind` run in a browser only.
+- Spread one of `fieldSlots` and `fieldErrorSlots`. Both give the `field` slot.
+
+## Common mistakes
+
+| Wrong code                                                  | Effect                                                                 | Fix                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `const shared = slots(slot => ...)` at module scope         | The `slot` parameter knows no api and no state of a form               | Write `slots(...)` inside `.extend(...)`, or write a slot group |
+| `{ submit: slot({...}), ...submitSlots(slot) }`             | The built-in `submit` slot replaces yours, because it comes later      | Spread the group first, then write the slot                     |
+| `slot({ text: ({ messages }) => messages[0], state: ... })` | Type error: the parameter of `text` is `{}`                            | Write `state` before `text`                                     |
+| A new `submit` slot with only `attrs`                       | The part loses the members of the built-in slot that you did not write | Write each member that the part needs                           |
+
+## Related
+
+- [`defineSlots`](/docs/core/define-slots)
+- [Slot groups](/docs/behaviors/slot-groups)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Known limits](/docs/limits)

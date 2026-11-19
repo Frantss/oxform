@@ -1,0 +1,119 @@
+---
+title: defineExtension
+description: Define one extension as one object that adds options, state, an api, slots and field members.
+type: reference
+entry: ['@oxform/core']
+principles: [extensible, reusable, type-safe]
+examples: [E06]
+---
+
+## When to use
+
+Use `defineExtension` for a behavior that no built-in extension has, such as saving a draft. It infers every type
+from the object, so you write no state or api type by hand. To add or replace slots only, use
+[`slots`](/docs/core/slots). To reuse a set of extensions, write a preset.
+
+## Import
+
+```ts twoslash
+import { defineExtension } from '@oxform/core';
+```
+
+## Minimal example
+
+A writer loses a draft when the tab closes (E06). `autosave` needs `values` and `validation`, declares three
+options, keeps one state key, adds `form.autosave.flush()` and the `autosaveStatus` slot. Its timer starts on a
+change, so a new instance does nothing.
+
+<include meta='twoslash'>../../../../../examples/kit/src/autosave.ts</include>
+
+## Signature
+
+```ts twoslash
+import type { BaseOptions, Extendable, Extension, FormContext, OptionTypes } from '@oxform/core';
+import type { SlotFactory, SlotRecord } from '@oxform/core';
+
+type ApiNames<Provides> = readonly (keyof Provides & string)[];
+type StateNames<NeedState> = readonly (keyof NeedState & string)[];
+
+export declare function defineExtension<
+  Values,
+  Provides,
+  NeedState,
+  Options extends object,
+  State extends object,
+  Api extends object,
+  Slots extends SlotRecord,
+  Fields,
+>(
+  form: Extendable<Values, Provides, NeedState>,
+  definition: {
+    readonly name: string;
+    readonly needs?: { readonly api?: ApiNames<Provides>; readonly state?: StateNames<NeedState> };
+    readonly options?: OptionTypes<Options>;
+    readonly state?: (options: BaseOptions<Values> & Partial<Options>) => State;
+    readonly api: (context: FormContext<BaseOptions<Values> & Partial<Options>, State>, deps: Provides) => Api;
+    readonly slots?: (slot: SlotFactory<Provides & Api, NeedState & State>) => Slots;
+    readonly fields?: Fields;
+  },
+): Extension<Partial<Options>, State, Api, Slots, Fields>;
+```
+
+The declaration is simpler than the real one in one place: `needs` is required, and must list every name, when
+`Extendable` states a need.
+
+## Parameters
+
+| Name                 | Type                                       | Required                  | Meaning                                                                                      |
+| -------------------- | ------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
+| `form`               | `Extendable<Values, Provides, NeedState>`  | Yes                       | The parameter of the extension function. It carries the types only                           |
+| `definition.name`    | `string`                                   | Yes                       | The name in the runtime errors                                                               |
+| `definition.needs`   | `{ api?, state? }`                         | When `form` states a need | The api names and the state keys of `Extendable`, each one, and no other name                |
+| `definition.options` | `OptionTypes<Options>`                     | No                        | The option types, from [`optionTypes`](/docs/core/option)                                    |
+| `definition.state`   | `(options) => State`                       | No                        | Runs once per instance. Returns every state key of the extension                             |
+| `definition.api`     | `(context, deps) => Api`                   | Yes                       | Runs once per instance. `deps` is the api of the earlier extensions. Returns the api members |
+| `definition.slots`   | `(slot) => Slots`                          | No                        | The slots of the extension. `slot` sees the api and state so far, and its own                |
+| `definition.fields`  | `FieldMembers`, from [`on`](/docs/core/on) | No                        | Members for field handles                                                                    |
+
+`Extendable<Values, Needs<Values, 'values' | 'validation'>>` states the needs by the name of a built-in api.
+The context of `api` (`FormContext`) has `options()`, `onOptions`, `onDestroy`, `instance()`, `state.<key>` and
+`store`.
+
+## Returns
+
+| Name   | Type                                                     | Meaning                                                                |
+| ------ | -------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Result | `Extension<Partial<Options>, State, Api, Slots, Fields>` | The definition object. `.extend` reads its types, and `create` runs it |
+
+## Rules
+
+- Every need is required. A missing need is a type error at `.extend`, and `create` throws before an instance
+  exists.
+- `needs` lists each api name and state key of the `Extendable` parameter, and no other name.
+- An inline extension, `form.extend(form => defineExtension(form, {...}))`, gets the whole form. Its `needs` is
+  optional.
+- `api` must be inert: no DOM access, no timer and no request at creation.
+- Read `context.options()` inside a method, and do not keep the result.
+- Call `context.instance()` from a method or a handler. During `api` it throws:
+  `The instance is available after every extension api has run.`
+- `context.state` holds only the extension's own keys. Read another extension's state through its api or `store`.
+- An api key and a state key must be new in the chain. The api cannot return `id`, `store` or `destroy`.
+- Give `state` a return type when a key starts with `null`. TypeScript infers the state from the first value.
+
+## Common mistakes
+
+| Wrong code                                                             | Effect                                                                                   | Fix                                                                   |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `Extendable<V, Needs<V, 'values'>>` with no `needs` member             | Type error at `defineExtension`: the definition lacks `needs`                            | Add `needs: { api: ['values'] }`                                      |
+| `needs: { state: ['status'] }` for `Extendable<V, Needs<V, 'values'>>` | Type error: the list must name `values`, and no other name                               | List the same names as the `Extendable` parameter                     |
+| `defineForm(init).extend(autosave)`                                    | Type error at `.extend`: the form lacks `values` and `validation`. Throws at `create`    | Extend `values` and `validation` first                                |
+| `setTimeout(...)` in the body of `api`                                 | The timer starts on a server and for every instance that is never used                   | Start the timer in a method or a listener, and stop it in `onDestroy` |
+| `state: () => ({ savedAt: null })`                                     | `context.state.savedAt.set(new Date())` is a type error: "not assignable to type 'null'" | Give `state` a return type: `(): { savedAt: Date \| null } => ...`    |
+
+## Related
+
+- [`optionTypes`](/docs/core/option)
+- [`on`](/docs/core/on)
+- [`form.extend`](/docs/core/extend)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Known limits](/docs/limits)
