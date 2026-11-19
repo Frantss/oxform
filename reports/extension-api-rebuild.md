@@ -276,3 +276,11 @@
   run passes. A cold cache passes on the first run, so CI is not affected.
 - Why it matters: a contributor who pulls the branch can see two false failures once. If it recurs, add
   `optimizeDeps: { include: ['react-dom/server'] }` to `examples/react/vite.config.ts`.
+
+## The table fix note names a rule that is gone (TK-070, run 2)
+
+- What: the "Fixed" line of "The comparison matrix breaks words on a phone" (`reports/extension-api-rebuild.md:216`)
+  says that `app.css` sets `min-width: 6.5rem` on the cells of the comparison page only. `d5c765b` replaced that
+  rule: `apps/docs/src/styles/app.css:194` sets `overflow-wrap: normal` and `word-break: normal` on every docs
+  table cell, with no `min-width`. At 390x844 the matrix keeps each word whole and scrolls in its wrapper.
+- Why it matters: a reader of the report looks for a rule that does not exist.
