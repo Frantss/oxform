@@ -7,88 +7,92 @@ See [Commands Reference](./commands.md) for navigation commands.
 ```
 /
 ├── apps/
-│   └── docs/          # @oxform/docs - Public documentation website
+│   └── docs/            # @oxform/docs - public documentation site
 ├── packages/
-│   ├── core/          # @oxform/core - Framework-agnostic form library
-│   ├── react/         # @oxform/react - React hooks and components
-│   ├── solid/         # @oxform/solid - Published Solid 1 and /v2 entries
-│   ├── solid-v1/      # Private Solid 1 implementation
-│   └── solid-v2/      # Private Solid 2 implementation
+│   ├── core/            # @oxform/core - the main APIs, the behaviors and the presets
+│   ├── react/           # @oxform/react - the React adapter
+│   ├── solid/           # @oxform/solid - published Solid 1 and /v2 entry points
+│   ├── solid-v1/        # private Solid 1 adapter
+│   ├── solid-v2/        # private Solid 2 adapter
+│   └── adapter-parity/  # private parity scenarios that every adapter must pass
 ├── examples/
-│   ├── react/         # React demos and browser tests
-│   ├── solid/         # Solid 1 demo and browser tests
-│   └── solid-v2/      # Solid 2 demo and browser tests
-├── docs/              # Contributor guides
-├── pnpm-workspace.yaml # Workspace globs and shared dependency catalog
-└── package.json       # Root workspace configuration
+│   ├── kit/             # private framework-neutral example code and its specs
+│   ├── react/           # React example app and browser specs
+│   ├── solid/           # Solid 1 example app and browser specs
+│   └── solid-v2/        # Solid 2 example app and browser specs
+├── docs/                # contributor guides
+├── plans/               # design records of the extension API rebuild
+├── reports/             # findings log
+├── scripts/             # root scripts: check-terms.ts, type-coverage.ts
+├── pnpm-workspace.yaml  # workspace globs and shared dependency catalog
+└── package.json         # root scripts
 ```
 
 ## Package Relationships
 
-- `@oxform/core` - Standalone, no internal dependencies
-- `@oxform/react` - Depends on `@oxform/core` (via `workspace:*`)
-- `@oxform/solid` - Depends on `@oxform/core` (via `workspace:*`), with a Solid peer dependency
-- `@oxform/solid-v1` and `@oxform/solid-v2` - Private workspaces with isolated
-  Solid runtimes, compilers, types, and tests. Their builds are assembled into
-  the published `@oxform/solid` package; consumers resolve no private workspaces.
+- `@oxform/core` has no internal dependency.
+- `@oxform/react` and `@oxform/solid` list `@oxform/core` as a peer dependency (`workspace:^`). An
+  adapter imports core only through its public entry points and does not re-export it.
+- `@oxform/solid-v1` and `@oxform/solid-v2` are private workspaces with isolated Solid runtimes,
+  compilers, types and tests. `@oxform/solid` assembles their builds: Solid 1 in `dist/`, Solid 2 in
+  `dist/v2/`. It has no implementation `src/`.
+- `@oxform/adapter-parity` and `example-oxform-kit` are private. They hold shared scenarios and shared
+  example code. They import no adapter or UI runtime.
+- Packages are ESM only.
 
-## Navigating Packages
+## Entry Points
 
-- Use `cd packages/<name>` to enter a package directory
-- Package names are in each `package.json` (e.g., `@oxform/core`, `@oxform/react`)
-- Core, React, and the private Solid adapters have `src/`, `export/`, and test files.
-  Builds generate `dist/`. The published Solid package assembles the private
-  adapters and has no implementation `src/` directory.
+| Entry point              | Entry file                       | Holds                                                                                |
+| ------------------------ | -------------------------------- | ------------------------------------------------------------------------------------ |
+| `@oxform/core`           | `packages/core/export/index.ts`  | The main APIs: `defineForm`, `defineExtension`, `slots`, `on`, `createEffect`, paths |
+| `@oxform/core/behaviors` | `export/behaviors.ts`            | The built-in extensions and the slot groups                                          |
+| `@oxform/core/presets`   | `export/presets.ts`              | The presets, such as `standard`                                                      |
+| `@oxform/core/adapter`   | `export/adapter.ts`              | The contract for adapter authors. See [Adapter authors](./adapter-authors.md)        |
+| `@oxform/react`          | `packages/react/export/index.ts` | `createParts`, `usePart` and their types                                             |
+| `@oxform/solid`, `/v2`   | `packages/solid/export/`         | The same names as the React adapter, for Solid 1 and Solid 2                         |
+
+An `export/` file lists the public names. Add a name to an entry file, to its type test inventory
+(`tests/types/inventory.json`) and to its reference page in the same change. `pnpm run check:parity` fails
+when the built adapters do not export the same names.
 
 ## Source Organization
 
-**Core (`packages/core/src/`):**
+**Core (`packages/core/src/`)** has four areas, with a fixed direction of imports:
 
-- `form/` - Main API and core modules (`form-api.ts`, `field-api.ts`, `form-core*.ts`)
-- `types/` - TypeScript type definitions
-- `utils/` - Utility functions
-- `tests/` - Test suites
+| Area         | Holds                                                                         | May import                 |
+| ------------ | ----------------------------------------------------------------------------- | -------------------------- |
+| `internal/`  | Path helpers shared by the other areas                                        | Itself only                |
+| `main/`      | `defineForm`, the context, effects, scopes, paths and the shared types        | `internal/`                |
+| `behaviors/` | One module per built-in extension (`values.ts`, `check.ts`, `submit.ts`, ...) | `internal/`, `main/`       |
+| `presets/`   | Presets, which compose behaviors through the `#core*` barrels only            | `#core`, `#core/behaviors` |
 
-**React (`packages/react/src/`):**
+Each runtime module has a sibling `*.spec.ts`. The lint overrides in the root `vite.config.ts`
+(`restrictImports`) enforce these directions, so `pnpm run check:rules` fails on a wrong import.
+`packages/core/tests/` holds the flow specs, `tests/types/` holds the type tests, and `scripts/` holds the
+type-coverage check.
 
-- `use-form.ts`, `use-field.ts` - React hooks
-- `field.tsx`, `array-field.tsx` - React components
-- `tests/` - React-specific tests
+**React (`packages/react/src/`):** `create-parts.ts` and `use-part.ts` build the parts of a form, `hooks.ts`
+and `context.ts` hold the hooks and the form context, `part-view.ts` and `types.ts` hold the rest. Specs sit
+beside each module. `tests/` holds the parity driver and the server specs.
 
-**Solid implementations (`packages/solid-v1/src/`, `packages/solid-v2/src/`):**
+**Solid (`packages/solid-v1/src/`, `packages/solid-v2/src/`):** the same shape as React, one workspace per
+Solid runtime. `packages/solid/export/` exposes the two public barrels.
 
-- `create-*.ts` - Owned reactive values and core bindings
-- `field.ts`, `array-field.ts`, `subscribe.ts` - Render-function components
-- `internal/` - Store subscriptions, field rebinding, and reactive property selection
-- `tests/` - Browser behavior and public type contracts
-- `server-tests/` - Server-rendering behavior
-
-`packages/solid/export/` exposes the two public barrels. Its build copies the
-Solid 1 output to `dist/` and Solid 2 output to `dist/v2/`.
-`examples/solid` and `examples/solid-v2` provide runnable demos.
-
-**Public docs (`apps/docs/`):**
-
-- `content/docs/` - MDX guides, recipes, and API references for React, Solid, and core
-- `content/docs/**/meta.json` - Sidebar ordering and section metadata
-- `source.config.ts` - Fumadocs collections, Twoslash snippets, and generated type tables
-- `src/routes/` - TanStack Start routes, including documentation and search
-- `src/lib/source.ts` - Documentation source with the `/docs` base URL
-- `src/routeTree.gen.ts` - Generated route tree
-
-See the [docs app readme](../apps/docs/README.md) for editing and validation commands.
+**Docs app (`apps/docs/`):** `content/docs/` holds the MDX pages and each section's `meta.json`,
+`source.config.ts` configures Fumadocs and Twoslash, `src/routes/` holds the TanStack Start routes, and
+`scripts/check-agents.ts` is the agent check. See the [docs app readme](../apps/docs/README.md) for the
+authoring rules.
 
 ## Import Paths
 
-Source packages use `#*` aliases pointing to `./src/*.ts`:
-
-- `import { FormApi } from '#form/form-api'` resolves to `src/form/form-api.ts`
-- Use absolute imports with `#` instead of relative paths like `../../`
-- React adds explicit aliases for TSX modules. The published Solid package's
-  `#*` alias points to `export/`; the docs app uses `@/` for `src/`.
+- Core uses `#main/*`, `#behaviors/*`, `#presets/*` and `#internal/*` (all `#*` to `./src/*.ts`), and the
+  barrels `#core`, `#core/behaviors`, `#core/presets` and `#core/adapter` (to `./export/*.ts`).
+- A preset and a flow spec import core only through the barrels, as a consumer does.
+- React, Solid 1 and Solid 2 map `#*` to `./src/*.ts`. The docs app uses `@/` for `src/`.
+- Use these aliases instead of paths such as `../../`.
 
 ## Dependency Management
 
-- Shared dependency versions are listed in `pnpm-workspace.yaml` under `catalogs.oxform`
-- Internal packages reference each other with `workspace:*`
-- Run `pnpm install` from root to install all dependencies
+- Shared versions are in `pnpm-workspace.yaml` under `catalogs.oxform`.
+- Internal packages reference each other with `workspace:*` (`workspace:^` for a peer dependency).
+- Run `pnpm install` from the root to install all workspaces.

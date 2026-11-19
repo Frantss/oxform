@@ -26,7 +26,7 @@ A stateful subject (`packages/core/src/main/context.spec.ts`):
 const setup = <Options extends object>(options: Options = {} as Options) => {
   const controls = createContext(options);
 
-  return Object.assign(controls, { [Symbol.dispose]: controls.destroy });
+  return Object.assign(controls, { [Symbol.dispose]: () => controls.destroy() });
 };
 
 it('start in the store', () => {
@@ -46,6 +46,12 @@ const setup = <const Input extends object>(input: Input) => ({
   [Symbol.dispose]() {},
 });
 
+it('reads a path from plain state', () => {
+  using subject = setup({ at: 'address.city' });
+
+  expect(get(subject.values, subject.at)).toBe('Lisbon');
+});
+
 it('writes a dot as a hyphen', () => {
   using subject = setup({ path: 'tags.0.name' });
 
@@ -53,16 +59,17 @@ it('writes a dot as a hyphen', () => {
 });
 ```
 
-A rendered Solid view (`examples/solid/src/app.spec.tsx`). React unmounts asynchronously, so
-`examples/react/src/app.spec.tsx` returns `[Symbol.asyncDispose]: screen.unmount` and uses
+A rendered Solid view (`examples/solid/tests/setup.tsx`). React unmounts asynchronously, so
+`examples/react/tests/setup.tsx` returns `[Symbol.asyncDispose]: () => screen.unmount()` and each case uses
 `await using screen = await setup(<App />)`.
 
 ```ts
 const setup = (view: () => JSX.Element) => {
   const container = document.body.appendChild(document.createElement('div'));
+  container.dataset.testid = `view-${++views}`;
   const dispose = render(view, container);
 
-  return Object.assign(page.elementLocator(container), {
+  return Object.assign(page.getByTestId(container.dataset.testid), {
     [Symbol.dispose]: () => {
       dispose();
       container.remove();
@@ -76,16 +83,17 @@ uses them. Type tests (`*.test-d.ts`) run no code, so they have no `setup`.
 
 ## File Placement
 
-| Files                                                            | What they test                                                    | Runner                            |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------- |
-| `packages/core/src/**/*.spec.ts`                                 | One module each, beside it (`paths.ts` and `paths.spec.ts`)       | `unit` project, Node, no `window` |
-| `packages/core/tests/*.spec.ts`                                  | Flows across modules, imported only through the `#core*` barrels  | `integration` project, Node       |
-| `packages/core/tests/types/*.test-d.ts`                          | The public types, through the package names                       | `tsc`, no runtime                 |
-| `packages/{react,solid-v1,solid-v2}/src/`                        | Adapter specs, beside their module                                | Browser, Chromium                 |
-| `packages/react/tests/*.spec.tsx`                                | The parity scenarios of `packages/adapter-parity`, in the browser | Browser, Chromium                 |
-| `packages/react/tests/server/*.spec.tsx`                         | The server parity scenarios                                       | `test:ssr`, Node                  |
-| `examples/{react,solid,solid-v2}/src/`                           | The example apps                                                  | Browser, Chromium                 |
-| `examples/{kit,comparison}/src/`, `packages/adapter-parity/src/` | Shared example code and adapter fixtures                          | Node                              |
+| Files                                                         | What they test                                                    | Runner                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------- |
+| `packages/core/src/**/*.spec.ts`                              | One module each, beside it (`paths.ts` and `paths.spec.ts`)       | `unit` project, Node, no `window` |
+| `packages/core/tests/*.spec.ts`                               | Flows across modules, imported only through the `#core*` barrels  | `integration` project, Node       |
+| `packages/core/tests/types/*.test-d.ts`                       | The public types, through the package names                       | `tsc`, no runtime                 |
+| `packages/{react,solid-v1,solid-v2}/src/`                     | Adapter specs, beside their module                                | Browser, Chromium                 |
+| `packages/{react,solid-v1,solid-v2}/tests/parity.spec.*`      | The parity scenarios of `packages/adapter-parity`, in the browser | Browser, Chromium                 |
+| `packages/{react,solid-v1,solid-v2}/tests/server/`            | The server parity scenarios                                       | `test:ssr`, Node                  |
+| `packages/{react,solid-v1,solid-v2}/tests/types/*.test-d.tsx` | The public types of each adapter, through the package names       | `tsc`, no runtime                 |
+| `examples/{react,solid,solid-v2}/tests/`                      | The example apps, one spec per example                            | Browser, Chromium                 |
+| `examples/kit/src/*.spec.ts`, `packages/adapter-parity/src/`  | Shared example code and adapter fixtures, beside their module     | Node                              |
 
 - Use `*.spec.ts` for code without JSX and `*.spec.tsx` for code with JSX.
 - `packages/solid` publishes the build of `solid-v1` and `solid-v2` and has no specs. Put a Solid spec in
@@ -141,7 +149,7 @@ it('rejects an unknown path', () => {
 - `pnpm --dir packages/core run check:types` checks the type tests against the source.
 - `check:types:dist` checks them against the built `dist`, through the package `exports`.
 - `check:type-coverage` fails when an export has no type case, or is not in `tests/types/inventory.json`
-  (the inventory of `plans/extension-api/01-public-api.md`).
+  (the list of public names of each entry point).
 
 ## Running Tests
 

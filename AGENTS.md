@@ -81,14 +81,22 @@ to work; the guides below document the project.
   TanStack Start/Router, Fumadocs, and Tailwind CSS. Verify prerelease behavior
   against the installed version rather than assuming stable-release behavior.
 - Read the relevant guides before changing their area:
-  - [Structure](./docs/structure.md): workspace layout and package relationships.
+  - [Structure](./docs/structure.md): workspace layout, entry points, and package relationships.
+  - [Architecture](./docs/architecture.md): how the core builds, runs, and validates a form.
+  - [Adapter authors](./docs/adapter-authors.md): the `@oxform/core/adapter` contract.
   - [Commands](./docs/commands.md): development, validation, and release commands.
     Confirm commands against the current package scripts and CLI help.
-  - [Checks and issues](./docs/checks-and-issues.md): check and issue validation behavior.
-  - [Form core behaviors](./docs/form-core-behaviors.md): expected form method behavior.
-  - [Testing](./docs/testing.md): Vitest and Playwright browser testing patterns.
-  - [TypeScript](./docs/typescript.md): type patterns and API design.
-  - [Code style](./docs/code-style.md): imports, formatting, and naming.
+  - [Testing](./docs/testing.md): Vitest and Playwright testing patterns, and type tests.
+  - [TypeScript](./docs/typescript.md): inference rules and API design.
+  - [Code style](./docs/code-style.md): formatting, naming, and the [glossary](./docs/code-style.md#glossary).
+- Use the glossary words in code, tests, and documents. `pnpm run check:terms` enforces them.
+- Entry-point rule: public code and documentation import from `@oxform/core`, `@oxform/core/behaviors`,
+  `@oxform/core/presets`, `@oxform/react`, or `@oxform/solid`. Only an adapter imports
+  `@oxform/core/adapter`.
+- Example rule: each public example is one row of the example catalogue, with an `E` id. It lives in
+  `examples/kit/src` (framework-neutral) or in an example app, and its specs run in that workspace. A
+  documentation page includes the example file and does not copy it. Docs authoring rules are in the
+  [docs app readme](./apps/docs/README.md).
 
 ### Findings
 
@@ -104,16 +112,17 @@ Vite+ (`vp`); lint and formatting use Oxlint and Oxfmt, not ESLint or Prettier.
 pnpm run build           # build all workspaces
 pnpm run build:dev       # watch mode
 pnpm run check:types     # type-check all workspaces
-pnpm run check:all       # lint, format, types, and package validation
+pnpm run check:all       # lint, format, types, terms, package validation, and adapter parity
 pnpm run test            # run core, React, Solid, and all example tests once
 pnpm run fix:all         # auto-fix lint and format
 pnpm run fix:format AGENTS.md  # format a specific file
 
 # Run a single test through the package's Vite+ script
-cd packages/<name> && pnpm run test run src/tests/file.spec.ts
+pnpm --dir packages/core run test run src/behaviors/check.spec.ts
 
 # Run browser-facing workspaces
 pnpm run docs:dev
+pnpm run docs:check:agents   # after pnpm run docs:build
 pnpm --dir examples/react run dev
 ```
 
@@ -122,6 +131,8 @@ pnpm --dir examples/react run dev
 - For code or configuration changes, run `pnpm run build`, `pnpm run check:all`,
   and `pnpm run test`, unless a command is irrelevant or blocked. Build before
   package validation so it can inspect the generated exports.
+- For a change to documentation content, also run `pnpm run docs:build` and
+  `pnpm run docs:check:agents`. Run `pnpm run check:terms` for any document or code.
 - Run formatting before finishing. Limit formatting to files changed for the
   task; inspect the diff and preserve unrelated edits.
 - For browser-facing changes, run the affected docs or example application and
