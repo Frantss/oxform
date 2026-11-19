@@ -1,5 +1,11 @@
 # oxform-core
 
+## 0.7.0
+
+### Minor Changes
+
+- 2deff1e: Rebuild Oxform on the extension API. A form is an ordered chain of extensions, rendered by thin framework adapters. This release is a breaking change, and the packages are ESM only.
+
 ## 0.6.0
 
 ### Minor Changes
