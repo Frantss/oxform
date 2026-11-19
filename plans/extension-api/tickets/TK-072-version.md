@@ -3,12 +3,12 @@ id: TK-072
 title: Version
 phase: 9
 work_package: P9-03
-status: todo
+status: done
 depends_on: [TK-071]
 branch: codex/P9-03-version
 pr: null
-started: null
-completed: null
+started: 2026-11-19
+completed: 2026-11-19
 ---
 
 # TK-072: Version
@@ -39,12 +39,19 @@ workspace changes version.
 
 ## Acceptance
 
-- [ ] The three manifests and the three changelogs show 0.7.0.
-- [ ] `.changeset/pre.json` does not exist.
-- [ ] Each adapter's peer range on `@oxform/core` is `workspace:^`.
-- [ ] No private workspace has a new version or changelog.
-- [ ] `pnpm run build` and `pnpm run check:all` pass.
+- [x] The three manifests and the three changelogs show 0.7.0.
+- [x] `.changeset/pre.json` does not exist.
+- [x] Each adapter's peer range on `@oxform/core` is `workspace:^`.
+- [x] No private workspace has a new version or changelog.
+- [x] `pnpm run build` and `pnpm run check:all` pass.
 
 ## Evidence
 
-Record the path taken (Changesets or by hand), the command results and any deviation from the plan here.
+- Path: Changesets. The owner approved the bump on 2026-11-18. `pnpm run version:bump` consumed
+  `.changeset/extension-api.md` and the `fixed` group set `@oxform/core`, `@oxform/react` and `@oxform/solid` to
+  0.7.0 (solid came from 0.2.0). Each changelog has one 0.7.0 entry. No prerelease mode: `.changeset/pre.json`
+  does not exist.
+- The peer range of each adapter on `@oxform/core` stays `workspace:^`. No private workspace changed.
+- Deviation: Changesets made its own commit, `RELEASING: Releasing 3 package(s)`. It is reworded as
+  `chore: version the packages for 0.7.0` (`04901cd`) to follow the commit rules.
+- `pnpm run build` (13/13) and `pnpm run check:all` exit 0.
