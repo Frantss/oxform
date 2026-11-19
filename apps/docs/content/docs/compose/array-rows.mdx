@@ -1,0 +1,115 @@
+---
+title: Rows of an array
+description: Write a row that takes the scope of its array item, and add, remove and move the rows.
+type: guide
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [reusable, type-safe]
+examples: [E16, E17, E33]
+---
+
+## Problem
+
+A row component must not know its index. The user adds, removes and reorders invitees, and focus and errors must
+stay with the row.
+
+## What you build
+
+You build the member rows of the team invites in the example kit: `members` is an array of `{ email, role }`. A
+row reads its member through a `Scope<Member>`, so it uses the names `email` and `role` and never an index.
+`form.scope('members.0')` gives that scope. It needs no `defineScope`. "Invite another" appends a member, and each
+row is keyed by the item id of `arrays`, which moves with the item.
+
+## Steps
+
+### Write a row for one member [#write-a-row-for-one-member]
+
+Type the row with `Scope<Member, 'error'>`: the values of one member, with the `error` check. Inside the row,
+`member.field('email')` is the email of that member, wherever the member is in the array.
+
+```ts twoslash
+import { type Scope } from '@oxform/core';
+
+type Member = { email: string; role: 'member' | 'admin' };
+
+export const memberLabel = (member: Scope<Member, 'error'>) =>
+  `${member.field('email').get() || 'New member'} (${member.field('role').get()})`;
+```
+
+### Give each row the scope of its item [#give-each-row-the-scope-of-its-item]
+
+`form.scope(path)` views any object path of the form as a `Scope`. `handles` adds it, so the form needs
+`handles` or `standard`. The path `members.0` gives the scope of the first member.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const memberSchema = z.object({ email: z.email(), role: z.enum(['member', 'admin']) });
+const teamInvitesSchema = z.object({ team: z.string().min(1), members: z.array(memberSchema) });
+
+const teamInvites = defineForm({ schema: teamInvitesSchema, defaultValues: { team: '', members: [] } })
+  .extend(standard)
+  .configure({ error: { change: teamInvitesSchema } });
+
+const form = teamInvites.create({ defaultValues: { team: 'Design', members: [{ email: '', role: 'member' }] } });
+const first = form.scope('members.0');
+//    ^?
+```
+
+### Add, remove and move rows [#add-remove-and-move-rows]
+
+`form.array('members')` gives the array operations and `ids`, one stable id per item. `append` adds a member,
+`remove(index)` removes one, and `move(from, to)` reorders. The ids, the status and the check entries move with
+the items, so a row keyed by its id keeps its focus and its errors.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const memberSchema = z.object({ email: z.email(), role: z.enum(['member', 'admin']) });
+const teamInvitesSchema = z.object({ team: z.string().min(1), members: z.array(memberSchema) });
+
+const teamInvites = defineForm({ schema: teamInvitesSchema, defaultValues: { team: '', members: [] } }).extend(
+  standard,
+);
+
+const form = teamInvites.create();
+const members = form.array('members');
+members.append({ email: '', role: 'member' });
+members.append({ email: 'grace@example.com', role: 'admin' });
+members.move(0, 1);
+members.ids; // The two ids, in the new order.
+```
+
+## Complete example
+
+The row of the example kit. The `Member` type is in `schemas/team-invites.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/member-row.ts</include>
+
+"Invite another", which appends a member and returns its id. The form is in `team-invites.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/member-list.ts</include>
+
+## Verify
+
+`memberLabel(form.scope('members.0'))` and `memberLabel(form.scope('members.1'))` give the label of each member
+with the same function. Append three members, give the first an invalid email, then move it to the end and
+remove the new first item: the ids follow the items, and the error is still on the member that has the invalid
+email. The tests of the kit do this (`examples/kit/src/member-row.spec.ts`, `examples/kit/src/member-list.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                  | Effect                                                                                 | Fix                                                                              |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| A row that takes `index` and reads ``form.field(`members.${index}.email`)`` | The row knows its place. After a move, a row that keeps its index shows another member | Give the row ``form.scope(`members.${index}`)`` and read `member.field('email')` |
+| Rows keyed by their index                                                   | After a move or a remove, a row keeps the focus and the state of another member        | Key each row by `form.array('members').ids[index]`                               |
+| `form.scope('members.0')` on a lean chain                                   | Type error: `scope` does not exist. `handles` adds it                                  | Add `arrays`, `reset` and `handles`, or use `standard`                           |
+
+## Related
+
+- [A block used twice](/docs/compose/repeated-block)
+- [`scope(path)`](/docs/behaviors/scope)
+- [`arrays`](/docs/behaviors/arrays)

@@ -1,0 +1,123 @@
+---
+title: An option that takes the form
+description: Give an option of an extension the instance as a parameter with Self.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible, type-safe]
+examples: [E07]
+---
+
+## Problem
+
+When the server rejects a draft, the application must show it on the form.
+
+## What you build
+
+You add the `onSaveError(error, form)` option to `autosave`. When `saveDraft` rejects, `autosave` calls it with the
+error and the instance. The article editor uses the instance to set a warning on `title`.
+
+An extension cannot name the type of the instance: the extensions after it add to the instance. `Self` stands
+for the instance in the parameters of an option. `configure`, `create` and the adapter options replace it with the
+instance type of the whole chain.
+
+## Steps
+
+### Declare the option with `Self` [#declare-the-option-with-self]
+
+Write `Self` as the type of the parameter that gets the instance. The option is optional, as every option.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type MaybePromise, type Needs, type Self } from '@oxform/core';
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    options: optionTypes<{
+      saveDraft: (draft: Values) => MaybePromise<unknown>;
+      onSaveError: (error: unknown, form: Self) => void;
+    }>(),
+    api: () => ({}),
+  });
+```
+
+### Call it with the instance [#call-it-with-the-instance]
+
+`context.instance()` returns the instance. It is available after every `api` has run, so call it in a method or
+a callback, not in the body of `api`. Pass `context.instance<never>()`: the extension cannot name the instance
+type, and `never` fits the `Self` parameter.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type MaybePromise, type Needs, type Self } from '@oxform/core';
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    options: optionTypes<{
+      saveDraft: (draft: Values) => MaybePromise<unknown>;
+      onSaveError: (error: unknown, form: Self) => void;
+    }>(),
+    api: (context, { values }) => {
+      const flush = async () => {
+        try {
+          await context.options().saveDraft?.(values.get());
+        } catch (error) {
+          context.options().onSaveError?.(error, context.instance<never>());
+        }
+      };
+      return { autosave: { flush } };
+    },
+  });
+```
+
+### Set the option on the form [#set-the-option-on-the-form]
+
+In `configure` or `create`, the `form` parameter is the instance of the whole chain. The article editor has a
+`warning` check, so the callback sets a warning on `title`. `warnings` comes after `standard`, so after `handles`:
+the field handle has no `warning` sugar, and the callback uses `form.warning.set`.
+
+```ts no-check="imports files of the example kit"
+import { slots } from '@oxform/core';
+import { articleEditor } from './article-editor';
+import { autosave } from './autosave';
+import { articles } from './services';
+import { warningSlots, warnings } from './warnings';
+
+const editor = articleEditor
+  .extend(warnings)
+  .extend(slots(slot => warningSlots(slot)))
+  .extend(autosave);
+
+export const form = editor.create({
+  saveDraft: articles.saveDraft,
+  onSaveError: (_error, form) => form.warning.set('title', [{ message: 'The draft was not saved.' }]),
+});
+```
+
+## Complete example
+
+The extension of the example kit, with `onSaveError`.
+
+<include meta='twoslash'>../../../../../examples/kit/src/autosave.ts</include>
+
+## Verify
+
+Create the editor with a `saveDraft` that rejects, change a value, and wait for `autosaveDelay`.
+`form.warning.at('title')` has the message, and `form.store.state.autosave.dirty` is `true`. The test of the kit
+does this (`examples/kit/src/autosave.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                                | Effect                                                                             | Fix                                                                      |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `const form = context.instance()` in the body of `api`                                    | Throws at `create`: `The instance is available after every extension api has run.` | Call `context.instance()` in a method or a callback                      |
+| `onSaveError: (error: unknown, form: InstanceOf<typeof editor>) => void` in the extension | The extension depends on one form, and other forms cannot use it                   | Write `Self`. `configure` and `create` replace it with the instance type |
+| `form.field('title').warning()` in the callback of the editor                             | Type error: no `warning` sugar. `warnings` comes after `handles`                   | Use the check api: `form.warning.set('title', entries)`                  |
+
+## Related
+
+- [Write an extension](/docs/extend/write-an-extension)
+- [Add a second check](/docs/extend/second-check)
+- [Test and share an extension](/docs/extend/test-and-share)
+- [Extend a form](/docs/extend)

@@ -1,0 +1,120 @@
+---
+title: A block used twice
+description: Describe an address once as a scope, and place it at billing and at shipping.
+type: guide
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [reusable, type-safe]
+examples: [E15, E31]
+---
+
+## Problem
+
+Billing and shipping address are the same block, with the same rules.
+
+## What you build
+
+You build the `address` scope of the example kit and place it in the checkout at `billing` and at `shipping`.
+`defineScope` describes a sub-object without a path: its schema, its default values and its validators per check.
+The form places it at a key. Code written for a `Scope` works at each place, so `copyAddress` fills the shipping
+address from the billing address.
+
+## Steps
+
+### Describe the scope [#describe-the-scope]
+
+`defineScope` takes `schema` and `defaultValues`, and `checks` for the validators by check name and event. The
+schema only types the values of the scope. The `error` validator makes each address field required on submit.
+
+```ts twoslash
+import { defineScope } from '@oxform/core';
+import { z } from 'zod';
+
+const addressSchema = z.object({ street: z.string().min(1), city: z.string().min(1) });
+
+export const address = defineScope({
+  schema: addressSchema,
+  defaultValues: { street: '', city: '' },
+  checks: { error: { submit: addressSchema } },
+});
+```
+
+### Place it twice [#place-it-twice]
+
+`scopes` in `defineForm` places each scope at one key. The schema and the default values of the form describe
+its own fields only, and each scope adds its own. The form values now have `billing` and `shipping`, both of the
+address type.
+
+```ts twoslash
+import { defineForm, defineScope } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const addressSchema = z.object({ street: z.string().min(1), city: z.string().min(1) });
+const address = defineScope({
+  schema: addressSchema,
+  defaultValues: { street: '', city: '' },
+  checks: { error: { submit: addressSchema } },
+});
+
+const orderSchema = z.object({ email: z.email() });
+
+export const checkout = defineForm({
+  schema: orderSchema,
+  defaultValues: { email: '' },
+  scopes: { billing: address, shipping: address },
+})
+  .extend(standard)
+  .configure({ error: { submit: orderSchema } });
+
+checkout.create().values.get('shipping');
+//                       ^?
+```
+
+### Write code for any place [#write-code-for-any-place]
+
+`Scope<Values, Checks>` is the type of the handles of a sub-object. `form.scope('billing')` returns one.
+`copyAddress` reads each field of one scope and changes the same field of the other. It does not know the paths.
+
+```ts twoslash
+import { type Scope } from '@oxform/core';
+
+type Address = { street: string; city: string };
+
+const addressFields: (keyof Address)[] = ['street', 'city'];
+
+export const copyAddress = (from: Scope<Address, 'error'>, to: Scope<Address, 'error'>) => {
+  for (const name of addressFields) to.field(name).change(from.field(name).get());
+};
+```
+
+Call it with the two scopes of an instance: `copyAddress(form.scope('billing'), form.scope('shipping'))`.
+
+## Complete example
+
+The scope of the example kit. The schema and the default values are in `schemas/checkout.ts`, and the checkout
+that places the scope is in `checkout.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/address.ts</include>
+
+## Verify
+
+Submit an empty checkout: `form.error.at('billing.city')` and `form.error.at('shipping.city')` each have the
+message of the scope. Fill the billing address, then call `copyAddress`: `form.values.get('shipping')` equals the
+billing address. The test of the kit does this (`examples/kit/src/address.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                          | Effect                                                                                                                                     | Fix                                                                    |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| A form validator for `billing.city` and the `error` validator of the scope          | Both run. The field can report two issues                                                                                                  | Validate the fields of the scope in the scope only                     |
+| A part with no `scope` whose name is `city`, on a form that also has a `city` field | The part writes to the form's `city`, not to the address                                                                                   | Give the part the scope of the address                                 |
+| `scopes: { 'billing.address': address }`                                            | Type error. At `create`: `The scope "billing.address" has a dot in its key. A scope is one key: view a nested path with form.scope(path).` | Place the scope at one key. View a nested path with `form.scope(path)` |
+| `scopes: { email: address }` when `email` is in the schema of the form              | Type error. At `create`: `The scope "email" has the key of one of the form's own values, which it would replace.`                          | Use a key that the form's own values do not have                       |
+| A scope with `checks: { warning: … }` on a form with no `warning` check             | Throws at `create`: `The scope "billing" has validators for the check "warning", which the form does not have.`                            | Extend `check('warning')` on the form, or remove the validators        |
+
+## Related
+
+- [Rows of an array](/docs/compose/array-rows)
+- [Use the `standard` preset](/docs/compose/standard-preset)
+- [Scopes](/docs/concepts/scopes)
+- [`scope(path)`](/docs/behaviors/scope)

@@ -1,0 +1,133 @@
+---
+title: A form without validation
+description: Build a filter bar from three extensions, with no validation and no submit.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, lightweight]
+examples: [E02]
+---
+
+## Problem
+
+A filter bar changes a list as the user types. It has nothing to validate or submit.
+
+## What you build
+
+You build the member filter of the example kit: `query` and `role`. The chain is `values`, `status` and
+`events`, and `fieldSlots` gives the `field` part. A "Clear filters" button shows while a filter differs from its
+default.
+
+The form has no `validation`. `status`, `events` and the other built-in extensions then act as on a form with no
+check: every path is valid, nothing is validating, and a run is valid with no issues. The form has no `submit`, so
+it spreads no root group.
+
+## Steps
+
+### Add values, status and events [#values-status-events]
+
+`values` holds the filters. `status` derives the flags of each field. `events` takes the changes of the inputs.
+`status` and `events` need `values`, and `events` also needs `status`, so the order is fixed.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { events, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const memberFilterSchema = z.object({ query: z.string(), role: z.enum(['', 'member', 'admin']) });
+
+const memberFilter = defineForm({ schema: memberFilterSchema, defaultValues: { query: '', role: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events);
+
+const form = memberFilter.create();
+//    ^?
+```
+
+### Spread the field group [#spread-the-field-group]
+
+`fieldSlots` gives the `field` part with no check: it needs the `events` and `values` api and the `values` and
+`status` state. The form now has one part, `field`.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import { events, fieldSlots, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const memberFilterSchema = z.object({ query: z.string(), role: z.enum(['', 'member', 'admin']) });
+
+export const memberFilter = defineForm({ schema: memberFilterSchema, defaultValues: { query: '', role: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events)
+  .extend(slots(slot => fieldSlots(slot)));
+```
+
+### Show "Clear filters" [#show-clear-filters]
+
+Read the `default` flag of each field. It is true while the value equals its default. Do not use `dirty`: it
+records an interaction and stays set when the value comes back.
+
+```ts twoslash
+import { defineForm, slots, type InstanceOf } from '@oxform/core';
+import { events, fieldSlots, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const memberFilterSchema = z.object({ query: z.string(), role: z.enum(['', 'member', 'admin']) });
+
+const memberFilter = defineForm({ schema: memberFilterSchema, defaultValues: { query: '', role: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events)
+  .extend(slots(slot => fieldSlots(slot)));
+
+export const hasFilters = (form: InstanceOf<typeof memberFilter>) =>
+  !form.status.at('query').default || !form.status.at('role').default;
+```
+
+## Complete example
+
+The form of the example kit. The schema is in `schemas/member-filter.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/member-filter.ts</include>
+
+## Verify
+
+Change a filter, then change it back. `hasFilters` is `true`, then `false`. The instance has no `validation` and
+no `submit` member. The test of the kit does this (`examples/kit/src/member-filter.spec.ts`).
+
+```ts twoslash
+// @errors: 2339
+import { defineForm, slots } from '@oxform/core';
+import { events, fieldSlots, status, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const memberFilterSchema = z.object({ query: z.string(), role: z.enum(['', 'member', 'admin']) });
+
+const memberFilter = defineForm({ schema: memberFilterSchema, defaultValues: { query: '', role: '' } })
+  .extend(values)
+  .extend(status)
+  .extend(events)
+  .extend(slots(slot => fieldSlots(slot)));
+
+const form = memberFilter.create();
+form.events.change('query', 'ada');
+form.status.at('query').default; // false
+form.submit.run();
+```
+
+## Common mistakes
+
+| Wrong code                                                                   | Effect                                                                                  | Fix                                                                                                           |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `slots(slot => ({ ...rootSlots(slot), ...fieldSlots(slot) }))` on this chain | Type error at `slots`: `rootSlots` needs the `submit` api. At `create`, it throws       | Spread no root group. `Root` then renders no element. Add an element in the component when the page needs one |
+| `!form.status.form.dirty` to hide "Clear filters"                            | The button stays after the user clears the filters: `dirty` does not go back to `false` | Read `form.status.at(path).default` of each filter                                                            |
+| `fieldErrorSlots` on this chain                                              | Type error at `slots`: the group needs the `error` state, which the form does not have  | Spread `fieldSlots`                                                                                           |
+
+## Related
+
+- [Compose a form](/docs/compose)
+- [A lean form](/docs/compose/lean-form)
+- [`status`](/docs/behaviors/status)
+- [`events`](/docs/behaviors/events)
+- [Slot groups](/docs/behaviors/slot-groups)

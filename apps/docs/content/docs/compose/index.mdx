@@ -1,0 +1,50 @@
+---
+title: Compose a form
+description: Choose the extensions of a form, from values only to the standard preset.
+type: overview
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/core/presets']
+principles: [composable, lightweight]
+examples: [E02, E01, E03]
+---
+
+## In short
+
+A form is a chain: `defineForm(...)`, then one `.extend(...)` per extension. A form has only the api, state, options
+and parts of the extensions in its chain. Start low on the ladder, and add an extension when the form needs it.
+
+## The ladder [#the-ladder]
+
+Each tier adds to the tier above it. The example is a row of the example catalogue.
+
+| Tier               | Chain                                                                                                                      | What the tier adds                                                                  | Example            | Guide                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------ |
+| Values             | `values`                                                                                                                   | Read, write, intercept and observe the values                                       | None               | `values`                                                           |
+| Inputs, no checks  | `values`, `status`, `events`, then `slots(slot => fieldSlots(slot))`                                                       | Field and form flags, input events, the `field` part                                | E02, member filter | [A form without validation](/docs/compose/form-without-validation) |
+| Validated and sent | `values`, `validation`, `check('error')`, `status`, `events`, `submit`, then `rootSlots`, `fieldErrorSlots`, `submitSlots` | Checks on events, the submit lifecycle, the `root`, `fieldError` and `submit` parts | E01, sign-in       | [A lean form](/docs/compose/lean-form)                             |
+| Preset             | `standard`                                                                                                                 | `arrays`, `reset`, `handles` and the `reset` part                                   | E03, checkout      | [Use the `standard` preset](/docs/compose/standard-preset)         |
+| Your own preset    | `standard`, then the extensions and slot groups of your team                                                               | The same extensions on every form of the team                                       | E04, `houseForm`   | [Your own preset](/docs/compose/your-own-preset)                   |
+
+## Choose a tier [#choose-a-tier]
+
+| The form must                                        | Use                                  |
+| ---------------------------------------------------- | ------------------------------------ |
+| Store values for code, with no inputs                | `values`                             |
+| React to input, with nothing to validate or send     | `values`, `status`, `events`         |
+| Validate and send, with no array and no reset        | The lean chain of the sign-in form   |
+| Edit an array, reset, or use `field(path)` from code | `standard`                           |
+| Add the same extensions to many forms                | A preset that starts with `standard` |
+
+## Reuse a piece [#reuse-a-piece]
+
+| The piece                                  | Use                                      | Guide                                              |
+| ------------------------------------------ | ---------------------------------------- | -------------------------------------------------- |
+| The same parts in many forms               | A slot group from `defineSlots`          | [A reusable slot group](/docs/compose/slot-group)  |
+| The same block of fields twice in one form | A scope from `defineScope`, placed twice | [A block used twice](/docs/compose/repeated-block) |
+| One item of an array                       | `form.scope(path)` on the item           | [Rows of an array](/docs/compose/array-rows)       |
+
+## Related
+
+- [A lean form](/docs/compose/lean-form)
+- [Use the `standard` preset](/docs/compose/standard-preset)
+- [Extend a form](/docs/extend)
+- [Built-in behaviors](/docs/behaviors)

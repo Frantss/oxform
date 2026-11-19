@@ -1,0 +1,113 @@
+---
+title: A reusable slot group
+description: Write a slot group that states its needs, and spread it into two forms.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [reusable]
+examples: [E12]
+---
+
+## Problem
+
+Every form needs the same message after a failed submit.
+
+## What you build
+
+You build `formErrorSlots` of the example kit. It gives one part, `formError`: a `p` element with
+`role="alert"`, present after a submit that did not succeed. The sign-in form and the `houseForm` preset both
+spread it.
+
+A slot group is a function from the slot factory to slots. `defineSlots` records its name and its needs on each
+slot, so `create` can check them. The group states its needs twice: in the type of `slot`, and in `needs`.
+
+## Steps
+
+### Write the group [#write-the-group]
+
+Annotate `slot` with `SlotFactory<Api, State>`: the api and the state that the slots read. `formError` reads
+the `status` state, so the api is `{}` and the state is `{ readonly status: StatusState }`. Then list the same
+names in `needs`. Each slot function is a pure function of the store state:
+
+- `present` decides if the part renders. Here: after a submit, when the form is not submitting and the submit did
+  not succeed.
+- `text` is what the part shows when it gets no children.
+- `attrs` gives the attributes of the element.
+
+```ts twoslash
+import { defineSlots, type SlotFactory } from '@oxform/core';
+import type { StatusState } from '@oxform/core/behaviors';
+
+export const formErrorSlots = defineSlots(
+  { name: 'formErrorSlots', needs: { state: ['status'] } },
+  (slot: SlotFactory<{}, { readonly status: StatusState }>) => ({
+    formError: slot({
+      element: 'p',
+      present: state => state.status.form.submits > 0 && !state.status.form.submitting && !state.status.form.successful,
+      text: () => 'The form was not sent. Correct the marked fields, then try again.',
+      attrs: () => ({ role: 'alert' }),
+    }),
+  }),
+);
+```
+
+### Spread it into two forms [#spread-it-into-two-forms]
+
+Call the group inside `slots(...)`. The `slot` of `slots(...)` is typed by the api and the state of the form so
+far, so a form that does not have a need of the group is a type error there. Both forms have `status`, so both
+now have the `formError` part.
+
+```ts no-check="imports files of the example kit"
+import { slots, type Form } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { formErrorSlots } from './form-error-slots';
+import { signIn } from './sign-in';
+
+export const signInWithBanner = signIn.extend(slots(slot => formErrorSlots(slot)));
+
+export const houseForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
+  form: Form<Values, Api, Options, State, Slots, Fields>,
+) => form.extend(standard).extend(slots(slot => formErrorSlots(slot)));
+```
+
+## Complete example
+
+The slot group of the example kit.
+
+<include meta='twoslash'>../../../../../examples/kit/src/form-error-slots.ts</include>
+
+## Verify
+
+Make an instance of the sign-in form with the group, and read the `formError` slot with `slotsOf` of
+`@oxform/core/adapter`. Before a submit, `present` is `false`. After an empty submit, `present` is `true`, and the
+text is the message. After a successful submit, `present` is `false` again. The test of the kit does this
+(`examples/kit/src/form-error-slots.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                      | Effect                                                                                                                                   | Fix                                                                                     |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `needs: { state: [] }` with `SlotFactory<{}, { readonly status: StatusState }>` | Type error: the list does not cover `"status"`. The two statements of the needs must be the same                                         | List each api name and state key of the annotation in `needs`                           |
+| `slots(slot => formErrorSlots(slot))` on a form without `status`                | Type error at `slots`. At `create`: `The "formErrorSlots" slot group needs the state key "status", which no earlier extension provides.` | Extend `status` before the `slots(...)` call                                            |
+| `slot({ text: s => …, state: state => … })`                                     | TypeScript reads the members in order. `text` comes first, so its parameter is `{}`                                                      | Write `text` after `state`                                                              |
+| `slots(...)` called at module scope, outside `.extend(...)`                     | `slots(...)` has no form to read, so its `slot` is not typed                                                                             | Put a reusable piece in a `defineSlots` group, and call it inside `.extend(slots(...))` |
+
+The needs in `needs` must cover the annotation:
+
+```ts twoslash
+// @errors: 2322
+import { defineSlots, type SlotFactory } from '@oxform/core';
+import type { StatusState } from '@oxform/core/behaviors';
+
+export const formErrorSlots = defineSlots(
+  { name: 'formErrorSlots', needs: { state: [] } },
+  (slot: SlotFactory<{}, { readonly status: StatusState }>) => ({
+    formError: slot({ element: 'p', present: state => state.status.form.submits > 0 }),
+  }),
+);
+```
+
+## Related
+
+- [Replace a slot](/docs/extend/replace-a-slot)
+- [Your own preset](/docs/compose/your-own-preset)
+- [Slot groups](/docs/behaviors/slot-groups)

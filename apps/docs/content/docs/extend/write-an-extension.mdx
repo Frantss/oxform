@@ -1,0 +1,174 @@
+---
+title: Write an extension
+description: Write the autosave extension with options, state, an api and a slot.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible, reusable, type-safe]
+examples: [E06]
+---
+
+## Problem
+
+A writer loses a draft when the tab closes.
+
+## What you build
+
+You build `autosave` of the example kit. It saves the article once the values stop changing and are valid. It
+needs `values` and `validation`, takes the options `saveDraft` and `autosaveDelay`, keeps its state under
+`autosave`, adds `form.autosave.flush()`, and gives the `autosaveStatus` part.
+
+An extension is a function of the form so far that returns `defineExtension(form, { ... })`. The `form`
+parameter carries the types only: it gives `Values` and the needs. `api` runs once per instance, on a server
+too, so it must be inert. The timer of `autosave` starts on a change, never at creation.
+
+## Steps
+
+### State the name and the needs [#state-the-name-and-the-needs]
+
+Type the parameter with `Extendable<Values, Needs<Values, ...>>`: the form must have the `values` and
+`validation` apis. List the same names in `needs`, which `create` checks at runtime. The extension adds nothing
+yet.
+
+```ts twoslash
+import { defineExtension, type Extendable, type Needs } from '@oxform/core';
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    api: () => ({}),
+  });
+```
+
+### Add the options and the api [#add-the-options-and-the-api]
+
+`optionTypes<{ ... }>()` declares the options as one type. Each one is optional in `configure` and `create`.
+`api(context, deps)` gets the apis of the needs in `deps`. Read `context.options()` inside a method, so the
+options stay current. `context.onDestroy` clears the timer. The form now has the options `saveDraft` and
+`autosaveDelay` and the api member `autosave`.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type MaybePromise, type Needs } from '@oxform/core';
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    options: optionTypes<{ saveDraft: (draft: Values) => MaybePromise<unknown>; autosaveDelay: number }>(),
+    api: (context, { values, validation }) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      context.onDestroy(() => clearTimeout(timer));
+      const flush = async () => {
+        clearTimeout(timer);
+        const [valid] = await validation.run();
+        if (valid) await context.options().saveDraft?.(values.get());
+      };
+      values.onChange(() => {
+        clearTimeout(timer);
+        timer = setTimeout(() => void flush(), context.options().autosaveDelay ?? 1000);
+      });
+      return { autosave: { flush } };
+    },
+  });
+```
+
+### Add the state [#add-the-state]
+
+`state(options)` runs once per instance and declares each state key. `context.state.autosave` reads and sets the
+slice, and the store shows it. Write the return type of the factory: `savedAt` starts as `null`, and without the
+type TypeScript types it as `null` only. The form now has the state key `autosave`.
+
+```ts twoslash
+import { defineExtension, type Extendable, type Needs } from '@oxform/core';
+
+type AutosaveState = { readonly saving: boolean; readonly savedAt: Date | null; readonly dirty: boolean };
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    state: (): { autosave: AutosaveState } => ({ autosave: { saving: false, savedAt: null, dirty: false } }),
+    api: (context, { values }) => {
+      values.onChange(() => context.state.autosave.set(current => ({ ...current, dirty: true })));
+      return {};
+    },
+  });
+```
+
+### Add a slot [#add-a-slot]
+
+`slots` gives the parts of the extension. Its `slot` sees the state of the form so far and the extension's own.
+`state` selects the slice of the part. Write `text` after `state`: TypeScript reads the members in order, and
+`text` gets its parameter type from `state`. The form now has the `autosaveStatus` part.
+
+```ts twoslash
+import { defineExtension, type Extendable, type Needs } from '@oxform/core';
+
+type AutosaveState = { readonly saving: boolean; readonly savedAt: Date | null; readonly dirty: boolean };
+
+export const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, {
+    name: 'autosave',
+    needs: { api: ['values', 'validation'] },
+    state: (): { autosave: AutosaveState } => ({ autosave: { saving: false, savedAt: null, dirty: false } }),
+    api: () => ({}),
+    slots: slot => ({
+      autosaveStatus: slot({
+        element: 'p',
+        state: state => state.autosave,
+        text: ({ saving, dirty, savedAt }) =>
+          saving ? 'Saving the draft…' : dirty ? 'Draft not saved' : savedAt ? 'Draft saved' : undefined,
+        attrs: () => ({ role: 'status' }),
+      }),
+    }),
+  });
+```
+
+## Complete example
+
+The extension of the example kit. It also has the `onSaveError` option of
+[An option that takes the form](/docs/extend/option-with-instance).
+
+<include meta='twoslash'>../../../../../examples/kit/src/autosave.ts</include>
+
+## Verify
+
+Apply `autosave` after `values` and `validation`, create an instance with fake timers, and change a value. Nothing
+is saved at creation. After `autosaveDelay`, `saveDraft` gets the values, and `form.store.state.autosave` has
+`dirty: false` and a `savedAt` date. [Test and share an extension](/docs/extend/test-and-share) writes this test.
+
+## Common mistakes
+
+| Wrong code                                                                  | Effect                                                                                                                                                                              | Fix                                                                       |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `defineForm(init).extend(autosave)`                                         | Type error: no overload matches. The message reads as a preset mismatch ("The last overload gave the following error"). Its last line names the missing needs: `values, validation` | Extend `values` and `validation` first. Read the last line of the message |
+| `needs: { api: ['values'] }` with `Needs<Values, 'values' \| 'validation'>` | Type error: the list does not cover `"validation"`                                                                                                                                  | List every name of `Needs` in `needs`                                     |
+| `state: () => ({ autosave: { savedAt: null } })`                            | Type error at `set`: `Date` is not assignable to `null`                                                                                                                             | Write the return type: `state: (): { autosave: AutosaveState } => ...`    |
+| `slot({ text: ..., state: ... })`                                           | `text` comes first, so its parameter is `{}`, and reading `saving` is a type error                                                                                                  | Write `text` after `state`                                                |
+| A timer or a request in the body of `api`                                   | Each instance starts work at creation, also on a server                                                                                                                             | Start the work in a method or a hook callback                             |
+| `const { saveDraft } = context.options()` in the body of `api`              | The extension keeps the options of creation, and misses the new options that an adapter gives                                                                                       | Call `context.options()` inside the method                                |
+| `api: () => ({ id: ... })`, or a key that an earlier extension returns      | Throws at `create`: `The "autosave" extension returns "id" from api, which the instance has.`                                                                                       | Use a key of your own, such as the name of the extension                  |
+| An extension whose name comes from a parameter, as `check(name)`            | The keys of `state` and `api` widen to `string`                                                                                                                                     | Cast each result to `Record<Name, ...>`, as `check` does with two casts   |
+
+The message for a missing need names the preset overload first:
+
+```ts twoslash
+// @errors: 2769
+import { defineExtension, defineForm, type Extendable, type Needs } from '@oxform/core';
+import { z } from 'zod';
+
+const autosave = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'validation'>>) =>
+  defineExtension(form, { name: 'autosave', needs: { api: ['values', 'validation'] }, api: () => ({}) });
+
+const schema = z.object({ title: z.string(), body: z.string() });
+
+defineForm({ schema, defaultValues: { title: '', body: '' } }).extend(autosave);
+```
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [An option that takes the form](/docs/extend/option-with-instance)
+- [Test and share an extension](/docs/extend/test-and-share)
+- [Add members to fields](/docs/extend/field-members)
+- [Change a value before it is written](/docs/extend/intercept-a-change)

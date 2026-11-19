@@ -1,0 +1,102 @@
+---
+title: Refuse a submit
+description: Cancel a submit before validation with submit.intercept until the user confirms it.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible]
+examples: [E10]
+---
+
+## Problem
+
+An invite to an address outside the company cannot be undone.
+
+## What you build
+
+You build `confirmExternal` of the example kit, for the team invites. Before validation, it asks its `onConfirm`
+option about the member addresses outside `companyDomain`. Until `onConfirm` resolves `true`, it cancels the
+submit.
+
+`submit.intercept(interceptor)` runs at the start of each submit, before validation. The interceptor gets the
+attempt: `attempt.values` and `attempt.cancel()`. The interceptors run in the order of the chain, and each one is
+awaited. A canceled submit runs no validation and no callback, does not count in `status.form.submits`, and has
+no `submit.onResult` result.
+
+## Steps
+
+### State the need and the values [#state-the-need-and-the-values]
+
+The extension needs the `submit` api. It reads `members`, so it constrains `Values`: a form without `members` is a
+type error at `.extend`. `onConfirm` may return a promise, for a dialog.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type MaybePromise, type Needs } from '@oxform/core';
+
+type Invites = { readonly members: readonly { readonly email: string }[] };
+
+export const confirmExternal = <Values extends Invites>(form: Extendable<Values, Needs<Values, 'submit'>>) =>
+  defineExtension(form, {
+    name: 'confirmExternal',
+    needs: { api: ['submit'] },
+    options: optionTypes<{ companyDomain: string; onConfirm: (emails: readonly string[]) => MaybePromise<boolean> }>(),
+    api: () => ({}),
+  });
+```
+
+### Cancel the attempt [#cancel-the-attempt]
+
+Register the interceptor in `api`. Read the options inside it, so they stay current. Without `companyDomain`, the
+extension does nothing. Call `attempt.cancel()` when the user does not confirm.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type MaybePromise, type Needs } from '@oxform/core';
+
+type Invites = { readonly members: readonly { readonly email: string }[] };
+
+export const confirmExternal = <Values extends Invites>(form: Extendable<Values, Needs<Values, 'submit'>>) =>
+  defineExtension(form, {
+    name: 'confirmExternal',
+    needs: { api: ['submit'] },
+    options: optionTypes<{ companyDomain: string; onConfirm: (emails: readonly string[]) => MaybePromise<boolean> }>(),
+    api: (context, { submit }) => {
+      submit.intercept(async attempt => {
+        const { companyDomain, onConfirm } = context.options();
+        if (companyDomain === undefined) return;
+        const external = attempt.values.members
+          .map(member => member.email)
+          .filter(email => !email.endsWith(`@${companyDomain}`));
+        if (external.length > 0 && !(await onConfirm?.(external))) attempt.cancel();
+      });
+      return {};
+    },
+  });
+```
+
+## Complete example
+
+The extension of the example kit.
+
+<include meta='twoslash'>../../../../../examples/kit/src/confirm-external.ts</include>
+
+## Verify
+
+Apply `confirmExternal` after `standard` with `companyDomain: 'example.com'`, and give the invites one member at
+`example.com` and one at another domain. When `onConfirm` resolves `true`, it gets the other address and
+`onSubmit` runs. When it resolves `false`, `onSubmit` does not run, and the form shows no validation message,
+because no validation ran. The test of the kit does this (`examples/kit/src/confirm-external.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                             | Effect                                                    | Fix                                                                          |
+| ------------------------------------------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Refusing the invite in `onSubmit`                      | Validation has run, and the submit counts as successful   | Cancel in `submit.intercept`, before validation                              |
+| Refusing an invalid value with `attempt.cancel()`      | The form shows no message, because no validation ran      | Validate with a check. Use the interceptor for a decision outside the values |
+| `.extend(confirmExternal)` on a form without `members` | Type error at `.extend`: the values do not have `members` | Apply it to a form whose values have `members`                               |
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [Observe validation and submit](/docs/extend/observe-runs)
+- [Write an extension](/docs/extend/write-an-extension)
+- [Test and share an extension](/docs/extend/test-and-share)
+- [`submit`](/docs/behaviors/submit)

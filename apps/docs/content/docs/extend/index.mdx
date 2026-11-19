@@ -1,0 +1,57 @@
+---
+title: Extend a form
+description: Choose between slots, a preset and defineExtension, and find the extension hook for a task.
+type: overview
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [extensible]
+examples: []
+---
+
+## In short
+
+Change what a form renders with `slots(...)`. Reuse a chain with a preset. Add options, state, an api, slots or
+field members with `defineExtension`. A custom extension uses a built-in behavior through its api: it states the
+behavior in `Needs` and in `needs`, reads its api from `deps`, and subscribes to its extension hooks.
+
+## Choose the tool [#choose-the-tool]
+
+| You need                                                    | Use                                       | Guide                                                              |
+| ----------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| Add a part, or change the attributes of a part, on one form | `slots(...)` with a slot of the same key  | [Replace a slot](/docs/extend/replace-a-slot)                      |
+| The same parts on many forms                                | A slot group from `defineSlots`           | [A reusable slot group](/docs/compose/slot-group)                  |
+| The same extensions on many forms                           | A preset: a function from form to form    | [Your own preset](/docs/compose/your-own-preset)                   |
+| A second set of issues that does not block a submit         | `check(name)`                             | [Add a second check](/docs/extend/second-check)                    |
+| New options, state or api                                   | `defineExtension`                         | [Write an extension](/docs/extend/write-an-extension)              |
+| An option that gets the instance                            | `Self` in the option's parameters         | [An option that takes the form](/docs/extend/option-with-instance) |
+| Members on the field handles of one value type              | `defineExtension` with `fields` and `on`  | [Add members to fields](/docs/extend/field-members)                |
+| Code that runs on a change, a validation run or a submit    | An extension hook, from `defineExtension` | The table below                                                    |
+
+## Extension hooks [#extension-hooks]
+
+An extension hook is a subscription point of a built-in api. Each one returns a function that removes the
+subscription. Each hook runs its callbacks in the order they were added, which is the order of the extensions in
+the chain.
+
+| Hook                            | Need         | Runs                                                                                                  | The callback can                                                                                                 | Guide                                                                  |
+| ------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `values.intercept(interceptor)` | `values`     | Before each write, with `(change, details)`                                                           | Return a replacement change, or nothing to keep it. `details.cancel()` refuses the change: no write, no listener | [Change a value before it is written](/docs/extend/intercept-a-change) |
+| `values.onChange(listener)`     | `values`     | After each write, with `(change, details)`                                                            | Observe the change                                                                                               | [Write an extension](/docs/extend/write-an-extension)                  |
+| `validation.onRun(listener)`    | `validation` | After each applied run, also the runs of `events` and `submit`. Not after a discarded or rejected run | Observe `{ targets, type, valid, issues }`                                                                       | [Observe validation and submit](/docs/extend/observe-runs)             |
+| `submit.intercept(interceptor)` | `submit`     | At the start of each submit, before validation. Each interceptor is awaited                           | `attempt.cancel()` stops the submit. `attempt.values` has the values                                             | [Refuse a submit](/docs/extend/refuse-a-submit)                        |
+| `submit.onResult(listener)`     | `submit`     | After `onSubmit` or `onInvalid` resolves. Not after an aborted or a canceled submit                   | Observe `{ successful, issues }`                                                                                 | [Observe validation and submit](/docs/extend/observe-runs)             |
+
+## Use a hook from an extension [#use-a-hook-from-an-extension]
+
+| Step                           | Code                                                                |
+| ------------------------------ | ------------------------------------------------------------------- |
+| State the behavior in `Needs`  | `form: Extendable<Values, Needs<Values, 'values' \| 'validation'>>` |
+| List the same names in `needs` | `needs: { api: ['values', 'validation'] }`                          |
+| Read the api from `deps`       | `api: (context, { values, validation }) => { ... }`                 |
+| Subscribe in `api`             | `values.onChange(() => { ... })`                                    |
+
+## Related
+
+- [Write an extension](/docs/extend/write-an-extension)
+- [Test and share an extension](/docs/extend/test-and-share)
+- [Compose a form](/docs/compose)
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)

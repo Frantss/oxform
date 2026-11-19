@@ -1,0 +1,107 @@
+---
+title: Observe validation and submit
+description: Report the failing fields and the submit results with validation.onRun and submit.onResult.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible]
+examples: [E09]
+---
+
+## Problem
+
+The product team must know which checkout fields fail and how many orders complete.
+
+## What you build
+
+You build `funnel` of the example kit. It reports the failing paths of each validation run and the result of
+each submit to its `onTrack` option. It only observes: it changes no value, no state and no result.
+
+| Hook                         | Runs                                                                                                            | Gets                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `validation.onRun(listener)` | After each applied run, also the runs that `events` and `submit` start. Not after a discarded or a rejected run | `{ targets, type, valid, issues }` |
+| `submit.onResult(listener)`  | After `onSubmit` or `onInvalid` resolves. Not after an aborted or a canceled submit                             | `{ successful, issues }`           |
+
+## Steps
+
+### State the needs and the option [#state-the-needs-and-the-option]
+
+`funnel` needs the `validation` and `submit` apis. `onTrack` gets one event type for both hooks.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type Needs } from '@oxform/core';
+
+export type FunnelEvent =
+  | { readonly type: 'invalid'; readonly paths: readonly string[] }
+  | { readonly type: 'submitted'; readonly successful: boolean };
+
+export const funnel = <Values>(form: Extendable<Values, Needs<Values, 'validation' | 'submit'>>) =>
+  defineExtension(form, {
+    name: 'funnel',
+    needs: { api: ['validation', 'submit'] },
+    options: optionTypes<{ onTrack: (event: FunnelEvent) => void }>(),
+    api: () => ({}),
+  });
+```
+
+### Subscribe to the hooks [#subscribe-to-the-hooks]
+
+`run.issues` has the entries of each check by check name. The `path` of an entry is a Standard Schema path: a
+list of keys, where a key can also be an object with `key`. `funnel` joins it with dots. The listeners live as long
+as the instance, so they need no cleanup.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type Needs } from '@oxform/core';
+
+type FunnelEvent = { type: 'invalid'; paths: readonly string[] } | { type: 'submitted'; successful: boolean };
+type IssuePath = readonly (PropertyKey | { readonly key: PropertyKey })[] | undefined;
+const dotted = (path: IssuePath) =>
+  (path ?? []).map(segment => String(typeof segment === 'object' ? segment.key : segment)).join('.');
+
+export const funnel = <Values>(form: Extendable<Values, Needs<Values, 'validation' | 'submit'>>) =>
+  defineExtension(form, {
+    name: 'funnel',
+    needs: { api: ['validation', 'submit'] },
+    options: optionTypes<{ onTrack: (event: FunnelEvent) => void }>(),
+    api: (context, { validation, submit }) => {
+      const track = (event: FunnelEvent) => context.options().onTrack?.(event);
+      validation.onRun(run => {
+        const paths = [
+          ...new Set(Object.values(run.issues).flatMap(entries => entries.map(entry => dotted(entry.path)))),
+        ];
+        if (paths.length > 0) track({ type: 'invalid', paths });
+      });
+      submit.onResult(result => track({ type: 'submitted', successful: result.successful }));
+      return {};
+    },
+  });
+```
+
+## Complete example
+
+The extension of the example kit.
+
+<include meta='twoslash'>../../../../../examples/kit/src/funnel.ts</include>
+
+## Verify
+
+Apply `funnel` to the checkout with an `onTrack` that collects the events. Submit an order with an empty shipping
+city: `onTrack` gets `{ type: 'invalid', paths: ['shipping.city'] }`, then
+`{ type: 'submitted', successful: false }`. A complete order gives only `{ type: 'submitted', successful: true }`. The test of the kit does
+this (`examples/kit/src/funnel.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                         | Effect                                                                                    | Fix                                                                        |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Counting the orders in `validation.onRun` with `type === 'submit'` | A run of `validation.run(undefined, { type: 'submit' })` from other code counts too       | Count in `submit.onResult`                                                 |
+| Expecting `submit.onResult` after a canceled submit                | The listener does not run: a canceled or aborted submit has no result                     | Observe the cancel where it happens, in the `submit.intercept` interceptor |
+| Expecting `validation.onRun` for a stale run                       | A run that a change or a newer run made stale is discarded, and the listener does not run | Read the next run                                                          |
+| `onTrack` read once in the body of `api`                           | The extension keeps the option of creation                                                | Call `context.options()` in the listener                                   |
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [Refuse a submit](/docs/extend/refuse-a-submit)
+- [Write an extension](/docs/extend/write-an-extension)
+- [Test and share an extension](/docs/extend/test-and-share)
+- [`validation`](/docs/behaviors/validation)

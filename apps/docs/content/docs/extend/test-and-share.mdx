@@ -1,0 +1,113 @@
+---
+title: Test and share an extension
+description: Test an extension on the smallest form that meets its needs, and publish it with @oxform/core as a peer.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [reusable, extensible]
+examples: [E28]
+---
+
+## Problem
+
+An extension author must test `autosave` without a preset or a DOM.
+
+## What you build
+
+You build `draftForm` of the example kit: the smallest chain that meets the needs of `autosave`. A test creates
+it with fake timers and checks the save. Then you publish the extension as a package with `@oxform/core` as a
+peer dependency.
+
+The form has no check, so every validation run is valid. The test needs no DOM: an extension runs in Node, and a
+slot is plain data.
+
+## Steps
+
+### Make the smallest form [#make-the-smallest-form]
+
+Extend only the needs of the extension, then the extension. `autosave` needs `values` and `validation`. A preset
+would hide a missing need, because it gives every built-in api.
+
+```ts no-check="imports files of the example kit"
+import { defineForm } from '@oxform/core';
+import { validation, values } from '@oxform/core/behaviors';
+import { autosave } from './autosave';
+import { articleSchema, emptyArticle } from './schemas/article';
+
+export const draftForm = defineForm({ schema: articleSchema, defaultValues: emptyArticle })
+  .extend(values)
+  .extend(validation)
+  .extend(autosave);
+```
+
+### Test with fake timers [#test-with-fake-timers]
+
+`setup()` creates the instance with the options of the test and returns it as a disposable, so `using` destroys it at the end of the test. With fake timers, the test
+controls when the timer of `autosave` fires. The kit runs this test with Vitest through Vite+ (`vite-plus/test`).
+
+```ts no-check="imports files of the example kit"
+import { describe, expect, it, vi } from 'vitest';
+import type { InstanceOf } from '@oxform/core';
+import { draftForm } from './draft-form';
+
+const setup = () => {
+  vi.useFakeTimers();
+  const saveDraft = vi.fn();
+  const form: InstanceOf<typeof draftForm> = draftForm.create({ saveDraft, autosaveDelay: 100 });
+  return { form, saveDraft, [Symbol.dispose]: () => (form.destroy(), vi.useRealTimers()) };
+};
+
+describe('autosave', () => {
+  it('saves once the values stop changing', async () => {
+    using subject = setup();
+    subject.form.values.set('title', 'Notes');
+    await vi.advanceTimersByTimeAsync(99);
+    expect(subject.saveDraft).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(subject.saveDraft.mock.calls).toEqual([[{ title: 'Notes', body: '' }]]);
+  });
+});
+```
+
+### Publish with a peer dependency [#publish-with-a-peer-dependency]
+
+Put `@oxform/core` in `peerDependencies`, and in `devDependencies` for your own build and tests. An application
+then has one copy of the core. The form, the built-in extensions and the slot groups keep their records in that
+copy, so a second copy does not know the forms of the first.
+
+```json
+{
+  "name": "@acme/oxform-autosave",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "peerDependencies": { "@oxform/core": "^0.7.0" },
+  "devDependencies": { "@oxform/core": "^0.7.0" }
+}
+```
+
+## Complete example
+
+The test form of the example kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/draft-form.ts</include>
+
+## Verify
+
+Run the tests of the kit: `pnpm --dir examples/kit run test run src/draft-form.spec.ts src/autosave.spec.ts`. The
+tests create the form, change a value, move the fake timers, and read `saveDraft` and `form.store.state.autosave`.
+
+## Common mistakes
+
+| Wrong code                                                  | Effect                                                                                                                      | Fix                                                               |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Testing on `.extend(standard)` only                         | A need that the extension does not state passes the test, because the preset gives it                                       | Test on the smallest chain that meets the stated needs            |
+| An option name that another extension of the chain declares | Type error at the next `.extend`, `configure` or `create`: `The option "…" is declared twice.` Nothing checks it at runtime | Give each option a name of the extension, such as `autosaveDelay` |
+| A state key or an api key that another extension declares   | Throws at `create`, and names both extensions                                                                               | Use the name of the extension as the key                          |
+| `id`, `store` or `destroy` as an api key                    | Throws at `create`: the instance has these members, and an extension cannot replace them                                    | Use another key                                                   |
+| `@oxform/core` in `dependencies` of the package             | An application can get two copies of the core                                                                               | Put it in `peerDependencies`                                      |
+| A test that does not call `form.destroy()`                  | The timer of an extension can fire in the next test                                                                         | Destroy each instance after its test                              |
+
+## Related
+
+- [Write an extension](/docs/extend/write-an-extension)
+- [An option that takes the form](/docs/extend/option-with-instance)
+- [Extend a form](/docs/extend)

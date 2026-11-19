@@ -1,0 +1,89 @@
+---
+title: Replace a slot
+description: Replace the built-in submit slot with a slot of the same key.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [extensible]
+examples: [E13]
+---
+
+## Problem
+
+The design system disables the submit button until the form is valid. The built-in part does not.
+
+## What you build
+
+You build `strictSubmitSlots` of the example kit. Its `submit` slot is a `button` that is disabled while the form
+submits or is not valid. The sign-in form and the `houseForm` preset spread it after `submitSlots`, so it replaces
+the built-in `submit` slot.
+
+A slot cannot be wrapped. A later slot with the same key replaces the earlier one, in the types and at runtime. A
+child of a part cannot change the attributes of the part's element, so a different `disabled` rule needs a new
+slot.
+
+## Steps
+
+### Write the slot with the same key [#write-the-slot-with-the-same-key]
+
+Name the slot `submit`. It reads the `status` state, so the group states that need. The new slot gives all the
+attributes of the button, also the ones of the built-in slot that you keep: `type` and `data-submitting`.
+
+```ts twoslash
+import { defineSlots, type SlotFactory } from '@oxform/core';
+import type { StatusState } from '@oxform/core/behaviors';
+
+export const strictSubmitSlots = defineSlots(
+  { name: 'strictSubmitSlots', needs: { state: ['status'] } },
+  (slot: SlotFactory<{}, { readonly status: StatusState }>) => ({
+    submit: slot({
+      element: 'button',
+      state: state => ({ submitting: state.status.form.submitting }),
+      attrs: state => ({
+        type: 'submit',
+        disabled: state.status.form.submitting || !state.status.form.valid || undefined,
+        'data-submitting': state.status.form.submitting ? '' : undefined,
+      }),
+    }),
+  }),
+);
+```
+
+### Spread it after the built-in group [#spread-it-after-the-built-in-group]
+
+The sign-in form spreads `submitSlots` in its chain. A later `.extend(slots(...))` with the new group replaces the
+`submit` slot. In one spread, put the new group last: `{ ...submitSlots(slot), ...strictSubmitSlots(slot) }`.
+
+```ts no-check="imports files of the example kit"
+import { slots } from '@oxform/core';
+import { signIn } from './sign-in';
+import { strictSubmitSlots } from './strict-submit-slots';
+
+export const strictSignIn = signIn.extend(slots(slot => strictSubmitSlots(slot)));
+```
+
+## Complete example
+
+The slot group of the example kit.
+
+<include meta='twoslash'>../../../../../examples/kit/src/strict-submit-slots.ts</include>
+
+## Verify
+
+Read the `submit` slot of the form with `slotsOf` of `@oxform/core/adapter`. On a new form, `disabled` is
+`undefined`. After an empty submit, it is `true`. Once the values are valid and validated, it is `undefined` again.
+During a submit, it is `true`. The test of the kit does this (`examples/kit/src/strict-submit-slots.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                     | Effect                                                                                      | Fix                                      |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `{ ...strictSubmitSlots(slot), ...submitSlots(slot) }`         | The built-in `submit` slot comes later and wins. The button is never disabled while invalid | Spread the new group after `submitSlots` |
+| A slot that calls the built-in `submit` slot to add `disabled` | A slot cannot be wrapped. The built-in slot is not given to the new one                     | Write every attribute in the new slot    |
+| A child of the `Submit` part that sets `disabled`              | A child cannot change the attributes of the part's element                                  | Replace the slot                         |
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [A reusable slot group](/docs/compose/slot-group)
+- [Your own preset](/docs/compose/your-own-preset)
+- [A lean form](/docs/compose/lean-form)

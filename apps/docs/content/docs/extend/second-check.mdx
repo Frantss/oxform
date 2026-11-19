@@ -1,0 +1,138 @@
+---
+title: Add a second check
+description: Add a warning check that does not block a submit, with its option and its part.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [extensible, type-safe]
+examples: [E14]
+---
+
+## Problem
+
+A title over 60 characters is cut in search results. The writer must know, and must still publish.
+
+## What you build
+
+You add a `warning` check to the article editor of the example kit, and the `fieldWarning` part that shows the
+first warning of a field. The kit gives two pieces: `warnings`, the check, and `warningSlots`, the slot group.
+The form applies both.
+
+`check('warning')` adds the `warning` api, the `warning` state key and the `warning` option. The check is not
+blocking, so a warning does not stop a submit. `error` and `warning` run in the same validation runs.
+
+## Steps
+
+### Add the check [#add-the-check]
+
+`check(name, options?)` makes the extension. Without `blocking: true`, a warning does not make a run invalid. The
+form now has `form.warning` and the `warning` option.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check } from '@oxform/core/behaviors';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const articleSchema = z.object({ title: z.string().min(1), body: z.string().min(1) });
+
+const editor = defineForm({ schema: articleSchema, defaultValues: { title: '', body: '' } })
+  .extend(standard)
+  .extend(check('warning'));
+
+editor.create().warning.at('title');
+//                     ^?
+```
+
+### Set its validators [#set-its-validators]
+
+The `warning` option takes validators by event, as the `error` option does. The advice schema has one rule: a
+title of 60 characters at most. It runs on `change` and on `submit`.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check } from '@oxform/core/behaviors';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const articleSchema = z.object({ title: z.string().min(1), body: z.string().min(1) });
+const articleAdviceSchema = z.object({ title: z.string().max(60, 'Search results cut a title over 60 characters.') });
+
+export const editor = defineForm({ schema: articleSchema, defaultValues: { title: '', body: '' } })
+  .extend(standard)
+  .extend(check('warning'))
+  .configure({
+    error: { change: articleSchema },
+    warning: { change: articleAdviceSchema, submit: articleAdviceSchema },
+  });
+```
+
+### Add the part [#add-the-part]
+
+`warningSlots` gives the `fieldWarning` part: a `p` with `role="status"`, present while the field of its `name`
+prop has a warning. It needs the `warning` state. Write `text` after `state`, so `text` gets the type of the slot
+state.
+
+```ts twoslash
+import { defineSlots, type SlotFactory } from '@oxform/core';
+import { type CheckState } from '@oxform/core/behaviors';
+
+export const warningSlots = defineSlots(
+  { name: 'warningSlots', needs: { state: ['warning'] } },
+  (slot: SlotFactory<{}, { readonly warning: CheckState }>) => ({
+    fieldWarning: slot({
+      element: 'p',
+      props: { name: 'key' },
+      present: (state, part) => (state.warning[part.key] ?? []).length > 0,
+      state: (state, part) => ({ messages: (state.warning[part.key] ?? []).map(entry => entry.message) }),
+      text: ({ messages }) => messages[0],
+      attrs: () => ({ role: 'status' }),
+    }),
+  }),
+);
+```
+
+### Apply both to the form [#apply-both-to-the-form]
+
+Extend the check, then spread the group. The group needs the `warning` state, so it comes after the check.
+
+```ts no-check="imports files of the example kit"
+import { slots } from '@oxform/core';
+import { articleEditor } from './article-editor';
+import { articleAdviceSchema } from './schemas/article';
+import { warningSlots, warnings } from './warnings';
+
+export const advised = articleEditor
+  .extend(warnings)
+  .extend(slots(slot => warningSlots(slot)))
+  .configure({ warning: { change: articleAdviceSchema, submit: articleAdviceSchema } });
+```
+
+## Complete example
+
+The check and the slot group of the example kit.
+
+<include meta='twoslash'>../../../../../examples/kit/src/warnings.ts</include>
+
+## Verify
+
+Change `title` to a text over 60 characters: `form.warning.at('title')` has one entry, and the `fieldWarning` part
+for `title` is present with the message. Submit: `onSubmit` runs, and the warning stays. The test of the kit does
+this (`examples/kit/src/warnings.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                 | Effect                                                                                                         | Fix                                                                                                  |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `form.field('title').warning()` after `.extend(standard).extend(warnings)` | Type error: no `warning` sugar. A check applied after `handles` has no sugar, in the types and at runtime      | Read the check: `form.warning.at('title')`. Or write a chain that applies the check before `handles` |
+| One generic preset that applies `standard` and `check('warning')`          | Type error at the next `.extend`: with a generic `Options`, TypeScript cannot decide if the option name is new | Apply `warnings` and `warningSlots` on the form, as the kit does                                     |
+| `check('warning', { blocking: true })`                                     | A warning stops the submit                                                                                     | Leave out `blocking` for advice                                                                      |
+| `.extend(check('error'))` on a form that has `error`                       | Type error at the next call: the option `error` is declared twice. At `create`, the state key `error` throws   | Give the second check its own name                                                                   |
+| `slot({ text: ({ messages }) => …, state: … })`                            | `text` comes first, so its parameter is `{}`, and `messages` is a type error                                   | Write `text` after `state`                                                                           |
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [A reusable slot group](/docs/compose/slot-group)
+- [Your own preset](/docs/compose/your-own-preset)
+- [An option that takes the form](/docs/extend/option-with-instance)
+- [`check`](/docs/behaviors/check)

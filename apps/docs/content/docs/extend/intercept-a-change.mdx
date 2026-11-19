@@ -1,0 +1,93 @@
+---
+title: Change a value before it is written
+description: Replace or refuse a change of the values with values.intercept.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible]
+examples: [E08]
+---
+
+## Problem
+
+Emails pasted from a spreadsheet have spaces and capitals, so lookups fail.
+
+## What you build
+
+You build `normalizeEmail` of the example kit. It trims and lower-cases each string written at a path that ends
+in `email`, such as `members.0.email`. It adds no api, no option and no state.
+
+`values.intercept(interceptor)` runs the interceptor before each write. The interceptor gets the change, with
+`path` and `value`, and the details of the change. It returns a replacement change, or nothing to keep the change.
+`details.cancel()` refuses the change: nothing is written, and no `onChange` listener runs. The interceptors run
+in the order of the chain, before the write.
+
+## Steps
+
+### State the need [#state-the-need]
+
+The extension needs the `values` api. State it in `Needs` and in `needs`.
+
+```ts twoslash
+import { defineExtension, type Extendable, type Needs } from '@oxform/core';
+
+export const normalizeEmail = <Values>(form: Extendable<Values, Needs<Values, 'values'>>) =>
+  defineExtension(form, {
+    name: 'normalizeEmail',
+    needs: { api: ['values'] },
+    api: () => ({}),
+  });
+```
+
+### Register the interceptor [#register-the-interceptor]
+
+Call `values.intercept` in `api`. The interceptor lives as long as the instance. Check the value type before you
+change it: the path type does not tell the value type of a generic `Values`. Return `undefined` for a change that
+the extension does not handle. Return `{}` from `api`: the extension adds no member.
+
+```ts twoslash
+import { defineExtension, type Extendable, type Needs } from '@oxform/core';
+
+const isEmailPath = (path: string) => path === 'email' || path.endsWith('.email');
+
+export const normalizeEmail = <Values>(form: Extendable<Values, Needs<Values, 'values'>>) =>
+  defineExtension(form, {
+    name: 'normalizeEmail',
+    needs: { api: ['values'] },
+    api: (_context, { values }) => {
+      values.intercept(change =>
+        isEmailPath(change.path) && typeof change.value === 'string'
+          ? { ...change, value: change.value.trim().toLowerCase() }
+          : undefined,
+      );
+      return {};
+    },
+  });
+```
+
+## Complete example
+
+The extension of the example kit. The `houseForm` preset applies it.
+
+<include meta='twoslash'>../../../../../examples/kit/src/normalize-email.ts</include>
+
+## Verify
+
+Apply `values`, then `normalizeEmail`, and write `'  Ada.Lovelace@Example.COM '` at `members.0.email`:
+`values.get('members.0.email')` is `'ada.lovelace@example.com'`. A value at `team` stays as it is. The test of
+the kit does this (`examples/kit/src/normalize-email.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                      | Effect                                                                                | Fix                                                                    |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `change.value.trim()` without a type check                                      | Type error: `value` is `unknown`. At runtime, a number or an array at the path throws | Check `typeof change.value === 'string'` first                         |
+| An interceptor that validates and calls `details.cancel()` for an invalid value | The user cannot type an invalid value, and sees no message                            | Validate with a check. Cancel only a change that must never be written |
+| `.extend(normalizeEmail)` before `.extend(values)`                              | Type error: the form has no `values` api                                              | Extend `values` first                                                  |
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [Write an extension](/docs/extend/write-an-extension)
+- [Add members to fields](/docs/extend/field-members)
+- [Your own preset](/docs/compose/your-own-preset)
+- [`values`](/docs/behaviors/values)

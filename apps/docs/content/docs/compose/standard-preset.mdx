@@ -1,0 +1,126 @@
+---
+title: Use the standard preset
+description: Give a checkout form every built-in extension and part with the standard preset.
+type: guide
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [composable, lightweight]
+examples: [E03]
+---
+
+## Problem
+
+A checkout needs arrays, reset, handles and every part. Writing nine lines per form is noise.
+
+## What you build
+
+You build the checkout of the example kit: `email`, `country`, `region`, `card.number`, and a `billing` and a
+`shipping` address. One `.extend(standard)` replaces the chain.
+
+`standard` applies the nine built-in extensions in this order: `values`, `validation`,
+`check('error', { blocking: true, exclusive: true })`, `status`, `events`, `arrays`, `reset`, `submit`, `handles`.
+Then it spreads `rootSlots`, `fieldErrorSlots`, `submitSlots` and `resetSlots`.
+
+| Choose                                  | When                                                                                        |
+| --------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `standard`                              | The form uses at least one of `arrays`, `reset` and `handles`, or you do not want to choose |
+| [A lean chain](/docs/compose/lean-form) | The form uses none of them, and its load size matters, as on a public page                  |
+
+The cost of the preset: the form loads all nine extensions and the four slot groups, also the ones it does not
+use. A lean chain loads only the extensions in it.
+
+## Steps
+
+### Apply the preset [#apply-the-preset]
+
+`standard` needs nothing, because it applies `values` first. The form now has the api members `values`,
+`validation`, `error`, `status`, `events`, `arrays`, `reset`, `submit`, `field`, `array` and `scope`, and the parts
+`root`, `field`, `fieldError`, `submit` and `reset`.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const orderSchema = z.object({ email: z.email(), country: z.string().min(1) });
+
+const checkout = defineForm({ schema: orderSchema, defaultValues: { email: '', country: '' } }).extend(standard);
+
+const form = checkout.create();
+form.field('email');
+//   ^?
+```
+
+### Set the validators [#set-the-validators]
+
+The schema validates nothing. Give the `error` check a validator. Call `configure` after `.extend(standard)`:
+it takes the options of the extensions so far.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const orderSchema = z.object({ email: z.email(), country: z.string().min(1) });
+
+export const checkout = defineForm({ schema: orderSchema, defaultValues: { email: '', country: '' } })
+  .extend(standard)
+  .configure({ error: { submit: orderSchema } });
+```
+
+### Place the address scopes [#place-the-address-scopes]
+
+The billing and the shipping address are one scope, `address`, placed at two keys with `scopes`. The guide
+[A block used twice](/docs/compose/repeated-block) writes the scope. The form values now have `billing` and
+`shipping`, and the `error` validators of the scope run at each place.
+
+```ts twoslash
+import { defineForm, defineScope } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const addressSchema = z.object({ street: z.string().min(1), city: z.string().min(1) });
+const address = defineScope({
+  schema: addressSchema,
+  defaultValues: { street: '', city: '' },
+  checks: { error: { submit: addressSchema } },
+});
+
+const orderSchema = z.object({ email: z.email(), country: z.string().min(1) });
+
+export const checkout = defineForm({
+  schema: orderSchema,
+  defaultValues: { email: '', country: '' },
+  scopes: { billing: address, shipping: address },
+})
+  .extend(standard)
+  .configure({ error: { submit: orderSchema } });
+```
+
+## Complete example
+
+The checkout of the example kit. The `address` scope is in `address.ts`, and the schemas are in
+`schemas/checkout.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/checkout.ts</include>
+
+## Verify
+
+Submit an empty form: `form.field('shipping.city').error()` has the message of the scope. Then
+`form.reset.all()` puts back the default values and clears the messages. The test of the kit does this
+(`examples/kit/src/checkout.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                                         | Effect                                                                                                              | Fix                                                                                          |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `.configure({ error: { submit: schema } }).extend(standard)`                       | Type error at `configure`: the form has no `error` option before `standard`                                         | Call `configure` after the last `.extend`                                                    |
+| `.extend(standard).extend(check('warning'))`, then `form.field('title').warning()` | Type error: no `warning` sugar. `standard` applies `handles` last, and a check applied after `handles` has no sugar | Read the check: `form.warning.at('title')`. Or write a chain with the check before `handles` |
+| `.extend(standard).extend(values)`                                                 | Throws at `create`: `The "values" extension declares the state key "values", which "values" already declares.`      | Apply each extension once. `standard` has the nine built-in extensions                       |
+
+## Related
+
+- [Compose a form](/docs/compose)
+- [A lean form](/docs/compose/lean-form)
+- [Your own preset](/docs/compose/your-own-preset)
+- [A block used twice](/docs/compose/repeated-block)
+- [`standard`](/docs/presets/standard)

@@ -1,0 +1,227 @@
+---
+title: A lean form
+description: Build the sign-in form as a chain that has only the extensions it needs.
+type: guide
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, lightweight, type-safe]
+examples: [E01]
+---
+
+## Problem
+
+A sign-in form on a public page must load fast and needs no arrays, reset or handles.
+
+## What you build
+
+You build the sign-in form of the example kit: `email` and `password`. The chain has six extensions and one
+`slots(...)` call. Each extension answers a need of the form. The slot groups get what they need from the chain,
+so you write no slot by hand.
+
+The form leaves out three extensions of `standard`:
+
+| Left out  | What the form does not have                                                             |
+| --------- | --------------------------------------------------------------------------------------- |
+| `arrays`  | Array operations and item ids. The sign-in form has no array.                           |
+| `reset`   | `form.reset` and the `reset` part.                                                      |
+| `handles` | `form.field(path)`, `form.array(path)`, `form.scope(path)` and the check sugar on them. |
+
+## Steps
+
+### Define the form [#define-the-form]
+
+`defineForm` takes a schema and the default values. The schema only types `Values`. The form has no api yet.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } });
+//    ^?
+```
+
+### Add values and a check [#values-and-a-check]
+
+`values` reads and writes the values. `validation` runs the checks. `check('error')` adds the `error` check:
+blocking, so an error stops a submit, and exclusive, so a run replaces the entries in its scope. The form now
+has the api members `values`, `validation` and `error`, the `error` state key and the `error` option.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }));
+
+const form = signIn.create();
+form.error.at('email');
+//   ^?
+```
+
+### Add status, events and submit [#status-events-submit]
+
+`status` derives the field and form flags. `events` takes `change`, `focus` and `blur` from the inputs and
+validates on them. `submit` validates, then calls `onSubmit` or `onInvalid`. Each one needs `values`, and
+`events` and `submit` also need `status`, so they come after it. The form now has the options `onSubmit`,
+`onInvalid` and `onError`.
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, events, status, submit, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit);
+```
+
+### Spread the slot groups [#spread-the-slot-groups]
+
+`slots(...)` adds slots and no api. Spread one built-in group per part:
+
+- `rootSlots` gives `root`. It needs the `submit` api.
+- `fieldErrorSlots` gives `field` and `fieldError`. It needs the `events` and `values` api and the `values`,
+  `status` and `error` state.
+- `submitSlots` gives `submit`. It needs the `status` state.
+
+The chain has each need, so the form now has the parts `root`, `field`, `fieldError` and `submit`.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import {
+  check,
+  events,
+  fieldErrorSlots,
+  rootSlots,
+  status,
+  submit,
+  submitSlots,
+  validation,
+  values,
+} from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })));
+```
+
+### Set the validators [#set-the-validators]
+
+The schema validates nothing. `configure` gives the `error` check a validator per event: on `blur`, so a field
+shows its error when the user leaves it, and on `submit`. Call `configure` after the last `.extend`, because it
+takes only the options of the extensions so far.
+
+```ts twoslash
+import { defineForm, slots } from '@oxform/core';
+import {
+  check,
+  events,
+  fieldErrorSlots,
+  rootSlots,
+  status,
+  submit,
+  submitSlots,
+  validation,
+  values,
+} from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+export const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .extend(slots(slot => ({ ...rootSlots(slot), ...fieldErrorSlots(slot), ...submitSlots(slot) })))
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+```
+
+## Complete example
+
+The form of the example kit. The schema is in `schemas/sign-in.ts` of the kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/sign-in.ts</include>
+
+## Verify
+
+Submit an empty form and read the `error` check. The submit does not call `onSubmit`, and each field has its
+message. The block leaves out the slot groups, which do not change the result. The test of the kit does this (`examples/kit/src/sign-in.spec.ts`).
+
+```ts twoslash
+import { defineForm } from '@oxform/core';
+import { check, events, status, submit, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }))
+  .extend(status)
+  .extend(events)
+  .extend(submit)
+  .configure({ error: { blur: signInSchema, submit: signInSchema } });
+
+const form = signIn.create({ onSubmit: values => console.log(values) });
+await form.submit.run();
+form.error.at('email'); // One entry: the email is empty.
+form.status.form.successful; // false
+```
+
+## Common mistakes
+
+| Wrong code                                                                    | Effect                                                                                                                | Fix                                                                                                     |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `form.field('email').error()` on the lean form                                | Type error: `field` does not exist on the instance. A form without `handles` has no `field(path)`                     | Read the check: `form.error.at('email')`. Or add `arrays`, `reset` and `handles`, or use `standard`     |
+| `.extend(slots(slot => ({ ...fieldSlots(slot), ...fieldErrorSlots(slot) })))` | Both groups give the `field` part. The later one wins. `fieldSlots` after `fieldErrorSlots` drops `aria-describedby`  | Spread one: `fieldErrorSlots` when the form has the `error` check, else `fieldSlots`                    |
+| `slots(slot => rootSlots(slot))` on a chain without `submit`                  | Type error at `slots`. At `create`: `The "rootSlots" slot group needs "submit", which no earlier extension provides.` | Extend `submit` before the `slots(...)` call                                                            |
+| `defineForm({ schema, defaultValues }).extend(values)` and no check           | The schema only types `Values`. Nothing validates                                                                     | Add `validation` and `check('error')`, then set validators: `.configure({ error: { submit: schema } })` |
+
+A form without `handles` has no `field(path)`:
+
+```ts twoslash
+// @errors: 2339
+import { defineForm } from '@oxform/core';
+import { check, validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const signInSchema = z.object({ email: z.email(), password: z.string().min(8) });
+
+const signIn = defineForm({ schema: signInSchema, defaultValues: { email: '', password: '' } })
+  .extend(values)
+  .extend(validation)
+  .extend(check('error', { blocking: true, exclusive: true }));
+
+signIn.create().field('email');
+```
+
+## Related
+
+- [Compose a form](/docs/compose)
+- [A form without validation](/docs/compose/form-without-validation)
+- [Use the `standard` preset](/docs/compose/standard-preset)
+- [Slot groups](/docs/behaviors/slot-groups)

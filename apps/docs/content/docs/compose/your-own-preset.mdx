@@ -1,0 +1,128 @@
+---
+title: Your own preset
+description: Write a preset that gives every form of a team the same extensions and parts.
+type: guide
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [reusable, composable, type-safe]
+examples: [E04]
+---
+
+## Problem
+
+A team wants every form to have the same banner, submit rule and input clean-up.
+
+## What you build
+
+You build `houseForm`, the preset of the example kit, and use it in the checkout and the team invites. A preset
+is a function from form to form. `houseForm` applies `standard`, then three pieces of the kit:
+
+| Piece                                               | What it adds                                                 |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| [`normalizeEmail`](/docs/extend/intercept-a-change) | Trims and lower-cases each email that is written             |
+| [`formErrorSlots`](/docs/compose/slot-group)        | The `formError` part, a banner after a failed submit         |
+| [`strictSubmitSlots`](/docs/extend/replace-a-slot)  | A `submit` part that is disabled while the form is not valid |
+
+## Steps
+
+### Write the signature [#write-the-signature]
+
+A preset takes a `Form` with six type parameters and returns the result of its chain. Do not write the return
+type: TypeScript infers it. `Api` and `State` need the bound `extends {}`, because `standard` takes a form whose
+api and state are objects. A preset that has no option of its own needs no cast.
+
+```ts twoslash
+import { type Form } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+
+export const houseForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
+  form: Form<Values, Api, Options, State, Slots, Fields>,
+) => form.extend(standard);
+```
+
+### Add the pieces of the team [#add-the-pieces-of-the-team]
+
+Extend the extensions and spread the slot groups after `standard`. `normalizeEmail` needs `values`, and the two
+groups need the `status` state, which `standard` gives. `strictSubmitSlots` comes after the `submit` slot of
+`standard`, so its `submit` slot replaces that one.
+
+```ts no-check="imports files of the example kit"
+import { slots, type Form } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { formErrorSlots } from './form-error-slots';
+import { normalizeEmail } from './normalize-email';
+import { strictSubmitSlots } from './strict-submit-slots';
+
+export const houseForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
+  form: Form<Values, Api, Options, State, Slots, Fields>,
+) =>
+  form
+    .extend(standard)
+    .extend(normalizeEmail)
+    .extend(slots(slot => ({ ...formErrorSlots(slot), ...strictSubmitSlots(slot) })));
+```
+
+### Use it in two forms [#use-it-in-two-forms]
+
+A preset does not hold a schema. Each form calls `defineForm` with its own schema and default values, then
+`.extend(houseForm)`. Both forms now have the api of `standard`, the `formError` part and the strict `submit` part.
+
+```ts no-check="imports files of the example kit"
+import { defineForm } from '@oxform/core';
+import { houseForm } from './house-form';
+import { emptyOrder, orderSchema } from './schemas/checkout';
+import { emptyTeamInvites, teamInvitesSchema } from './schemas/team-invites';
+
+export const checkout = defineForm({ schema: orderSchema, defaultValues: emptyOrder })
+  .extend(houseForm)
+  .configure({ error: { submit: orderSchema } });
+
+export const teamInvites = defineForm({ schema: teamInvitesSchema, defaultValues: emptyTeamInvites })
+  .extend(houseForm)
+  .configure({ error: { submit: teamInvitesSchema } });
+```
+
+## Complete example
+
+The preset of the example kit.
+
+<include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/house-form.ts</include>
+
+## Verify
+
+Make a form with `houseForm` and read its slots with `slotsOf` of `@oxform/core/adapter`: the keys are `root`,
+`field`, `fieldError`, `submit`, `reset` and `formError`. Change `members.0.email` to `' Ada@Example.com'`: the
+value is `'ada@example.com'`. After a failed submit, the `formError` part is present and the `submit` part has
+`disabled`. The test of the kit does this (`examples/kit/src/house-form.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                           | Effect                                                                                                                                                                | Fix                                                                                                                                                             |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<Values, Api, Options, State, Slots, Fields>` with no bounds        | Type error at `.extend(standard)`: no overload matches                                                                                                                | Write `Api extends {}` and `State extends {}`                                                                                                                   |
+| `form.extend(standard).extend(check('warning'))` in a generic preset | Type error at the next `.extend`: the result is a conditional type that has no `extend`. With a generic `Options`, TypeScript cannot decide if the option name is new | Keep an extension that adds an option out of the preset. Extend it on each form, as the kit does with `warnings` and `warningSlots`. Or cast as `standard` does |
+| A preset that applies `handles`, then `check('warning')`             | No `warning` sugar on `field(path)`, in the types and at runtime                                                                                                      | Apply every check before `handles`, or read the check: `form.warning.at(path)`                                                                                  |
+| A preset that calls `defineForm` with a schema                       | The preset serves one schema only. A preset cannot change the schema of a form                                                                                        | Take the form as the parameter: `defineForm(init).extend(houseForm)`                                                                                            |
+
+A generic preset that adds an option fails at the next `.extend`:
+
+```ts twoslash
+// @errors: 2339
+import { slots, type Form } from '@oxform/core';
+import { check } from '@oxform/core/behaviors';
+import { standard } from '@oxform/core/presets';
+
+export const advisedForm = <Values, Api extends {}, Options, State extends {}, Slots, Fields>(
+  form: Form<Values, Api, Options, State, Slots, Fields>,
+) =>
+  form
+    .extend(standard)
+    .extend(check('warning'))
+    .extend(slots(() => ({})));
+```
+
+## Related
+
+- [Use the `standard` preset](/docs/compose/standard-preset)
+- [A reusable slot group](/docs/compose/slot-group)
+- [Change a value before it is written](/docs/extend/intercept-a-change)
+- [Replace a slot](/docs/extend/replace-a-slot)

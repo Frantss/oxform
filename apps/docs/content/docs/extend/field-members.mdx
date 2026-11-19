@@ -1,0 +1,146 @@
+---
+title: Add members to fields
+description: Add a member to the field handles of string fields with fields and on.
+type: guide
+entry: ['@oxform/core']
+principles: [extensible, type-safe]
+examples: [E11]
+---
+
+## Problem
+
+A card number is shown as `4242 4242 …` and the payment provider needs digits only.
+
+## What you build
+
+You build `masks` of the example kit, for the checkout. It formats each string written at a path of its `masks`
+option, and adds `unmasked()` to the handle of each string field: `form.field('card.number').unmasked()` gives the
+digits. A mask has no meaning on a value that is not a string, so the member is only on string fields.
+
+`fields: on(guard)(build)` gives the field members. The guard decides at runtime, for each handle, from the value.
+In the types, the condition of the guard decides: `on(isString)` adds the member to the fields whose value is a
+string. The members are on the handles of the form and on the handles of each scope.
+
+## Steps
+
+### State the needs [#state-the-needs]
+
+Field members go on the handles of `field(path)`, so the extension needs the `field` api, which `handles` adds.
+`masks` also needs `values`, for its interceptor.
+
+```ts twoslash
+import { defineExtension, optionTypes, type Extendable, type Needs } from '@oxform/core';
+
+export const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'field'>>) =>
+  defineExtension(form, {
+    name: 'masks',
+    needs: { api: ['values', 'field'] },
+    options: optionTypes<{ masks: Readonly<Record<string, string>> }>(),
+    api: () => ({}),
+  });
+```
+
+### Add the member with a guard [#add-the-member-with-a-guard]
+
+`on(isString)` takes a type guard. `build(field, path)` returns the members of one handle. `field` is the handle,
+typed for a string value, so `field.get()` is a `string`. `path` is relative to the scope of the handle.
+
+```ts twoslash
+import { defineExtension, on, type Extendable, type Needs } from '@oxform/core';
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+export const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'field'>>) =>
+  defineExtension(form, {
+    name: 'masks',
+    needs: { api: ['values', 'field'] },
+    api: () => ({}),
+    fields: on(isString)(field => ({ unmasked: () => field.get().replace(/\D/gu, '') })),
+  });
+```
+
+### Use the member [#use-the-member]
+
+Apply `masks` to a form that has `handles`. `unmasked()` is on string fields only. The scoped handles have it too:
+`form.scope('billing').field('street').unmasked()`.
+
+```ts twoslash
+import { defineExtension, defineForm, on, type Extendable, type Needs } from '@oxform/core';
+import { standard } from '@oxform/core/presets';
+import { z } from 'zod';
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'field'>>) =>
+  defineExtension(form, {
+    name: 'masks',
+    needs: { api: ['values', 'field'] },
+    api: () => ({}),
+    fields: on(isString)(field => ({ unmasked: () => field.get().replace(/\D/gu, '') })),
+  });
+
+const orderSchema = z.object({ seats: z.number(), card: z.object({ number: z.string() }) });
+
+const form = defineForm({ schema: orderSchema, defaultValues: { seats: 1, card: { number: '' } } })
+  .extend(standard)
+  .extend(masks)
+  .create();
+
+form.field('card.number').unmasked();
+//                        ^?
+```
+
+## Complete example
+
+The extension of the example kit. Its interceptor formats the value, and its field member reads the digits.
+
+<include meta='twoslash'>../../../../../examples/kit/src/masks.ts</include>
+
+## Verify
+
+Apply `masks` to the checkout with `masks: { 'card.number': '#### #### #### ####' }`. Change `card.number` to
+`'42424242424'`: the value is `'4242 4242 424'`. `form.field('card.number').unmasked()` gives the digits.
+`form.field('billing')` has no `unmasked`, in the types and at runtime. The test of the kit does this
+(`examples/kit/src/masks.spec.ts`).
+
+## Common mistakes
+
+| Wrong code                                                    | Effect                                                                                                                                                                        | Fix                                                                                       |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `.extend(masks)` on a lean chain without `handles`            | Type error at `.extend`: the form has no `field` api. A JavaScript caller gets, at `create`: `The "masks" extension adds field members, so the form needs a field(path) api.` | Apply `masks` to a form with `handles`, or use `standard`                                 |
+| A member only for `card.number`, by its path                  | `on` cannot state a condition by path. The guard decides from the value, at runtime                                                                                           | Use a guard on the value type. Read the path in `build(field, path)` to decide at runtime |
+| `on<string>()` with no guard                                  | The types put the member on string fields only. At runtime, a call with no guard adds it to every field                                                                       | Give the guard: `on(isString)`. Its type guard sets the condition of the types too        |
+| A member named `get`, or a member that another extension adds | Throws when the handle is made: `The "masks" extension cannot redefine the field member "get".`                                                                               | Use a name that no handle and no other extension has                                      |
+
+A form without `handles` has no `field` api:
+
+```ts twoslash
+// @errors: 2769
+import { defineExtension, defineForm, on, type Extendable, type Needs } from '@oxform/core';
+import { validation, values } from '@oxform/core/behaviors';
+import { z } from 'zod';
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+const masks = <Values>(form: Extendable<Values, Needs<Values, 'values' | 'field'>>) =>
+  defineExtension(form, {
+    name: 'masks',
+    needs: { api: ['values', 'field'] },
+    api: () => ({}),
+    fields: on(isString)(field => ({ unmasked: () => field.get().replace(/\D/gu, '') })),
+  });
+
+const schema = z.object({ card: z.object({ number: z.string() }) });
+
+defineForm({ schema, defaultValues: { card: { number: '' } } })
+  .extend(values)
+  .extend(validation)
+  .extend(masks);
+```
+
+## Related
+
+- [Extend a form](/docs/extend)
+- [Change a value before it is written](/docs/extend/intercept-a-change)
+- [Write an extension](/docs/extend/write-an-extension)
+- [A block used twice](/docs/compose/repeated-block)
