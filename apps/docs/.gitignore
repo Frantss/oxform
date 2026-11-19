@@ -6,3 +6,5 @@
 .vite
 dist
 node_modules
+content/docs/generated
+public/comparison.json

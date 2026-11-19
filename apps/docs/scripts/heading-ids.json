@@ -1,5 +1,26 @@
 {
   "/docs": ["in-short", "related", "model", "principles", "inspiration", "entry-points"],
+  "/docs/adapters": [
+    "in-short",
+    "the-import-that-changes",
+    "the-shared-surface",
+    "the-same-form-in-each-framework",
+    "related"
+  ],
+  "/docs/adapters/react": [
+    "install",
+    "create-the-parts",
+    "parts",
+    "hooks",
+    "read-one-value",
+    "render-a-scope",
+    "render-the-rows-of-an-array",
+    "custom-parts",
+    "server-rendering",
+    "differences",
+    "common-mistakes",
+    "related"
+  ],
   "/docs/behaviors": ["in-short", "extensions", "needs-are-required", "slot-groups-and-scopes", "related"],
   "/docs/behaviors/arrays": [
     "when-to-use",
@@ -138,6 +159,15 @@
     "need-to-context-member",
     "chain-or-preset",
     "slots-or-define-extension",
+    "related"
+  ],
+  "/docs/comparison": [
+    "in-short",
+    "features",
+    "sources-and-versions",
+    "when-to-choose-another-library",
+    "when-to-choose-oxform",
+    "report-an-error",
     "related"
   ],
   "/docs/compose": ["in-short", "the-ladder", "choose-a-tier", "reuse-a-piece", "related"],
@@ -486,68 +516,6 @@
     "related",
     "render-the-part"
   ],
-  "/docs/adapters": [
-    "in-short",
-    "the-import-that-changes",
-    "the-shared-surface",
-    "the-same-form-in-each-framework",
-    "related"
-  ],
-  "/docs/adapters/react": [
-    "install",
-    "create-the-parts",
-    "parts",
-    "hooks",
-    "read-one-value",
-    "render-a-scope",
-    "render-the-rows-of-an-array",
-    "custom-parts",
-    "server-rendering",
-    "differences",
-    "common-mistakes",
-    "related"
-  ],
-  "/docs/quick-start": [
-    "problem",
-    "what-you-build",
-    "steps",
-    "install",
-    "write-the-chain",
-    "render-it",
-    "submit-it",
-    "swap-the-chain-for-standard",
-    "complete-example",
-    "verify",
-    "common-mistakes",
-    "related"
-  ],
-  "/docs/recipes/another-element": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/dependent-fields": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/derived-ui": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/discard-changes": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/form-without-javascript": ["problem", "solution", "how-it-works", "related"],
-  "/docs/recipes": ["in-short", "the-recipes", "related"],
-  "/docs/recipes/lookup-on-blur": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/server-errors": [
-    "problem",
-    "solution",
-    "one-error-from-on-submit",
-    "a-list-of-errors-by-path",
-    "how-it-works",
-    "variations",
-    "related"
-  ],
-  "/docs/recipes/third-party-controls": ["problem", "solution", "how-it-works", "variations", "related"],
-  "/docs/recipes/unsaved-changes": [
-    "problem",
-    "solution",
-    "a-label-and-a-disabled-button",
-    "a-warning-before-the-tab-closes",
-    "render-them",
-    "how-it-works",
-    "variations",
-    "related"
-  ],
   "/docs/limits": [
     "in-short",
     "forms-and-presets",
@@ -604,6 +572,47 @@
     "order",
     "rules",
     "common-mistakes",
+    "related"
+  ],
+  "/docs/quick-start": [
+    "problem",
+    "what-you-build",
+    "steps",
+    "install",
+    "write-the-chain",
+    "render-it",
+    "submit-it",
+    "swap-the-chain-for-standard",
+    "complete-example",
+    "verify",
+    "common-mistakes",
+    "related"
+  ],
+  "/docs/recipes": ["in-short", "the-recipes", "related"],
+  "/docs/recipes/another-element": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/dependent-fields": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/derived-ui": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/discard-changes": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/form-without-javascript": ["problem", "solution", "how-it-works", "related"],
+  "/docs/recipes/lookup-on-blur": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/server-errors": [
+    "problem",
+    "solution",
+    "one-error-from-on-submit",
+    "a-list-of-errors-by-path",
+    "how-it-works",
+    "variations",
+    "related"
+  ],
+  "/docs/recipes/third-party-controls": ["problem", "solution", "how-it-works", "variations", "related"],
+  "/docs/recipes/unsaved-changes": [
+    "problem",
+    "solution",
+    "a-label-and-a-disabled-button",
+    "a-warning-before-the-tab-closes",
+    "render-them",
+    "how-it-works",
+    "variations",
     "related"
   ]
 }

@@ -3,12 +3,12 @@ id: TK-068
 title: Comparison page
 phase: 8
 work_package: P8-11
-status: todo
+status: done
 depends_on: [TK-055, TK-059]
 branch: codex/P8-11-comparison-page
 pr: null
-started: null
-completed: null
+started: 2026-11-18
+completed: 2026-11-18
 ---
 
 # TK-068: Comparison page
@@ -44,17 +44,38 @@ the data. A stale data set shows a warning on the page.
 
 ## Acceptance
 
-- [ ] The `.md` route of the page has the table, with version and date columns.
-- [ ] `/comparison.json` holds the feature data and is linked from the page and from `llms.txt`.
-- [ ] An old `readAt` makes `pnpm run docs:build` print the warning block on the page.
-- [ ] Each matrix cell has a source link.
-- [ ] `pnpm run docs:build` and `pnpm run docs:check:agents` pass.
-- [ ] The page and its tables work at desktop and mobile sizes. The console shows no runtime, SSR or hydration
+- [x] The `.md` route of the page has the table, with version and date columns.
+- [x] `/comparison.json` holds the feature data and is linked from the page and from `llms.txt`.
+- [x] An old `readAt` makes `pnpm run docs:build` print the warning block on the page.
+- [x] Each matrix cell has a source link.
+- [x] `pnpm run docs:build` and `pnpm run docs:check:agents` pass.
+- [x] The page and its tables work at desktop and mobile sizes. The console shows no runtime, SSR or hydration
       error (`AGENTS.md`, "Validation").
-- [ ] `pnpm run check:format` passes.
+- [x] `pnpm run check:format` passes.
 
 ## Evidence
 
-Record the command results and the browser check here. Try a Markdown include of a generated file first. If
-Fumadocs puts it in the page and in the `.md` route, use the include and remove the markers. Else the script
-rewrites the block between two markers in `comparison.mdx` (`07#5`). Record which path was taken.
+- Path taken: the Markdown include. `comparison.mdx` has three `<include>./generated/comparison-*.md</include>`
+  lines (warning, matrix, sources). Fumadocs puts the included text in the HTML page and in the `.md` route
+  (`dist/client/docs/comparison.md` holds the matrix and the sources table). No markers.
+- `apps/docs/scripts/generate-comparison.ts` reads `plans/extension-api/07-comparison-features.json` and writes
+  `content/docs/generated/*.md` and `public/comparison.json` (a copy of the JSON file). All are git-ignored
+  (`apps/docs/.gitignore`). The `dev`, `build` and `postinstall` scripts of `apps/docs` run it first.
+- Table: a matrix of 21 rows by 4 libraries, each value linking its source, and a "Sources and versions" table of
+  the 84 records with note, version and read date. `/comparison.json` is linked from the page and from
+  `llms.txt` (`- **Data**` group in `src/routes/llms[.]txt.ts`).
+- Staleness: with one `readAt` set to 2026-06-01, `docs:build` printed the warning block in
+  `dist/client/docs/comparison/index.html` and in `comparison.md` ("The oldest source was read on 2026-06-01, 171
+  days ago"). The JSON was then restored; with current data the warning file is empty and the page has no block.
+- Issue template: `.github/ISSUE_TEMPLATE/comparison-correction.yml`, linked from "Report an error".
+- Browser (production server, port 3208): 1280x800 and 390x844, no console, page or hydration error. The
+  document width equals the window width. Tables fit their container (the theme wraps cells), so no table scrolls.
+  Screenshots: scratchpad `TK-068/`.
+- Decisions (owner decision 18): Oxform source links point to `github.com/frantss/oxform/blob/main/<path>`. New
+  `apps/docs/.gitignore` entries hold the generated files. "(planned)" in the matrix is read from the record note.
+  Heading ids recorded in `heading-ids.json`.
+- Limit: the page links `/docs/limits`, `/docs/quick-start`, `/docs/compose/lean-form`,
+  `/docs/compose/repeated-block`, `/docs/extend/write-an-extension`, `/docs/extend/second-check` and
+  `/docs/presets/standard`. Those pages belong to other tickets. Until they exist, the prerender crawl fails with
+  "Failed to fetch /docs/limits". `docs:build`, `docs:check:agents` and the browser check passed with these links
+  rewritten to `/docs` in a temporary copy; the committed page has the real links.

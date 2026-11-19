@@ -1,0 +1,47 @@
+name: Comparison correction
+description: Correct a cell of the feature table on the Comparison page.
+title: 'comparison: '
+labels: ['comparison']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The table is generated from `plans/extension-api/07-comparison-features.json`. A maintainer checks each correction at the primary source of the library before it is merged. A cell is not changed because Oxform lacks the feature.
+  - type: input
+    id: row
+    attributes:
+      label: Row
+      description: The row title in the table.
+    validations:
+      required: true
+  - type: dropdown
+    id: library
+    attributes:
+      label: Library
+      options:
+        - Oxform
+        - TanStack Form
+        - React Hook Form
+        - Formisch
+    validations:
+      required: true
+  - type: input
+    id: current-value
+    attributes:
+      label: Value on the page
+    validations:
+      required: true
+  - type: input
+    id: correct-value
+    attributes:
+      label: Correct value
+      description: One of Built-in, Add-on, User code, Not available, or the fact for a fact row.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Primary source
+      description: A link to the documentation, the package registry or the source code of the library, and the version you read.
+    validations:
+      required: true

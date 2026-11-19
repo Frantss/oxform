@@ -1,0 +1,62 @@
+---
+title: Comparison
+description: Features and capabilities of Oxform, TanStack Form, React Hook Form and Formisch, with a source for each cell.
+type: overview
+entry: []
+principles: [composable, extensible, type-safe, lightweight]
+examples: []
+---
+
+## In short
+
+This page compares Oxform 0.7.0 (planned) with TanStack Form 1.33.5, React Hook Form 7.92.0 and Formisch 1.2.0. Each cell was read at a primary source on 2026-11-16. The table does not show runtime speed, render counts or bundle sizes.
+
+## Features [#features]
+
+<include>./generated/comparison-warning.md</include>
+
+Each cell holds one value. A value links to its source.
+
+| Value         | Meaning                                                                        |
+| ------------- | ------------------------------------------------------------------------------ |
+| Built-in      | In the main package or its framework adapter, with no extra install            |
+| Add-on        | In a separate package that the same project publishes                          |
+| User code     | Possible with documented APIs, but the application writes the logic            |
+| Not available | The project's documentation states that it is absent, or the model excludes it |
+
+"(planned)" marks an Oxform cell that no published package provides yet. Rows that are facts, such as frameworks or licence, hold the fact.
+
+<include>./generated/comparison-matrix.md</include>
+
+### Sources and versions [#sources-and-versions]
+
+Each record has its source link, the version read and the date read. The same data is in [comparison.json](/comparison.json).
+
+<include>./generated/comparison-sources.md</include>
+
+## When to choose another library [#when-to-choose-another-library]
+
+- **React Hook Form**: the application is React only, wants inputs that state does not drive, wants no runtime dependency, or needs the largest user base and the longest history.
+- **TanStack Form**: the application needs Vue, Angular, Svelte or Lit, uses TanStack Start, Next.js or Remix and wants an integration package for server validation, or wants devtools.
+- **Formisch**: the application already uses Valibot and wants the schema to be the single place for types and validation, or needs Preact, Qwik, Vue, Svelte or Angular.
+
+## When to choose Oxform [#when-to-choose-oxform]
+
+- A small form needs a lean chain with no unused behavior: [Lean form](/docs/compose/lean-form).
+- The form needs behavior that no library provides: [Write an extension](/docs/extend/write-an-extension).
+- One block of fields appears at more than one path: [A block used twice](/docs/compose/repeated-block).
+- A warning must show next to an error and must not block submit: [Add a second check](/docs/extend/second-check).
+
+Oxform has limits too. A schema only types `Values`, and the table shows the effect in the row on validation without more setup. [Known limits](/docs/limits) lists them all.
+
+## Report an error [#report-an-error]
+
+A maintainer of another library, or any reader, can correct a cell. Open a ["Comparison correction" issue](https://github.com/frantss/oxform/issues/new?template=comparison-correction.yml), or open a pull request against [`07-comparison-features.json`](https://github.com/frantss/oxform/blob/main/plans/extension-api/07-comparison-features.json). The owner checks the correction at the primary source and merges it before the next release. A cell is not changed because Oxform lacks the feature.
+
+## Related
+
+- [Known limits](/docs/limits)
+- [Lean form](/docs/compose/lean-form)
+- [The standard preset](/docs/presets/standard)
+- [Quick start](/docs/quick-start)
+- [comparison.json](/comparison.json)
