@@ -267,3 +267,12 @@
 - What: `reports/extension-api-rebuild.md:157` says that "the size table measures it". The size table and its
   scripts were removed (owner decision of 2026-11-16 and owner decision 19).
 - Why it matters: a reader may look for a measured size that does not exist.
+
+## A stale dependency cache fails the React server-render spec once
+
+- What: after `pnpm install` on a checkout whose `examples/react/node_modules/.vite` predates
+  `examples/react/tests/sign-in-server.spec.tsx`, Vite finds `react-dom/server` during the run, reloads, and the
+  two cases of that spec fail with `Cannot read properties of null (reading 'useId')` (a second React). The next
+  run passes. A cold cache passes on the first run, so CI is not affected.
+- Why it matters: a contributor who pulls the branch can see two false failures once. If it recurs, add
+  `optimizeDeps: { include: ['react-dom/server'] }` to `examples/react/vite.config.ts`.
