@@ -91,7 +91,7 @@ to work; the guides below document the project.
   - [Code style](./docs/code-style.md): formatting, naming, and the [glossary](./docs/code-style.md#glossary).
 - Use the glossary words in code, tests, and documents. `pnpm run check:terms` enforces them.
 - Entry-point rule: public code and documentation import from `@oxform/core`, `@oxform/core/behaviors`,
-  `@oxform/core/presets`, `@oxform/react`, or `@oxform/solid`. Only an adapter imports
+  `@oxform/core/presets`, `@oxform/react`, `@oxform/solid`, or `@oxform/solid/v2`. Only an adapter imports
   `@oxform/core/adapter`.
 - Example rule: each public example is one row of the example catalogue, with an `E` id. It lives in
   `examples/kit/src` (framework-neutral) or in an example app, and its specs run in that workspace. A
