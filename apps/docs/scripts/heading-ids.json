@@ -1,3 +1,14 @@
 {
-  "/docs": ["in-short", "related"]
+  "/docs": ["in-short", "related"],
+  "/docs/migration": [
+    "in-short",
+    "packages",
+    "detect",
+    "mapping",
+    "behavior-changes",
+    "procedure",
+    "verify",
+    "no-replacement",
+    "related"
+  ]
 }

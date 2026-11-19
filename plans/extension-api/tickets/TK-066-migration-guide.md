@@ -44,12 +44,12 @@ published at `migration/index`. A trial by hand of the guide is recorded in `rep
 
 ## Acceptance
 
-- [ ] `05-migration-guide.md` has no `†`.
-- [ ] Each of the 11 items of Part A has a recorded result on the built packages.
-- [ ] The "after" example compiles in `pnpm run docs:build`.
+- [x] `05-migration-guide.md` has no `†`.
+- [x] Each of the 11 items of Part A has a recorded result on the built packages.
+- [x] The "after" example compiles in `pnpm run docs:build`.
 - [ ] The trial is recorded in `reports/`: the application, the agent, the result of section 6 "Verify".
-- [ ] `pnpm run docs:check:agents` and `pnpm run check:format` pass.
-- [ ] `migration/index` renders at desktop and mobile sizes. The console shows no runtime, SSR or hydration
+- [x] `pnpm run docs:check:agents` and `pnpm run check:format` pass.
+- [x] `migration/index` renders at desktop and mobile sizes. The console shows no runtime, SSR or hydration
       error (`AGENTS.md`, "Validation").
 
 ## Evidence
@@ -109,3 +109,39 @@ its `options` prop (sections 3, 4, 5 and the example), and the `FieldError` stat
 example types `message`; finding in `reports/extension-api-rebuild.md`). The `usePart` note of "Deviations and
 decisions" now follows the built type. Not in part 1: `migration/index.mdx`, `docs:build`, `docs:check:agents`,
 the browser check of the page and the agent trial.
+
+### Part 2: the published page (2026-11-18)
+
+Base: integration `7696c2c` (with `eccecd1`, which types the `fieldError` state `{ messages: string[] }`), after
+`pnpm install` and `pnpm run build` (12 of 12).
+
+- Page: `apps/docs/content/docs/migration/index.mdx`, made from Part B section by section, already listed in
+  `migration/meta.json` (`"pages": ["index"]`). Headings: `In short`, sections 1 to 7 with the ids `packages`,
+  `detect`, `mapping`, `behavior-changes`, `procedure`, `verify`, `no-replacement`, then `Related`. Recorded in
+  `apps/docs/scripts/heading-ids.json`.
+- Guide changes, kept the same on the page: the `(message: string)` annotation is removed; the "after" example
+  declares `invite`, so it compiles alone with no hidden code; a new section 7, "0.x features with no
+  replacement", gives the reader-facing answers of "Deviations and decisions" (items 1 to 8, D44 included: the
+  removed type helpers in one item), and sections 3 and 6 point to it.
+- Twoslash: `pnpm run docs:build` passes with the "after" block marked `twoslash` and no annotation. Negative
+  control: `{message.toFixed()}` in the same block failed the build with
+  `[2551] Property 'toFixed' does not exist on type 'string'`, so the block is checked and `message` is a
+  `string` on the rebuilt packages. The control was reverted.
+- `pnpm run docs:check:agents`: "2 pages and 7 templates pass". `pnpm run check:terms`: no forbidden term.
+  `pnpm run check:format`: pass. `llms.txt` lists the page, and `/docs/migration.md` is prerendered.
+- Browser (production server, port 3206, Playwright Chromium): `/docs/migration` returns 200 at 1280x800 and
+  390x844, with the H1 "Migrate from 0.x", the nine H2 ids, Twoslash markup, no horizontal overflow, and no
+  console error, page error or hydration warning. Screenshots: scratchpad `TK-066/migration-*.png`.
+
+Decisions (owner decision 18):
+
+- Template type `overview`: the plan lists `migration/index.mdx` with no type, and the guide's own headings
+  do not fit the fixed headings of `guide`. `overview` fixes only `In short` and `Related`.
+- `entry` lists the six entry points of the import table. `principles` and `examples` are empty: an overview
+  page needs no catalogue id, and the example is a simplified team invites form, not a catalogue row.
+- The two examples are longer than 25 lines. The limit of `04-documentation.md` section 8 is for reference
+  pages and steps. The 0.x example is `no-check`, because the docs app installs only 0.7.0.
+- `Related` links only the pages that exist now (the introduction and the repository).
+
+Open: the agent trial on a 0.x application (acceptance item 4) runs separately, so the status stays
+`in-progress`.

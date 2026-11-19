@@ -47,8 +47,8 @@ Part B is the guide itself.
       blur, change and full runs, until `clear`.
 
   Facts outside the marked rows that differed, now corrected in Part B: `Root` takes the options in its `options`
-  prop (`onSubmit` on `Root` is the DOM handler of the `<form>`), and the state of `FieldError` children is
-  `any` in the built types, so the example types `message`.
+  prop (`onSubmit` on `Root` is the DOM handler of the `<form>`). The state of `FieldError` children was `any` in
+  the built types; `eccecd1` types it `{ messages: string[] }`, so the example needs no annotation (TK-066 part 2).
 
   The renames are approved (direction, owner decision 10). The guide uses the names of the plan: `useArray`
   where the spike has `useArrayField`.
@@ -122,7 +122,7 @@ Core (`@oxform/core` 0.x). `form` is the form, `instance` is one live form from 
 | entry `{ type, level, issue: { message, path } }`                         | `CheckEntry`: `{ type, message, path }`. The check name is the key that holds the entry.                                                    |
 | state `status.<flag>`, `fields[path].status`, `fields[path].issues.error` | `status.form.<flag>`, `status.fields[path]`, `error[path]`                                                                                  |
 | `form.issues()`, `form.setIssues()`, `state.issues` (root)                | Read all entries: `instance.validation.issues()`. Root only: the empty path, `instance.error.at('')` and `instance.error.set('', entries)`. |
-| `form.options`                                                            | No replacement. See "Deviations and decisions".                                                                                             |
+| `form.options`                                                            | No replacement. See section 7.                                                                                                              |
 
 Types: `FormOptions` → `OptionsOf<typeof form>`, `FormStore` → `StateOf<typeof form>`, `FormValues` →
 `ValuesOf<typeof form>`, `FormFields` → `Path`, `FormArrayFields` → `ArrayPath`, `FormFieldValue` and `DeepValue` →
@@ -245,6 +245,8 @@ import { standard } from '@oxform/core/presets';
 import { createParts } from '@oxform/react';
 import z from 'zod';
 
+declare function invite(values: { email: string; seats: number }): Promise<{ taken: boolean }>;
+
 const schema = z.object({ email: z.string().email(), seats: z.number().min(1) });
 
 const teamInvites = defineForm({ schema, defaultValues: { email: '', seats: 1 } })
@@ -264,7 +266,7 @@ export function TeamInvites() {
     >
       <Field name='email' type='email' />
       <FieldError name='email'>
-        {({ messages }) => messages.map((message: string) => <span key={message}>{message}</span>)}
+        {({ messages }) => messages.map(message => <span key={message}>{message}</span>)}
       </FieldError>
       <Field name='seats' type='number' />
       <Submit>Invite</Submit>
@@ -288,7 +290,31 @@ Do not:
 - keep 0.x and `0.7.0` installed together, or keep two copies of `@oxform/core`;
 - hand-edit generated types or declaration files to make the type check pass.
 
-For a 0.x feature with no replacement, apply "Deviations and decisions" below.
+For a 0.x feature with no replacement, apply section 7.
+
+### 7. 0.x features with no replacement
+
+1. **`useFormEffect` and Solid `createFormEffect`.** No adapter export. React: call
+   `createEffect(useForm(), selector, fn)` in a `useEffect`, and return its `unsubscribe`. Solid: read the value
+   with `useSelector`, and react to it with Solid's own `createEffect`.
+2. **Root issues** (`form.issues()`, `form.setIssues()`, `state.issues`). The empty path `''` is the root:
+   `instance.error.at('')` and `instance.error.set('', entries)`. No part shows root issues: read them with
+   `useSelector(state => state.error[''])`.
+3. **`form.options` and `'~update'` without an adapter.** An instance has no member that changes its options.
+   Create the instance with its final options, or pass callbacks that read current data.
+4. **The form outside `Root`.** The hooks and `usePart` throw outside `Root`. Move the code inside `Root`. Where
+   that is not possible, create the instance with `form.create(options)` and pass it as `<Root form={instance}>`.
+   Then the options do not follow the props, and the id comes from `create`.
+5. **Custom levels with field sugar.** After `standard`, a check has no `field.<level>()` sugar, and no part
+   shows it. Read `instance.<level>.at(path)` or `useSelector(state => state.<level>[path])`. A form that needs
+   the sugar applies the nine extensions of `standard` itself, with the check before `handles`.
+6. **An "any instance" type** (`{ form: AnyFormApi }`). No alias types any instance. Use `<F extends AnyForm>`
+   with `InstanceOf<F>`, the members that the function needs (`{ values: ValuesApi<any> }`), or
+   `Scope<Address, 'error'>` for a sub-object.
+7. **Removed type helpers:** `AnyFormLikeApi`, `ApiSelector`, `InferFormIssueLevels`, `FormIssueLevels`,
+   `EventLike`, `ArrayLike`, `DeepRecord`, `FormSubmitSuccessHandler`, `FormSubmitErrorHandler` and the
+   `StandardSchema` alias. No replacement. Use the read-back types (`ValuesOf`, `OptionsOf`, `StateOf`,
+   `InstanceOf`) or `@standard-schema/spec`.
 
 ## Deviations and decisions
 
