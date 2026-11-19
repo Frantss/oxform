@@ -95,6 +95,10 @@ export const warningSlots = defineSlots(
 ### Apply both to the form [#apply-both-to-the-form]
 
 Extend the check, then spread the group. The group needs the `warning` state, so it comes after the check.
+`warnings` and `warningSlots` are not exports of Oxform. They are the code of the first and the third step, in
+one file of your project: `export const warnings = check('warning');` and the `warningSlots` group above. The kit
+keeps them in `warnings.ts` (the complete example), so the form imports them with
+`import { warningSlots, warnings } from './warnings';`.
 
 <include meta='no-check="checked in the example kit"'>../../../../../examples/kit/src/article-advice.ts</include>
 
