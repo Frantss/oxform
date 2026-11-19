@@ -1,10 +1,11 @@
+import { createParts } from '@oxform/solid';
 import type { Scope } from '@oxform/core';
 import { roleSelectProps } from 'example-oxform-kit/role-select';
 import { roles, type Member, type Role } from 'example-oxform-kit/schemas/team-invites';
 import { For } from 'solid-js';
-import { teamInvitesParts } from './team-invites-form';
+import { teamInvitesForm } from './team-invites-form';
 
-const { Field, FieldError, useField } = teamInvitesParts;
+const { Field, FieldError, useField } = createParts(teamInvitesForm);
 
 type RoleSelectProps = {
   readonly value: Role | undefined;

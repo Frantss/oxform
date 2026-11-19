@@ -1,11 +1,12 @@
+import { createParts } from '@oxform/solid/v2';
 import { describe, expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
-import { checkoutParts } from '../src/examples/checkout-form';
+import { checkoutForm } from '../src/examples/checkout-form';
 import { CountrySelect } from '../src/examples/country-select';
 import { OrderSummary } from '../src/examples/order-summary';
 import { setup } from './setup';
 
-const { Root } = checkoutParts;
+const { Root } = createParts(checkoutForm);
 
 describe('OrderSummary', () => {
   it('shows the shipping price of the chosen country', async () => {

@@ -1,10 +1,11 @@
+import { createParts } from '@oxform/solid/v2';
 import { describe, expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
 import { Addresses } from '../src/examples/address-fields';
-import { checkoutParts } from '../src/examples/checkout-form';
+import { checkoutForm } from '../src/examples/checkout-form';
 import { setup } from './setup';
 
-const { Root } = checkoutParts;
+const { Root } = createParts(checkoutForm);
 
 describe('Addresses', () => {
   it('renders one block per address, and copies the billing address to the shipping address', async () => {

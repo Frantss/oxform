@@ -18,7 +18,8 @@ export default defineConfig({
   },
   plugins: [solid()],
   optimizeDeps: { include: ['solid-js', 'solid-js/web', 'vite-plus/test/browser'] },
-  test: { ...base.test, environment: 'node' },
+  // The server tests run in Node with the server build of Solid (`vite.ssr.config.ts`).
+  test: { ...base.test, environment: 'node', exclude: ['tests/server/**', 'node_modules/**'] },
   resolve: {
     // The sources of the packages, so the app needs no build of them. Each entry point is matched whole.
     alias: [

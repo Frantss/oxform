@@ -1,5 +1,4 @@
 import { slots } from '@oxform/core';
-import { createParts } from '@oxform/solid';
 import { articleEditor } from 'example-oxform-kit/article-editor';
 import { autosave } from 'example-oxform-kit/autosave';
 import { articleAdviceSchema } from 'example-oxform-kit/schemas/article';
@@ -16,5 +15,3 @@ export const articleEditorForm = articleEditor
     saveDraft: draft => articles.saveDraft(draft),
     onSaveError: (_error, form) => form.warning.set('', [{ message: 'The draft was not saved. Keep this tab open.' }]),
   });
-
-export const articleEditorParts = createParts(articleEditorForm);

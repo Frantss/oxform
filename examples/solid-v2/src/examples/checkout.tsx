@@ -1,31 +1,12 @@
-import { clearRegionOnCountryChange } from 'example-oxform-kit/region';
-import { countryOf } from 'example-oxform-kit/schemas/checkout';
-import { For, onCleanup, Show } from 'solid-js';
+import { createParts } from '@oxform/solid/v2';
+import { Show } from 'solid-js';
 import { Addresses } from './address-fields';
-import { checkoutParts } from './checkout-form';
+import { checkoutForm } from './checkout-form';
 import { CountrySelect } from './country-select';
 import { OrderSummary } from './order-summary';
+import { RegionSelect } from './region-select';
 
-const { Root, Field, FieldError, Submit, Reset, useForm, useSelector } = checkoutParts;
-
-/** E21: a change of country clears the region, for as long as the form is shown. */
-const RegionSelect = () => {
-  const form = useForm();
-  const regions = useSelector(state => countryOf(state.values.country)?.regions ?? []);
-  onCleanup(clearRegionOnCountryChange(form));
-
-  return (
-    <Field
-      name='region'
-      render={props => (
-        <select {...props}>
-          <option value=''>Choose a region</option>
-          <For each={regions()}>{region => <option>{region}</option>}</For>
-        </select>
-      )}
-    />
-  );
-};
+const { Root, Field, FieldError, Submit, Reset, useSelector } = createParts(checkoutForm);
 
 const Paid = () => {
   const paid = useSelector(state => state.status.form.submits > 0 && state.status.form.successful);

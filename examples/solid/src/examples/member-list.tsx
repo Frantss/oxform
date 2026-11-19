@@ -1,9 +1,10 @@
+import { createParts } from '@oxform/solid';
 import { inviteMember } from 'example-oxform-kit/member-list';
 import { For } from 'solid-js';
 import { MemberRow } from './member-row';
-import { teamInvitesParts } from './team-invites-form';
+import { teamInvitesForm } from './team-invites-form';
 
-const { useArray, useForm, useScope } = teamInvitesParts;
+const { useArray, useForm, useScope } = createParts(teamInvitesForm);
 
 /**
  * E17 and E33. The rows come from `useArray`, keyed by the item ids, so focus and errors stay with the row. A row

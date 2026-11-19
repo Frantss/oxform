@@ -1,10 +1,11 @@
+import { createParts } from '@oxform/solid/v2';
 import { describe, expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
 import { MemberList } from '../src/examples/member-list';
-import { teamInvitesParts } from '../src/examples/team-invites-form';
+import { teamInvitesForm } from '../src/examples/team-invites-form';
 import { setup } from './setup';
 
-const { Root } = teamInvitesParts;
+const { Root } = createParts(teamInvitesForm);
 
 describe('MemberList', () => {
   it('adds, reorders and removes rows, and the value and the error stay with each row', async () => {

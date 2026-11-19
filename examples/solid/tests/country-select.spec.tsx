@@ -1,10 +1,11 @@
+import { createParts } from '@oxform/solid';
 import { describe, expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
-import { checkoutParts } from '../src/examples/checkout-form';
+import { checkoutForm } from '../src/examples/checkout-form';
 import { CountrySelect } from '../src/examples/country-select';
 import { setup } from './setup';
 
-const { Root, FieldError } = checkoutParts;
+const { Root, FieldError } = createParts(checkoutForm);
 
 describe('CountrySelect', () => {
   it('renders the field slot in a select, with its error', async () => {

@@ -1,8 +1,9 @@
+import { createParts } from '@oxform/solid';
 import { Show } from 'solid-js';
 import { MemberList } from './member-list';
-import { teamInvitesParts } from './team-invites-form';
+import { teamInvitesForm } from './team-invites-form';
 
-const { Root, Field, FieldError, FormError, Submit, Reset, useSelector } = teamInvitesParts;
+const { Root, Field, FieldError, FormError, Submit, Reset, useSelector } = createParts(teamInvitesForm);
 
 const Sent = () => {
   const sent = useSelector(state => state.status.form.submits > 0 && state.status.form.successful);

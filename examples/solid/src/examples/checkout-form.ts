@@ -1,4 +1,3 @@
-import { createParts } from '@oxform/solid';
 import { checkout } from 'example-oxform-kit/checkout';
 import { masks } from 'example-oxform-kit/masks';
 import { payOrder } from 'example-oxform-kit/payment-issues';
@@ -7,5 +6,3 @@ import { payOrder } from 'example-oxform-kit/payment-issues';
 export const checkoutForm = checkout
   .extend(masks)
   .configure({ masks: { 'card.number': '#### #### #### ####' }, onSubmit: payOrder });
-
-export const checkoutParts = createParts(checkoutForm);

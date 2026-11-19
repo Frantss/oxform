@@ -21,6 +21,8 @@ export default defineConfig({
   test: {
     ...base.test,
     environment: 'node',
+    // The server tests run in Node with the server build of Solid (`vite.ssr.config.ts`).
+    exclude: ['tests/server/**', 'node_modules/**'],
     // As in `packages/solid-v2`, the flows also run at the size of a phone (03-testing.md).
     browser: {
       ...base.test?.browser,

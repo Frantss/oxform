@@ -1,10 +1,11 @@
+import { createParts } from '@oxform/solid/v2';
 import { describe, expect, it } from 'vite-plus/test';
 import { userEvent } from 'vite-plus/test/browser';
 import { MemberRow } from '../src/examples/member-row';
-import { teamInvitesParts } from '../src/examples/team-invites-form';
+import { teamInvitesForm } from '../src/examples/team-invites-form';
 import { setup } from './setup';
 
-const { Root, useForm, useSelector } = teamInvitesParts;
+const { Root, useForm, useSelector } = createParts(teamInvitesForm);
 
 /** The first member through its scope, and its values as text. */
 const FirstMember = () => {
