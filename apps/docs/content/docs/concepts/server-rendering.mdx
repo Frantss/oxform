@@ -1,0 +1,47 @@
+---
+title: Server rendering rules
+description: Understand the rules that make a form render the same on a server and in a browser.
+type: concept
+entry: ['@oxform/core']
+principles: [composable]
+examples: [E26]
+---
+
+## In short
+
+A form is shared, and an instance is made for each render or each request. The `api` of each extension is inert at
+creation, so an instance does no work on a server. The adapter gives the form id, so the ids match after
+hydration.
+
+## Model
+
+- A form lives at module scope. It holds no state, so all requests can share it.
+- `Root` of an adapter makes one instance for each render. A request handler makes one with `form.create(options)`.
+- `form.create` runs the `api` of each extension. No built-in extension starts a timer, a request or a validation
+  run there.
+- The pure members of a slot (`text`, `present`, `state` and `attrs`) render on a server. `on` and `bind` run in a
+  browser only.
+- `Root` passes an id from the framework (`useId` in React, `createUniqueId` in Solid) to `create`. Field ids come
+  from the form id. An `id` option that you give wins.
+- `form.create()` with no `id` and no adapter takes an id from a counter, such as `form-1`.
+- A handler can create an instance, await `validation.run()`, and render that instance with `<Root form={form}>`.
+  `Root` then uses the instance and its options as they are.
+
+## Rules
+
+- Define each form at module scope. Do not make an instance at module scope.
+- Make one instance for each render or each request.
+- `api` must not touch the DOM, start a timer or send a request at creation.
+- Pass an `id` to `create` when you render an instance without an adapter on both the server and the browser.
+- No adapter calls `destroy()`, on a server or in a browser. A server instance holds no work.
+- Do not call `createEffect` inside `api`.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)

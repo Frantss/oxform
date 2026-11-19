@@ -1,0 +1,92 @@
+---
+title: Which API do I need
+description: Find the API that does a task.
+type: overview
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/core/presets']
+principles: [composable, reusable, extensible]
+examples: []
+---
+
+## In short
+
+Each table below maps what you must do to the API that does it. Find your row, then read the page of that API.
+
+## Task to API [#task-to-api]
+
+| Task                                                           | API                                                     | Entry point              |
+| -------------------------------------------------------------- | ------------------------------------------------------- | ------------------------ |
+| Make a form and fix its `Values` type                          | `defineForm({ schema, defaultValues })`                 | `@oxform/core`           |
+| Add one built-in behavior to a form                            | `.extend(values)`, `.extend(submit)`, ...               | `@oxform/core/behaviors` |
+| Add every built-in behavior and every built-in part            | `.extend(standard)`                                     | `@oxform/core/presets`   |
+| Set default options for every instance                         | `form.configure(options)`                               | `@oxform/core`           |
+| Make a live form in any runtime                                | `form.create(options)`                                  | `@oxform/core`           |
+| Validate the values                                            | `check('error')` with an `error` option                 | `@oxform/core/behaviors` |
+| Show advice that does not block a submit                       | A second check, such as `check('warning')`              | `@oxform/core/behaviors` |
+| Read or write a value from code                                | `form.values.get(path)`, `form.values.set(path, value)` | `@oxform/core/behaviors` |
+| Get a bound object for one field or one array                  | `form.field(path)`, `form.array(path)` from `handles`   | `@oxform/core/behaviors` |
+| Add, remove or move the items of an array                      | `arrays`, or `form.array(path)`                         | `@oxform/core/behaviors` |
+| Return to the default values, or to other values               | `form.reset.all(options)`, `form.reset.at(path)`        | `@oxform/core/behaviors` |
+| Describe a sub-object once and place it at many paths          | `defineScope`, then `defineForm({ scopes })`            | `@oxform/core`           |
+| View a sub-object at a path                                    | `form.scope(path)` from `handles`                       | `@oxform/core/behaviors` |
+| Run code when a part of the state changes, outside a component | `createEffect(instance, selector, effect)`              | `@oxform/core`           |
+| Write a new behavior                                           | `defineExtension`                                       | `@oxform/core`           |
+| Add or replace a slot on one form                              | `slots(build)`                                          | `@oxform/core`           |
+| Use the same slots in many forms                               | `defineSlots`                                           | `@oxform/core`           |
+| Read a type back from a form                                   | `ValuesOf`, `InstanceOf`, `OptionsOf`, ...              | `@oxform/core`           |
+| Render a form                                                  | `createParts(form)`                                     | An adapter               |
+| Render a part in another element for one application           | `createParts(form, { field: 'textarea' })`              | An adapter               |
+| Render a part in another element in one component              | `usePart`                                               | An adapter               |
+| Read one value of the state in a component                     | `useSelector(selector)`                                 | An adapter               |
+
+## Need to extension hook [#need-to-extension-hook]
+
+A custom extension states the behavior in its needs, reads its api from `deps`, and subscribes to its extension
+hooks.
+
+| Need                                                      | Extension hook     | Needs        |
+| --------------------------------------------------------- | ------------------ | ------------ |
+| Change or refuse a value before it is written             | `values.intercept` | `values`     |
+| Do something after a value is written                     | `values.onChange`  | `values`     |
+| Observe the result of each applied validation run         | `validation.onRun` | `validation` |
+| Refuse a submit before it validates                       | `submit.intercept` | `submit`     |
+| Observe the result of each submit that reached a callback | `submit.onResult`  | `submit`     |
+
+## Need to context member [#need-to-context-member]
+
+The `api` function of an extension gets a context. These members need no other extension.
+
+| Need                                                         | Context member                |
+| ------------------------------------------------------------ | ----------------------------- |
+| Read the current options inside a method                     | `context.options()`           |
+| Do something when the adapter gives the instance new options | `context.onOptions(listener)` |
+| Stop a timer or a listener when the instance unmounts        | `context.onDestroy(cleanup)`  |
+| Read or write a state key of the extension                   | `context.state.<key>`         |
+| Pass the instance to an option, from a method                | `context.instance()`          |
+
+## Chain or preset [#chain-or-preset]
+
+| The form needs                                                  | Use                                                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Arrays, reset, field handles and every built-in part            | `.extend(standard)`                                                                  |
+| A small set of behaviors, such as a sign-in form with no arrays | A chain of only the built-in extensions that it uses, and the slot groups they allow |
+| No validation and no submit, such as a filter bar               | `values`, `status`, `events`, and `fieldSlots`                                       |
+| The same extensions in many forms                               | Your own preset: a function from form to form                                        |
+| The same extensions on forms with different schemas             | `defineForm(init).extend(preset)` for each schema                                    |
+
+## `slots` or `defineExtension` [#slots-or-define-extension]
+
+| You must                                                      | Use                              |
+| ------------------------------------------------------------- | -------------------------------- |
+| Change the attributes or the element of one part, on one form | `slots(build)` with the same key |
+| Use the same slots in many forms                              | A slot group from `defineSlots`  |
+| Add options, state, an api or field members                   | `defineExtension`                |
+| Add a slot that reads the state of a new extension            | `defineExtension` with `slots`   |
+| Apply several extensions and slot groups together             | A preset                         |
+
+## Related
+
+- [Introduction](/docs)
+- [Known limits](/docs/limits)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)

@@ -1,0 +1,234 @@
+---
+title: Known limits
+description: Recognize a known limit of Oxform and work around it.
+type: overview
+entry: ['@oxform/core', '@oxform/core/behaviors', '@oxform/core/presets']
+principles: [type-safe, lightweight]
+examples: []
+---
+
+## In short
+
+Each limit below has a symptom, a cause and what to do. The limits are known and accepted for this release. The page
+where a limit occurs also lists it in "Common mistakes".
+
+## Forms and presets [#forms-and-presets]
+
+### A schema validates nothing [#schema-validates-nothing]
+
+- **Symptom**: a submit succeeds with values that the schema refuses. No field shows an issue.
+- **Cause**: the `schema` of `defineForm` and of `defineScope` only types `Values`. Nothing validates with it.
+- **What to do**: give a check option, such as `error: { submit: schema }` on the form, or
+  `checks: { error: { submit: schema } }` on a scope.
+
+### A preset cannot change the schema [#preset-cannot-change-schema]
+
+- **Symptom**: a preset has no parameter for a schema or for default values.
+- **Cause**: a preset is a function from form to form. `defineForm` fixes `Values` before the preset runs.
+- **What to do**: write `defineForm(init).extend(preset)` for each schema.
+
+### The error of a rejected extension names a preset [#rejected-extension-error]
+
+- **Symptom**: `.extend(extension)` fails with "No overload matches this call. The last overload gave the following
+  error", and the text describes a parameter `(form: Form<...>) => AnyForm`.
+- **Cause**: `.extend` has two overloads. The preset overload is the last one, so that TypeScript can type the
+  parameter of an inline extension from the first one. TypeScript reports the error of the last overload.
+- **What to do**: read the last lines of the error. "missing the following properties" names the needs that the
+  form does not have. Extend those first. The line of the error is correct.
+
+### A generic preset that adds an option needs casts [#generic-preset-option-casts]
+
+- **Symptom**: in a preset that is generic in the form it gets, `.extend` of an extension with an option returns a
+  type that is not a form, so the next `.extend` is a type error.
+- **Cause**: with a generic `Options` type, TypeScript cannot decide whether the new option name is a duplicate.
+- **What to do**: do as `standard` does. Apply the chain to the form typed with no options, then cast the result to
+  add the options of the form back. Or export the extension and its slot group, and let each form extend both.
+
+## Options [#options]
+
+### `configure` before an `.extend` cannot set its options [#configure-before-extend]
+
+- **Symptom**: `configure({ error: ... })` is a type error: "Object literal may only specify known properties".
+- **Cause**: `configure` takes the options of the extensions applied so far. The extension that declares the option
+  comes later in the chain.
+- **What to do**: call `configure` after the last `.extend`.
+
+### An unknown option is not checked at runtime [#unknown-option]
+
+- **Symptom**: JavaScript code, or code with a cast, passes a misspelled option to `create` or `configure`. Nothing
+  fails, and the option has no effect.
+- **Cause**: options are a type only. Nothing reads the option names at runtime.
+- **What to do**: type-check the code that creates and configures a form.
+
+### A duplicate option name is a type error only [#duplicate-option]
+
+- **Symptom**: `.extend` returns a type with the text `The option "name" is declared twice.`, and the next call on
+  it is a type error. JavaScript code gets no error.
+- **Cause**: options are a type only, so the runtime has no option names to compare. A duplicate check name still
+  throws at `create`, because the check also declares a state key of that name.
+- **What to do**: give each option of an extension a name that no other extension of the chain uses. `id`, `schema`
+  and `defaultValues` are options of every form, and no extension can declare them.
+
+## Extensions and needs [#extensions-and-needs]
+
+### A duplicate api key or state key throws at `create` [#duplicate-key]
+
+- **Symptom**: `create` throws. Two examples of the message:
+  - `The "b" extension returns "draft" from api, which "a" already returns.`
+  - `The "b" extension declares the state key "draft", which "a" already declares.`
+- **Cause**: the keys of an api exist only when its `api` function runs, so the check is at `create`. An extension
+  cannot replace a member of another extension. It cannot return `id`, `store` or `destroy`, which every instance
+  has.
+- **What to do**: give the api member and the state key a name that no other extension of the chain uses.
+
+### Every need is required [#needs-are-required]
+
+- **Symptom**: `.extend` is a type error. `create` throws, and no instance is made. An example of the message:
+  `The "events" extension needs "status", which no earlier extension provides.`
+- **Cause**: every need of an extension and of a slot group is required. No need is optional.
+- **What to do**: extend each need earlier in the chain.
+
+### `on<T>` decides by the value type only [#field-members-condition]
+
+- **Symptom**: field members cannot go on the fields of one path only. Or `create` throws:
+  `The "masks" extension adds field members, so the form needs a field(path) api.`
+- **Cause**: `on<T>` adds members to each field whose value extends `T`. TypeScript types are erased, so the guard
+  of `on` decides at runtime. Field members go on the handles of `handles`, so they need its `field` api.
+- **What to do**: give `on` a guard that matches `T`. Extend `handles`, or `standard`, before `create`.
+
+### A name from a parameter needs casts [#named-extension-casts]
+
+- **Symptom**: in an extension that takes its name as a parameter, such as `check(name)`, the state and the api
+  are typed with `string` keys.
+- **Cause**: a computed key `{ [name]: value }` widens to `string` in TypeScript.
+- **What to do**: cast the result of `state` and of `api` to `Record<Name, ...>`, as the built-in `check` does.
+
+### A state that starts with `null` needs a return type [#null-state]
+
+- **Symptom**: `context.state.key.set(...)` with a value that is not `null` is a type error, for example
+  "Type 'Date' is not assignable to type 'null'".
+- **Cause**: TypeScript infers the state from the first value that the `state` function returns.
+- **What to do**: give the `state` function a return type: `state: (): { autosave: AutosaveState } => ...`.
+
+## Checks and field handles [#checks-and-handles]
+
+### A check after `handles` has no field sugar [#check-after-handles]
+
+- **Symptom**: `form.field(path).warning()` is a type error: "Property 'warning' does not exist". At runtime the
+  member is not there.
+- **Cause**: `handles` reads the check names when its `api` runs. A check applied after it is not known yet.
+  `standard` applies `handles` last.
+- **What to do**: extend the check before `handles`. After `standard`, use the api of the check:
+  `form.warning.at(path)` and `form.warning.set(path, entries)`.
+
+### A form without `handles` has no `field(path)` [#no-handles]
+
+- **Symptom**: `form.field`, `form.array` and `form.scope` do not exist.
+- **Cause**: `handles` adds them. A lean chain often leaves it out. A form without `validation` has no check, so it
+  has no check sugar either.
+- **What to do**: use the apis directly, such as `form.values`, `form.events` and `form.error`. Or extend `handles`,
+  which needs `values`, `status`, `events`, `reset` and `arrays`.
+
+### `dirty` stays set when a value returns to its default [#dirty-stays-set]
+
+- **Symptom**: a "Clear filters" button stays visible after the user clears every filter.
+- **Cause**: `dirty` records an interaction. It does not clear itself when the value becomes equal to the default
+  again.
+- **What to do**: read `form.status.at(path).default`. It is `true` while the value is deeply equal to its default
+  value.
+
+### `reset.all({ values })` keeps the first default values [#reset-baseline]
+
+- **Symptom**: after "Discard" resets to the saved text, a later `reset.all()` goes back to the text that the page
+  first loaded.
+- **Cause**: `reset.all({ values })` starts from the values that you give. The default values of the form do not
+  change. `reset.at(path)` and the `default` flag of the status also use the first default values.
+- **What to do**: keep the last saved values, and pass them to each `reset.all({ values })`.
+
+### The cost of the status grows with the number of fields [#status-cost]
+
+- **Symptom**: on a form with very many fields, each change takes longer.
+- **Cause**: `status` derives an entry for each node of the values on each change of the state.
+- **What to do**: nothing for a usual form. The cost is accepted.
+
+## Slots and parts [#slots-and-parts]
+
+### `fieldSlots` and `fieldErrorSlots` both give the `field` part [#field-slot-groups]
+
+- **Symptom**: a field has no `aria-describedby`, although its error part shows.
+- **Cause**: both groups give a slot with the key `field`. A later slot with the same key replaces the earlier one.
+  `fieldSlots` after `fieldErrorSlots` gives the `field` part with no error link.
+- **What to do**: spread one of them: `fieldErrorSlots` when the form has the `error` check, else `fieldSlots`.
+
+### A form with no `submit` has no root element [#no-root-element]
+
+- **Symptom**: `Root` renders its children with no `<form>` element around them.
+- **Cause**: `rootSlots` needs `submit`. A form with no `submit` spreads no root group, and its `Root` only provides
+  the instance.
+- **What to do**: add the element that the page needs in the component.
+
+### `slots(...)` outside `.extend` has no form to read [#slots-outside-extend]
+
+- **Symptom**: the `slot` parameter of a `slots(build)` call that is not inside `.extend(...)` does not know the
+  api or the state of a form.
+- **Cause**: `slots` gets its types from the form that `.extend` gives it.
+- **What to do**: write `slots(...)` inside `.extend(...)`. For a reusable piece, write a slot group with
+  `defineSlots`.
+
+### A slot group states its needs twice [#slot-group-needs]
+
+- **Symptom**: a slot group is a type error when the annotation of its `slot` parameter and its `needs` list
+  differ.
+- **Cause**: TypeScript cannot infer the needs from the body of the group, because `slot` must be typed first. The
+  annotation types the group, and `needs` is the list that `create` checks.
+- **What to do**: name the same api names and state keys in both places.
+
+### A slot cannot be wrapped [#slot-cannot-be-wrapped]
+
+- **Symptom**: a new slot with the key of a built-in slot loses the attributes and the events of the built-in one.
+- **Cause**: a later slot with the same key replaces the earlier one. Slots do not compose.
+- **What to do**: write the whole slot, with each member that the part needs.
+
+### A slot must write `text` after `state` [#text-after-state]
+
+- **Symptom**: the parameter of `text` is typed `{}`, so `text: ({ messages }) => ...` is a type error, and the
+  part state is `{}`.
+- **Cause**: TypeScript infers the slot state from `state` in the order of the members. When `state` reads its
+  parameters, `text` before it is typed first.
+- **What to do**: write `state` before `text` in each slot.
+
+## Scopes [#scopes]
+
+### The six scope conflict rules [#scope-conflict-rules]
+
+| Conflict                                                  | Result                                                                                                                     |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| A scope key is a key of the form's own values             | A type error. `create` throws: `The scope "email" has the key of one of the form's own values, which it would replace.`    |
+| Default values at the path of a scope from several places | They merge deeply: the scope's own, then `configure`, then `create`. Plain objects merge key by key. Other values replace. |
+| A form validator and a scope validator cover one path     | Both run, and their issues merge. Nothing removes a duplicate, so one field can report two issues.                         |
+| A scope has validators for a check that the form lacks    | `create` throws and names the scope and the check. A form with no `validation` has no check.                               |
+| A scope key contains a dot                                | A type error. `create` throws. A scope is one key. View a nested path with `form.scope('a.b')`.                            |
+| The `schema` of a scope                                   | It only types the values. Validation comes from `checks`.                                                                  |
+
+### A part with no `scope` writes to the form's field [#part-without-scope]
+
+- **Symptom**: a reusable block renders `<Field name="street" />`, and its input changes `street` of the form, not
+  `billing.street`.
+- **Cause**: the `key` prop of a part is a path of the form, unless the part gets a `scope` prop.
+- **What to do**: pass the scope to each part of the block: `<Field scope={scope} name="street" />`.
+
+### A partial default for a scope needs a cast [#partial-scope-default]
+
+- **Symptom**: `create({ defaultValues: { ..., billing: { street: 'Main St' } } })` is a type error: "Property 'city'
+  is missing".
+- **Cause**: `defaultValues` has the type of the full `Values`. At runtime the values at the path of a scope merge
+  deeply over the scope's own.
+- **What to do**: cast the partial value, or give every member of the scope.
+
+## Related
+
+- [Which API do I need](/docs/choose-an-api)
+- [Checks and validation](/docs/concepts/checks-and-validation)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Scopes](/docs/concepts/scopes)

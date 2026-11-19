@@ -1,0 +1,56 @@
+---
+title: Scopes
+description: Understand how a scope describes a sub-object and where it is placed.
+type: concept
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [reusable, type-safe]
+examples: [E15, E16]
+---
+
+## In short
+
+A scope is a sub-object of the values. `defineScope` describes one without a path, and `defineForm({ scopes })`
+places it at one or more keys. `form.scope(path)` on an instance views any object path as a scope.
+
+## Model
+
+- `defineScope({ schema, defaultValues, checks })` gives the values, the default values and the validators of the
+  sub-object, by check name and event.
+- `defineForm({ schema, defaultValues, scopes: { billing: address, shipping: address } })` places the scope at each
+  key. `Values` gains `billing` and `shipping`.
+- The validators of a placed scope run at its path. They see the values there, and the paths of their issues start
+  with that path.
+- `handles` adds `form.scope(path)`. It returns a `Scope` with `field`, `array` and `scope`, whose paths are relative
+  to the scope. The same path gives the same object.
+- `Scope<Address, 'error'>` is the type of a scope of `Address` values with the `error` check. A function that takes
+  it works at any path and in any form. A scope of values of another shape is a type error.
+- A part is scoped with its `scope` prop only. The adapter hooks take `{ scope }`.
+
+The six conflict rules:
+
+| Conflict                                                  | Result                                                                                          |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| A scope key is a key of the form's own values             | A type error, and `create` throws and names the scope                                           |
+| Default values at the path of a scope from several places | A deep merge: the scope's own, then `configure`, then `create`. Arrays and other values replace |
+| A form validator and a scope validator cover one path     | Both run, and their issues merge. One field can report two issues                               |
+| A scope has validators for a check that the form lacks    | `create` throws and names the scope and the check                                               |
+| A scope key contains a dot                                | A type error, and `create` throws. View a nested path with `form.scope('a.b')`                  |
+| The `schema` of a scope                                   | It only types the values. Validation comes from `checks`                                        |
+
+## Rules
+
+- A scope key is one key of the values, and not a key of the form's own values.
+- A form must have each check for which a placed scope has validators.
+- `form.scope(path)` needs `handles`. It needs no `defineScope`, so it also views an array item.
+- Pass the scope to each part of a reusable block. A part with no `scope` writes to the field of the form.
+- A partial default for a scope in `configure` or `create` needs a cast.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Checks and validation](/docs/concepts/checks-and-validation)
+- [Slots and parts](/docs/concepts/slots-and-parts)
+- [Known limits](/docs/limits)

@@ -1,6 +1,6 @@
 ---
-title: Oxform
-description: The documentation is being rewritten for Oxform 0.7.0.
+title: Introduction
+description: Learn what Oxform is before you write a form.
 type: overview
 entry: []
 principles: [composable, reusable, extensible, type-safe, lightweight]
@@ -9,8 +9,63 @@ examples: []
 
 ## In short
 
-The documentation of Oxform 0.7.0 is not written yet. The documentation of 0.6 is on the `main` branch.
+Oxform is a form library for TypeScript that does not depend on a UI framework. A form is a chain of extensions on
+`defineForm`, and each extension adds options, state, an api and slots. An adapter turns the slots of a form into
+parts for React, Solid 1 or Solid 2.
+
+## The model [#model]
+
+1. `defineForm({ schema, defaultValues })` makes a form and fixes its `Values` type. The form has no extension
+   yet.
+2. Each `.extend(...)` applies one extension or one preset, and returns a new form. The `standard` preset applies
+   every built-in extension. An extension that you write with `defineExtension` can follow it.
+3. `.configure(options)` sets typed defaults for every instance, and returns a new form.
+4. `form.create(options)` makes an instance in any runtime: the api of the extensions, a `store`, an `id` and
+   `destroy()`.
+5. `createParts(form)` from an adapter makes the parts and the adapter hooks, such as `Root`, `Field` and
+   `useField`.
+
+A form is immutable, so it is safe at module scope. An instance is one live form, for one render or one request.
+
+## Principles [#principles]
+
+Oxform has five principles. Each page states the principles that it teaches.
+
+| Principle   | What it means                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| Composable  | A form is a chain of extensions. You assemble the chain for each use case.                            |
+| Reusable    | You can package an extension, a preset, a slot group or a scope, and use it in another form.          |
+| Extensible  | You add options, state, an api, slots and field members with no change to Oxform.                     |
+| Type-safe   | `Values` comes from the schema. Every type comes from the chain. You write no type by hand.           |
+| Lightweight | A form pays only for the extensions in its chain. A bundler removes the exports that it does not use. |
+
+## Inspiration [#inspiration]
+
+The design comes from [UI SDK](https://ui-sdk.dev/). UI SDK builds each piece with one `define*` primitive that
+has a name, options, state, an api and slots. Its behaviors are plain functions, and an adapter renders its slots.
+In Oxform, `defineExtension` has the same members. A built-in behavior is an extension, and an adapter renders the
+slots of a form as parts.
+
+## Entry points [#entry-points]
+
+The entry point of an import tells you the category of the API.
+
+| Entry point              | Category           | Contents                                                                          |
+| ------------------------ | ------------------ | --------------------------------------------------------------------------------- |
+| `@oxform/core`           | Main APIs          | `defineForm`, `defineExtension`, `defineSlots`, `slots`, `defineScope`, the types |
+| `@oxform/core/behaviors` | Built-in behaviors | The built-in extensions, such as `values` and `submit`, and the slot groups       |
+| `@oxform/core/presets`   | Form presets       | `standard`                                                                        |
+| `@oxform/core/adapter`   | Adapter authors    | What an adapter reads from a form. Application code does not import it            |
+| `@oxform/react`          | Adapter            | `createParts`, `usePart` and their types, for React                               |
+| `@oxform/solid`          | Adapter            | The same adapter surface, for Solid 1                                             |
+| `@oxform/solid/v2`       | Adapter            | The same adapter surface, for Solid 2                                             |
+
+The packages are ESM only. `@oxform/core` is a peer dependency of each adapter, so an application has one copy of
+it.
 
 ## Related
 
+- [Which API do I need](/docs/choose-an-api)
+- [Known limits](/docs/limits)
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
 - [Oxform on GitHub](https://github.com/frantss/oxform)

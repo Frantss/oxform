@@ -1,0 +1,50 @@
+---
+title: Changes and extension hooks
+description: Understand the path of a change and the order of extension hooks.
+type: concept
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, extensible]
+examples: [E08, E21]
+---
+
+## In short
+
+Every write of a value goes through the same path: the interceptors, the write, then the listeners. An extension
+hook is a subscription point of a built-in api, such as `values.intercept`. Hooks run in the order in which they
+were added, which is the order of the chain.
+
+## Model
+
+- `values.set(path, value)` makes a change: a path and a value. `events.change`, `arrays`, `reset` and your code
+  all write through it.
+- The interceptors of `values.intercept` run first, in order. Each one can return a new change, or call
+  `details.cancel()` to refuse it.
+- Then the write. A value that is equal to the current value at the path is not written.
+- Then the listeners of `values.onChange` run, in order, with the change that was written.
+- `values.set` returns `false` when an interceptor cancels the change or nothing is written. Then no listener runs.
+- The details of a change have a `reason`: `'input'` from `events.change`, `'array'` from `arrays`, `'reset'` from
+  `reset`, and `'programmatic'` when the caller gives none.
+- The other extension hooks: `validation.onRun` observes each applied validation run. `submit.intercept` runs
+  before a submit validates, and can cancel it. `submit.onResult` observes each submit that reached `onSubmit` or
+  `onInvalid`.
+- Each hook returns a function that removes it.
+
+## Rules
+
+- The order of the hooks is the order of the chain. An extension that comes earlier intercepts and listens first.
+- An interceptor sees the path of the write. A write of a whole object or array has the path of that object, not
+  the paths of its members.
+- A listener runs after the write. To change the value before it is written, use an interceptor.
+- A change at a path makes a pending validation run of that path stale, also a run of an ancestor or a descendant.
+- `validation.onRun` does not run for a discarded run or for a run that failed.
+- `submit.onResult` does not run for a canceled submit, or for a submit that a change or a reset stopped.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Checks and validation](/docs/concepts/checks-and-validation)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Which API do I need](/docs/choose-an-api)

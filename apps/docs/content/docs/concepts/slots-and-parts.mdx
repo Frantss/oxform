@@ -1,0 +1,53 @@
+---
+title: Slots and parts
+description: Understand how an adapter renders the slots of a form as parts.
+type: concept
+entry: ['@oxform/core', '@oxform/core/behaviors']
+principles: [composable, reusable]
+examples: [E29, E13]
+---
+
+## In short
+
+A slot is the framework-neutral description of one rendered piece, and it never names a component. An adapter
+reads the slots of a form and makes one part for each slot. A later slot with the key of an earlier slot replaces
+it.
+
+## Model
+
+- A slot has these optional members: `element`, `props`, `text`, `present`, `state`, `attrs`, `on` and `bind`.
+- `text`, `present`, `state` and `attrs` are pure functions of the state of the store, so they also run on a
+  server. `on` and `bind` run in a browser only.
+- `props` declares the props of the part with a prop kind, such as `'key'`. A `key` prop is a path of the form, or
+  a path of the scope that the part gets in its `scope` prop.
+- `attrs` returns HTML attributes by their HTML names, such as `for` and `readonly`. Each adapter maps them to its
+  own names.
+- A form gets slots from three places: the `slots` member of an extension, the `slots(build)` extension, and the
+  slot groups of `defineSlots`, spread inside `slots(...)`.
+- No built-in extension adds a slot. The built-in slot groups do: `rootSlots`, `fieldSlots`, `fieldErrorSlots`,
+  `submitSlots` and `resetSlots`.
+- A slot group states its needs. They are checked where it is spread, in the types, and at `create`, where a
+  missing need throws and names the group.
+- `createParts(form)` returns one part per slot, `Root`, and the adapter hooks. `createParts(form, elements)`
+  changes the element of a part for every use.
+
+## Rules
+
+- A slot never names a framework component.
+- A later slot with the key of an earlier slot replaces it. A slot cannot be wrapped.
+- Write `text` after `state` in a slot, so `text` reads the inferred state.
+- Spread one of `fieldSlots` and `fieldErrorSlots`, not both.
+- A form with no `submit` spreads no root group. Its `Root` renders no element.
+- Write `slots(...)` inside `.extend(...)`. A reusable set of slots is a slot group.
+- A slot group names the same needs in the annotation of `slot` and in `needs`.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Scopes](/docs/concepts/scopes)
+- [Server rendering rules](/docs/concepts/server-rendering)
+- [Known limits](/docs/limits)

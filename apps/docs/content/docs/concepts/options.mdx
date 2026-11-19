@@ -1,0 +1,49 @@
+---
+title: Options
+description: Understand where the options of an instance come from.
+type: concept
+entry: ['@oxform/core']
+principles: [type-safe]
+examples: [E05]
+---
+
+## In short
+
+An option is an input of a form that an extension declares with `optionTypes`. An instance gets its options from
+three sources: `defineForm`, `configure` and `create`. `create` wins over `configure`, and `configure` wins over
+`defineForm`.
+
+## Model
+
+- `options: optionTypes<{ saveDraft: (draft: Values) => Promise<void> }>()` declares the options of an extension.
+  It is a type only.
+- Every form has the options `id`, `schema` and `defaultValues`. `defineForm` gives `schema` and `defaultValues`.
+- `.configure(options)` sets defaults for every instance. Calls merge, and a later call wins.
+- `form.create(options)` gives the options of one instance. An adapter passes the options of `Root` to it.
+- Each option of an extension is optional in `configure` and `create`.
+- The options merge by name: an option from `create` replaces the whole value of the same option from
+  `configure`. Only the default values at the path of a scope merge deeply.
+- `Self` in the parameters of an option stands for the instance, as in
+  `onSaveError: (error: unknown, form: Self) => void`. `configure` and `create` replace it with the type of the
+  instance.
+- An extension reads its options with `context.options()`. `context.onOptions` tells it when an adapter gives the
+  instance new options.
+
+## Rules
+
+- Call `configure` after the last `.extend`. It takes only the options of the extensions applied so far.
+- An option name must be new in the chain. A duplicate is a type error.
+- Options are a type only. Nothing checks an unknown option at runtime.
+- Give an option from `create` its full value. It does not merge with the value from `configure`.
+- Use `Self` when an option needs the instance. An extension cannot name the type of the instance, because later
+  extensions add to it.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Known limits](/docs/limits)

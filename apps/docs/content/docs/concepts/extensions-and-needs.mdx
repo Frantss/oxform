@@ -1,0 +1,57 @@
+---
+title: Extensions and needs
+description: Understand what an extension adds and what it needs.
+type: concept
+entry: ['@oxform/core']
+principles: [extensible, type-safe]
+examples: [E06]
+---
+
+## In short
+
+An extension is one object from `defineExtension` that adds options, state, an api, slots and field members to a
+form. Its needs are the api names and state keys that it requires from the form so far. A missing need is a type
+error at `.extend` and a runtime error at `create`.
+
+## Model
+
+- `defineExtension(form, { name, needs, options, state, api, slots, fields })` returns the extension. The `form`
+  parameter carries the types only.
+- A named extension is a function of `Extendable<Values, Needs<Values, 'values' | 'validation'>>`. Its `needs`
+  lists the same names: `needs: { api: ['values', 'validation'] }`.
+- An inline extension, `form.extend(form => defineExtension(form, { ... }))`, gets the whole form so far. Its
+  `needs` is optional.
+- `options` declares the option types with `optionTypes<{ ... }>()`.
+- `state(options)` runs once per instance and returns every state key of the extension.
+- `api(context, deps)` runs once per instance. `deps` is the api of the earlier extensions. The context has
+  `options()`, `onOptions`, `onDestroy`, `instance()`, `state.<key>` and `store`.
+- `slots` adds slots, and `fields` adds field members with `on<T>`.
+- A custom extension uses a built-in behavior through its api. It states the behavior in its needs, reads it from
+  `deps`, and subscribes to its extension hooks.
+- `form.create` checks the needs of each extension before its `api` runs. A missing need throws and names the
+  extension and the need, for example `The "events" extension needs "status", which no earlier extension provides.`
+
+## Rules
+
+- Every need is required. No need is optional.
+- `needs` lists each api name and state key that the `Extendable` parameter states, and no other name.
+- An extension comes after the extensions that it needs.
+- `api` must be inert: no DOM access, no timer and no request at creation, on a server too.
+- Read `context.options()` inside a method, so the options stay current.
+- Call `context.instance()` from a method or a handler. The instance exists after every `api` has run.
+- An option name must be new in the chain. A duplicate is a type error at `.extend`.
+- An api key and a state key must be new in the chain. A duplicate throws at `create`, and the message names both
+  extensions.
+- An api cannot return `id`, `store` or `destroy`. Every instance has them.
+- A field member cannot replace a member of the handle, or a member of another extension.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Forms, chains and presets](/docs/concepts/forms-and-chains)
+- [Options](/docs/concepts/options)
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)
+- [Known limits](/docs/limits)

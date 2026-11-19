@@ -1,0 +1,50 @@
+---
+title: Forms, chains and presets
+description: Understand how a chain of extensions makes a form.
+type: concept
+entry: ['@oxform/core', '@oxform/core/presets']
+principles: [composable, type-safe]
+examples: [E01, E03]
+---
+
+## In short
+
+A form is an immutable value that `defineForm` makes and each `.extend` replaces with a new one. The chain of
+`.extend` calls is the order in which the extensions run. A preset is a function from form to form that applies
+several extensions in one `.extend`.
+
+## Model
+
+- `defineForm({ schema, defaultValues })` makes a form with no extension. The schema fixes the `Values` type.
+  `defineForm` also takes a `name` (the default is `'form'`), an `id` and `scopes`.
+- `.extend(extension)` adds one extension to the end of the chain and returns a new form. The form that you
+  extend does not change.
+- `.extend(preset)` calls the preset with the form. The preset returns a form, and `.extend` returns that form.
+  `standard` is a preset: it applies the nine built-in extensions and four slot groups.
+- `.configure(options)` returns a new form with default options for every instance.
+- `form.create(options)` makes an instance. The extensions run in chain order. The `api` function of each extension
+  gets the api of the extensions before it, as `deps`.
+- Each step of the chain adds to the types: the api, the state, the options, the slots and the field members. You
+  read them back with `ValuesOf`, `ApiOf`, `StateOf`, `OptionsOf`, `PartsOf`, `FieldsOf` and `InstanceOf`.
+
+## Rules
+
+- A form holds no state. Define it once, at module scope.
+- An instance is for one render or one request. Its creator calls `destroy()` when it is done.
+- An extension comes after each extension that it needs.
+- A preset cannot change the schema. Use `defineForm(init).extend(preset)` for each schema.
+- A preset is generic in the form it gets, so it applies to a form that already has extensions, and an extension
+  can follow it.
+- Call `configure` after the last `.extend`. It takes only the options of the extensions applied so far.
+- Write no type by hand. Every type of a form comes from its schema and its chain.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Extensions and needs](/docs/concepts/extensions-and-needs)
+- [Options](/docs/concepts/options)
+- [Which API do I need](/docs/choose-an-api)
+- [Known limits](/docs/limits)

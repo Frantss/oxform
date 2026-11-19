@@ -1,0 +1,52 @@
+---
+title: Checks and validation
+description: Understand how checks find issues and how validation runs them.
+type: concept
+entry: ['@oxform/core/behaviors']
+principles: [composable, type-safe]
+examples: [E18, E14]
+---
+
+## In short
+
+A check is a named set of issues by path, which the `check(name)` extension adds. `validation` runs the validators
+of each check for an event, and discards a run that a newer change made stale. The schema of a form validates
+nothing: a check option does.
+
+## Model
+
+- `check('error', { blocking: true, exclusive: true })` adds an option, a state key and an api member, each named
+  `error`. It needs `validation`.
+- The option of a check gives a validator for each event: `error: { change, blur, focus, submit }`. A validator is
+  a Standard Schema, or a function of `{ values }` that returns one.
+- An entry of a check is a Standard Schema issue. Its `type` is the event of the validator that found it.
+- `validation.run(targets, { type })` runs the validators of one event, or of every event when it has no type. The
+  issues outside the targets are dropped.
+- `events` requests a run on `change`, `blur` and `focus` when a check has a validator for that event. `submit`
+  runs the `submit` event for the whole form.
+- A blocking check with entries makes a run invalid. A check that is not blocking reports advice only.
+- An exclusive check replaces every entry in the scope of a run, also the entries set by hand. A check that is not
+  exclusive replaces only the entries of the events that ran.
+- A run is stale when a change writes one of its paths, when a newer run has the same targets and event, or when a
+  reset discards it. A stale run applies nothing and resolves valid, with an empty list for each check.
+- The empty path `''` holds the issues of the whole form: `form.error.at('')`.
+
+## Rules
+
+- A `schema` only types `Values`. Give a check option to validate, such as `error: { submit: schema }`.
+- `check` comes after `validation`. A check must come before `handles` to have field sugar.
+- Each check has its own name. A second check with the same name throws at `create`.
+- Entries of an event that has no validator stay until `clear`.
+- The entries of a check follow the items of an array when the items move.
+- `validation.onRun` observes applied runs only.
+- A form without `validation` acts as a form with no check: every path is valid.
+
+## Example
+
+## Common mistakes
+
+## Related
+
+- [Changes and extension hooks](/docs/concepts/changes-and-hooks)
+- [Scopes](/docs/concepts/scopes)
+- [Known limits](/docs/limits)
